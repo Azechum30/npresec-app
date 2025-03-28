@@ -1,0 +1,7 @@
+POST http://localhost:3000/api/teachers
+Content-Type: "application/json"
+
+{
+    "email": "azechum21@gmail.com",
+    "username": "Prosper"
+}
