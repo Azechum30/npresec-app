@@ -1,0 +1,3 @@
+// type HandleBulkDeletionProps = {
+//     rows:
+// }

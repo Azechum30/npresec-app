@@ -1,71 +1,210 @@
-import { Prisma } from "@prisma/client"
+import { Prisma } from "@prisma/client";
 
 export const DepartmentInclude = {
-	head: {
-		select: {
-			firstName: true,
-			lastName: true,
-			middleName: true
-		}
-	}
-} satisfies Prisma.DepartmentInclude
+  head: {
+    select: {
+      firstName: true,
+      lastName: true,
+      middleName: true,
+    },
+  },
+} satisfies Prisma.DepartmentInclude;
 
 export const DepartmentSelect = {
-	id: true,
-	code: true,
-	name: true,
-	description: true,
-	headId: true,
-	createdAt: true,
-	head: true
-} satisfies Prisma.DepartmentSelect
+  id: true,
+  code: true,
+  name: true,
+  description: true,
+  headId: true,
+  createdAt: true,
+  head: true,
+  classes: true,
+  teachers: true,
+} satisfies Prisma.DepartmentSelect;
 
 export type DepartmentData = Prisma.DepartmentGetPayload<{
-	include: typeof DepartmentInclude
-}>
+  include: typeof DepartmentInclude;
+}>;
 
 export type DepartmentResponseType = Prisma.DepartmentGetPayload<{
-	select: typeof DepartmentSelect
-}>
+  select: typeof DepartmentSelect;
+}>;
 
 export const TeacherSelect = {
-	id: true,
-	employeeId: true,
-	firstName: true,
-	lastName: true,
-	middleName: true,
-	birthDate: true,
-	gender: true,
-	departmentId: true,
-	maritalStatus: true,
-	ghcardNumber: true,
-	phone: true,
-	rank: true,
-	dateOfFirstAppointment: true,
-	rgNumber: true,
-	ssnitNumber: true,
-	userId: true,
-	academicQual: true,
-	licencedNumber: true,
-	department: true
-} satisfies Prisma.TeacherSelect
+  id: true,
+  employeeId: true,
+  firstName: true,
+  lastName: true,
+  middleName: true,
+  birthDate: true,
+  gender: true,
+  departmentId: true,
+  maritalStatus: true,
+  ghcardNumber: true,
+  phone: true,
+  rank: true,
+  dateOfFirstAppointment: true,
+  rgNumber: true,
+  ssnitNumber: true,
+  userId: true,
+  academicQual: true,
+  licencedNumber: true,
+  department: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  classes: true,
+  courses: true,
+  departmentHead: true,
+  user: {
+    select: {
+      id: true,
+      username: true,
+      email: true,
+    },
+  },
+} satisfies Prisma.TeacherSelect;
 
 export type TeacherResponseType = Prisma.TeacherGetPayload<{
-	select: typeof TeacherSelect
-}>
+  select: typeof TeacherSelect;
+}>;
 
 export const ClassesSelect = {
-	id: true,
-	code: true,
-	name: true,
-	createdAt: true,
-	teachers: true,
-	level: true,
-	department: true,
-	departmentId: true,
-	teacherId: true
-} satisfies Prisma.ClassSelect
+  id: true,
+  code: true,
+  name: true,
+  createdAt: true,
+  teachers: {
+    select: {
+      id: true,
+      firstName: true,
+      middleName: true,
+      lastName: true,
+      employeeId: true,
+    },
+  },
+  level: true,
+  department: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  departmentId: true,
+  teacherId: true,
+  courses: {
+    select: {
+      id: true,
+      title: true,
+    },
+  },
+} satisfies Prisma.ClassSelect;
 
 export type ClassesResponseType = Prisma.ClassGetPayload<{
-	select: typeof ClassesSelect
-}>
+  select: typeof ClassesSelect;
+}>;
+
+export const CourseSelect = {
+  id: true,
+  code: true,
+  title: true,
+  description: true,
+  createdAt: true,
+  credits: true,
+  classes: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  teachers: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      middleName: true,
+    },
+  },
+  departments: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+} satisfies Prisma.CourseSelect;
+
+export type CourseResponseType = Prisma.CourseGetPayload<{
+  select: typeof CourseSelect;
+}>;
+
+export type UserType = Prisma.UserGetPayload<{
+  select: {
+    id: true;
+    name: true;
+    permissions: {
+      select: {
+        id: true;
+        name: true;
+      };
+    };
+    picture: true;
+    role: {
+      select: {
+        id: true;
+        name: true;
+      };
+    };
+    roleId: true;
+  };
+}>;
+
+export const StudentSelect = {
+  id: true,
+  studentNumber: true,
+  firstName: true,
+  lastName: true,
+  middleName: true,
+  gender: true,
+  birthDate: true,
+  currentLevel: true,
+  nationality: true,
+  religion: true,
+  dateEnrolled: true,
+  currentClass: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  department: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  user: {
+    select: {
+      email: true,
+      id: true,
+      username: true,
+    },
+  },
+  guardianName: true,
+  guardianRelation: true,
+  guardianAddress: true,
+  guardianEmail: true,
+  address: true,
+  classId: true,
+  graduationDate: true,
+  guardianPhone: true,
+  phone: true,
+  status: true,
+  previousSchool: true,
+  departmentId: true,
+} satisfies Prisma.StudentSelect;
+
+export type StudentResponseType = Prisma.StudentGetPayload<{
+  select: typeof StudentSelect;
+}>;

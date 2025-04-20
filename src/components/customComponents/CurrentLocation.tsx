@@ -1,10 +1,16 @@
-"use client"
-import { usePathname } from "next/navigation"
+"use client";
+import { usePathname } from "next/navigation";
 
 export default function CurrentLocation() {
-	const pathname = usePathname().split("/").pop()
-	const transformedPath =
-		pathname?.charAt(0).toUpperCase()! + pathname?.slice(1)
+  const pathname = usePathname().split("/").pop();
+  const isStudentDetailPage = usePathname().split("/")[3];
+  console.log(isStudentDetailPage);
+  const transformedPath =
+    pathname?.charAt(0).toUpperCase()! + pathname?.slice(1);
 
-	return <span>{transformedPath}</span>
+  return (
+    <span>
+      {isStudentDetailPage === "edit" ? "Edit Student" : transformedPath}
+    </span>
+  );
 }

@@ -1,78 +1,107 @@
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-	SelectScrollDownButton,
-	SelectScrollUpButton
-} from "@/components/ui/select"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-import { useFormContext } from "react-hook-form"
+import { useFormContext } from "react-hook-form";
 import {
-	FormField,
-	FormMessage,
-	FormItem,
-	FormLabel,
-	FormControl,
-	FormDescription
-} from "../ui/form"
-import { InputHTMLAttributes } from "react"
+  FormField,
+  FormMessage,
+  FormItem,
+  FormLabel,
+  FormControl,
+} from "../ui/form";
+import React, { InputHTMLAttributes } from "react";
+import { z } from "zod";
+import { isZodFieldRequired } from "@/lib/isZodFieldRequired";
+import { cn } from "@/lib/utils";
 
-type SelectWithLabelProps<T> = {
-	name: keyof T & string
-	fieldTitle: string
-	className?: string
-	placeholder?: string
-	data: any[]
-} & InputHTMLAttributes<HTMLSelectElement>
+type SelectWithLabelProps<T, U = any> = {
+  name: keyof T & string;
+  fieldTitle: string;
+  className?: string;
+  placeholder?: string;
+  schema?: z.ZodSchema<any>;
+  data: U[];
+  valueKey?: keyof U;
+  labekey?: keyof U;
+} & React.ComponentPropsWithRef<typeof Select>;
 
 export default function SelectWithLabel<T>({
-	name,
-	fieldTitle,
-	className,
-	placeholder,
-	data,
-	...props
+  name,
+  fieldTitle,
+  className,
+  placeholder,
+  schema,
+  data,
+  valueKey = "value",
+  labekey = "label",
+  ...props
 }: SelectWithLabelProps<T>) {
-	const form = useFormContext()
+  const form = useFormContext();
 
-	return (
-		<FormField
-			control={form.control}
-			name={name}
-			render={({ field }) => (
-				<FormItem>
-					<FormLabel
-						htmlFor={name}
-						className='text-sm'
-					>
-						{fieldTitle}
-					</FormLabel>
-					<FormControl>
-						<Select
-							defaultValue={field.value}
-							onValueChange={field.onChange}
-						>
-							<SelectTrigger className={className}>
-								<SelectValue placeholder={placeholder} />
-							</SelectTrigger>
-							<SelectContent>
-								{data.map((val) => (
-									<SelectItem
-										key={val}
-										value={val}
-									>
-										{val}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</FormControl>
-					<FormMessage />
-				</FormItem>
-			)}
-		/>
-	)
+  const isRequired = (() => {
+    if (schema) {
+      const fieldSchema =
+        schema instanceof z.ZodObject ? schema.shape[name] : schema;
+
+      return isZodFieldRequired(fieldSchema);
+    }
+
+    return false;
+  })();
+
+  return (
+    <FormField
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel
+            htmlFor={name}
+            className={cn(
+              "text-sm font-semibold",
+              isRequired && "flex items-center gap-1"
+            )}>
+            {fieldTitle}
+            {isRequired && <span className="text-red-500">*</span>}
+          </FormLabel>
+          <FormControl>
+            <Select defaultValue={field.value} onValueChange={field.onChange}>
+              <SelectTrigger className={className}>
+                <SelectValue placeholder={placeholder} />
+              </SelectTrigger>
+              <SelectContent>
+                {data.map((val, index) => {
+                  if (typeof val === "string" || typeof val === "number") {
+                    return (
+                      <SelectItem key={index} value={String(val)}>
+                        {val}
+                      </SelectItem>
+                    );
+                  }
+
+                  if (typeof val === "object" && typeof val !== null) {
+                    const value = String(val[valueKey] as keyof typeof val);
+                    const label = String(val[labekey] as keyof typeof val);
+                    return (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    );
+                  }
+
+                  return null;
+                })}
+              </SelectContent>
+            </Select>
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
 }

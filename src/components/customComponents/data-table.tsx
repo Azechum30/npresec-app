@@ -1,244 +1,145 @@
-"use client"
-
+import TableFooterDescription from "@/components/customComponents/TableFooterData";
+import TopActions from "@/components/customComponents/TopActions";
 import {
-	useReactTable,
-	flexRender,
-	getCoreRowModel,
-	ColumnDef,
-	VisibilityState,
-	SortingState,
-	getSortedRowModel,
-	Row,
-	PaginationState,
-	getPaginationRowModel,
-	getFilteredRowModel,
-	ExpandedState,
-	getExpandedRowModel,
-	ColumnPinningState
-} from "@tanstack/react-table"
+  Table,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableBody,
+  TableCell,
+} from "@/components/ui/table";
+import { fuzzyFilter } from "@/lib/fuzzyFilter";
+import { TransformerFn } from "@/utils/createDataTransformer";
 import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow
-} from "@/components/ui/table"
-import ColumnVisibility from "./ColumnVisibility"
-import React, { useState } from "react"
-import { ExportAsExcel } from "./ExportAsExcel"
-import { fuzzyFilter } from "@/lib/fuzzyFilter"
-import FilterSearchInput from "./FilterSearchInput"
-import { cn } from "@/lib/utils"
-import RowDetailedComponent from "./RowDetailComponent"
-import TableFooterDescription from "./TableFooterData"
-import RowSelectionComponent from "./RowSelectionComponent"
-import UploadButton from "./UploadButton"
-import { Button } from "../ui/button"
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger
-} from "../ui/dropdown-menu"
-import { Pin, PinOff } from "lucide-react"
-import TopActions from "./TopActions"
-import moment from "moment"
-import { DepartmentResponseType } from "@/lib/types"
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  getPaginationRowModel,
+  PaginationState,
+  Row,
+  SortingState,
+  useReactTable,
+  getExpandedRowModel,
+  ExpandedState,
+  RowSelectionState,
+} from "@tanstack/react-table";
+import { IContent } from "json-as-xlsx";
+import React, { JSX, useState } from "react";
 
-type DataTableProps<TData, TValue> = {
-	columns: ColumnDef<TData, TValue>[]
-	data: TData[]
-	onDelete?: (row: Row<TData>[]) => void
-}
+type DataTableProps<TData> = {
+  columns: ColumnDef<TData>[];
+  data: TData[];
+  filename?: string;
+  transformer?: TransformerFn<TData>;
+  renderSubComponent?: (row: Row<TData>) => JSX.Element;
+  onDelete?: (rows: Row<TData>[]) => void;
+};
 
-export default function DataTableComponent<TData, TValue>({
-	columns,
-	data,
-	onDelete
-}: DataTableProps<TData, TValue>) {
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-		{}
-	)
-	const [sorting, setSorting] = useState<SortingState>([])
-	const [pagination, setPagination] = useState<PaginationState>({
-		pageIndex: 1,
-		pageSize: 10
-	})
+const DataTable = <TData,>({
+  columns,
+  data,
+  transformer,
+  filename,
+  renderSubComponent,
+  onDelete,
+}: DataTableProps<TData>) => {
+  const [sorting, setIsSorting] = useState<SortingState>([]);
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 1,
+    pageSize: 10,
+  });
+  const [expanded, setExpanded] = useState<ExpandedState>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
-	const [expanded, setExpanded] = useState<ExpandedState>({})
-	const [columnPinning, setColumnPinning] = useState<ColumnPinningState>({})
-	const table = useReactTable({
-		columns,
-		data,
-		filterFns: {
-			fuzzy: fuzzyFilter
-		},
-		globalFilterFn: fuzzyFilter,
-		getCoreRowModel: getCoreRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-		getPaginationRowModel: getPaginationRowModel(),
-		getFilteredRowModel: getFilteredRowModel(),
-		getExpandedRowModel: getExpandedRowModel(),
-		onColumnVisibilityChange: setColumnVisibility,
-		onSortingChange: setSorting,
-		onPaginationChange: setPagination,
-		onExpandedChange: setExpanded,
-		onColumnPinningChange: setColumnPinning,
-		state: {
-			columnVisibility,
-			sorting,
-			pagination,
-			expanded,
-			columnPinning
-		},
-		enableColumnPinning: true
-	})
+  const table = useReactTable({
+    columns,
+    data,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    onSortingChange: setIsSorting,
+    onPaginationChange: setPagination,
+    onExpandedChange: setExpanded,
+    onRowSelectionChange: setRowSelection,
+    state: {
+      sorting,
+      pagination,
+      expanded,
+      rowSelection,
+    },
+    filterFns: {
+      fuzzy: fuzzyFilter,
+    },
+    globalFilterFn: fuzzyFilter,
+  });
 
-	const departmentsData = data.map((department: any) => {
-		const { id, head, description, ...rest } = department
+  return (
+    <div className="mt-4 relative">
+      <TopActions
+        table={table}
+        onDelete={onDelete}
+        data={data}
+        transformer={transformer}
+        filename={filename}
+      />
+      <Table className="border mb-2">
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroups) => (
+            <TableRow key={headerGroups.id} className="bg-secondary">
+              {headerGroups.headers.map((header) => (
+                <TableHead key={header.id} className="text-center">
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows.length > 0 ? (
+            table.getRowModel().rows.map((row) => (
+              <React.Fragment key={row.id}>
+                <TableRow>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="text-center">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+                {row.getIsExpanded() && renderSubComponent?.(row) && (
+                  <TableRow className="bg-background">
+                    <TableCell colSpan={row.getVisibleCells().length}>
+                      {renderSubComponent(row)}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </React.Fragment>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={table.getAllColumns().length}>
+                No rows found
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+      {/* <div className='border'>
+			</div> */}
+      <TableFooterDescription table={table} />
+    </div>
+  );
+};
 
-		return {
-			...rest,
-			headId: head
-				? `${head?.lastName} ${head?.firstName} ${head?.middleName}`
-				: ""
-		}
-	})
-
-	return (
-		<div className='mt-3'>
-			<TopActions
-				table={table}
-				onDelete={onDelete}
-				data={departmentsData}
-			/>
-			<div className='rounded-md border'>
-				<Table className='table table-auto'>
-					<TableHeader>
-						{table.getHeaderGroups().map((headers) => (
-							<TableRow key={headers.id}>
-								{headers.headers.map((header) => (
-									<TableHead
-										key={header.id}
-										className={cn(
-											header.column.getIsPinned() &&
-												"bg-primary/50"
-										)}
-									>
-										{flexRender(
-											header.column.columnDef.header,
-											header.getContext()
-										)}
-
-										{header.column.getCanPin() && (
-											<>
-												<DropdownMenu>
-													<DropdownMenuTrigger
-														asChild
-													>
-														<Button
-															variant='ghost'
-															size='sm'
-															className='ml-2 justify-start text-left'
-														>
-															{header.column.getIsPinned() ? (
-																<PinOff className='size-4' />
-															) : (
-																<Pin className='size-4' />
-															)}
-														</Button>
-													</DropdownMenuTrigger>
-													<DropdownMenuContent>
-														<DropdownMenuLabel className='text-xs'>
-															Pinning Options
-														</DropdownMenuLabel>
-														<DropdownMenuSeparator />
-														<DropdownMenuItem
-															onClick={() =>
-																header.column.pin(
-																	"left"
-																)
-															}
-														>
-															Left
-														</DropdownMenuItem>
-														<DropdownMenuSeparator />
-														<DropdownMenuItem
-															onClick={() =>
-																header.column.pin(
-																	"right"
-																)
-															}
-														>
-															Right
-														</DropdownMenuItem>
-														<DropdownMenuSeparator />
-														<DropdownMenuItem
-															onClick={() =>
-																header.column.pin(
-																	false
-																)
-															}
-														>
-															Unpin
-														</DropdownMenuItem>
-													</DropdownMenuContent>
-												</DropdownMenu>
-											</>
-										)}
-									</TableHead>
-								))}
-							</TableRow>
-						))}
-					</TableHeader>
-					<TableBody>
-						{table.getRowModel().rows ? (
-							table.getRowModel().rows.map((row) => (
-								<React.Fragment key={row.id}>
-									<TableRow
-										className={cn(
-											row.getIsSelected() && "bg-muted/50"
-										)}
-									>
-										{row.getVisibleCells().map((cell) => (
-											<TableCell
-												key={cell.id}
-												className=''
-											>
-												{flexRender(
-													cell.column.columnDef.cell,
-													cell.getContext()
-												)}
-											</TableCell>
-										))}
-									</TableRow>
-									{row.getIsExpanded() ? (
-										<TableRow>
-											<TableCell
-												colSpan={
-													row.getVisibleCells().length
-												}
-											>
-												<RowDetailedComponent
-													row={row.original}
-												/>
-											</TableCell>
-										</TableRow>
-									) : null}
-								</React.Fragment>
-							))
-						) : (
-							<TableRow>
-								<TableCell>No rows found!</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</Table>
-			</div>
-			<TableFooterDescription table={table} />
-		</div>
-	)
-}
+export default DataTable;

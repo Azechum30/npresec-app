@@ -1,20 +1,26 @@
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient } from "@prisma/client";
 
+// Type-safe global variable
 const globalForPrisma = globalThis as unknown as {
-	prisma: PrismaClient | undefined
-}
+  prisma: PrismaClient | undefined;
+};
 
-const client =
-	globalForPrisma.prisma ||
-	new PrismaClient({
-		log:
-			process.env.NODE_ENV === "development"
-				? ["error", "warn"]
-				: ["error"]
-	})
+// Prevent multiple instances in development
+export const prisma =
+  globalForPrisma.prisma ||
+  new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+  });
 
+// Store in globalThis only in non-production
 if (process.env.NODE_ENV !== "production") {
-	globalForPrisma.prisma = client
+  globalForPrisma.prisma = prisma;
 }
 
-export const prisma = client
+// Add middleware-specific export
+export const prismaMiddleware =
+  process.env.NODE_ENV === "production"
+    ? prisma
+    : new PrismaClient({
+        log: ["error"],
+      });
