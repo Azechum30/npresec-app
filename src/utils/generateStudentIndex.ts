@@ -9,7 +9,6 @@ export const departments = [
 export const gradelevels = ["Year_One", "Year_Two", "Year_Three"] as const;
 
 export type Department = (typeof departments)[number];
-type GradeLevel = (typeof gradelevels)[number];
 
 export const CONSTANTS = {
   SCHOOL_CODE: "0080505",

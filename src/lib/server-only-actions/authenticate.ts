@@ -139,7 +139,7 @@ export const signInAction = async (
   }
 };
 
-export const logOut = async (previousState: {}) => {
+export const logOut = async () => {
   const { session } = await getSession();
 
   if (session?.id) {
