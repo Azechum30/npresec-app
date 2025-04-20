@@ -4,8 +4,6 @@ import Head from "next/head";
 import * as Sentry from "@sentry/nextjs";
 import { useState } from "react";
 
-export const runtime = "edge";
-
 export default function Page() {
   const [hasSentError, setHasSentError] = useState(false);
 

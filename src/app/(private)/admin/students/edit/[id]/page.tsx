@@ -14,8 +14,6 @@ type Params = {
   id: string;
 };
 
-export const runtime = "edge";
-
 export default function StudentEditPage() {
   const param: Params = useParams();
   const [isPending, startTransition] = useTransition();

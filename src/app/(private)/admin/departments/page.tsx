@@ -8,8 +8,6 @@ import { redirect } from "next/navigation";
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
 import EditDepartment from "./components/EditDepartment";
 
-export const runtime = "edge";
-
 export default async function DepartmentPage() {
   const permissions = await hasPermissions("view:department");
   if (!permissions) {

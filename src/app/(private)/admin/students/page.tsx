@@ -7,8 +7,6 @@ import { StudentDataTable } from "./components/render-student-datatable";
 import { getStudents } from "./actions/action";
 import StudentProvider from "./components/StudentProvider";
 
-export const runtime = "edge";
-
 export default async function StudentsPage() {
   const promise = getStudents();
   return (
