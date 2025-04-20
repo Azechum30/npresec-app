@@ -1,19 +1,20 @@
 import SignInForm from "@/components/customComponents/SignInForm";
 import SignUpForm from "@/components/customComponents/SignUpForm";
 import TabSwitcher from "@/components/customComponents/TabSwitcher";
-import { getSession } from "@/lib/get-user";
+
+import { getAuthUser } from "@/lib/getAuthUser";
 import { redirect } from "next/navigation";
 
 export default async function AuthenticatePage() {
-  const { user } = await getSession();
+  const user = await getAuthUser();
   if (user) {
-    if (user.role === "teacher") {
+    if (user.role?.name === "teacher") {
       return redirect("/teachers");
-    } else if (user.role === "student") {
+    } else if (user.role?.name === "student") {
       return redirect("/students");
+    } else {
+      return redirect("/admin/dashboard");
     }
-
-    return redirect("/admin/dashboard");
   }
   return (
     <TabSwitcher
