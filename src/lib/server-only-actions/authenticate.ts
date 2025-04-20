@@ -1,4 +1,5 @@
 "use server";
+import "server-only";
 import { prisma } from "../prisma";
 import argon2 from "argon2";
 import { lucia } from "../lucia";
@@ -196,11 +197,6 @@ export const resetPasswordAction = async (values: ResetPasswordType) => {
     if (!updatedPasswordUser) {
       return { error: "User not found!" };
     }
-
-    console.log(
-      "Password reset is successfully done for user with ID ",
-      userId
-    );
 
     return { success: true };
   } catch (error) {

@@ -91,6 +91,8 @@
     "onlyBuiltDependencies": [
       "@prisma/client",
       "@prisma/engines",
+      "@sentry/cli",
+      "argon2",
       "esbuild",
       "prisma",
       "sharp"

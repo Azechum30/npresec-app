@@ -1,3 +1,5 @@
+import "server-only";
+
 import jwt from "jsonwebtoken";
 import { env } from "./server-only-actions/validate-env";
 
@@ -10,10 +12,10 @@ export const verifyToken = (token: string) => {
   try {
     const decodedToken = jwt.verify(token, env.JWT_SECRET) as {
       userId: string;
-      expireIn: number;
+      exp: number;
     };
 
-    if (decodedToken.expireIn < Date.now() / 1000) {
+    if (decodedToken.exp < Date.now() / 1000) {
       throw new Error("Token has expired!");
     }
 
