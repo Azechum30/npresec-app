@@ -411,7 +411,7 @@ export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
         (e) => `${e.path[0]}, ${e.message}`
       );
 
-      return { error: zodError };
+      return { errors: zodError };
     }
 
     const { data: studentData } = result.data;
