@@ -1,5 +1,4 @@
 "use server";
-import { getSession } from "@/lib/get-user";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { hasPermissions } from "@/lib/hasPermission";
 import { prisma } from "@/lib/prisma";
