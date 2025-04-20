@@ -1,5 +1,4 @@
 "use server";
-import "server-only";
 import { prisma } from "../prisma";
 import argon2 from "argon2";
 import { lucia } from "../lucia";
