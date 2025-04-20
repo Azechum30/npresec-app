@@ -1,0 +1,7 @@
+{
+  "name": "npresec-app",
+  "compatibility_date": "2025-04-20",
+  "assets": {
+    "directory": "./.next"
+  }
+}
