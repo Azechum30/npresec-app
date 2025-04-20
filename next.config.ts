@@ -2,7 +2,6 @@ import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 import { setupDevPlatform } from "@cloudflare/next-on-pages/next-dev";
 
-export const runtime = "edge";
 const nextConfig: NextConfig = {
   turbopack: {},
   eslint: {

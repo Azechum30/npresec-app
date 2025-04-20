@@ -8,6 +8,8 @@ import { DataTableSkeleton } from "@/components/customComponents/DataTable-Skele
 import { hasPermissions } from "@/lib/hasPermission";
 import { redirect } from "next/navigation";
 
+export const runtime = "edge";
+
 export default async function TeachersPage() {
   const permissions = await hasPermissions("view:teacher");
 

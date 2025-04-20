@@ -6,6 +6,8 @@ import GuardianInfoForm from "../forms/guardian-info-form";
 import PersonalInfoForm from "../forms/personal-info-form";
 import { useCurrentStep } from "../store";
 
+export const runtime = "edge";
+
 export default function StudentOnboardingPage() {
   const currentStep = useCurrentStep();
   return (
