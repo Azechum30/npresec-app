@@ -215,7 +215,7 @@ export const bulkCreateTeachers = async (values: BulkCreateTeachersType) => {
     await Promise.all(
       normalizedTeachers.map((teacher) =>
         sendMail({
-          to: ["azechum21@gmail.com"],
+          to: [teacher.email as string],
           data: {
             email: teacher.email as string,
             lastName: teacher.lastName,

@@ -1,6 +1,5 @@
 "use server";
 import "server-only";
-import { getSession } from "@/lib/get-user";
 import { prisma } from "@/lib/prisma";
 import { TeacherSelect } from "@/lib/types";
 import { TeacherSchema, TeacherType } from "@/lib/validation";
@@ -176,7 +175,7 @@ export const createTeacher = async (values: TeacherType) => {
     });
 
     await sendMail({
-      to: ["azechum21@gmail.com"],
+      to: [email as string],
       username: teacher.firstName,
       data: {
         lastName: teacher.lastName,

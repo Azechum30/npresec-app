@@ -21,7 +21,6 @@ import { Levels } from "@/lib/constants";
 import { status } from "@/lib/validation";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { sendMail } from "@/lib/resend-config";
-import { env } from "@/lib/server-only-actions/validate-env";
 import { Prisma } from "@prisma/client";
 import { StudentResponseType, StudentSelect } from "@/lib/types";
 import * as Sentry from "@sentry/nextjs";
@@ -194,7 +193,7 @@ export const createStudent = async (values: StudentType) => {
     });
     //TODO: Replace test email with student email when domain is verified!
     await sendMail({
-      to: [env.RESEND_TEST_EMAIL],
+      to: [email],
       username: student.lastName,
       data: {
         email: email,
@@ -558,7 +557,7 @@ export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
       //TODO replace with student email if domain is configured with resend;
 
       await sendMail({
-        to: [env.RESEND_TEST_EMAIL],
+        to: [student.email],
         username: student.lastName,
         data: {
           email: student.email,
