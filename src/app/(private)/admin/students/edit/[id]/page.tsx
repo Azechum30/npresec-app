@@ -8,6 +8,8 @@ type Params = {
   params: Promise<{ id: string }>;
 };
 
+export const dynamic = "force-dynamic";
+
 export const generateMetadata = async ({
   params,
 }: Params): Promise<Metadata> => {
