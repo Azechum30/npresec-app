@@ -7,7 +7,7 @@ import {
   StudentType,
 } from "@/lib/validation";
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 
 const customStorage = {
   getItem: (name: string) => {
