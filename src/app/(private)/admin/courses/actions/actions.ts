@@ -20,7 +20,7 @@ export const createCourse = async (values: CoursesType) => {
   try {
     const permission = await hasPermissions("create:course");
     if (!permission) {
-      throw new Error("Permission denied!");
+      return { error: "Permission denied!" };
     }
 
     const { error, success, data } = CoursesSchema.safeParse(values);
@@ -123,7 +123,12 @@ export const getCourses = async (codes?: string[]) => {
     const user = await getAuthUser();
 
     if (!user) {
-      throw new Error("User not found!");
+     return { error: "User not found!" };
+    }
+
+    const permission = await hasPermissions("view:teacher");
+    if (!permission) {
+      return { error: "Permission denied!" };
     }
 
     let query: Prisma.CourseWhereInput = {};
@@ -169,7 +174,7 @@ export const getCourse = async (id: string) => {
   try {
     const permission = await hasPermissions("view:teacher");
     if (!permission) {
-      throw new Error("Permission denied!");
+      return { error: "Permission denied!" };
     }
 
     const course = await prisma.course.findUnique({
@@ -190,7 +195,7 @@ export const updateCourse = async (values: CourseUpdateType) => {
   try {
     const permission = await hasPermissions("edit:course");
     if (!permission) {
-      throw new Error("Permission denied");
+      return { error: "Permission denied!" };
     }
 
     const { error, success, data } = CourseUpdateSchema.safeParse(values);
@@ -207,27 +212,30 @@ export const updateCourse = async (values: CourseUpdateType) => {
       }
     }
 
+    const {data: courseData, id } = data!
+
+    console.log( { ...courseData, id });
+
+
     const course = await prisma.course.update({
       where: {
-        id: data?.id,
+        id
       },
       data: {
-        ...data?.data,
-        departments: data?.data.departments
+        ...courseData,
+        departments: courseData.departments
           ? {
-              connect: data?.data.departments.map((departmentId) => ({
-                id: departmentId,
-              })),
+              set: courseData.departments.map(departmentId => ({id: departmentId}))
             }
           : undefined,
-        classes: data?.data.classes
+        classes: courseData.classes
           ? {
-              connect: data?.data.classes.map((classId) => ({ id: classId })),
+              set: courseData.classes.map((classId) => ({ id: classId })),
             }
           : undefined,
-        teachers: data?.data.teachers
+        teachers: courseData.teachers
           ? {
-              connect: data?.data.teachers.map((teacherId) => ({
+              set: courseData.teachers.map((teacherId) => ({
                 id: teacherId,
               })),
             }
@@ -253,7 +261,7 @@ export const updateCourse = async (values: CourseUpdateType) => {
           ? "Course code provided in your request already exists!"
           : targetFields.includes("title")
           ? "Course title provided already exist!"
-          : "An unknown error has occurered!";
+          : "An unknown error has occurred!";
 
         return { error: errorMessages };
       }
@@ -267,7 +275,7 @@ export const deleteCourse = async (id: string) => {
   try {
     const permission = await hasPermissions("delete:course");
     if (!permission) {
-      throw new Error("permission denied!");
+      return { error: "Permission denied!" };
     }
 
     const course = await prisma.course.delete({
@@ -291,7 +299,7 @@ export const bulkDeleteCourses = async (ids: string[]) => {
   try {
     const permission = await hasPermissions("delete:course");
     if (!permission) {
-      throw new Error("Permission denied!");
+      return { error: "Permission denied!" };
     }
 
     if (!Array.isArray(ids)) {
@@ -325,7 +333,7 @@ export const bulkUploadCourses = async (values: BulkUploadCoursesType) => {
     const permission = await hasPermissions("create:course");
 
     if (!permission) {
-      throw new Error("Permissions denied");
+      return { error: "Permission denied!" };
     }
 
     const unValidateData = {

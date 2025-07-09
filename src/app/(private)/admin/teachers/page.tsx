@@ -7,6 +7,11 @@ import TeacherBulkUploadProvider from "./components/TeacherBulkUploadProvider";
 import { DataTableSkeleton } from "@/components/customComponents/DataTable-Skeleton";
 import { hasPermissions } from "@/lib/hasPermission";
 import { redirect } from "next/navigation";
+import CreateTeacherDialog from "./components/CreateTeacherDialog";
+
+export const metadata = {
+  title: "Admin - Teachers",
+};
 
 export default async function TeachersPage() {
   const permissions = await hasPermissions("view:teacher");
@@ -44,6 +49,7 @@ export default async function TeachersPage() {
 
       <TeacherBulkUploadProvider />
       <EditTeacherDialog />
+      <CreateTeacherDialog />
     </>
   );
 }

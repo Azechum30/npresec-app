@@ -35,7 +35,7 @@ export default function CommandPalette() {
   return (
     <CommandDialog open={open} onOpenChange={onClose}>
       <CommandInput placeholder="Type A Command or Search..." />
-      <CommandList>
+      <CommandList className="scrollbar-thin">
         <CommandEmpty>No results found.</CommandEmpty>
         {links.map((link) => (
           <CommandGroup key={link.section} heading={link.section}>

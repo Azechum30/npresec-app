@@ -7,6 +7,7 @@ import { hasPermissions } from "@/lib/hasPermission";
 import { redirect } from "next/navigation";
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
 import EditDepartment from "./components/EditDepartment";
+import CreateDepartmentDialog from "./components/create-department-dialog";
 
 export default async function DepartmentPage() {
   const permissions = await hasPermissions("view:department");
@@ -42,6 +43,7 @@ export default async function DepartmentPage() {
       </Suspense>
       <DepartmentUploadProvider />
       <EditDepartment />
+      <CreateDepartmentDialog />
     </>
   );
 }

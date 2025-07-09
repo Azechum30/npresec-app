@@ -14,11 +14,11 @@ model User {
   password              String?
   roleId                String?
   resetPasswordRequired Boolean      @default(true)
-  role                  Role?        @relation(fields: [roleId], references: [id], onDelete: SetNull)
   picture               String?
-  teacher               Teacher?
-  student               Student?
   session               Session[]
+  student               Student?
+  teacher               Teacher?
+  role                  Role?        @relation(fields: [roleId], references: [id])
   permissions           Permission[] @relation("UserPermissions")
 
   @@index([roleId, email, username])
@@ -40,13 +40,13 @@ model Department {
   code        String    @unique
   description String?
   headId      String?   @unique
-  students    Student[]
-  classes     Class[]
-  courses     Course[]  @relation("CourseDepartments")
-  teachers    Teacher[] @relation("DepartmentTeachers")
-  head        Teacher?  @relation("Head", fields: [headId], references: [id], onDelete: SetNull)
   createdAt   DateTime  @default(now())
   updatedat   DateTime  @updatedAt
+  classes     Class[]
+  head        Teacher?  @relation("Head", fields: [headId], references: [id])
+  students    Student[]
+  teachers    Teacher[] @relation("DepartmentTeachers")
+  courses     Course[]  @relation("CourseDepartments")
 
   @@index([name, code])
   @@map("departments")
@@ -57,11 +57,6 @@ model Teacher {
   employeeId             String      @unique
   userId                 String?     @unique
   departmentId           String?
-  courses                Course[]    @relation("CourseTeachers")
-  classes                Class[]     @relation("ClassTeachers")
-  departmentHead         Department? @relation("Head")
-  user                   User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  department             Department? @relation("DepartmentTeachers", fields: [departmentId], references: [id], onDelete: SetNull)
   firstName              String
   lastName               String
   middleName             String?
@@ -76,6 +71,11 @@ model Teacher {
   ghcardNumber           String?     @unique
   phone                  String
   licencedNumber         String?     @unique
+  departmentHead         Department? @relation("Head")
+  department             Department? @relation("DepartmentTeachers", fields: [departmentId], references: [id])
+  user                   User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classes                Class[]     @relation("ClassTeachers")
+  courses                Course[]    @relation("CourseTeachers")
 
   @@index([employeeId, firstName, lastName, gender])
   @@map("teachers")
@@ -87,30 +87,31 @@ model Course {
   title       String       @unique
   description String?
   credits     Int?
-  grades      Grade[]
-  departments Department[] @relation("CourseDepartments")
-  teachers    Teacher[]    @relation("CourseTeachers")
-  classes     Class[]      @relation("ClassCourses")
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  grades      Grade[]
+  classes     Class[]      @relation("ClassCourses")
+  departments Department[] @relation("CourseDepartments")
+  teachers    Teacher[]    @relation("CourseTeachers")
 
   @@index([code, title])
   @@map("courses")
 }
 
 model Class {
-  id           String      @id @default(cuid())
-  name         String      @unique
-  code         String      @unique
-  level        Level       @default(Year_One)
+  id           String       @id @default(cuid())
+  name         String       @unique
+  code         String       @unique
+  level        Level        @default(Year_One)
   teacherId    String?
-  students     Student[]
-  courses      Course[]    @relation("ClassCourses")
-  teachers     Teacher[]   @relation("ClassTeachers")
   departmentId String?
-  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  attendance   Attendance[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  students     Student[]
+  courses      Course[]     @relation("ClassCourses")
+  teachers     Teacher[]    @relation("ClassTeachers")
 
   @@index([code, name])
   @@map("classes")
@@ -119,10 +120,10 @@ model Class {
 model Role {
   id          String       @id @default(cuid())
   name        String       @unique
-  users       User[]
-  permissions Permission[] @relation("RolePermissions")
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  users       User[]
+  permissions Permission[] @relation("RolePermissions")
 
   @@index([name])
   @@map("roles")
@@ -132,10 +133,10 @@ model Permission {
   id          String   @id @default(cuid())
   name        String   @unique
   description String?
-  roles       Role[]   @relation("RolePermissions")
-  users       User[]   @relation("UserPermissions")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  roles       Role[]   @relation("RolePermissions")
+  users       User[]   @relation("UserPermissions")
 
   @@index([name])
   @@map("permissions")
@@ -152,9 +153,6 @@ model Student {
   departmentId     String?
   userId           String?          @unique
   classId          String?
-  currentClass     Class?           @relation(fields: [classId], references: [id], onDelete: SetNull)
-  department       Department?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  user             User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
   dateEnrolled     DateTime         @default(now())
   graduationDate   DateTime?
   currentLevel     Level            @default(Year_One)
@@ -170,13 +168,15 @@ model Student {
   guardianRelation String
   previousSchool   String?
   admissionDate    DateTime         @default(now())
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  deletedAt        DateTime?
   attendance       Attendance[]
-  grades           Grade[]
   documents        Document[]
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  grades           Grade[]
+  currentClass     Class?           @relation(fields: [classId], references: [id])
+  department       Department?      @relation(fields: [departmentId], references: [id])
+  user             User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([departmentId, currentLevel])
   @@index([firstName, lastName, studentNumber])
@@ -185,12 +185,17 @@ model Student {
 }
 
 model Attendance {
-  id        String           @id @default(cuid())
-  date      DateTime
-  status    AttendanceStatus
-  studentId String?
-  student   Student?         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id           String           @id @default(cuid())
+  date         DateTime         @db.Date
+  status       AttendanceStatus
+  semester     Semester?
+  academicYear String?
+  studentId    String
+  classId      String
+  student      Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  class        Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
 
+  @@unique([studentId, date, classId])
   @@unique([studentId, date])
   @@map("attendance")
 }
@@ -198,12 +203,12 @@ model Attendance {
 model Grade {
   id        String   @id @default(cuid())
   courseId  String?
-  course    Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
   studentId String?
-  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
   score     Float
   semester  Semester
   year      Int
+  course    Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, courseId, semester, year])
   @@map("grades")
@@ -215,8 +220,8 @@ model Document {
   type       String
   url        String
   studentId  String?
-  student    Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
   uploadedAt DateTime @default(now())
+  student    Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@map("documents")
 }
@@ -228,7 +233,7 @@ enum Semester {
 
 enum AttendanceStatus {
   Present
-  Absence
+  Absent
   Late
   Excused
 }

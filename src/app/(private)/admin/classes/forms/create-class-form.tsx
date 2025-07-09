@@ -162,7 +162,7 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
             schema={ClassesSchema}
             data={departments}
             valueKey="id"
-            labekey="name"
+            selectedKey="name"
             placeholder="--Select department--"
           />
         )}

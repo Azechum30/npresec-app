@@ -1,6 +1,6 @@
 "use client";
 import {
-  BookOpen,
+  BookOpen, ClipboardList,
   GraduationCap,
   Home,
   LayoutDashboard,
@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { buttonVariants } from "../ui/button";
 import { useOpenSidebar } from "@/hooks/use-open-sidebar";
 import { useAuth } from "./SessionProvider";
-import LoadingState from "./Loading";
+
 
 export const Links = {
   ADMIN: [
@@ -36,6 +36,7 @@ export const Links = {
         { title: "Classes", href: "/admin/classes", icon: <LucideBuilding2 /> },
         { title: "Departments", href: "/admin/departments", icon: <Home /> },
         { title: "Courses", href: "/admin/courses", icon: <BookOpen /> },
+        {title: "Attendance", href: "/admin/attendance", icon: <ClipboardList />}
       ],
     },
   ],
@@ -92,12 +93,15 @@ export default function Sidebar() {
           className={cn(
             `${buttonVariants({
               variant: "outline",
-            })} backdrop-blur-sm w-fit md:w-full px-4 py-2 text-left justify-center md:justify-start flex gap-x-3 rounded-none items-center h-14 sticky top-0 left-0 z-30 border-0 border-b`
+            })} group backdrop-blur-sm w-fit md:w-full px-4 py-2 text-left justify-center md:justify-start flex gap-x-3 rounded-none items-center h-14 sticky top-0 left-0 z-30 border-0 border-b`
           )}>
-          <Avatar className="backdrop-blur-sm">
+          <div className="size-10 flex-shrink-0 flex items-center justify-center border-2 dark:group-hover:border-gray-600  rounded-full p-1.5 ">
+
+          <Avatar className="backdrop-blur-sm w-full h-full" >
             <AvatarImage src="/logo.png" />
             <AvatarFallback>NP</AvatarFallback>
           </Avatar>
+          </div>
           <h1 className="hidden md:block text-base font-semibold">NPRESEC</h1>
         </div>
         {links.map((link) => (
@@ -112,7 +116,7 @@ export default function Sidebar() {
                   title={innerLink.title}
                   href={innerLink.href}
                   icon={innerLink.icon}
-                  className="mt-1 p-4 md:px-4 lg:px-4 md:py-2 text-muted-foreground hover:text-inherit hover:bg-gray-300 dark:hover:bg-gray-800 text-sm rounded-full md:rounded-md first:mt-0"
+                  className="mt-1 p-4 md:px-4 lg:px-4 md:py-2 text-muted-foreground hover:text-inherit hover:bg-blue-100 dark:hover:bg-blue-800 text-sm rounded-full md:rounded-md first:mt-0"
                 />
               ))}
             </div>

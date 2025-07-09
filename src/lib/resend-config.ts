@@ -2,9 +2,9 @@ import { Resend } from "resend"
 import { env } from "./server-only-actions/validate-env"
 import { EmailTemplate } from "@/components/customComponents/email-template"
 import React from "react"
+import * as Sentry from "@sentry/nextjs"
 
-
-const resend = new Resend(env.RESEND_API_KEY)
+export const resend = new Resend(env.RESEND_API_KEY)
 
 type MailProps = {
 	to: string[]
@@ -21,7 +21,7 @@ export const sendMail = async ({ to, username, data }: MailProps) => {
 		const { error } = await resend.emails.send({
 			from: `Presby SHTS <${env.RESEND_FROM_EMAIL}>`,
 			to,
-			subject: "Welcome to Presby SHTS Managment Information System",
+			subject: "Onboarding",
 			react: React.createElement(EmailTemplate, {
 				firstName: username,
 				lastName: data.lastName,
@@ -34,11 +34,13 @@ export const sendMail = async ({ to, username, data }: MailProps) => {
 		})
 
 		if (error) {
-			throw error
+			return {error: error.message }
 		}
 
 		return { submitted: true }
 	} catch (error) {
-		throw error
+		Sentry.captureException(error)
+		console.error(error)
+		return {error: "Could not send email!"}
 	}
 }

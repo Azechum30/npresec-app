@@ -5,6 +5,7 @@ import { RowSelections } from "@/components/customComponents/RowSelections";
 import { GenericActions } from "@/components/customComponents/GenericActions";
 import { useDeleteStudent } from "../hooks/use-delete-student";
 import { GenericRowExpansion } from "@/components/customComponents/GenericRowExpansion";
+import Image from "next/image";
 
 export const useGetColumns = () => {
   const { deletestudent } = useDeleteStudent();
@@ -16,6 +17,21 @@ export const useGetColumns = () => {
       enableHiding: false,
       enablePinning: false,
       enableSorting: false,
+    },
+    {
+      header: "Avatar",
+      cell: ({row})=> {
+        const url = row.original.user?.picture
+        return <div className="size-8 rounded-full border border-orange-500 dark:border-orange-200 flex items-center justify-center">
+          <Image
+              src={url ? url: "/no-avatar.jpg"}
+              alt="Avatar"
+              width={20}
+              height={20}
+              className="size-6 rounded-full object-cover object-top"
+          />
+        </div>
+      }
     },
     {
       header: "ID",

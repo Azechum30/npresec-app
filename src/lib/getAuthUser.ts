@@ -1,7 +1,7 @@
+import { cache } from "react";
 import { getSession } from "./get-user";
 import { prisma } from "./prisma";
-
-export async function getAuthUser() {
+async function getUser() {
   const { user } = await getSession();
 
   if (!user) {
@@ -29,3 +29,5 @@ export async function getAuthUser() {
 
   return userWithRelations;
 }
+
+export const getAuthUser = cache(getUser);

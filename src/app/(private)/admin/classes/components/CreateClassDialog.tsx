@@ -39,7 +39,7 @@ export default function CreateClassDialog() {
       toast.error(res.prismaErrors?.join("\n"));
     } else {
       deleteData(values.code);
-      toast.error(res.error);
+      toast.error(res?.error);
     }
   };
 
@@ -47,7 +47,7 @@ export default function CreateClassDialog() {
     <Dialog
       open={dialogs["createClass"]}
       onOpenChange={() => onClose("createClass")}>
-      <DialogContent className="h-full w-full">
+      <DialogContent className="max-h-[85vh] overflow-auto w-full scrollbar-thin">
         <DialogHeader>
           <DialogTitle>Create a New Class</DialogTitle>
           <DialogDescription>

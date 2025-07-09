@@ -11,7 +11,7 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 import { cn } from "@/lib/utils";
-import { ZodSchema, z } from "zod";
+import { z } from "zod";
 import { isZodFieldRequired } from "@/lib/isZodFieldRequired";
 
 type InputWithLabelProps<T> = {
@@ -48,7 +48,8 @@ export default function InputWithLabel<T>({
             htmlFor={name}
             className={cn(
               "text-sm font-semibold",
-              isRequired && "flex items-center gap-1"
+              isRequired && "flex items-center gap-1",
+                className
             )}>
             {fieldTitle}
             {isRequired && <span className="text-red-500">*</span>}

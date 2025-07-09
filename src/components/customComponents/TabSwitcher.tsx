@@ -24,15 +24,16 @@ export default function TabSwitcher({
 				>
 					Sign In
 				</TabsTrigger>
-				<TabsTrigger
-					value='sign-up'
-					className='w-full text-base'
-				>
-					Sign Up
-				</TabsTrigger>
+				{/*<TabsTrigger*/}
+				{/*	value='sign-up'*/}
+				{/*	className='w-full text-base'*/}
+				{/*	disabled*/}
+				{/*>*/}
+				{/*	Sign Up*/}
+				{/*</TabsTrigger>*/}
 			</TabsList>
 			<TabsContent value='sign-in'>{signin}</TabsContent>
-			<TabsContent value='sign-up'>{signup}</TabsContent>
+			{/*<TabsContent value='sign-up'>{signup}</TabsContent>*/}
 		</Tabs>
 	);
 }

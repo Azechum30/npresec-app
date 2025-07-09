@@ -6,5 +6,5 @@ export const departmentTransformer = (department: DepartmentResponseType) => ({
   "Department Name": department.name,
   "Created Date": moment(department.createdAt).format("MM/DD/YYYY"),
   "Head of Department": `${department.head?.lastName} ${department.head?.firstName}`,
-  Classes: department.classes.map((cls) => cls.name).join(", "),
+  Classes: department.classes?.map((cls) => cls.name).join(", "),
 });

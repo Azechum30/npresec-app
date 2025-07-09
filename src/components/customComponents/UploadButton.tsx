@@ -8,8 +8,9 @@ const UploadButton: React.FC<{ className?: string }> = ({ className }) => {
   const { onOpen } = useGenericDialog();
   const pathname = usePathname().split("/").pop();
 
-  const dialogId =
-    pathname === "teachers" ? "bulkCreateTeachers" : "bulkCreateDepartments";
+  const dialogId = pathname + "-upload";
+
+  if(pathname === "attendance") return null;
   return (
     <Button
       variant="outline"

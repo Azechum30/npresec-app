@@ -14,13 +14,13 @@ import {
 } from "../ui/dropdown-menu";
 import LogoutButton from "./LogoutButton";
 import {
-  Check,
+  Check, Key,
   Laptop2,
   Loader2,
   Monitor,
   Moon,
-  Settings,
-  Sun,
+  Settings, Shield,
+  Sun, UsersRoundIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useAuth } from "./SessionProvider";
@@ -105,10 +105,40 @@ export default function UserButton() {
           </DropdownMenuPortal>
         </DropdownMenuSub>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="ps-5">
-          <Settings className="size-4 mr-3" />
-          Settings
-        </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full flex justify-start items-center text-sm">
+              <Settings className="size-5 mr-2" />
+              Settings
+            </Button>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                <Link className="flex items-center gap-1 w-full h-full hover:bg-muted p-2 rounded-md" href="/admin/users">
+                  <DropdownMenuItem>
+                    <UsersRoundIcon className="size-4 mr-2" />
+                    Manage Users
+                  </DropdownMenuItem>
+                </Link>
+                <DropdownMenuSeparator />
+                  <Link className="flex items-center gap-1 w-full h-full hover:bg-muted p-2 rounded-md" href="/admin/roles">
+                    <DropdownMenuItem>
+                      <Shield className="size-4 mr-2" />
+                        Manage Roles
+                    </DropdownMenuItem>
+                  </Link><DropdownMenuSeparator />
+                  <Link className="flex items-center gap-1 w-full h-full hover:bg-muted p-2 rounded-md" href="/admin/permissions">
+                    <DropdownMenuItem>
+                      <Key className="size-4 mr-2" />
+                        Manage Permissions
+                    </DropdownMenuItem>
+                  </Link>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSubTrigger>
+        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <LogoutButton />
       </DropdownMenuContent>

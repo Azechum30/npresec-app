@@ -11,11 +11,15 @@ import { sendMail } from "@/lib/resend-config";
 import { generatePassword } from "@/lib/generatePassword";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { hasPermissions } from "@/lib/hasPermission";
+import { uploadToCloudinary } from "@/utils/upload-to-cloudinary";
+
 
 export const createTeacher = async (values: TeacherType) => {
   try {
     const permissions = await hasPermissions("create:teacher");
-    if (!permissions) throw new Error("Unauthorized!");
+    if (!permissions) {
+      return {error: "Permission denied!"}
+    }
 
     const { data, error, success } = TeacherSchema.safeParse(values);
 
@@ -52,27 +56,41 @@ export const createTeacher = async (values: TeacherType) => {
       }
     }
 
-    const [existingTeacher, existingUser] = await prisma.$transaction([
-      prisma.teacher.findFirst({
-        where: {
-          OR: [
-            { employeeId: normalizedTeacher.employeeId },
-            { rgNumber: normalizedTeacher.rgNumber },
-            { ghcardNumber: normalizedTeacher.ghcardNumber },
-            { ssnitNumber: normalizedTeacher.ssnitNumber },
-            { licencedNumber: normalizedTeacher.licencedNumber },
-          ],
-        },
-      }),
-      prisma.user.findFirst({
-        where: {
-          OR: [
-            { email: normalizedTeacher.email },
-            { username: normalizedTeacher.username },
-          ],
-        },
-      }),
-    ]);
+    const [existingTeacher, existingUser, teacherRole] =
+      await prisma.$transaction([
+        prisma.teacher.findFirst({
+          where: {
+            OR: [
+              { employeeId: normalizedTeacher.employeeId },
+              { rgNumber: normalizedTeacher.rgNumber },
+              { ghcardNumber: normalizedTeacher.ghcardNumber },
+              { ssnitNumber: normalizedTeacher.ssnitNumber },
+              { licencedNumber: normalizedTeacher.licencedNumber },
+            ],
+          },
+        }),
+        prisma.user.findFirst({
+          where: {
+            OR: [
+              { email: normalizedTeacher.email },
+              { username: normalizedTeacher.username },
+            ],
+          },
+        }),
+
+        prisma.role.findFirst({
+          where: {
+            name: "teacher",
+          },
+          select: {
+            id: true,
+          },
+        }),
+      ]);
+
+    if (!teacherRole) {
+      return { error: "Teacher role not found!" }
+    }
 
     const errors: string[] = [];
     if (existingUser !== null) {
@@ -128,22 +146,41 @@ export const createTeacher = async (values: TeacherType) => {
       }),
     };
 
-    const { email, username, password, isDepartmentHead, ...rest } =
-      hashedTeacher;
+    if(normalizedTeacher.imageFile){
+      const secure_url = await uploadToCloudinary(normalizedTeacher.imageFile, "teachers")
+
+      if(secure_url){
+        normalizedTeacher.imageURL = secure_url;
+        delete normalizedTeacher["imageFile"]
+      }else{
+        delete normalizedTeacher["imageFile"]
+      }
+    }
+
+
+    const {
+      email,
+      username,
+      departmentId,
+      password,
+      isDepartmentHead,
+        imageURL,
+      ...rest
+    } = hashedTeacher;
 
     const teacher = await prisma.teacher.create({
       data: {
         ...rest,
-        departmentId: undefined,
-        department: rest.departmentId
+
+        department: departmentId
           ? {
-              connect: { id: rest.departmentId },
+              connect: { id: departmentId },
             }
           : undefined,
         departmentHead:
-          rest.departmentId && isDepartmentHead
+          departmentId && isDepartmentHead
             ? {
-                connect: { id: rest.departmentId },
+                connect: { id: departmentId },
               }
             : undefined,
         courses: rest.courses
@@ -161,12 +198,9 @@ export const createTeacher = async (values: TeacherType) => {
             email: email as string,
             username: username as string,
             password: password,
-            role: {
-              create: {
-                name: "teacher",
-              },
-            },
+            roleId: teacherRole.id,
             resetPasswordRequired: true,
+            picture: imageURL as string ?? undefined
           },
         },
       },
@@ -197,7 +231,9 @@ export const getTeachers = async (employeeIds?: string[]) => {
   try {
     const permission = await hasPermissions("view:teacher");
 
-    if (!permission) throw new Error("Unauthorized!");
+    if (!permission) {
+      return { error: "Permission denied!" };
+    }
 
     let query: Prisma.TeacherWhereInput = {};
 
@@ -224,7 +260,9 @@ export const getTeachers = async (employeeIds?: string[]) => {
 export const getTeacher = async (id: string) => {
   try {
     const permission = await hasPermissions("view:teacher");
-    if (!permission) throw new Error("Unauthorized");
+    if (!permission) {
+      return { error: "Permission denied!" };
+    }
 
     const teacher = await prisma.teacher.findUnique({
       where: { id },
@@ -244,9 +282,20 @@ export const getTeacher = async (id: string) => {
 export const updateTeacher = async (id: string, data: TeacherType) => {
   try {
     const permission = await hasPermissions("edit:teacher");
-    if (!permission) throw new Error("Unauthorized!");
+    if (!permission) {
+      return { error: "Permission denied!" };
+    }
 
-    const { email, username, ...rest } = TeacherSchema.parse(data);
+    const unvalidData = TeacherSchema.safeParse(data);
+
+    if(!unvalidData.success){
+      const zodErrors = unvalidData.error.errors.map(err=> `${err.path[0]}: ${err.message}`).join("\n");
+      return {
+        error: zodErrors
+      }
+    }
+
+    const { email, username, ...rest } = unvalidData.data;
 
     const normalizedTeacher = {
       ...rest,
@@ -271,7 +320,17 @@ export const updateTeacher = async (id: string, data: TeacherType) => {
       }
     }
 
-    const { isDepartmentHead, ...others } = normalizedTeacher;
+    if(normalizedTeacher.imageFile){
+      const secure_url = await uploadToCloudinary(normalizedTeacher.imageFile, "teachers")
+      if(secure_url){
+        normalizedTeacher.imageURL = secure_url;
+        delete normalizedTeacher["imageFile"]
+      }{
+        delete normalizedTeacher["imageFile"]
+      }
+    }
+
+    const { isDepartmentHead, imageURL, ...others } = normalizedTeacher;
 
     const updatedRecord = await prisma.teacher.update({
       where: {
@@ -293,18 +352,25 @@ export const updateTeacher = async (id: string, data: TeacherType) => {
             : undefined,
         courses: others.courses
           ? {
-              connect: others.courses.map((courseId) => ({
+              set: others.courses.map((courseId) => ({
                 id: courseId,
               })),
             }
           : undefined,
         classes: others.classes
           ? {
-              connect: others.classes.map((classId) => ({
+              set: others.classes.map((classId) => ({
                 id: classId,
               })),
             }
           : undefined,
+        user: {
+          update: {
+            email: email as string,
+            username: username as string,
+            picture: imageURL as string ?? undefined
+          },
+        },
       },
       select: TeacherSelect,
     });
@@ -339,7 +405,9 @@ export const updateTeacher = async (id: string, data: TeacherType) => {
 export const deleteTeacherRequest = async (id: string) => {
   try {
     const permission = await hasPermissions("delete:teacher");
-    if (!permission) throw new Error("Unauthorized!");
+    if (!permission) {
+      return { error: "Permission denied!" };
+    }
 
     const teacherWithUserId = await prisma.teacher.findFirst({
       where: {
@@ -371,7 +439,9 @@ export const deleteTeacherRequest = async (id: string) => {
 export const bulkDeleteTeachers = async (rows: string[]) => {
   try {
     const permission = await hasPermissions("delete:teacher");
-    if (!permission) throw new Error("Unauthorized!");
+    if (!permission) {
+      return { error: "Permission denied!" };
+    }
 
     const teachersWithUserIds = await prisma.teacher.findMany({
       where: {

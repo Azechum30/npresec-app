@@ -17,7 +17,7 @@ export default function Navbar() {
 		},
 		{
 			title: "Login",
-			href: "/authenticate"
+			href: "/sign-in"
 		}
 	];
 	return (

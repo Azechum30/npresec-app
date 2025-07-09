@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useGenericDialog } from "../../../../../hooks/use-open-create-teacher-dialog";
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import CreateTeacherForm from "./forms/create-teacher-form";
 import { TeacherType } from "@/lib/validation";
 import { createTeacher } from "../actions/server";
@@ -42,7 +42,7 @@ export default function CreateTeacherDialog() {
     <Dialog
       open={dialogs["createTeacher"]}
       onOpenChange={() => onClose("createTeacher")}>
-      <DialogContent className="w-full md:max-w-2xl h-full">
+      <DialogContent className="w-full md:max-w-2xl max-h-[85vh] overflow-auto scrollbar-thin">
         <DialogHeader>
           <DialogTitle>Create New Teacher Profile</DialogTitle>
           <DialogDescription>

@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useGenericDialog } from "../../../../../hooks/use-open-create-teacher-dialog";
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import CreateCourseForm from "../forms/create-course";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -40,7 +40,7 @@ export default function CreateCourseDialog() {
       <Dialog
         open={dialogs["createCourse"]}
         onOpenChange={() => onClose("createCourse")}>
-        <DialogContent className="w-full h-full">
+        <DialogContent className="w-full max-h-[85vh] overflow-auto scrollbar-thin">
           <DialogHeader>
             <DialogTitle>Create a New Course</DialogTitle>
             <DialogDescription>

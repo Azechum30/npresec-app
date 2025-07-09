@@ -22,10 +22,10 @@ export default function StudentRowDetail({ row }: StudentRowDetailProps) {
   const { original } = row;
 
   return (
-    <div className="p-6 md:p-8 bg-gradient-to-br from-white via-blue-50 to-blue-100 dark:from-neutral-900 dark:via-neutral-900 dark:to-blue-950 rounded-2xl shadow-xl border border-gray-200 dark:border-neutral-800">
+    <div className="p-6 md:p-8 bg-gradient-to-br from-white via-orange-50 to-orange-100 dark:from-neutral-900 dark:via-neutral-900 dark:to-orange-950 rounded-2xl shadow-xl border border-gray-200 dark:border-neutral-800">
       {/* Header */}
       <div className="flex items-center gap-6 mb-8">
-        <div className="flex-shrink-0 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full w-20 h-20 flex items-center justify-center text-white text-4xl font-extrabold shadow-lg border-4 border-white dark:border-neutral-900">
+        <div className="flex-shrink-0 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full w-20 h-20 flex items-center justify-center text-white text-4xl font-extrabold shadow-lg border-4 border-white dark:border-neutral-900">
           {original.firstName[0]}
           {original.lastName[0]}
         </div>
@@ -34,7 +34,7 @@ export default function StudentRowDetail({ row }: StudentRowDetailProps) {
             {original.lastName} {original.firstName}
           </h2>
           <div className="flex items-center gap-2 mt-1">
-            <User className="w-5 h-5 text-blue-500" />
+            <User className="w-5 h-5 text-orange-500" />
             <span className="text-base text-gray-600 dark:text-gray-300 font-mono">
               {original.studentNumber}
             </span>
@@ -78,7 +78,7 @@ export default function StudentRowDetail({ row }: StudentRowDetailProps) {
             <li className="flex items-center gap-3">
               <BookOpen className="w-5 h-5 text-purple-400" />
               <span className="font-medium">Level:</span>
-              <span>{original.currentLevel}</span>
+              <span>{original.currentLevel.split("_").join(" ")}</span>
             </li>
             <li className="flex items-center gap-3">
               <Calendar className="w-5 h-5 text-yellow-400" />

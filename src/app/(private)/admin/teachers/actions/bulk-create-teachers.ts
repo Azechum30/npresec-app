@@ -73,7 +73,7 @@ export const bulkCreateTeachers = async (values: BulkCreateTeachersType) => {
       (teacher) => teacher.departmentId
     );
 
-    const [existingUsers, existingTeachers, existingDepartments] =
+    const [existingUsers, existingTeachers, existingDepartments, teacherRole] =
       await prisma.$transaction([
         prisma.user.findMany({
           where: {
@@ -101,7 +101,15 @@ export const bulkCreateTeachers = async (values: BulkCreateTeachersType) => {
             name: { in: departments as string[] },
           },
         }),
+        prisma.role.findFirst({
+          where: { name: "teacher" },
+          select: { id: true },
+        }),
       ]);
+
+    if (!teacherRole) {
+      throw new Error("Teacher role not found!");
+    }
 
     if (existingUsers.length > 0) {
       existingUsers.forEach((user) => {
@@ -200,11 +208,7 @@ export const bulkCreateTeachers = async (values: BulkCreateTeachersType) => {
                 username: teacher.username as string,
                 password: teacher.password,
                 resetPasswordRequired: true,
-                role: {
-                  create: {
-                    name: "teacher",
-                  },
-                },
+                roleId: teacherRole.id,
               },
             },
           },

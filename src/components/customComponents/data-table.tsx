@@ -91,7 +91,7 @@ const DataTable = <TData,>({
           {table.getHeaderGroups().map((headerGroups) => (
             <TableRow key={headerGroups.id} className="bg-secondary">
               {headerGroups.headers.map((header) => (
-                <TableHead key={header.id} className="text-center">
+                <TableHead key={header.id}>
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -109,7 +109,7 @@ const DataTable = <TData,>({
               <React.Fragment key={row.id}>
                 <TableRow>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="text-center">
+                    <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

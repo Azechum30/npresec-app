@@ -7,6 +7,10 @@ import { StudentDataTable } from "./components/render-student-datatable";
 import { getStudents } from "./actions/action";
 import StudentProvider from "./components/StudentProvider";
 
+export const metadata = {
+  title: "Admin - Students",
+};
+
 export default async function StudentsPage() {
   const promise = getStudents();
   return (

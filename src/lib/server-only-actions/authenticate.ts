@@ -3,7 +3,7 @@ import "server-only";
 import { prisma } from "../prisma";
 import argon2 from "argon2";
 import { lucia } from "../lucia";
-import { cookies } from "next/headers";
+import {cookies, headers} from "next/headers";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import {
@@ -12,11 +12,15 @@ import {
   SignInType,
   SignInSchema,
   ResetPasswordType,
-  ResetPasswordSchema,
+  ResetPasswordSchema, ForgotPasswordType,
+    ForgotPasswordSchema
 } from "../validation";
 import { getSession } from "../get-user";
 import { generateToken, verifyToken } from "../jwt";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";
+import * as Sentry from "@sentry/nextjs"
+import {rateLimit} from "@/utils/rateLimit";
+import {sendResetPasswordEmail} from "@/utils/reset-password-email";
 
 export const signUpAction = async (data: SignUpType) => {
   try {
@@ -48,7 +52,7 @@ export const signUpAction = async (data: SignUpType) => {
       return { success: false, error: "Role not found!" };
     }
 
-    const hashedPassowrd = await argon2.hash(password, {
+    const hashedPassword = await argon2.hash(password, {
       type: argon2.argon2id,
     });
 
@@ -56,7 +60,7 @@ export const signUpAction = async (data: SignUpType) => {
       data: {
         username: username,
         email: email.toLowerCase(),
-        password: hashedPassowrd,
+        password: hashedPassword,
         resetPasswordRequired: false,
         roleId: role.id,
       },
@@ -77,6 +81,7 @@ export const signUpAction = async (data: SignUpType) => {
   } catch (error) {
     if (isRedirectError(error)) throw error;
     console.error(error);
+    Sentry.captureException(error)
     return { success: false, error: "Something went wrong!" };
   }
 };
@@ -135,6 +140,7 @@ export const signInAction = async (
   } catch (error) {
     if (isRedirectError(error)) throw error;
     console.error(error);
+    Sentry.captureException(error)
     return { error: "Something went wrong!" };
   }
 };
@@ -158,6 +164,15 @@ export const logOut = async () => {
 
 export const resetPasswordAction = async (values: ResetPasswordType) => {
   try {
+
+    const ip = (await headers()).get("x-forwarded-for") ?? "127.0.0.1"
+    const {success} = await rateLimit.limit(ip);
+
+    if(!success){
+      return {error: "Too many requests. Please try again later!"}
+    }
+
+
     const validData = ResetPasswordSchema.safeParse(values);
     let zodErrors = {};
     if (!validData.success) {
@@ -180,7 +195,19 @@ export const resetPasswordAction = async (values: ResetPasswordType) => {
       return { error: "Invalid token or token has expired!" };
     }
 
-    const hashedPassowrd = await argon2.hash(
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      }
+    })
+
+    const isPasswordMatch = await argon2.verify(user?.password as string, validData.data?.password);
+
+    if(isPasswordMatch){
+      return { error: "New password cannot be the same as the old password!" };
+    }
+    const hashedPassword = await argon2.hash(
       validData.data?.password as string
     );
 
@@ -189,7 +216,7 @@ export const resetPasswordAction = async (values: ResetPasswordType) => {
         id: userId,
       },
       data: {
-        password: hashedPassowrd,
+        password: hashedPassword,
         resetPasswordRequired: false,
       },
     });
@@ -207,8 +234,56 @@ export const resetPasswordAction = async (values: ResetPasswordType) => {
     } else if (error instanceof JsonWebTokenError) {
       return { error: "Invalid token. Please request reset link" };
     } else {
-      console.error("Something an error occured in resetPasswordAction", error);
+      Sentry.captureException(error);
+      console.error("An error occurred in resetting your password:", error);
       return { error: "something went wrong!" };
     }
   }
 };
+
+
+export const forgotPasswordActions = async (value: ForgotPasswordType)=>{
+  try {
+
+    const ip = (await headers()).get("x-forwarded-for") ?? "127.0.0.1"
+    const {success} = await rateLimit.limit(ip);
+    if(!success){
+      return {error: "Too many requests. Please try again later!"}
+    }
+
+    const validData = ForgotPasswordSchema.safeParse(value);
+    if(!validData.success){
+      const zodError = validData.error.errors.map((e:any)=> `${e.path[0]}, ${e.message}`)
+
+      return {error: zodError}
+    }
+
+    const user = await prisma.user.findFirst({
+      where:{
+        email: validData.data.email.toLowerCase()
+      }
+    })
+
+    if(!user){
+      return {error: "User not found!"}
+    }
+
+    const token = generateToken(user.id);
+    const resetPasswordUrl = `${process.env.NEXT_PUBLIC_URL}/password-reset?token=${token}`
+
+    const emailResponse = await sendResetPasswordEmail({
+      to: user.email,
+      url: resetPasswordUrl
+    })
+
+    if(emailResponse.error){
+      return {error: emailResponse.error}
+    }
+
+    return {success: true}
+  }catch(error){
+    Sentry.captureException(error)
+    console.error("An error occurred in resetting your password:", error);
+    return { error: "something went wrong!" };
+  }
+}

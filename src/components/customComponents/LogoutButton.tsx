@@ -21,7 +21,7 @@ export default function LogoutButton() {
 
   useEffect(() => {
     if (state.success) {
-      router.push("/authenticate");
+      router.push("/sign-in");
     }
   }, [state, router]);
 

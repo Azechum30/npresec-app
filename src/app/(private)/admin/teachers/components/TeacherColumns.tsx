@@ -7,6 +7,7 @@ import { useDeleteTeacher } from "../hooks/use-delete-teacher";
 import { RowSelections } from "@/components/customComponents/RowSelections";
 import { GenericRowExpansion } from "@/components/customComponents/GenericRowExpansion";
 import { GenericColumnSorting } from "@/components/customComponents/GenericColumnSorting";
+import Image from "next/image";
 
 export const useGetTeacherColumns = () => {
   const { deleteTeacher } = useDeleteTeacher();
@@ -22,6 +23,21 @@ export const useGetTeacherColumns = () => {
       enableColumnFilter: false,
     },
     {
+      header: "Avatar",
+      cell:({row})=>{
+        const url = row.original.user?.picture;
+        return <div className="rounded-full border border-orange-300 dark:border-orange-200 flex items-center justify-center size-8">
+          <Image
+              src={url ? url : '/no-avatar.jpg'}
+              alt="/Avatar"
+              width={30}
+              height={30}
+              className="rounded-full object-cover size-6 object-top"
+          />
+        </div>
+      }
+    },
+    {
       header: "EmployeeID",
       accessorKey: "employeeId",
     },
@@ -31,12 +47,7 @@ export const useGetTeacherColumns = () => {
       ),
       accessorKey: "firstName",
     },
-    {
-      header: ({ column }) => (
-        <GenericColumnSorting isHeader column={column} title="MiddleName" />
-      ),
-      accessorKey: "middleName",
-    },
+
     {
       header: ({ column }) => (
         <GenericColumnSorting isHeader column={column} title="LastName" />

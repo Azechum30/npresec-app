@@ -15,6 +15,11 @@ import { cn } from "@/lib/utils";
 type DatePickerWithLabelProps<T> = {
   name: keyof T & string;
   fieldTitle: string;
+  startDate?: number;
+  endDate?: number;
+  fromMonth?: number;
+  restrictToCurrentDay?: boolean;
+  disable?: boolean;
   schema?: z.ZodSchema<T>;
 } & InputHTMLAttributes<HTMLButtonElement>;
 
@@ -22,6 +27,10 @@ export default function DatePickerWithLabel<T>({
   name,
   fieldTitle,
   schema,
+    startDate,
+    endDate,
+    fromMonth, restrictToCurrentDay,
+    disable
 }: DatePickerWithLabelProps<T>) {
   const form = useFormContext();
 
@@ -51,7 +60,16 @@ export default function DatePickerWithLabel<T>({
             {isRequired && <span className="text-red-500">*</span>}
           </FormLabel>
           <FormControl>
-            <DatePicker id={name} date={field.value} setDate={field.onChange} />
+            <DatePicker
+                id={name}
+                date={field.value}
+                setDate={field.onChange}
+                startYear={startDate}
+                endYear={endDate}
+                fromMonth={fromMonth}
+                restrictToCurrentDay={restrictToCurrentDay}
+                disable={disable}
+            />
           </FormControl>
           <FormMessage />
         </FormItem>

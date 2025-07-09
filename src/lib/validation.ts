@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { optional, z } from "zod";
 
 const optionalField = <T extends z.ZodTypeAny>(schema: T) =>
   schema.optional().describe("isOptional:true");
@@ -77,7 +77,19 @@ const optionalDate = optionalField(z.union([z.date(), z.string()]).nullish());
 const requiredEmail = z
   .string({ required_error: "This field is required!" })
   .email("You must enter a valid email address");
-const optionalEmail = optionalField(z.string().email().nullish());
+const optionalEmail = z
+    .string()
+    .min(0) // Allow empty string
+    .email("Invalid email address")
+    .or(z.literal("")) // Explicitly allow empty string
+    .transform(val => val === "" ? undefined : val) // Convert to undefined
+    .nullish()
+    .refine(
+        val => val === undefined || val === null || val.includes("@"),
+        {
+          message: "Invalid email address",
+        }
+    );
 const requiredUserName = z
   .string({ required_error: "This field is required!" })
   .regex(
@@ -88,13 +100,13 @@ const requiredPhoneNumber = z
   .string({ required_error: "phone number is required!" })
   .regex(/^[0-9]+$/, "Must be a valid number");
 const registerNumberType = z
-  .string()
-  .regex(/^[0-9\/]+$/, "Can only accept numbers and a forward slash")
-  .optional()
-  .nullable();
+    .string()
+    .regex(/^[0-9\/]*$/, "Can only accept numbers and a forward slash")
+    .transform(val => val === "" ? undefined : val)
+    .nullish();
 const ghanaCardType = z
   .string()
-  .regex(/^[GHA-\d{9}-\d$]/, "Invalid Ghana card number")
+  .regex(/^GHA-\d{9}-\d$/, "Invalid Ghana card number")
   .optional()
   .nullable();
 
@@ -120,6 +132,8 @@ export const TeacherSchema = z.object({
   courses: z.array(z.string()).optional(),
   classes: z.array(z.string()).optional(),
   isDepartmentHead: z.boolean().optional(),
+  imageURL: optionalString,
+  imageFile: optionalField(z.instanceof(File).nullish()),
 });
 
 export type TeacherType = z.infer<typeof TeacherSchema>;
@@ -138,7 +152,7 @@ export const BulkCreateTeachersSchema = z.object({
 export type BulkCreateTeachersType = z.infer<typeof BulkCreateTeachersSchema>;
 
 /**
- * Schema and Typescript type Definition for Classes
+ * Schema and TypeScript type Definition for Classes
  */
 
 export const grades = ["Year_One", "Year_Two", "Year_Three"] as const;
@@ -320,3 +334,84 @@ export type GuardianInfoType = z.infer<typeof GuardianInfoSchema>;
 export type StudentType = z.infer<typeof StudentSchema>;
 export type EditStudentType = z.infer<typeof EditStudentSchema>;
 export type BulkCreateStudentsType = z.infer<typeof BulkCreateStudentsSchema>;
+
+// Forgot Password Schema
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email("Email is required!"),
+});
+
+export type ForgotPasswordType = z.infer<typeof ForgotPasswordSchema>;
+
+
+// Attendance Schema
+
+export const attendanceStatus = ["Present", "Absent", "Late", "Excused"] as const ;
+const corcedDate = z.coerce.date({
+  errorMap: (issue, ctx)=>{
+    if(issue.code === z.ZodIssueCode.invalid_date){
+      return {message: "Invalid date format provided"}
+    }
+    return {message: ctx.defaultError}
+  }
+})
+export const AttendanceSchema = z.object({
+  studentId: z.string().min(1, "Student ID cannot be empty"),
+  status: z.enum(attendanceStatus),
+});
+
+export type AttendanceType = z.infer<typeof AttendanceSchema>;
+
+
+export const BulkAttendanceSchema = z.object({
+  classId: z.string().min(1, "Class ID cannot be empty"),
+  date: corcedDate,
+  semester: z.string().min(1, "Semester cannot be empty"),
+  studentEntries: z.array(AttendanceSchema).nonempty("At least one student must be marked present")
+})
+
+export type BulkAttendanceType = z.infer<typeof BulkAttendanceSchema>;
+
+export const SingleStudentAttendanceSchema = z.object({
+  semester: z.string().min(1, "Semester cannot be empty"),
+  date: corcedDate,
+  classId: z.string().min(1, "Class ID cannot be empty"),
+  ...AttendanceSchema.shape
+})
+
+export const EditSingleStudentAttendanceSchema = z.object({
+  id: z.string().min(1, "Id must must have a minimum character of 1"),
+  data: SingleStudentAttendanceSchema
+})
+
+export type EditSingleStudentAttendanceType = z.infer<typeof EditSingleStudentAttendanceSchema>
+
+export type SingleStudentAttendance = z.infer<typeof SingleStudentAttendanceSchema>;
+
+
+export const RoleSchema = z.object({
+  name: z.string().min(1, "Role name cannot be empty"),
+  permissions: z.array(z.string()).default([]).refine(val => val.length > 0, {
+    message: "At least one permission is required!"
+  })
+});
+
+export type RoleType = z.infer<typeof RoleSchema>;
+
+export const UpdateRoleSchema = z.object({
+  id: z.string().min(1, "Role ID is required"),
+  data: z.object({...RoleSchema.shape})
+});
+
+export type UpdateRoleType = z.infer<typeof UpdateRoleSchema>;
+
+
+export const PermissionSchema = z.object({
+    permissions: z.array(
+        z.object({
+            name: z.string().min(1, "Permission name cannot be empty"),
+            description: z.string().optional()
+        })
+    ).min(1, "At least one permission is required!")
+})
+
+export type PermissionType = z.infer<typeof PermissionSchema>;

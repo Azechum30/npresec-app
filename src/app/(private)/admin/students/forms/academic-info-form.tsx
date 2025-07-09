@@ -118,7 +118,7 @@ export default function AcademicInfoForm() {
               fieldTitle="Assigned Class"
               data={classes}
               valueKey="id"
-              labekey="name"
+              selectedKey="name"
               schema={AcademicInfoSchema}
               placeholder="--Select class--"
             />
@@ -129,7 +129,7 @@ export default function AcademicInfoForm() {
               fieldTitle="Assigned Department"
               data={departments}
               valueKey="id"
-              labekey="name"
+              selectedKey="name"
               schema={AcademicInfoSchema}
               placeholder="--Select department--"
             />
@@ -142,7 +142,7 @@ export default function AcademicInfoForm() {
               fieldTitle="Current Level"
               data={levels}
               valueKey="id"
-              labekey="name"
+              selectedKey="name"
               schema={AcademicInfoSchema}
               placeholder="--Select current level--"
             />
@@ -153,7 +153,7 @@ export default function AcademicInfoForm() {
               fieldTitle="Enrollement Status"
               data={statuses}
               valueKey="id"
-              labekey="name"
+              selectedKey="name"
               schema={AcademicInfoSchema}
               placeholder="--Select current enrollemt status--"
             />

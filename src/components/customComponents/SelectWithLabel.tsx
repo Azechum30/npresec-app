@@ -27,7 +27,7 @@ type SelectWithLabelProps<T, U = any> = {
   schema?: z.ZodSchema<any>;
   data: U[];
   valueKey?: keyof U;
-  labekey?: keyof U;
+  selectedKey?: keyof U;
 } & React.ComponentPropsWithRef<typeof Select>;
 
 export default function SelectWithLabel<T>({
@@ -38,7 +38,7 @@ export default function SelectWithLabel<T>({
   schema,
   data,
   valueKey = "value",
-  labekey = "label",
+  selectedKey = "label",
   ...props
 }: SelectWithLabelProps<T>) {
   const form = useFormContext();
@@ -64,14 +64,15 @@ export default function SelectWithLabel<T>({
             htmlFor={name}
             className={cn(
               "text-sm font-semibold",
-              isRequired && "flex items-center gap-1"
+              isRequired && "flex items-center gap-1",
+                className
             )}>
             {fieldTitle}
             {isRequired && <span className="text-red-500">*</span>}
           </FormLabel>
           <FormControl>
             <Select defaultValue={field.value} onValueChange={field.onChange}>
-              <SelectTrigger className={className}>
+              <SelectTrigger className={cn("text-muted-foreground", field.value && "text-foreground")} {...props}>
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
               <SelectContent>
@@ -86,7 +87,7 @@ export default function SelectWithLabel<T>({
 
                   if (typeof val === "object" && typeof val !== null) {
                     const value = String(val[valueKey] as keyof typeof val);
-                    const label = String(val[labekey] as keyof typeof val);
+                    const label = String(val[selectedKey] as keyof typeof val);
                     return (
                       <SelectItem key={value} value={value}>
                         {label}

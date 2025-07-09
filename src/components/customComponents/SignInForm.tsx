@@ -17,6 +17,9 @@ import { useTransition } from "react"
 import LoadingButton from "./LoadingButton"
 import PasswordInputWithLabel from "./PasswordInputWithLabel"
 import { useRouter } from "next/navigation"
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
+import Link from "next/link";
+import { Separator } from "@/components/ui/separator";
 
 export default function SignInForm() {
 	const form = useForm<SignInType>({
@@ -42,17 +45,24 @@ export default function SignInForm() {
 		})
 	}
 	return (
-		<Card className='w-full max-w-md'>
+		<Card className='w-full h-full max-w-md shadow-2xl hover:shadow-lg transition-shadow duration-300 rounded-none flex flex-col items-center justify-center bg-inherit '>
 			<CardHeader>
-				<CardTitle className='leading-normal mb-2'>
-					Welcome to Nakpanduri Presby SHTS Management Information
-					System
+			<div className=" border-2 rounded-full p-3 size-28 flex justify-center items-center mx-auto ">
+				<Avatar className="w-full h-full">
+					<AvatarImage src="/logo.png" />
+					<AvatarFallback className="font-bold text-4xl bg-background -tracking-widest">NP</AvatarFallback>
+				</Avatar>
+			</div>
+				<CardTitle className=' text-xl uppercase leading-normal mb-2 text-center'>
+					Nakpanduri Presby SHTS (MIS)
 				</CardTitle>
-				<CardDescription>
-					Kindly log into your account to continue exporing the school
-					management information system!
+				<CardDescription className=" w-full flex items-center justify-center gap-4 overflow-clip">
+					<Separator  />
+					<span className="flex-1 whitespace-nowrap">Log into your account</span>
+					<Separator  />
 				</CardDescription>
-				<CardContent className='space-y-2 px-0 pt-4'>
+			</CardHeader>
+				<CardContent className='space-y-2'>
 					<Form {...form}>
 						<form
 							onSubmit={form.handleSubmit(onSubmit)}
@@ -62,12 +72,16 @@ export default function SignInForm() {
 								<InputWithLabel<SignInType>
 									name='email'
 									fieldTitle='Email'
+									className="font-normal"
+									schema={SignInSchema}
 								/>
 							</div>
 							<div>
 								<PasswordInputWithLabel<SignInType>
 									name='password'
 									fieldTitle='Password'
+									className="font-normal"
+									schema={SignInSchema}
 								/>
 							</div>
 							<div>
@@ -75,10 +89,13 @@ export default function SignInForm() {
 									Login
 								</LoadingButton>
 							</div>
+							<div className="text-xs text-muted-foreground text-center">
+								Forgot your password? {" "}
+								<Link className="text-blue-400" href="/forgot-password">Reset your password here</Link>
+							</div>
 						</form>
 					</Form>
 				</CardContent>
-			</CardHeader>
 		</Card>
 	)
 }

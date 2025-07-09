@@ -63,6 +63,7 @@ export const TeacherSelect = {
       id: true,
       username: true,
       email: true,
+      picture: true
     },
   },
 } satisfies Prisma.TeacherSelect;
@@ -189,6 +190,7 @@ export const StudentSelect = {
       email: true,
       id: true,
       username: true,
+      picture: true,
     },
   },
   guardianName: true,
@@ -207,4 +209,70 @@ export const StudentSelect = {
 
 export type StudentResponseType = Prisma.StudentGetPayload<{
   select: typeof StudentSelect;
+}>;
+
+
+export const AttendanceSelect ={
+  id: true,
+  status: true,
+  classId: true,
+  date: true,
+  academicYear: true,
+  semester: true,
+  class: {
+    select:{
+      id: true,
+      name: true,
+    }
+  },
+  student: {
+    select:{
+      id: true,
+      firstName: true,
+      lastName: true,
+      studentNumber: true,
+      user: {
+        select:{
+          picture: true,
+        }
+      }
+    }
+  }
+}satisfies Prisma.AttendanceSelect;
+
+export type AttendanceResponseType = Prisma.AttendanceGetPayload<{
+  select: typeof AttendanceSelect;
+}>;
+
+
+export const RolesSelect = {
+  id: true,
+  name: true,
+  permissions: {
+    select:{
+      id: true,
+      name: true,
+      description:true
+    }
+  }
+} satisfies Prisma.RoleSelect;
+
+export type RolesResponseType = Prisma.RoleGetPayload<{
+  select: typeof RolesSelect;
+}>;
+
+
+export const PermissionSelect = {
+  id: true,
+  name: true,
+  description: true,
+  roles: {
+    select:{
+      name: true,
+    }
+  }
+} satisfies Prisma.PermissionSelect;
+
+export type PermissionResponseType = Prisma.PermissionGetPayload<{
+  select: typeof PermissionSelect;
 }>;

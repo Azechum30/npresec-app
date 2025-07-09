@@ -127,11 +127,11 @@ export default function TeacherRowDetail({ row }: TeacherRowDetailProp) {
               </div>
               <div className="text-sm text-muted-foreground">
                 <span className=" font-semibold">Assigned Classes:</span>{" "}
-                {row.original.classes.map((classItem) => (
-                  <ul className="px-8 list-disc" key={classItem.id}>
-                    <li>{classItem.name}</li>
-                  </ul>
+                  <ul className="px-8 list-disc">
+                {row.original.classes.map((classItem,index) => (
+                    <li key={`${index}-${classItem.id}`}>{classItem.name}</li>
                 ))}
+                  </ul>
               </div>
             </div>
           </div>

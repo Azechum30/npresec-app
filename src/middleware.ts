@@ -10,7 +10,7 @@ export async function middleware(request: NextRequest) {
     "/",
     "/about",
     "/contact",
-    "/authenticate",
+    "/sign-in",
     "/register",
   ];
   const isPublicRoute = publicRoutes.some((route) =>
@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
 
   // 2. If no cookie, redirect to the login page
   if (!authCookie) {
-    return NextResponse.redirect(new URL("/authenticate", request.url));
+    return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
   // 3. Call auth validation API
@@ -39,7 +39,7 @@ export async function middleware(request: NextRequest) {
   // 4. Handle failed validation
   if (!authResponse.ok) {
     console.error("Auth validation failed:", authResponse.statusText);
-    return NextResponse.redirect(new URL("/authenticate", request.url));
+    return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
   // 5. Check role-based access

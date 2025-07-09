@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { CourseResponseType } from "@/lib/types";
 import { useEffect, useState, useTransition } from "react";
-import { useGenericDialog } from "../../../../../hooks/use-open-create-teacher-dialog";
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { deleteCourse, getCourse, updateCourse } from "../actions/actions";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -20,12 +20,12 @@ import { buttonVariants } from "@/components/ui/button";
 import { useCourseStore } from "@/hooks/use-generic-store";
 import { CoursesType } from "@/lib/validation";
 
-type CourseDetailtype = Omit<
+type CourseDetailType = Omit<
   CourseResponseType,
   "departments" | "classes" | "teachers"
 >;
 
-interface FinalCourseDetail extends CourseDetailtype {
+interface FinalCourseDetail extends CourseDetailType {
   departments: string[];
   classes: string[];
   teachers: string[];
@@ -54,7 +54,7 @@ const EditCourseDialog = () => {
 
     if (id) {
       setCourse(undefined);
-      fetchCourse();
+      fetchCourse().then((value)=>console.log(value));
     }
   }, [id]);
 
@@ -103,7 +103,7 @@ const EditCourseDialog = () => {
         open={dialogs["editCourse"]}
         onOpenChange={() => onClose("editCourse")}>
         {course ? (
-          <DialogContent className="w-full h-full">
+          <DialogContent className="w-full max-h-[85vh] overflow-auto scrollbar-thin">
             <DialogHeader>
               <DialogTitle>Edit Course</DialogTitle>
               <DialogDescription>

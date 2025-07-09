@@ -1,4 +1,4 @@
-import { FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import React from "react";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
@@ -56,26 +56,28 @@ const CheckboxWithArrayValues = <T,>({
             data.map((item, index) => {
               if (typeof item === "string" || typeof item === "number") {
                 return (
-                  <div key={index} className="flex items-center gap-2">
-                    <Checkbox
-                      id={`${name}-${index}`}
-                      value={String(item)}
-                      checked={field.value?.includes(item)}
-                      onCheckedChange={(checked) => {
-                        const currentValue = field.value || [];
-                        const newValue = checked
-                          ? [...currentValue, item]
-                          : currentValue.filter((val) => val !== item);
-                        return field.onChange(newValue);
-                      }}
-                      {...props}
-                    />
-                    <Label
-                      htmlFor={String(index)}
-                      className="hover:cursor-pointer">
-                      {item}
-                    </Label>
-                  </div>
+                    <FormControl key={index}>
+                      <div key={index} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`${name}-${index}`}
+                          value={String(item)}
+                          checked={field.value?.includes(item)}
+                          onCheckedChange={(checked) => {
+                            const currentValue = field.value || [];
+                            const newValue = checked
+                              ? [...currentValue, item]
+                              : currentValue.filter((val) => val !== item);
+                            return field.onChange(newValue);
+                          }}
+                          {...props}
+                        />
+                        <Label
+                          htmlFor={String(index)}
+                          className="hover:cursor-pointer">
+                          {item}
+                        </Label>
+                      </div>
+                    </FormControl>
                 );
               }
 
@@ -84,32 +86,35 @@ const CheckboxWithArrayValues = <T,>({
                 const label = String(item[labelKey] as keyof typeof item);
 
                 return (
-                  <div key={value} className="flex items-center gap-2">
-                    <Checkbox
-                      id={value}
-                      value={value}
-                      checked={
-                        Array.isArray(field.value) &&
-                        field.value?.includes(value)
-                      }
-                      onCheckedChange={(checked) => {
-                        const currentValue = field.value || [];
-                        const newValue = checked
-                          ? [...currentValue, value]
-                          : currentValue.filter((val) => val !== value);
-                        return field.onChange(newValue);
-                      }}
-                      {...props}
-                    />
-                    <Label htmlFor={value} className="hover:cursor-pointer">
-                      {label}
-                    </Label>
-                  </div>
+                    <FormControl key={value}>
+                      <div key={value} className="flex items-center gap-2">
+                        <Checkbox
+                          id={value}
+                          value={value}
+                          checked={
+                            Array.isArray(field.value) &&
+                            field.value?.includes(value)
+                          }
+                          onCheckedChange={(checked) => {
+                            const currentValue = field.value || [];
+                            const newValue = checked
+                              ? [...currentValue, value]
+                              : currentValue.filter((val) => val !== value);
+                            return field.onChange(newValue);
+                          }}
+                          {...props}
+                        />
+                        <Label htmlFor={value} className="hover:cursor-pointer">
+                          {label}
+                        </Label>
+                      </div>
+                    </FormControl>
                 );
               }
 
               return null;
             })}
+          <FormMessage />
         </FormItem>
       )}
     />
@@ -117,4 +122,3 @@ const CheckboxWithArrayValues = <T,>({
 };
 
 export default CheckboxWithArrayValues;
-FormItem;

@@ -8,17 +8,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { StudentResponseType } from "@/lib/types";
 import { Row } from "@tanstack/react-table";
 import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FC } from "react";
 import { useConfirmDelete } from "./useConfirmDelete";
+import LoadingState from "@/components/customComponents/Loading";
 
 type GenericActionsProps<T extends { id: string }> = {
   row: Row<T>;
   dialogId?: string;
+  isPending?: boolean;
   onDelete: (id: string, secondaryValue: string) => Promise<void>;
   secondaryKey: keyof T;
 };
@@ -28,6 +28,7 @@ export const GenericActions = <T extends { id: string }>({
   dialogId,
   secondaryKey,
   onDelete,
+    isPending
 }: GenericActionsProps<T>) => {
   const pathname = usePathname().split("/").pop();
   const { onOpen } = useGenericDialog();
@@ -75,6 +76,7 @@ export const GenericActions = <T extends { id: string }>({
         </DropdownMenuContent>
       </DropdownMenu>
       <ConfirmDeleteComponent />
+      {isPending && <LoadingState />}
     </>
   );
 };

@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\prisma",
+    "\\src",
+    "\\src\\app",
+    "\\src\\app\\(private)",
+    "\\src\\app\\(private)\\admin",
+    "\\src\\app\\(private)\\admin\\permissions",
+    "\\src\\app\\(private)\\admin\\permissions\\components",
+    "\\src\\components",
+    "\\src\\components\\customComponents"
+  ],
+  "SelectedNode": "\\src\\app\\(private)\\admin\\permissions\\components\\CreatePermissionModal.tsx",
+  "PreviewInSolutionExplorer": false
+}

@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useGenericDialog } from "../../../../../hooks/use-open-create-teacher-dialog";
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { useEffect, useState, useTransition } from "react";
 import { ClassesType } from "@/lib/validation";
 import { deleteClass, getClass, updateClass } from "../actions/server-actions";
@@ -52,7 +52,7 @@ export default function EditClassDialog() {
     };
     if (id) {
       setDefaultValues(undefined);
-      fetchClass();
+      fetchClass().then((value)=>console.log(value));
     }
   }, [id, setDefaultValues]);
 
@@ -101,13 +101,13 @@ export default function EditClassDialog() {
         open={dialogs["editClasses"]}
         onOpenChange={() => onClose("editClasses")}>
         {defaultValues !== undefined ? (
-          <DialogContent className="h-full overflow-auto">
+          <DialogContent className="max-h-[85vh] overflow-auto scrollbar-thin">
             <DialogHeader>
               <DialogTitle>Edit Class</DialogTitle>
               <DialogDescription>
                 Kindly make changes to the class and click on save to update
                 your changes in real-time. Kindly note that fields marked with
-                asterisks (*) are mandantory fields and must not be left empty!
+                asterisks (*) are mandatory fields and must not be left empty!
               </DialogDescription>
             </DialogHeader>
             <CreateClassForm
@@ -117,7 +117,7 @@ export default function EditClassDialog() {
               onDelete={async () => {
                 const ok = await confirmDelete();
                 if (ok) {
-                  handleDelete();
+                  await handleDelete();
                 }
               }}
               isDeletePending={isDeletePending}

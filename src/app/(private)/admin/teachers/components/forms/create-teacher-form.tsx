@@ -1,15 +1,9 @@
 import { useForm } from "react-hook-form";
 import {
   Form,
-  FormControl,
-  FormDescription,
   FormField,
-  FormItem,
-  FormLabel,
 } from "@/components/ui/form";
 import {
-  TeacherEditSchema,
-  TeacherEditType,
   TeacherSchema,
   TeacherType,
 } from "@/lib/validation";
@@ -17,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
 import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { getServerSideProps } from "@/app/(private)/admin/departments/actions/getServerSideProps";
 import {
   ClassesResponseType,
@@ -26,22 +20,15 @@ import {
   TeacherResponseType,
 } from "@/lib/types";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import LoadingButton from "@/components/customComponents/LoadingButton";
 import { PlusCircle, Save, Trash2 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useConfirmDelete } from "@/components/customComponents/useConfirmDelete";
 import { getCourses } from "../../../courses/actions/actions";
 import { getClassesAction } from "../../../classes/actions/server-actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import CheckboxWithArrayValues from "@/components/customComponents/CheckboxWithValues";
+import FileUploadInput from "@/components/customComponents/FileUploadInput";
 
 type OnSubmitResponseType = Promise<
   TeacherResponseType | { error?: string } | undefined
@@ -88,6 +75,8 @@ export default function CreateTeacherForm({
           classes: [],
           courses: [],
           isDepartmentHead: false,
+          imageURL: "",
+          imageFile: undefined
         },
   });
 
@@ -97,7 +86,6 @@ export default function CreateTeacherForm({
   const [classes, setClasses] =
     useState<Pick<ClassesResponseType, "id" | "name">[]>();
   const { ConfirmDeleteComponent, confirmDelete } = useConfirmDelete();
-  const [isDepartmentHead, setIsDepartmentHead] = useState(false);
 
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -122,7 +110,7 @@ export default function CreateTeacherForm({
       setCourses(courses.courses);
       setClasses(classes.data);
     };
-    fetchDepartments();
+    fetchDepartments().then((value) => console.log(value));
   }, []);
 
   const [isPending, startTransition] = useTransition();
@@ -272,11 +260,42 @@ export default function CreateTeacherForm({
                 fieldTitle="Assigned Department"
                 data={departments}
                 valueKey="id"
-                labekey="name"
+                selectedKey="name"
                 placeholder="--Select department--"
               />
             )}
           </div>
+            {departments && departments.length > 0 && (
+                <div className="flex flex-col gap-y-2 my-4">
+                    <FormField
+                        control={form.control}
+                        name="isDepartmentHead"
+                        render={({ field }) => {
+                            return (
+                                <div className="flex items-center gap-2">
+                                    <Checkbox
+                                        id="isDepartmentHead"
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                        className="rounded-full "
+                                    />
+                                    <Label
+                                        htmlFor="isDepartmentHead"
+                                        className="text-sm">
+                                        Are you the head of department of your assigned department?
+                                    </Label>
+                                </div>
+                            );
+                        }}
+                    />
+                </div>
+            )}
+            <FileUploadInput<TeacherType>
+                name="imageFile"
+                fieldTitle="Profile Picture"
+                photoURL={defaultValues?.imageURL as string}
+                isEditing={!!id}
+            />
           <div className=" w-full grid grid-cols-1 md:grid-cols-2 md:space-x-5 space-y-5 md:space-y-0 ">
             {classes && classes.length > 0 && (
               <CheckboxWithArrayValues<TeacherType>
@@ -298,33 +317,7 @@ export default function CreateTeacherForm({
               />
             )}
           </div>
-          {departments && departments.length > 0 && (
-            <div className="flex flex-col gap-y-2 my-4">
-              <FormField
-                control={form.control}
-                name="isDepartmentHead"
-                render={({ field }) => {
-                  return (
-                    <div className="flex items-start gap-2">
-                      <Checkbox
-                        id="isDepartmentHead"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        className="rounded-none "
-                      />
-                      <Label
-                        htmlFor="isDepartmentHead"
-                        className="italic text-sm">
-                        Are you the head of department to the department you
-                        have been assigned? If yes, kindly click on the
-                        checkbox. of.
-                      </Label>
-                    </div>
-                  );
-                }}
-              />
-            </div>
-          )}
+
           <div className="grid grid-cols-1 space-y-4">
             <LoadingButton loading={isPending}>
               {!!id ? (

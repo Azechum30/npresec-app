@@ -5,7 +5,7 @@ import { PlusCircle } from "lucide-react";
 import { useGenericDialog } from "../../../../../hooks/use-open-create-teacher-dialog";
 
 export default function OpenCreateTeachersButton() {
-  const { onOpen, dialogs } = useGenericDialog();
+  const { onOpen} = useGenericDialog();
   return (
     <Button onClick={() => onOpen("createTeacher")}>
       <PlusCircle className="size-5" />

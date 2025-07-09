@@ -75,10 +75,10 @@ export default function CreateDepartment({
       }
       if (res.teachers === undefined) return;
       setTeachers((prev) => {
-        const newArray = res.teachers.map((teacher) => ({
+        const newArray = res.teachers?.map((teacher) => ({
           ...teacher,
           fullname: `${teacher.lastName} ${teacher.firstName} ${
-            teacher.middleName && teacher.middleName
+            teacher.middleName ? teacher.middleName : ""
           }`,
         }));
         return newArray;
@@ -131,7 +131,7 @@ export default function CreateDepartment({
             fieldTitle="Department Head"
             data={teachers}
             valueKey="id"
-            labekey="fullname"
+            selectedKey="fullname"
             placeholder="--Select HOD--"
           />
         )}

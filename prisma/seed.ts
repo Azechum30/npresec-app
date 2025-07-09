@@ -1,4 +1,6 @@
 import { PrismaClient } from "@prisma/client";
+import argon from "argon2";
+import {env} from "@/lib/server-only-actions/validate-env";
 
 const prisma = new PrismaClient();
 
@@ -9,25 +11,25 @@ async function main() {
     create: { name: "admin" },
   });
 
-  const teacherRole = await prisma.role.upsert({
+ await prisma.role.upsert({
     where: { name: "teacher" },
     update: {},
     create: { name: "teacher" },
   });
 
-  const studentRole = await prisma.role.upsert({
+await prisma.role.upsert({
     where: { name: "student" },
     update: {},
     create: { name: "student" },
   });
 
-  const parentRole = await prisma.role.upsert({
+  await prisma.role.upsert({
     where: { name: "parent" },
     update: {},
     create: { name: "parent" },
   });
 
-  const creatDepartmentPermission = await prisma.permission.upsert({
+await prisma.permission.upsert({
     where: { name: "create:department" },
     update: {},
     create: {
@@ -40,8 +42,7 @@ async function main() {
         : undefined,
     },
   });
-
-  const editDepartmentPermision = await prisma.permission.upsert({
+  await prisma.permission.upsert({
     where: { name: "edit:department" },
     update: {},
     create: {
@@ -55,7 +56,7 @@ async function main() {
     },
   });
 
-  const viewDepartmentPermission = await prisma.permission.upsert({
+ await prisma.permission.upsert({
     where: { name: "view:department" },
     update: {},
     create: {
@@ -68,7 +69,7 @@ async function main() {
         : undefined,
     },
   });
-  const deleteDepartmentPermission = await prisma.permission.upsert({
+await prisma.permission.upsert({
     where: { name: "delete:department" },
     update: {},
     create: {
@@ -81,7 +82,7 @@ async function main() {
         : undefined,
     },
   });
-  const creatTeacherPermission = await prisma.permission.upsert({
+await prisma.permission.upsert({
     where: { name: "create:teacher" },
     update: {},
     create: {
@@ -95,7 +96,7 @@ async function main() {
     },
   });
 
-  const editTeacherPermision = await prisma.permission.upsert({
+  await prisma.permission.upsert({
     where: { name: "edit:teacher" },
     update: {},
     create: {
@@ -109,7 +110,7 @@ async function main() {
     },
   });
 
-  const viewTeacherPermission = await prisma.permission.upsert({
+  await prisma.permission.upsert({
     where: { name: "view:teacher" },
     update: {},
     create: {
@@ -122,7 +123,7 @@ async function main() {
         : undefined,
     },
   });
-  const deleteTeacherPermission = await prisma.permission.upsert({
+await prisma.permission.upsert({
     where: { name: "delete:teacher" },
     update: {},
     create: {
@@ -135,7 +136,7 @@ async function main() {
         : undefined,
     },
   });
-  const creatCoursePermission = await prisma.permission.upsert({
+await prisma.permission.upsert({
     where: { name: "create:course" },
     update: {},
     create: {
@@ -149,7 +150,7 @@ async function main() {
     },
   });
 
-  const editCoursePermision = await prisma.permission.upsert({
+await prisma.permission.upsert({
     where: { name: "edit:course" },
     update: {},
     create: {
@@ -163,7 +164,7 @@ async function main() {
     },
   });
 
-  const viewCoursePermission = await prisma.permission.upsert({
+await prisma.permission.upsert({
     where: { name: "view:course" },
     update: {},
     create: {
@@ -176,7 +177,7 @@ async function main() {
         : undefined,
     },
   });
-  const deleteCoursePermission = await prisma.permission.upsert({
+ await prisma.permission.upsert({
     where: { name: "delete:course" },
     update: {},
     create: {
@@ -189,11 +190,11 @@ async function main() {
         : undefined,
     },
   });
-  const creatClassPermission = await prisma.permission.upsert({
+ await prisma.permission.upsert({
     where: { name: "create:class" },
     update: {},
     create: {
-      name: "create_class",
+      name: "create:class",
       description: "can create a class",
       roles: adminRole
         ? {
@@ -203,7 +204,7 @@ async function main() {
     },
   });
 
-  const editClassPermision = await prisma.permission.upsert({
+await prisma.permission.upsert({
     where: { name: "edit:class" },
     update: {},
     create: {
@@ -217,7 +218,7 @@ async function main() {
     },
   });
 
-  const viewClassPermission = await prisma.permission.upsert({
+await prisma.permission.upsert({
     where: { name: "view:class" },
     update: {},
     create: {
@@ -230,12 +231,12 @@ async function main() {
         : undefined,
     },
   });
-  const deleteClassPermission = await prisma.permission.upsert({
-    where: { name: "delete:course" },
+await prisma.permission.upsert({
+    where: { name: "delete:class" },
     update: {},
     create: {
-      name: "delete:course",
-      description: "can delete a course",
+      name: "delete:class",
+      description: "can delete a class",
       roles: adminRole
         ? {
             connect: { id: adminRole.id },
@@ -243,7 +244,7 @@ async function main() {
         : undefined,
     },
   });
-  const creatStudentPermission = await prisma.permission.upsert({
+await prisma.permission.upsert({
     where: { name: "create:student" },
     update: {},
     create: {
@@ -257,7 +258,7 @@ async function main() {
     },
   });
 
-  const editStudentPermision = await prisma.permission.upsert({
+await prisma.permission.upsert({
     where: { name: "edit:student" },
     update: {},
     create: {
@@ -271,8 +272,8 @@ async function main() {
     },
   });
 
-  const viewStudentPermission = await prisma.permission.upsert({
-    where: { name: "view_student" },
+ await prisma.permission.upsert({
+    where: { name: "view:student" },
     update: {},
     create: {
       name: "view:student",
@@ -284,12 +285,12 @@ async function main() {
         : undefined,
     },
   });
-  const deleteStudentPermission = await prisma.permission.upsert({
+await prisma.permission.upsert({
     where: { name: "delete:student" },
     update: {},
     create: {
       name: "delete:student",
-      description: "can delete a cstudent",
+      description: "can delete a student",
       roles: adminRole
         ? {
             connect: { id: adminRole.id },
@@ -297,6 +298,147 @@ async function main() {
         : undefined,
     },
   });
+
+await prisma.permission.upsert({
+    where: {name: "create:attendance"},
+    update: {},
+    create:{
+        name: "create:attendance",
+        description: "can create attendance",
+        roles: adminRole
+        ? {
+            connect: { id: adminRole.id },
+          }
+        : undefined,
+    }
+})
+    await prisma.permission.upsert({
+    where: {name: "view:attendance"},
+    update: {},
+    create:{
+        name: "view:attendance",
+        description: "can view attendance",
+        roles: adminRole
+        ? {
+            connect: { id: adminRole.id },
+          }
+        : undefined,
+    }
+})
+    await prisma.permission.upsert({
+    where: {name: "edit:attendance"},
+    update: {},
+    create:{
+        name: "edit:attendance",
+        description: "can edit attendance",
+        roles: adminRole
+        ? {
+            connect: { id: adminRole.id },
+          }
+        : undefined,
+    }
+})
+    await prisma.permission.upsert({
+    where: {name: "delete:attendance"},
+    update: {},
+    create:{
+        name: "delete:attendance",
+        description: "can delete attendance",
+        roles: adminRole
+        ? {
+            connect: { id: adminRole.id },
+          }
+        : undefined,
+    }
+})
+
+    await prisma.permission.upsert({
+        where:{name: "create:score" },
+        update:{},
+        create:{
+            name: "create:score",
+            description: "can create score",
+            roles: adminRole
+            ? {
+                connect: { id: adminRole.id },
+              }
+            : undefined,
+        }
+    })
+    await prisma.permission.upsert({
+        where:{name: "view:score" },
+        update:{},
+        create:{
+            name: "view:score",
+            description: "can view score",
+            roles: adminRole
+            ? {
+                connect: { id: adminRole.id },
+              }
+            : undefined,
+        }
+    })
+    await prisma.permission.upsert({
+        where:{name: "edit:score" },
+        update:{},
+        create:{
+            name: "edit:score",
+            description: "can edit score",
+            roles: adminRole
+            ? {
+                connect: { id: adminRole.id },
+              }
+            : undefined,
+        }
+    })
+    await prisma.permission.upsert({
+        where:{name: "delete:score" },
+        update:{},
+        create:{
+            name: "delete:score",
+            description: "can delete score",
+            roles: adminRole
+            ? {
+                connect: { id: adminRole.id },
+              }
+            : undefined,
+        }
+    })
+
+
+  const adminUser = await prisma.user.count({where: {
+    role: {name: "admin"}
+    }});
+
+  if(adminUser === 0){
+
+    const adminEmail = env.ADMIN_USER_EMAIL || "admin@nakpanduripresec.org"
+    const adminPassword = env.ADMIN_USER_PASSWORD;
+
+    if(!adminEmail || !adminPassword) throw new Error(
+      "ADMIN_USER_EMAIL and ADMIN_USER_PASSWORD must be set in .env file"
+    )
+
+    const hashedPassword = await argon.hash(adminPassword, {
+      type: argon.argon2id
+    });
+
+    await prisma.user.create({
+      data: {
+        email: adminEmail,
+        username:adminEmail.split("@")[0],
+        password: hashedPassword,
+        role: {
+          connect:{
+            id: adminRole.id
+          }
+        },
+        resetPasswordRequired: true
+      }
+    })
+
+    console.log("Admin user created")
+  }
 }
 
 main()

@@ -20,7 +20,7 @@ import { deleteDepartment } from "../actions/delete-departments-action";
 import { useDepartmentStore } from "@/hooks/use-generic-store";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { useGenericDialog } from "../../../../../hooks/use-open-create-teacher-dialog";
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 
 export default function EditDepartment() {
   const { id, dialogs, onClose } = useGenericDialog();
@@ -53,7 +53,7 @@ export default function EditDepartment() {
 
     if (id) {
       setDefaultValues(undefined);
-      fetchDepartment();
+      fetchDepartment().then((value)=>console.log(value));
     }
   }, [id]);
 
@@ -90,7 +90,7 @@ export default function EditDepartment() {
       open={dialogs["editDepartment"]}
       onOpenChange={() => onClose("editDepartment")}>
       {defaultValues ? (
-        <DialogContent className="h-full">
+        <DialogContent className="max-h-[85vh] overflow-auto scrollbar-thin">
           <DialogHeader>
             <DialogTitle>Edit Department Data</DialogTitle>
             <DialogDescription>

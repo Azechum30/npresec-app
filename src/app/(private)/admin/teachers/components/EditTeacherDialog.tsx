@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import CreateTeacherForm from "./forms/create-teacher-form";
-import { useGenericDialog } from "../../../../../hooks/use-open-create-teacher-dialog";
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { useEffect, useState, useTransition } from "react";
 import {
   deleteTeacherRequest,
@@ -47,18 +47,20 @@ export default function EditTeacherDialog() {
         username: res.teacher.user?.username as string,
         ssnitNumber: res.teacher.ssnitNumber || "",
         licencedNumber: res.teacher.licencedNumber || "",
+        rgNumber: res.teacher.rgNumber || "",
         rank: res.teacher.rank || "",
         classes: res.teacher.classes.map((classItem) => classItem.id),
         courses: res.teacher.courses.map((course) => course.id),
         departmentId: res.teacher.departmentId,
         dateOfFirstAppointment:
           (res.teacher.dateOfFirstAppointment as Date) || undefined,
+        imageURL: res.teacher.user?.picture
       });
     };
 
     if (id) {
       setDefaultValues(undefined);
-      fetchTeacher();
+      fetchTeacher().then((value)=>console.log(value));
     }
   }, [id]);
 
@@ -101,7 +103,7 @@ export default function EditTeacherDialog() {
       open={dialogs["editTeacher"]}
       onOpenChange={() => onClose("editTeacher")}>
       <DialogContent
-        className={cn(defaultValues !== undefined && "h-full max-w-2xl")}>
+        className={cn(defaultValues !== undefined && "max-h-[85vh] overflow-auto max-w-2xl scrollbar-thin")}>
         {defaultValues ? (
           <>
             <DialogHeader>

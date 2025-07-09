@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss"
 
+// @ts-ignore
 export default {
 	darkMode: "class",
 	content: [
@@ -70,5 +71,28 @@ export default {
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")]
+	plugins: [require("tailwindcss-animate"), function( { addUtilities }:{ addUtilities: Function}){
+		addUtilities({
+			'.scrollbar-thin': {
+				'scrollbar-width': 'thin',
+				'scrollbar-color': 'hsl(var(--background))',
+				'&::-webkit-scrollbar': {
+					'width': '4px',
+					'height': '4px',
+				},
+				'&::-webkit-scrollbar-track': {
+					'background': '#f7fafc',
+					'border-radius': '100vh',
+				},
+				'&::-webkit-scrollbar-thumb': {
+					'background': '#cbd5e0',
+					'border-radius': '100vh',
+					'border': '2px solid #f7fafc',
+				},
+				'&::-webkit-scrollbar-thumb:hover': {
+					'background': '#a0aec0',
+				},
+			}
+		})
+	}]
 } satisfies Config

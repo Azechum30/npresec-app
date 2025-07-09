@@ -32,7 +32,7 @@ export default function LinkWithStyles({
 					"flex items-center gap-x-4 sm:gap-x-1 lg:gap-x-4 w-fit h-[52px] md:h-auto md:w-full",
 				className,
 				href === pathname && !icon && "text-blue-400",
-				href === pathname && icon && "bg-gray-300 dark:bg-gray-800"
+				href === pathname && icon && "bg-blue-100 dark:bg-blue-800"
 			)}
 		>
 			<TooltipProvider>
@@ -43,7 +43,7 @@ export default function LinkWithStyles({
 							href === pathname && !icon && "text-blue-400",
 							href === pathname &&
 								icon &&
-								"bg-gray-300 dark:bg-gray-800"
+								"bg-blue-100 dark:bg-blue-800"
 						)}
 					>
 						<span

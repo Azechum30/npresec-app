@@ -8,20 +8,13 @@ import { PersonalInfoSchema, PersonalInfoType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import { useStudentStore } from "../store";
+import FileUploadInput from "@/components/customComponents/FileUploadInput";
 import { ChevronRight } from "lucide-react";
 import { useEffect } from "react";
-import { redirect } from "next/navigation";
 import { useCancelEditStudent } from "../hooks/use-cancel-edit-student";
-import FileUploadInput from "@/components/customComponents/FileUploadInput";
+import { useStudentStore } from "../store";
 
-type PersonalInfoFormProps = {
-  defaultValues?: PersonalInfoType;
-};
-
-export default function PersonalInfoForm({
-  defaultValues,
-}: PersonalInfoFormProps) {
+export default function PersonalInfoForm() {
   const { actions, isEditing, personalInfo } = useStudentStore();
 
   const form = useForm<PersonalInfoType>({
@@ -157,6 +150,8 @@ export default function PersonalInfoForm({
           name="imageFile"
           fieldTitle="Profile Image"
           className="max-w-4xl"
+          photoURL={personalInfo.photoURL as string}
+          isEditing={isEditing}
         />
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

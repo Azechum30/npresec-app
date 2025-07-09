@@ -54,7 +54,7 @@ const ResetPasswordForm = () => {
         }
       } else {
         toast.success("Password reset successfully");
-        router.push("/authenticate");
+        router.push("/sign-in?success=true");
       }
     });
   };

@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import { DataTableSkeleton } from "@/components/customComponents/DataTable-Skeleton";
 import { hasPermissions } from "@/lib/hasPermission";
 import { redirect } from "next/navigation";
+import CreateClassDialog from "./components/CreateClassDialog";
 
 export default async function ClassesPage() {
   const permissions = await hasPermissions("view:class");
@@ -41,6 +42,7 @@ export default async function ClassesPage() {
       </Suspense>
       <ClassesProvider />
       <EditClassDialog />
+      <CreateClassDialog />
     </>
   );
 }

@@ -11,20 +11,33 @@ import {
 } from "../ui/form"
 import { cn } from "@/lib/utils"
 import { PasswordInput } from "./PasswordInput"
+import {z} from "zod"
+import {isZodFieldRequired} from "@/lib/isZodFieldRequired";
 
 type InputWithLabelProps<T> = {
 	name: keyof T & string
 	fieldTitle: string
 	className?: string
+	schema?: z.ZodSchema<any>
 } & InputHTMLAttributes<HTMLInputElement>
 
 export default function PasswordInputWithLabel<T>({
 	name,
 	fieldTitle,
 	className,
+	schema,
 	...props
 }: InputWithLabelProps<T>) {
 	const form = useFormContext()
+
+	const isRequired= (()=>{
+		if(schema){
+			const fieldSchema = schema instanceof z.ZodObject ? schema.shape[name] : schema;
+			return isZodFieldRequired(fieldSchema);
+		}else{
+			return false
+		}
+	})()
 
 	return (
 		<FormField
@@ -34,9 +47,10 @@ export default function PasswordInputWithLabel<T>({
 				<FormItem>
 					<FormLabel
 						htmlFor={name}
-						className='text-sm'
+						className={cn("text-sm font-medium", isRequired && "flex items-center gap-1", className)}
 					>
 						{fieldTitle}
+						{isRequired && <span className="text-red-400 flex justify-center items-center h-full">*</span>}
 					</FormLabel>
 					<FormControl>
 						<PasswordInput

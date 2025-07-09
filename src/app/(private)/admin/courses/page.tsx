@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import { DataTableSkeleton } from "@/components/customComponents/DataTable-Skeleton";
 import { hasPermissions } from "@/lib/hasPermission";
 import { redirect } from "next/navigation";
+import CreateCourseDialog from "./components/create-course-dialog";
 
 export default async function CoursesPage() {
   const permissions = await hasPermissions("view:course");
@@ -45,6 +46,7 @@ export default async function CoursesPage() {
 
       <CoursesProvider />
       <EditCourseDialog />
+      <CreateCourseDialog />
     </div>
   );
 }
