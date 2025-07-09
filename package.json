@@ -8,7 +8,7 @@
     "build": "next build && pnpm prisma db seed",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "pnpm dlx prisma generate"
+    "postinstall": "pnpm dlx prisma generate && pnpm dlx prisma db push --accept-data-loss"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
