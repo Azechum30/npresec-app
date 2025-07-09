@@ -5,15 +5,16 @@ import EditCourseDialog from "./components/edit-course-dialog";
 import CoursesProvider from "./components/CoursesProvider";
 import { Suspense } from "react";
 import { DataTableSkeleton } from "@/components/customComponents/DataTable-Skeleton";
-import { hasPermissions } from "@/lib/hasPermission";
 import { redirect } from "next/navigation";
 import CreateCourseDialog from "./components/create-course-dialog";
+import { getAuthUser } from "@/lib/getAuthUser";
+import { headers } from "next/headers";
 
 export default async function CoursesPage() {
-  const permissions = await hasPermissions("view:course");
-
-  if (!permissions) {
-    return redirect("/403");
+  const user = await getAuthUser();
+  if (!user || user.role?.name !== "admin") {
+    const referer = (await headers()).get("referer") || "/sign-in";
+    return redirect(referer);
   }
   const promise = getCourses();
 

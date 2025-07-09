@@ -1,4 +1,5 @@
 "use server";
+import { getAuthUser } from "@/lib/getAuthUser";
 import { prisma } from "@/lib/prisma";
 
 export type DashboardData = {
@@ -14,10 +15,10 @@ export type DashboardData = {
       yearOneMales: number;
       yearTwoMales: number;
       yearThreeMales: number;
-      yearOneFemales: number,
+      yearOneFemales: number;
       yearTwoFemales: number;
       yearThreeFemales: number;
-    }
+    };
   };
   recentStudents: {
     id: string;
@@ -27,8 +28,8 @@ export type DashboardData = {
     departmentName?: string;
     className?: string;
     dateEnrolled: Date;
-    yearGroup: string
-    photoUrl: string
+    yearGroup: string;
+    photoUrl: string;
   }[];
   departmentDistribution: {
     name: string;
@@ -41,7 +42,10 @@ export type DashboardData = {
 };
 
 export async function getDashboardData(): Promise<DashboardData> {
-  // Get counts
+  const user = await getAuthUser();
+  if (!user || user.role?.name !== "admin") {
+    throw new Error("Unauthorized access to dashboard data");
+  }
   const [
     studentCount,
     teacherCount,
@@ -53,12 +57,12 @@ export async function getDashboardData(): Promise<DashboardData> {
     classDistribution,
     studentMales,
     studentFemales,
-      yearOneMales,
-      yearTwoMales,
-      yearThreeMales,
-      yearOneFemales,
-      yearTwoFemales,
-      yearThreeFemales,
+    yearOneMales,
+    yearTwoMales,
+    yearThreeMales,
+    yearOneFemales,
+    yearTwoFemales,
+    yearThreeFemales,
   ] = await Promise.all([
     prisma.student.count(),
     prisma.teacher.count(),
@@ -91,9 +95,9 @@ export async function getDashboardData(): Promise<DashboardData> {
         },
         user: {
           select: {
-            picture: true
-          }
-        }
+            picture: true,
+          },
+        },
       },
     }),
     // Get department distribution
@@ -118,14 +122,26 @@ export async function getDashboardData(): Promise<DashboardData> {
         },
       },
     }),
-      prisma.student.count({where:{gender: "Male"}}),
-      prisma.student.count({where:{gender: "Female"}}),
-      prisma.student.count({where:{currentLevel: "Year_One", gender: "Male"}}),
-      prisma.student.count({where:{currentLevel: "Year_Two", gender: "Male"}}),
-      prisma.student.count({where:{currentLevel: "Year_Three", gender: "Male"}}),
-      prisma.student.count({where:{currentLevel: "Year_One", gender: "Female"}}),
-      prisma.student.count({where:{currentLevel: "Year_Two", gender: "Female"}}),
-      prisma.student.count({where:{currentLevel: "Year_Three", gender: "Female"}}),
+    prisma.student.count({ where: { gender: "Male" } }),
+    prisma.student.count({ where: { gender: "Female" } }),
+    prisma.student.count({
+      where: { currentLevel: "Year_One", gender: "Male" },
+    }),
+    prisma.student.count({
+      where: { currentLevel: "Year_Two", gender: "Male" },
+    }),
+    prisma.student.count({
+      where: { currentLevel: "Year_Three", gender: "Male" },
+    }),
+    prisma.student.count({
+      where: { currentLevel: "Year_One", gender: "Female" },
+    }),
+    prisma.student.count({
+      where: { currentLevel: "Year_Two", gender: "Female" },
+    }),
+    prisma.student.count({
+      where: { currentLevel: "Year_Three", gender: "Female" },
+    }),
   ]);
 
   return {
@@ -137,14 +153,14 @@ export async function getDashboardData(): Promise<DashboardData> {
       courses: courseCount,
       studentMales,
       studentFemales,
-      yearGroupGender:{
+      yearGroupGender: {
         yearOneMales,
         yearOneFemales,
         yearTwoMales,
         yearTwoFemales,
         yearThreeMales,
-        yearThreeFemales
-      }
+        yearThreeFemales,
+      },
     },
     recentStudents: recentStudents.map((student) => ({
       id: student.id,
@@ -155,7 +171,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       className: student.currentClass?.name,
       dateEnrolled: student.dateEnrolled,
       yearGroup: student.currentLevel.split("_").join(" "),
-      photoUrl: student.user?.picture ?? ""
+      photoUrl: student.user?.picture ?? "",
     })),
     departmentDistribution: departmentDistribution.map((dept) => ({
       name: dept.name,

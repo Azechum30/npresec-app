@@ -3,7 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { TeacherSelect } from "@/lib/types";
 import { TeacherSchema, TeacherType } from "@/lib/validation";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../../../../prisma/generated/client";
 import argon2 from "argon2";
 
 import { revalidatePath } from "next/cache";
@@ -13,12 +13,11 @@ import { getErrorMessage } from "@/lib/getErrorMessage";
 import { hasPermissions } from "@/lib/hasPermission";
 import { uploadToCloudinary } from "@/utils/upload-to-cloudinary";
 
-
 export const createTeacher = async (values: TeacherType) => {
   try {
-    const permissions = await hasPermissions("create:teacher");
+    const permissions = await hasPermissions("create:teachers");
     if (!permissions) {
-      return {error: "Permission denied!"}
+      return { error: "Permission denied!" };
     }
 
     const { data, error, success } = TeacherSchema.safeParse(values);
@@ -89,7 +88,7 @@ export const createTeacher = async (values: TeacherType) => {
       ]);
 
     if (!teacherRole) {
-      return { error: "Teacher role not found!" }
+      return { error: "Teacher role not found!" };
     }
 
     const errors: string[] = [];
@@ -146,17 +145,19 @@ export const createTeacher = async (values: TeacherType) => {
       }),
     };
 
-    if(normalizedTeacher.imageFile){
-      const secure_url = await uploadToCloudinary(normalizedTeacher.imageFile, "teachers")
+    if (normalizedTeacher.imageFile) {
+      const secure_url = await uploadToCloudinary(
+        normalizedTeacher.imageFile,
+        "teachers"
+      );
 
-      if(secure_url){
+      if (secure_url) {
         normalizedTeacher.imageURL = secure_url;
-        delete normalizedTeacher["imageFile"]
-      }else{
-        delete normalizedTeacher["imageFile"]
+        delete normalizedTeacher["imageFile"];
+      } else {
+        delete normalizedTeacher["imageFile"];
       }
     }
-
 
     const {
       email,
@@ -164,7 +165,7 @@ export const createTeacher = async (values: TeacherType) => {
       departmentId,
       password,
       isDepartmentHead,
-        imageURL,
+      imageURL,
       ...rest
     } = hashedTeacher;
 
@@ -200,7 +201,7 @@ export const createTeacher = async (values: TeacherType) => {
             password: password,
             roleId: teacherRole.id,
             resetPasswordRequired: true,
-            picture: imageURL as string ?? undefined
+            picture: (imageURL as string) ?? undefined,
           },
         },
       },
@@ -229,7 +230,7 @@ export const createTeacher = async (values: TeacherType) => {
 
 export const getTeachers = async (employeeIds?: string[]) => {
   try {
-    const permission = await hasPermissions("view:teacher");
+    const permission = await hasPermissions("view:teachers");
 
     if (!permission) {
       return { error: "Permission denied!" };
@@ -259,7 +260,7 @@ export const getTeachers = async (employeeIds?: string[]) => {
 
 export const getTeacher = async (id: string) => {
   try {
-    const permission = await hasPermissions("view:teacher");
+    const permission = await hasPermissions("view:teachers");
     if (!permission) {
       return { error: "Permission denied!" };
     }
@@ -281,18 +282,20 @@ export const getTeacher = async (id: string) => {
 
 export const updateTeacher = async (id: string, data: TeacherType) => {
   try {
-    const permission = await hasPermissions("edit:teacher");
+    const permission = await hasPermissions("edit:teachers");
     if (!permission) {
       return { error: "Permission denied!" };
     }
 
     const unvalidData = TeacherSchema.safeParse(data);
 
-    if(!unvalidData.success){
-      const zodErrors = unvalidData.error.errors.map(err=> `${err.path[0]}: ${err.message}`).join("\n");
+    if (!unvalidData.success) {
+      const zodErrors = unvalidData.error.errors
+        .map((err) => `${err.path[0]}: ${err.message}`)
+        .join("\n");
       return {
-        error: zodErrors
-      }
+        error: zodErrors,
+      };
     }
 
     const { email, username, ...rest } = unvalidData.data;
@@ -320,13 +323,17 @@ export const updateTeacher = async (id: string, data: TeacherType) => {
       }
     }
 
-    if(normalizedTeacher.imageFile){
-      const secure_url = await uploadToCloudinary(normalizedTeacher.imageFile, "teachers")
-      if(secure_url){
+    if (normalizedTeacher.imageFile) {
+      const secure_url = await uploadToCloudinary(
+        normalizedTeacher.imageFile,
+        "teachers"
+      );
+      if (secure_url) {
         normalizedTeacher.imageURL = secure_url;
-        delete normalizedTeacher["imageFile"]
-      }{
-        delete normalizedTeacher["imageFile"]
+        delete normalizedTeacher["imageFile"];
+      }
+      {
+        delete normalizedTeacher["imageFile"];
       }
     }
 
@@ -368,7 +375,7 @@ export const updateTeacher = async (id: string, data: TeacherType) => {
           update: {
             email: email as string,
             username: username as string,
-            picture: imageURL as string ?? undefined
+            picture: (imageURL as string) ?? undefined,
           },
         },
       },
@@ -404,7 +411,7 @@ export const updateTeacher = async (id: string, data: TeacherType) => {
 
 export const deleteTeacherRequest = async (id: string) => {
   try {
-    const permission = await hasPermissions("delete:teacher");
+    const permission = await hasPermissions("delete:teachers");
     if (!permission) {
       return { error: "Permission denied!" };
     }
@@ -438,7 +445,7 @@ export const deleteTeacherRequest = async (id: string) => {
 
 export const bulkDeleteTeachers = async (rows: string[]) => {
   try {
-    const permission = await hasPermissions("delete:teacher");
+    const permission = await hasPermissions("delete:teachers");
     if (!permission) {
       return { error: "Permission denied!" };
     }

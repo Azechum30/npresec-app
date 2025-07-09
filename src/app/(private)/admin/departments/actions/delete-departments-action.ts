@@ -1,6 +1,7 @@
 "use server";
 
 import { getSession } from "@/lib/get-user";
+import { hasPermissions } from "@/lib/hasPermission";
 import { prisma } from "@/lib/prisma";
 import { DepartmentSelect } from "@/lib/types";
 import {
@@ -10,9 +11,10 @@ import {
 
 export const deleteDepartments = async (data: DeleteDepartmentsType) => {
   try {
-    const { user } = await getSession();
-
-    if (!user) throw new Error("Unauthorized!");
+    const permission = await hasPermissions("delete:departments");
+    if (!permission) {
+      return { error: "Permission denied!" };
+    }
 
     const { ids } = DeleteDepartmentsSchema.parse(data);
     const { count } = await prisma.department.deleteMany({

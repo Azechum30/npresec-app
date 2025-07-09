@@ -10,7 +10,7 @@ import { z } from "zod";
 
 export const createRole = async (values: unknown) => {
   try {
-    const permission = await hasPermissions("create:role");
+    const permission = await hasPermissions("create:roles");
     if (!permission) {
       return { error: "Permission denied" };
     }
@@ -51,7 +51,7 @@ export const createRole = async (values: unknown) => {
 
 export const updateRole = async (values: unknown) => {
   try {
-    const permission = await hasPermissions("edit:role");
+    const permission = await hasPermissions("edit:roles");
     if (!permission) {
       return { error: "Permission denied" };
     }
@@ -91,7 +91,7 @@ export const updateRole = async (values: unknown) => {
 
 export const deleteRole = async (value: string) => {
   try {
-    const permission = await hasPermissions("delete:role");
+    const permission = await hasPermissions("delete:roles");
     if (!permission) {
       return { error: "Permission denied!" };
     }
@@ -121,7 +121,7 @@ export const deleteRole = async (value: string) => {
 
 export const bulkDeleteRoles = async (values: unknown) => {
   try {
-    const permission = await hasPermissions("delete:role");
+    const permission = await hasPermissions("delete:roles");
     if (!permission) {
       return { error: "Permission denied!" };
     }

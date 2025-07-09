@@ -4,13 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { PermissionSchema } from "@/lib/validation";
 import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
+import { hasPermissions } from "@/lib/hasPermission";
 
 export const createPermissions = async (values: unknown) => {
   try {
-    // const permission = await hasPermissions("create:permission");
-    // if (!permission) {
-    //   return { error: "Permission denied!" };
-    // }
+    const permission = await hasPermissions("create:permissions");
+    if (!permission) {
+      return { error: "Permission denied!" };
+    }
 
     const result = PermissionSchema.safeParse(values);
 

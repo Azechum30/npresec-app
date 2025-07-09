@@ -21,38 +21,40 @@ import {
   Department,
   generateStudentIndex,
 } from "@/utils/generateStudentIndex";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../../../../prisma/generated/client";
 import * as Sentry from "@sentry/nextjs";
 import argon from "argon2";
 import moment from "moment";
 import { revalidatePath } from "next/cache";
-import {headers} from "next/headers";
-import {rateLimit} from "@/utils/rateLimit";
+import { headers } from "next/headers";
+import { rateLimit } from "@/utils/rateLimit";
 import { uploadToCloudinary } from "@/utils/upload-to-cloudinary";
-
 
 export const createStudent = async (values: StudentType) => {
   try {
-    const permission = await hasPermissions("create:student");
-   const ip = (await headers()).get("x-forwarded-for") ?? "127.0.0.1"
+    const permission = await hasPermissions("create:students");
+    const ip = (await headers()).get("x-forwarded-for") ?? "127.0.0.1";
 
-    if (!permission){
-     return {error: "Permission denied!"}
+    if (!permission) {
+      return { error: "Permission denied!" };
     }
 
-    const {success} = await rateLimit.limit(ip)
+    const { success } = await rateLimit.limit(ip);
 
-    if(!success){
-      return {error: "Too many requests. Please try again later."}
+    if (!success) {
+      return { error: "Too many requests. Please try again later." };
     }
 
     const result = StudentSchema.safeParse(values);
 
     if (!result.success) {
-      const zodErrors = result.error.errors.reduce((acc, err) => {
-        acc[err.path[0]] = err.message;
-        return acc;
-      }, {} as Record<string, string>);
+      const zodErrors = result.error.errors.reduce(
+        (acc, err) => {
+          acc[err.path[0]] = err.message;
+          return acc;
+        },
+        {} as Record<string, string>
+      );
 
       return { error: zodErrors };
     }
@@ -106,11 +108,11 @@ export const createStudent = async (values: StudentType) => {
     }
 
     if (!existingRole) {
-      return {error: "Student role not found"}
+      return { error: "Student role not found" };
     }
 
     if (!studentPermission) {
-      return {error: "Student permission not found!"}
+      return { error: "Student permission not found!" };
     }
 
     const password = generatePassword();
@@ -155,10 +157,13 @@ export const createStudent = async (values: StudentType) => {
     });
 
     if (result.data.imageFile) {
-     const secure_url = await uploadToCloudinary(result.data.imageFile, "students")
+      const secure_url = await uploadToCloudinary(
+        result.data.imageFile,
+        "students"
+      );
 
       if (secure_url) {
-        result.data.photoURL = secure_url
+        result.data.photoURL = secure_url;
         delete result.data["imageFile"];
       } else {
         delete result.data["imageFile"];
@@ -233,8 +238,8 @@ export const createStudent = async (values: StudentType) => {
 
 export const getStudents = async (studentIDs?: string[]) => {
   try {
-    const permission = await hasPermissions("view:student");
-    if (!permission) return {error: "Permission denied"}
+    const permission = await hasPermissions("view:students");
+    if (!permission) return { error: "Permission denied" };
 
     let query: Prisma.StudentWhereInput = {};
 
@@ -264,8 +269,8 @@ export const getStudents = async (studentIDs?: string[]) => {
 
 export const bulkDeleteStudents = async (ids: string[]) => {
   try {
-    const permission = await hasPermissions("delete:student");
-    if (!permission) return {error: "Permission denied"}
+    const permission = await hasPermissions("delete:students");
+    if (!permission) return { error: "Permission denied" };
 
     const { count } = await prisma.student.deleteMany({
       where: {
@@ -284,8 +289,8 @@ export const bulkDeleteStudents = async (ids: string[]) => {
 
 export const deleteStudent = async (id: string) => {
   try {
-    const permission = hasPermissions("delete:student");
-    if (!permission) return {error: "Permission denied"}
+    const permission = hasPermissions("delete:students");
+    if (!permission) return { error: "Permission denied" };
 
     const existingStudent = await prisma.student.findUnique({
       where: { id },
@@ -314,8 +319,8 @@ export const deleteStudent = async (id: string) => {
 
 export const getStudent = async (id: string) => {
   try {
-    const permission = await hasPermissions("view:student");
-    if (!permission) return {error: "Permission denied"}
+    const permission = await hasPermissions("view:students");
+    if (!permission) return { error: "Permission denied" };
 
     const student = await prisma.student.findUnique({
       where: { id },
@@ -334,17 +339,20 @@ export const getStudent = async (id: string) => {
 
 export const updateStudent = async (values: EditStudentType) => {
   try {
-    const permission = await hasPermissions("edit:student");
+    const permission = await hasPermissions("edit:students");
 
-    if (!permission) return {error: "Permission denied"}
+    if (!permission) return { error: "Permission denied" };
 
     const result = EditStudentSchema.safeParse(values);
 
     if (!result.success) {
-      const zodError = result.error.errors.reduce((acc, issue) => {
-        acc[issue.path[0]] = issue.message;
-        return acc;
-      }, {} as Record<string, string>);
+      const zodError = result.error.errors.reduce(
+        (acc, issue) => {
+          acc[issue.path[0]] = issue.message;
+          return acc;
+        },
+        {} as Record<string, string>
+      );
 
       return { error: zodError };
     }
@@ -405,16 +413,18 @@ export const updateStudent = async (values: EditStudentType) => {
     const { email, ...transformData } = cleanData;
 
     if (transformData.imageFile) {
-      const secure_url = await uploadToCloudinary(transformData.imageFile, "students")
+      const secure_url = await uploadToCloudinary(
+        transformData.imageFile,
+        "students"
+      );
 
       if (secure_url) {
-        transformData.photoURL = secure_url
+        transformData.photoURL = secure_url;
         delete transformData["imageFile"];
       } else {
         delete transformData["imageFile"];
       }
     }
-
 
     await prisma.student.update({
       where: { id },
@@ -435,8 +445,8 @@ export const updateStudent = async (values: EditStudentType) => {
 
 export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
   try {
-    const permission = await hasPermissions("create:student");
-    if (!permission) return {error: "Permission denied"}
+    const permission = await hasPermissions("create:students");
+    if (!permission) return { error: "Permission denied" };
 
     const result = BulkCreateStudentsSchema.safeParse(values);
 
@@ -479,11 +489,11 @@ export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
       ]);
 
     if (!studentRole) {
-     return { error: "Student role not found!" };
+      return { error: "Student role not found!" };
     }
 
     if (!studentPermissions) {
-     return { error: "Student permission not found!" };
+      return { error: "Student permission not found!" };
     }
 
     const classMap = new Map(

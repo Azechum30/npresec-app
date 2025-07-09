@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../prisma/generated/client";
 
 export const DepartmentInclude = {
   head: {
@@ -63,7 +63,7 @@ export const TeacherSelect = {
       id: true,
       username: true,
       email: true,
-      picture: true
+      picture: true,
     },
   },
 } satisfies Prisma.TeacherSelect;
@@ -211,8 +211,7 @@ export type StudentResponseType = Prisma.StudentGetPayload<{
   select: typeof StudentSelect;
 }>;
 
-
-export const AttendanceSelect ={
+export const AttendanceSelect = {
   id: true,
   status: true,
   classId: true,
@@ -220,57 +219,55 @@ export const AttendanceSelect ={
   academicYear: true,
   semester: true,
   class: {
-    select:{
+    select: {
       id: true,
       name: true,
-    }
+    },
   },
   student: {
-    select:{
+    select: {
       id: true,
       firstName: true,
       lastName: true,
       studentNumber: true,
       user: {
-        select:{
+        select: {
           picture: true,
-        }
-      }
-    }
-  }
-}satisfies Prisma.AttendanceSelect;
+        },
+      },
+    },
+  },
+} satisfies Prisma.AttendanceSelect;
 
 export type AttendanceResponseType = Prisma.AttendanceGetPayload<{
   select: typeof AttendanceSelect;
 }>;
 
-
 export const RolesSelect = {
   id: true,
   name: true,
   permissions: {
-    select:{
+    select: {
       id: true,
       name: true,
-      description:true
-    }
-  }
+      description: true,
+    },
+  },
 } satisfies Prisma.RoleSelect;
 
 export type RolesResponseType = Prisma.RoleGetPayload<{
   select: typeof RolesSelect;
 }>;
 
-
 export const PermissionSelect = {
   id: true,
   name: true,
   description: true,
   roles: {
-    select:{
+    select: {
       name: true,
-    }
-  }
+    },
+  },
 } satisfies Prisma.PermissionSelect;
 
 export type PermissionResponseType = Prisma.PermissionGetPayload<{

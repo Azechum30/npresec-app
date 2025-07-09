@@ -5,14 +5,16 @@ import ClassesProvider from "./components/ClassesProvider";
 import EditClassDialog from "./components/EditClassDialog";
 import { Suspense } from "react";
 import { DataTableSkeleton } from "@/components/customComponents/DataTable-Skeleton";
-import { hasPermissions } from "@/lib/hasPermission";
 import { redirect } from "next/navigation";
 import CreateClassDialog from "./components/CreateClassDialog";
+import { getAuthUser } from "@/lib/getAuthUser";
+import { headers } from "next/headers";
 
 export default async function ClassesPage() {
-  const permissions = await hasPermissions("view:class");
-  if (!permissions) {
-    return redirect("/403");
+  const user = await getAuthUser();
+  if (!user || user.role?.name !== "admin") {
+    const referer = (await headers()).get("referer") || "/sign-in";
+    return redirect(referer);
   }
   const promise = getClassesAction();
 

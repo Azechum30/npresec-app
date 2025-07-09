@@ -8,17 +8,21 @@ import { DataTableSkeleton } from "@/components/customComponents/DataTable-Skele
 import { hasPermissions } from "@/lib/hasPermission";
 import { redirect } from "next/navigation";
 import CreateTeacherDialog from "./components/CreateTeacherDialog";
+import { getAuthUser } from "@/lib/getAuthUser";
+import { headers } from "next/headers";
 
 export const metadata = {
   title: "Admin - Teachers",
 };
 
 export default async function TeachersPage() {
-  const permissions = await hasPermissions("view:teacher");
+  const user = await getAuthUser();
 
-  if (!permissions) {
-    return redirect("/403");
+  if (!user || user.role?.name !== "admin") {
+    const referer = (await headers()).get("referer") || "/sign-in";
+    return redirect(referer);
   }
+
   const promise = getTeachers();
   return (
     <>

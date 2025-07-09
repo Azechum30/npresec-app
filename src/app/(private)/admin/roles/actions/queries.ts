@@ -9,7 +9,7 @@ import { z } from "zod";
 
 export const getRoles = async () => {
   try {
-    const permission = await hasPermissions("view:role");
+    const permission = await hasPermissions("view:roles");
     if (!permission) {
       return { error: "Permission denied!" };
     }
@@ -30,7 +30,7 @@ export const getRoles = async () => {
 
 export const getRole = async (id: string) => {
   try {
-    const permission = await hasPermissions("view:role");
+    const permission = await hasPermissions("view:roles");
     if (!permission) return { error: "Permission denied" };
 
     const result = z.string().safeParse(id);

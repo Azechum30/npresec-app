@@ -14,7 +14,7 @@ import { hasPermissions } from "@/lib/hasPermission";
 
 export const bulkCreateTeachers = async (values: BulkCreateTeachersType) => {
   try {
-    const permission = await hasPermissions("create:teacher");
+    const permission = await hasPermissions("create:teachers");
     const errors: string[] = [];
 
     if (!permission) throw new Error("Unauthorized!");
@@ -154,10 +154,13 @@ export const bulkCreateTeachers = async (values: BulkCreateTeachersType) => {
 
     if (errors.length > 0) return { errors };
 
-    const departmentMap = existingDepartments.reduce((map, dept) => {
-      map[dept.name] = dept.id;
-      return map;
-    }, {} as Record<string, string>);
+    const departmentMap = existingDepartments.reduce(
+      (map, dept) => {
+        map[dept.name] = dept.id;
+        return map;
+      },
+      {} as Record<string, string>
+    );
 
     normalizedTeachers.forEach((teacher) => {
       const departmentId = teacher.departmentId as string;

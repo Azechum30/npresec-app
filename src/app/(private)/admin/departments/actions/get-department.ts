@@ -6,7 +6,7 @@ import { DepartmentSelect } from "@/lib/types";
 
 export const getDepartment = async (id: string) => {
   try {
-    const permissions = await hasPermissions("view:department");
+    const permissions = await hasPermissions("view:departments");
 
     if (!permissions) throw new Error("Unauthorized!");
 

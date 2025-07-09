@@ -3,16 +3,19 @@ import RenderDepartmentsDataTable from "./components/render-departments-datatebl
 import DepartmentUploadProvider from "./components/DepartmentUploadProvider";
 import { Suspense } from "react";
 import { DataTableSkeleton } from "@/components/customComponents/DataTable-Skeleton";
-import { hasPermissions } from "@/lib/hasPermission";
 import { redirect } from "next/navigation";
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
 import EditDepartment from "./components/EditDepartment";
 import CreateDepartmentDialog from "./components/create-department-dialog";
+import { headers } from "next/headers";
+import { getAuthUser } from "@/lib/getAuthUser";
 
 export default async function DepartmentPage() {
-  const permissions = await hasPermissions("view:department");
-  if (!permissions) {
-    return redirect("/403");
+  const user = await getAuthUser();
+
+  if (!user || user.role?.name !== "admin") {
+    const referer = (await headers()).get("referer") || "/sign-in";
+    return redirect(referer);
   }
 
   const promise = getServerSideProps();

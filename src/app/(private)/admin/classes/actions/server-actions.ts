@@ -16,13 +16,13 @@ import {
   UpdateClassType,
   BulkClassesSchema,
 } from "@/lib/validation";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../../../../prisma/generated/client";
 import { revalidatePath } from "next/cache";
 import "server-only";
 
 export const createClassAction = async (values: ClassesType) => {
   try {
-    const permission = await hasPermissions("create:class");
+    const permission = await hasPermissions("create:classes");
 
     if (!permission) throw new Error("unauthorized!");
 
@@ -139,7 +139,7 @@ export const getClassesAction = async (codes?: string[]) => {
 
 export const getClass = async (id: string) => {
   try {
-    const permission = await hasPermissions("view:class");
+    const permission = await hasPermissions("view:classes");
 
     if (!permission) throw new Error("Unauthorized!");
 
@@ -160,7 +160,7 @@ export const getClass = async (id: string) => {
 
 export const updateClass = async (values: UpdateClassType) => {
   try {
-    const permission = await hasPermissions("edit:class");
+    const permission = await hasPermissions("edit:classes");
 
     if (!permission) throw new Error("unauthorized!");
 
@@ -207,17 +207,20 @@ export const updateClass = async (values: UpdateClassType) => {
 
 export const deleteClass = async (param: GenericDeleteType) => {
   try {
-    const permission = await hasPermissions("delete:class");
+    const permission = await hasPermissions("delete:classes");
 
     if (!permission) throw new Error("Permission denied!");
 
     const { error, success, data } = GenericDeleteSchema.safeParse(param);
 
     if (!success) {
-      const zodError = error.errors.reduce((acc, issue) => {
-        acc[issue.path[0]] = issue.message;
-        return acc;
-      }, {} as Record<string, string>);
+      const zodError = error.errors.reduce(
+        (acc, issue) => {
+          acc[issue.path[0]] = issue.message;
+          return acc;
+        },
+        {} as Record<string, string>
+      );
 
       return { error: zodError };
     }
@@ -243,15 +246,18 @@ export const deleteClass = async (param: GenericDeleteType) => {
 
 export const bulkDeleteClasses = async (ids: BulkDeleteClassesType) => {
   try {
-    const permission = await hasPermissions("delete:class");
+    const permission = await hasPermissions("delete:classes");
     if (!permission) throw new Error("unauthorized!");
     const { error, success, data } = BulkDeleteClassesSchema.safeParse(ids);
 
     if (!success) {
-      const zodError = error.errors.reduce((acc, issue) => {
-        acc[issue.path[0]] = issue.message;
-        return acc;
-      }, {} as Record<string, string>);
+      const zodError = error.errors.reduce(
+        (acc, issue) => {
+          acc[issue.path[0]] = issue.message;
+          return acc;
+        },
+        {} as Record<string, string>
+      );
 
       return { error: zodError };
     }
@@ -275,7 +281,7 @@ export const bulkDeleteClasses = async (ids: BulkDeleteClassesType) => {
 export const bulkUploadClasses = async (values: BulkClassesType) => {
   console.log("values: ", values);
   try {
-    const permission = await hasPermissions("create:class");
+    const permission = await hasPermissions("create:classes");
     if (!permission) throw new Error("Unauthorized!");
     const errors: string[] = [];
 

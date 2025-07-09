@@ -13,12 +13,12 @@ import {
   CourseUpdateSchema,
   CourseUpdateType,
 } from "@/lib/validation";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../../../../prisma/generated/client";
 import { revalidatePath } from "next/cache";
 
 export const createCourse = async (values: CoursesType) => {
   try {
-    const permission = await hasPermissions("create:course");
+    const permission = await hasPermissions("create:courses");
     if (!permission) {
       return { error: "Permission denied!" };
     }
@@ -123,10 +123,10 @@ export const getCourses = async (codes?: string[]) => {
     const user = await getAuthUser();
 
     if (!user) {
-     return { error: "User not found!" };
+      return { error: "User not found!" };
     }
 
-    const permission = await hasPermissions("view:teacher");
+    const permission = await hasPermissions("view:courses");
     if (!permission) {
       return { error: "Permission denied!" };
     }
@@ -172,7 +172,7 @@ export const getCourses = async (codes?: string[]) => {
 
 export const getCourse = async (id: string) => {
   try {
-    const permission = await hasPermissions("view:teacher");
+    const permission = await hasPermissions("view:courses");
     if (!permission) {
       return { error: "Permission denied!" };
     }
@@ -193,7 +193,7 @@ export const getCourse = async (id: string) => {
 
 export const updateCourse = async (values: CourseUpdateType) => {
   try {
-    const permission = await hasPermissions("edit:course");
+    const permission = await hasPermissions("edit:courses");
     if (!permission) {
       return { error: "Permission denied!" };
     }
@@ -212,20 +212,21 @@ export const updateCourse = async (values: CourseUpdateType) => {
       }
     }
 
-    const {data: courseData, id } = data!
+    const { data: courseData, id } = data!;
 
-    console.log( { ...courseData, id });
-
+    console.log({ ...courseData, id });
 
     const course = await prisma.course.update({
       where: {
-        id
+        id,
       },
       data: {
         ...courseData,
         departments: courseData.departments
           ? {
-              set: courseData.departments.map(departmentId => ({id: departmentId}))
+              set: courseData.departments.map((departmentId) => ({
+                id: departmentId,
+              })),
             }
           : undefined,
         classes: courseData.classes
@@ -260,8 +261,8 @@ export const updateCourse = async (values: CourseUpdateType) => {
         const errorMessages = targetFields.includes("code")
           ? "Course code provided in your request already exists!"
           : targetFields.includes("title")
-          ? "Course title provided already exist!"
-          : "An unknown error has occurred!";
+            ? "Course title provided already exist!"
+            : "An unknown error has occurred!";
 
         return { error: errorMessages };
       }
@@ -273,7 +274,7 @@ export const updateCourse = async (values: CourseUpdateType) => {
 
 export const deleteCourse = async (id: string) => {
   try {
-    const permission = await hasPermissions("delete:course");
+    const permission = await hasPermissions("delete:courses");
     if (!permission) {
       return { error: "Permission denied!" };
     }
@@ -297,7 +298,7 @@ export const deleteCourse = async (id: string) => {
 
 export const bulkDeleteCourses = async (ids: string[]) => {
   try {
-    const permission = await hasPermissions("delete:course");
+    const permission = await hasPermissions("delete:courses");
     if (!permission) {
       return { error: "Permission denied!" };
     }
@@ -330,7 +331,7 @@ export const bulkDeleteCourses = async (ids: string[]) => {
 
 export const bulkUploadCourses = async (values: BulkUploadCoursesType) => {
   try {
-    const permission = await hasPermissions("create:course");
+    const permission = await hasPermissions("create:courses");
 
     if (!permission) {
       return { error: "Permission denied!" };
@@ -430,8 +431,8 @@ export const bulkUploadCourses = async (values: BulkUploadCoursesType) => {
           missingClasses.length > 0
             ? `Classes: ${missingClasses.join(", ")}`
             : missingTeachers.length > 0
-            ? `Teachers: ${missingDepartments.join(", ")}`
-            : `Departments: ${missingDepartments.join(", ")}`
+              ? `Teachers: ${missingDepartments.join(", ")}`
+              : `Departments: ${missingDepartments.join(", ")}`
         }`,
       };
     }
@@ -454,20 +455,29 @@ export const bulkUploadCourses = async (values: BulkUploadCoursesType) => {
       return { errors };
     }
 
-    const classesMap = existingClasses.reduce((acc, cls) => {
-      acc[cls.name] = cls.id;
-      return acc;
-    }, {} as Record<string, string>);
+    const classesMap = existingClasses.reduce(
+      (acc, cls) => {
+        acc[cls.name] = cls.id;
+        return acc;
+      },
+      {} as Record<string, string>
+    );
 
-    const teachersMap = existingTeachers.reduce((acc, tls) => {
-      acc[tls.employeeId] = tls.id;
-      return acc;
-    }, {} as Record<string, string>);
+    const teachersMap = existingTeachers.reduce(
+      (acc, tls) => {
+        acc[tls.employeeId] = tls.id;
+        return acc;
+      },
+      {} as Record<string, string>
+    );
 
-    const departmentMap = existingDepartments.reduce((acc, dp) => {
-      acc[dp.name] = dp.id;
-      return acc;
-    }, {} as Record<string, string>);
+    const departmentMap = existingDepartments.reduce(
+      (acc, dp) => {
+        acc[dp.name] = dp.id;
+        return acc;
+      },
+      {} as Record<string, string>
+    );
 
     const coursesToCreate = bulkData?.map((course) => ({
       code: course.code,

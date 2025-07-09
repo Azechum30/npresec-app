@@ -1,6 +1,5 @@
 "use server";
 import "server-only";
-import { getSession } from "@/lib/get-user";
 import { prisma } from "@/lib/prisma";
 import {
   BulkUploadDepartmentSchema,
@@ -16,7 +15,7 @@ export const bulkUploadDepartments = async (
 ) => {
   try {
     const permissions = await hasPermissions(
-      ["view:department", "create:department"],
+      ["view:departments", "create:departments"],
       { requireAll: true }
     );
     if (!permissions) throw new Error("Unauthorized!");
@@ -64,12 +63,15 @@ export const bulkUploadDepartments = async (
       }
     });
 
-    const teacherMap = HODs.reduce((acc, curr) => {
-      if (curr !== null) {
-        acc[curr.employeeId] = curr.id;
-      }
-      return acc;
-    }, {} as Record<string, string>);
+    const teacherMap = HODs.reduce(
+      (acc, curr) => {
+        if (curr !== null) {
+          acc[curr.employeeId] = curr.id;
+        }
+        return acc;
+      },
+      {} as Record<string, string>
+    );
 
     normalizedDepartments.forEach((department) => {
       if (teacherMap[department.headId as string]) {

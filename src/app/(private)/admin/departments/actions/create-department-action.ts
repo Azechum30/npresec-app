@@ -1,14 +1,14 @@
 "use server";
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../../../../prisma/generated/client";
 import { DepartmentType, DepartmentSchema } from "@/lib/validation";
 import { DepartmentSelect } from "@/lib/types";
 import { hasPermissions } from "@/lib/hasPermission";
 
 export const createDepartment = async (values: DepartmentType) => {
   try {
-    const permissions = await hasPermissions("create:department");
+    const permissions = await hasPermissions("create:departments");
 
     if (!permissions) throw new Error("Unauthorized!");
 
@@ -19,12 +19,12 @@ export const createDepartment = async (values: DepartmentType) => {
       const errors = zodError.fieldErrors.code
         ? zodError.fieldErrors.code[0]
         : zodError.fieldErrors.name
-        ? zodError.fieldErrors.name[0]
-        : zodError.fieldErrors.headId
-        ? zodError.fieldErrors.headId[0]
-        : zodError.fieldErrors.createdAt
-        ? zodError.fieldErrors.createdAt[0]
-        : "A zod validation error has occured!";
+          ? zodError.fieldErrors.name[0]
+          : zodError.fieldErrors.headId
+            ? zodError.fieldErrors.headId[0]
+            : zodError.fieldErrors.createdAt
+              ? zodError.fieldErrors.createdAt[0]
+              : "A zod validation error has occured!";
       return { error: errors };
     }
 
@@ -49,8 +49,8 @@ export const createDepartment = async (values: DepartmentType) => {
         const errorMessage = targetFields.includes("code")
           ? "Department code already taken!"
           : targetFields.includes("name")
-          ? "Department name already taken!"
-          : "Teacher is already assigned!";
+            ? "Department name already taken!"
+            : "Teacher is already assigned!";
         return { error: errorMessage };
       }
     } else if (error instanceof TypeError) {
@@ -109,8 +109,8 @@ export const updateDepartmentAction = async (
         const errorMessage = targetFields.includes("code")
           ? "Department code already taken!"
           : targetFields.includes("name")
-          ? "Department name already taken!"
-          : "Teacher is already assigned!";
+            ? "Department name already taken!"
+            : "Teacher is already assigned!";
         return { error: errorMessage };
       }
     } else if (error instanceof TypeError) {

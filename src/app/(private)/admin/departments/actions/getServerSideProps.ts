@@ -3,14 +3,15 @@
 import { hasPermissions } from "@/lib/hasPermission";
 import { prisma } from "@/lib/prisma";
 import { DepartmentSelect } from "@/lib/types";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../../../../prisma/generated/client";
+import { getErrorMessage } from "@/lib/getErrorMessage";
 
 export const getServerSideProps = async (codes?: string[]) => {
   try {
-    const permissions = await hasPermissions("view:department");
+    const permissions = await hasPermissions("view:departments");
 
     if (!permissions) {
-      throw new Error("Permission denied!");
+      return { error: "Permission denied!" };
     }
 
     let query: Prisma.DepartmentWhereInput = {};
@@ -35,7 +36,7 @@ export const getServerSideProps = async (codes?: string[]) => {
 
     return { departments };
   } catch (error) {
-    console.error(error);
-    return { error: "Something went wrong!" };
+    console.error("Could not fetch departments", error);
+    return getErrorMessage(error);
   }
 };

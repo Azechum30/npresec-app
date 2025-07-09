@@ -6,12 +6,22 @@ import { Suspense } from "react";
 import { StudentDataTable } from "./components/render-student-datatable";
 import { getStudents } from "./actions/action";
 import StudentProvider from "./components/StudentProvider";
+import { getAuthUser } from "@/lib/getAuthUser";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Admin - Students",
 };
 
 export default async function StudentsPage() {
+  const user = await getAuthUser();
+
+  if (!user || user.role?.name !== "admin") {
+    const referer = (await headers()).get("referer") || "/sign-in";
+    return redirect(referer);
+  }
+
   const promise = getStudents();
   return (
     <>
