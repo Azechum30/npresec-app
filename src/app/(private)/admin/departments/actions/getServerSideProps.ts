@@ -11,7 +11,7 @@ export const getServerSideProps = async (codes?: string[]) => {
     const permissions = await hasPermissions("view:departments");
 
     if (!permissions) {
-      return { error: "Permission denied!" };
+      return { error: "Permission denied" };
     }
 
     let query: Prisma.DepartmentWhereInput = {};
@@ -37,6 +37,6 @@ export const getServerSideProps = async (codes?: string[]) => {
     return { departments };
   } catch (error) {
     console.error("Could not fetch departments", error);
-    return getErrorMessage(error);
+    return { error: getErrorMessage(error) };
   }
 };
