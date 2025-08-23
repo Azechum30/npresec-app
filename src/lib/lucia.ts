@@ -1,7 +1,6 @@
 import { PrismaAdapter } from "@lucia-auth/adapter-prisma";
 import { Lucia } from "lucia";
 import { prisma } from "./prisma";
-import { Prisma } from "@prisma/client";
 
 interface DatabaseUserAttributes {
   id: string;

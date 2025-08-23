@@ -1,23 +1,26 @@
-import { Loader2 } from "lucide-react"
-import { Button, ButtonProps } from "../ui/button"
-import { cn } from "@/lib/utils"
+import { Loader2 } from "lucide-react";
+import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
+import { ReactNode } from "react";
 
-interface LoadingButtonProps extends ButtonProps {
-	loading: boolean
+interface LoadingButtonProps {
+  loading: boolean;
+  children: ReactNode;
+  className?: string;
 }
 export default function LoadingButton({
-	loading,
-	className,
-	...props
+  loading,
+  children,
+  className,
+  ...props
 }: LoadingButtonProps) {
-	return (
-		<Button
-			disabled={loading}
-			className={cn(" w-full flex items-center gap-x-3", className)}
-			{...props}
-		>
-			{props.children}
-			{loading && <Loader2 className='size-5 animate-spin' />}
-		</Button>
-	)
+  return (
+    <Button
+      disabled={loading}
+      className={cn(" w-full flex items-center gap-x-3", className)}
+      {...props}>
+      {children}
+      {loading && <Loader2 className="size-5 animate-spin" />}
+    </Button>
+  );
 }

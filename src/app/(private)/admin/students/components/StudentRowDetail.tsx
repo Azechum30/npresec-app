@@ -22,10 +22,10 @@ export default function StudentRowDetail({ row }: StudentRowDetailProps) {
   const { original } = row;
 
   return (
-    <div className="p-6 md:p-8 bg-gradient-to-br from-white via-orange-50 to-orange-100 dark:from-neutral-900 dark:via-neutral-900 dark:to-orange-950 rounded-2xl shadow-xl border border-gray-200 dark:border-neutral-800">
+    <div className="p-6 md:p-8 bg-linear-to-br from-white via-orange-50 to-orange-100 dark:from-neutral-900 dark:via-neutral-900 dark:to-orange-950 rounded-2xl shadow-xl border border-gray-200 dark:border-neutral-800">
       {/* Header */}
       <div className="flex items-center gap-6 mb-8">
-        <div className="flex-shrink-0 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full w-20 h-20 flex items-center justify-center text-white text-4xl font-extrabold shadow-lg border-4 border-white dark:border-neutral-900">
+        <div className="shrink-0 bg-linear-to-br from-orange-500 to-orange-600 rounded-full w-20 h-20 flex items-center justify-center text-white text-4xl font-extrabold shadow-lg border-4 border-white dark:border-neutral-900">
           {original.firstName[0]}
           {original.lastName[0]}
         </div>

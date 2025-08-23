@@ -98,7 +98,7 @@ export const TagsComponent: FC<TagsInputProps> = ({
               </span>
               <span
                 onClick={() => handleRemove(index)}
-                className="bg-background/75 p-[1px] rounded-full flex justify-center items-center absolute top-1/2 right-2 -translate-y-1/2 z-10 text-red-500 cursor-pointer">
+                className="bg-background/75 p-px rounded-full flex justify-center items-center absolute top-1/2 right-2 -translate-y-1/2 z-10 text-red-500 cursor-pointer">
                 <X className="size-1 " />
               </span>
             </div>

@@ -22,12 +22,12 @@ export default function ColumnVisibility({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className={cn("max-w-[9.5rem]", className)}>
+        <Button variant="outline" className={cn("max-w-38", className)}>
           <Columns3 className="size-4" /> Columns{" "}
           <ChevronDown className="size-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="center" className="min-w-[8rem]">
+      <DropdownMenuContent align="center" className="min-w-32">
         <DropdownMenuLabel className="text-xs">Column List</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {table

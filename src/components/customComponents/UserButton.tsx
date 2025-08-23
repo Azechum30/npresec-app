@@ -37,8 +37,8 @@ export default function UserButton() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="w-fit md:w-full h-full flex justify-center md:justify-start text-left rounded-none py-2 items-center gap-x-3 border-0 backdrop-blur-sm">
-          <Avatar className="backdrop-blur-sm">
+          className="w-fit md:w-full h-full flex justify-center md:justify-start text-left rounded-none py-2 items-center gap-x-3 border-0 backdrop-blur-xs">
+          <Avatar className="backdrop-blur-xs">
             <AvatarImage src={user?.picture!} />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>

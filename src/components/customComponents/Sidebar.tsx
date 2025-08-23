@@ -85,19 +85,19 @@ export default function Sidebar() {
   return (
     <div
       className={cn(
-        "inset-[68px] bg-inherit sticky top-0 left-0 z-30 h-screen border-r aside backdrop-blur overflow-x-clip",
+        "inset-[68px] bg-inherit sticky top-0 left-0 z-30 h-screen border-r aside backdrop-blur-sm overflow-x-clip",
         open && "open"
       )}>
       <div className="w-fit md:w-full flex flex-col items-center md:items-start gap-y-4 relative h-full sidebar-content">
         <div
           className={cn(
             `${buttonVariants({
-              variant: "outline",
-            })} group backdrop-blur-sm w-fit md:w-full px-4 py-2 text-left justify-center md:justify-start flex gap-x-3 rounded-none items-center h-14 sticky top-0 left-0 z-30 border-0 border-b`
+              variant: "outline-solid",
+            })} group backdrop-blur-xs w-fit md:w-full px-4 py-2 text-left justify-center md:justify-start flex gap-x-3 rounded-none items-center h-14 sticky top-0 left-0 z-30 border-0 border-b`
           )}>
-          <div className="size-10 flex-shrink-0 flex items-center justify-center border-2 dark:group-hover:border-gray-600  rounded-full p-1.5 ">
+          <div className="size-10 shrink-0 flex items-center justify-center border-2 dark:group-hover:border-gray-600  rounded-full p-1.5 ">
 
-          <Avatar className="backdrop-blur-sm w-full h-full" >
+          <Avatar className="backdrop-blur-xs w-full h-full" >
             <AvatarImage src="/logo.png" />
             <AvatarFallback>NP</AvatarFallback>
           </Avatar>

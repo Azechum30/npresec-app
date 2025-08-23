@@ -42,13 +42,13 @@ export default function LogoutButton() {
         </DialogContent>
       </Dialog>
       <form action={action}>
-        <DropdownMenuItem>
+        <DropdownMenuItem asChild>
           <LoadingButton
             loading={isLoading}
-            className="text-sm w-full text-left flex items-center justify-start"
+            className="text-sm w-full text-left flex items-center justify-start hover:cursor-pointer"
             size="sm"
             variant="ghost">
-            <LogOutIcon className="size-4 mr-2" />
+            <LogOutIcon className="size-4" />
             Logout
           </LoadingButton>
         </DropdownMenuItem>

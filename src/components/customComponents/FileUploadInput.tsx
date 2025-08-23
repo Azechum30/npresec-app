@@ -54,7 +54,7 @@ export default function FileUploadInput<T>({
                   inputRef.current?.blur();
                 }
               }}
-              className="border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-lg p-4 bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-slate-900  dark:via-slate-900 dark:to-blue-950 relative flex justify-center items-center cursor-pointer transition-all duration-200 hover:shadow-lg">
+              className="border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-lg p-4 bg-linear-to-br from-blue-50 via-white to-blue-100 dark:from-slate-900  dark:via-slate-900 dark:to-blue-950 relative flex justify-center items-center cursor-pointer transition-all duration-200 hover:shadow-lg">
               <Input
                 ref={inputRef}
                 id={name}

@@ -45,7 +45,7 @@ function DashboardSkeleton() {
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="rounded-xl border bg-card text-card-foreground shadow">
+          <div key={i} className="rounded-xl border bg-card text-card-foreground shadow-sm">
             <div className="p-6 flex flex-col space-y-2">
               <Skeleton className="h-5 w-1/2" />
               <Skeleton className="h-10 w-1/3" />
@@ -55,7 +55,7 @@ function DashboardSkeleton() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-xl border bg-card text-card-foreground shadow col-span-2">
+        <div className="rounded-xl border bg-card text-card-foreground shadow-sm col-span-2">
           <div className="p-6">
             <Skeleton className="h-7 w-1/4 mb-4" />
             <div className="space-y-2">
@@ -66,7 +66,7 @@ function DashboardSkeleton() {
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card text-card-foreground shadow">
+        <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
           <div className="p-6">
             <Skeleton className="h-7 w-1/2 mb-4" />
             <div className="space-y-2">

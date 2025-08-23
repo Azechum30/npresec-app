@@ -31,7 +31,7 @@ export default function StudentOnboardingNavbar({
               {/* Vertical connector for desktop */}
 
               {index < steps.length - 1 && (
-                <div className="flex-grow justify-center relative w-[2px] h-[27px]">
+                <div className="grow justify-center relative w-[2px] h-[27px]">
                   <div className="hidden md:block absolute left-4 top-[29px] h-full w-[2px] bg-muted-foreground -z-10" />
                   <div
                     className={cn(
@@ -78,7 +78,7 @@ export default function StudentOnboardingNavbar({
 
                 {/* Horizontal connector for mobile - FIXED POSITIONING */}
                 {index < steps.length - 1 && (
-                  <div className="flex-grow h-[2px] w-full relative md:hidden">
+                  <div className="grow h-[2px] w-full relative md:hidden">
                     <div className="absolute top-0 left-0 w-full h-full bg-muted-foreground" />
                     <div
                       className={cn(

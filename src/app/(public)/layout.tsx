@@ -7,11 +7,9 @@ export default function PublicLayout({
   readonly children: ReactNode;
 }) {
   return (
-    <div className="relative h-screen">
+    <div>
       <Navbar />
-      <div className="w-full p-6 absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2">
-        {children}
-      </div>
+      <main>{children}</main>
     </div>
   );
 }
