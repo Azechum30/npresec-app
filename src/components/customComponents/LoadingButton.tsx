@@ -1,13 +1,14 @@
 import { Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
-import { ReactNode } from "react";
+import { ButtonHTMLAttributes, ReactNode } from "react";
 
-interface LoadingButtonProps {
+type LoadingButtonProps = {
   loading: boolean;
   children: ReactNode;
   className?: string;
-}
+} & React.ComponentProps<typeof Button>;
+
 export default function LoadingButton({
   loading,
   children,
