@@ -3,7 +3,7 @@
 import { getAuthUser } from "@/lib/getAuthUser";
 import React, { createContext, useContext } from "react";
 
-type AuthUser = Awaited<ReturnType<typeof getAuthUser>>;
+export type AuthUser = Awaited<ReturnType<typeof getAuthUser>>;
 
 const SessionContext = createContext<AuthUser>(null);
 
@@ -19,8 +19,8 @@ export default function SessionProvider({
 export const useAuth = () => {
   const context = useContext(SessionContext);
 
-  if (!context)
-    throw new Error("useGetSession must be used inside a SessionProvider!");
+  if (context === undefined)
+    throw new Error("useAuth must be used inside a SessionProvider!");
 
   return context;
 };

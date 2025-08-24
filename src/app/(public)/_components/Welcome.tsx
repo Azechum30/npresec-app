@@ -65,27 +65,15 @@ export const Welcome = () => {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: ".welcome",
-          // toggleActions: "restart pause reverse pause",
-          // scrub: 1,
-          // pin: true,
         },
       });
       const ctx = gsap.context(() => {
-        tl.from(".card-1", {
-          x: 100,
+        tl.from(".welcome", {
           opacity: 0,
-          duration: 1,
-        });
-        tl.from("#card-2", {
           y: 100,
-          opacity: 0,
           duration: 1,
-        });
-
-        tl.from("#card-3", {
-          x: 100,
-          opacity: 0,
-          duration: 1,
+          stagger: 0.5,
+          ease: "power2.inOut",
         });
       }, sectionRef);
 
@@ -95,10 +83,10 @@ export const Welcome = () => {
   );
 
   return (
-    <section className="bg-background" ref={sectionRef}>
+    <section className="bg-background welcome" ref={sectionRef}>
       <PublicMainContainer className="py-20 bg-background">
-        <div className="px-6 grid md:grid-cols-2 lg:grid-cols-3 gap-6 welcome">
-          <div className="flex flex-col gap-4 card-1">
+        <div className="px-6 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex flex-col gap-4 welcome">
             <h2 className="text-xl font-medium relative pb-4 after:absolute after:z-0 after:bottom-0 after:w-1/4 inset-0 after:border-b-2 after:border-primary after:flex after:justify-start text-orange-500">
               Welcome Message
             </h2>
@@ -123,12 +111,10 @@ export const Welcome = () => {
               <ArrowRight className="size-4 opacity-60" />
             </Link>
           </div>
-          <div id="card-2" className="mx-auto lg:max-w-sm md:ml-6">
+          <div className="mx-auto lg:max-w-sm md:ml-6 welcome">
             <CarouselComponent images={CarouselImages} />
           </div>
-          <div
-            id="card-3"
-            className="flex md:hidden lg:flex flex-col gap-3 lg:ml-6">
+          <div className="flex md:hidden lg:flex flex-col gap-3 lg:ml-6 welcome">
             <h1 className="text-xl font-medium relative pb-4 after:absolute after:z-0 after:bottom-0 after:w-1/4 inset-0 after:border-b-2 after:border-primary after:flex after:justify-start text-orange-500">
               Key Links
             </h1>

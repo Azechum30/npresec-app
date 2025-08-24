@@ -30,21 +30,33 @@ export const Hero = () => {
       const tl = gsap.timeline();
 
       const cxt = gsap.context(() => {
-        tl.from(split.chars, {
-          yPercent: "random([-100, 100])",
-          rotation: "random(-30, 30)",
-          ease: "back.inOut",
-          autoAlpha: 0,
-          repeat: -1,
-          yoyo: true,
-          stagger: {
-            each: 0.05,
-            from: "center",
-          },
+        tl.from(".backgroundImage", {
+          opacity: 0,
+          scale: 0.8,
+          duration: 2,
+          ease: "power2.inOut",
+        });
+
+        tl.from(".badge", {
+          opacity: 0,
+          y: 100,
+          duration: 2,
+        });
+
+        tl.from(".title", {
+          opacity: 0,
+          duration: 2,
+          y: 100,
         });
 
         tl.from(".description", {
-          yPercent: 100,
+          y: 100,
+          opacity: 0,
+          duration: 2,
+        });
+
+        tl.from(".button", {
+          y: 100,
           opacity: 0,
           duration: 2,
         });
@@ -61,33 +73,35 @@ export const Hero = () => {
       <Image
         src={BackgroundImage}
         alt="Background image"
-        className="w-screen h-screen object-cover object-center"
+        className="h-svh object-cover object-center backgroundImage"
       />
-      <div className="w-full absolute top-0 z-10 bg-background/80 min-h-svh hero">
+      <div className="w-full absolute top-0 z-10 bg-background/80 dark:bg-background/95 h-svh hero flex items-center justify-center">
         <PublicMainContainer className="relative py-20">
-          <div className="flex flex-col text-center items-center space-y-8">
-            <Badge variant="outline">
+          <div className="flex flex-col text-center  items-center space-y-8">
+            <Badge
+              variant="outline"
+              className="badge dark:text-primary-foreground">
               An Institution of Academic Excellence
             </Badge>
-            <h1 className="tracking-tight text-4xl md:text-6xl font-bold title">
+            <h1 className="tracking-tight text-4xl md:text-6xl font-bold title dark:text-primary-foreground">
               <span className="bg-gradient-to-l from-orange-500 to-pink-500 bg-clip-text bg-transparent">
                 Presbyterian
               </span>{" "}
               SHTS, Nakpanduri
             </h1>
-            <p className="max-w-xl mx-auto text-muted-foreground description">
+            <p className="max-w-xl mx-auto dark:text-primary-foreground/95 description">
               At Presbyterian SHTS, we nurture curiosity, character, and
               creativity—preparing students to thrive academically, socially,
               and beyond. From innovative classrooms to vibrant student life, we
               create a foundation where ambition meets opportunity.
             </p>
 
-            <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 button ">
               <Link
                 href="/programs"
                 className={buttonVariants({
                   size: "lg",
-                  className: "hover:-translate-x-4 duration-100 ease-in-out",
+                  className: "hover:-translate-x-4 duration-100 ease-in-out ",
                 })}>
                 <Library className="size-6 opacity-60" aria-hidden={true} />
                 Learning Areas

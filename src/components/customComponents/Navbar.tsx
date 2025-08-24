@@ -6,13 +6,14 @@ import { ThemeSwitcher } from "./ThemeSwitecher";
 import { UserProfile } from "@/app/(public)/_components/UserProfile";
 import { buttonVariants } from "../ui/button";
 import { LogIn } from "lucide-react";
+import { TriggerMobileNavbar } from "./TriggerMobileNavbar";
 
 type NavigationLinksProps = {
   href: string;
   title: string;
 };
 
-const Links: NavigationLinksProps[] = [
+export const Links: NavigationLinksProps[] = [
   {
     title: "Home",
     href: "/",
@@ -27,7 +28,7 @@ const Links: NavigationLinksProps[] = [
   },
 ];
 
-type AuthUserType = {
+export type AuthUserType = {
   id?: string;
   email?: string;
   username?: string;
@@ -45,7 +46,7 @@ export default async function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex min-h-16 items-center px-2 md:px-6 lg:px-8 py-2">
+      <div className="container mx-auto flex min-h-16 items-center px-2 md:px-6 lg:px-8 py-2 relative">
         <Link href="/" className="flex items-center gap-2 mr-4">
           <div className="flex items-center p-1 border rounded-md size-10">
             <Image
@@ -89,6 +90,10 @@ export default async function Navbar() {
             )}
           </div>
         </nav>
+        {/** Mobile Navigation */}
+        <div className="md:hidden flex absolute top-1/2 right-6 -translate-y-1/2 z-100">
+          <TriggerMobileNavbar />
+        </div>
       </div>
     </header>
   );

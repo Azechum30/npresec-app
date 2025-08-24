@@ -16,6 +16,7 @@ export const ExportAsExcel = <T extends IContent>({
   filename,
 }: ExportXLSXProps<T>) => {
   const user = useAuth();
+  if (!user) return null;
 
   if (!(user.role?.name == "admin" || user.role?.name == "teacher"))
     return null;
