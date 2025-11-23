@@ -143,7 +143,7 @@ export const Footer = () => {
       });
 
       tl.from(".footer-container", {
-        width: 0,
+        opacity: 0,
         y: 100,
         duration: 1.5,
         ease: "power2.inOut",
@@ -164,7 +164,7 @@ export const Footer = () => {
       });
 
       tl.from(".footer-copyright", {
-        width: 0,
+        opacity: 0,
         duration: 1.5,
         y: 100,
         ease: "power2.inOut",
@@ -172,7 +172,7 @@ export const Footer = () => {
 
       tl.from(".footer-copyright-content", {
         opacity: 0,
-        x: 100,
+        y: 100,
         duration: 1.5,
         ease: "power2.inOut",
         stagger: 0.2,
@@ -186,7 +186,7 @@ export const Footer = () => {
         className="background-image bg-primary dark:bg-background opacity-50 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-contain bg-center bg-no-repeat"
         style={{ backgroundImage: "url(/logo.png)" }}></div>
       <div className="px-4 md:px-6 lg:px-8 z-10 relative bg-primary/95 dark:bg-background/95 footer-container">
-        <PublicMainContainer className="py-20  ">
+        <PublicMainContainer className="py-20">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 footer-grid ">
             <div className="flex flex-col gap-4 footer-grid-children">
               <h4 className="text-primary-foreground pb-6 text-xl font-bold relative after:absolute after:top-10/12 after:left-0 after:inset-0 after:text-center after:h-[1px] after:w-full after:flex after:items-center after:justify-start after:bg-primary-foreground/50">

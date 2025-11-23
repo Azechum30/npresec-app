@@ -4,7 +4,7 @@ import { bulkDeleteTeachers, getTeachers } from "../actions/server";
 import { toast } from "sonner";
 
 export const useBulkDeleteTeachers = () => {
-  const [isPending, startTransition] = useTransition();
+  const [isBulkDeletePending, startTransition] = useTransition();
   const { bulkAddData, bulkDeleteData } = useTeacherStore();
 
   const deleteteachers = async (ids: string[], employeeIds: string[]) => {
@@ -31,5 +31,5 @@ export const useBulkDeleteTeachers = () => {
     });
   };
 
-  return { deleteteachers, isPending };
+  return { deleteteachers, isBulkDeletePending };
 };

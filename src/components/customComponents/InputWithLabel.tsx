@@ -49,18 +49,16 @@ export default function InputWithLabel<T>({
             className={cn(
               "text-sm font-semibold",
               isRequired && "flex items-center gap-1",
-                className
+              className
             )}>
             {fieldTitle}
             {isRequired && <span className="text-red-500">*</span>}
           </FormLabel>
           <FormControl>
             <Input
+              // aria-invalid={form.formState.errors ? true : false}
               id={name}
-              className={cn(
-                "w-full max-w-xl disabled:text-gray-600 dark:disabled:text-blue-400",
-                className
-              )}
+              className={cn("w-full max-w-xl ", className)}
               {...field}
               {...props}
             />

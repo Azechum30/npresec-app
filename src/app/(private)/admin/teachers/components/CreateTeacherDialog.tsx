@@ -11,46 +11,55 @@ import {
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import CreateTeacherForm from "./forms/create-teacher-form";
-import { TeacherType } from "@/lib/validation";
-import { createTeacher } from "../actions/server";
-import { useTeacherStore } from "@/hooks/use-generic-store";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { useHandleTeacherCreation } from "../hooks/use-handle-teacher-creation";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 export default function CreateTeacherDialog() {
-  const { dialogs, onClose } = useGenericDialog();
-  const { addData, deleteData, updateData } = useTeacherStore();
-  const handleSubmit = async (data: TeacherType) => {
-    addData(data as any);
-    const res = await createTeacher(data);
-    if (res?.teacher) {
-      onClose("createTeacher");
-      toast.success("Teacher added successfully!");
-      updateData(res?.teacher.employeeId as string, res.teacher);
-    } else if (res?.errors) {
-      console.log(res.errors);
-      toast.error(res.errors.join("\n"));
-      deleteData(data.employeeId);
-    } else {
-      toast.error(res.error);
-      deleteData(data.employeeId);
+  const { id, dialogs, onClose } = useGenericDialog();
+  const { handleTeacherCreation, isPending, createError, createSuccess } =
+    useHandleTeacherCreation();
+
+  const previousCreationRef = useRef<boolean>(false);
+  useEffect(() => {
+    const wasCreating = previousCreationRef.current;
+
+    if (wasCreating && !isPending && createError) {
+      toast.error(createError);
     }
-    return res;
-  };
+    previousCreationRef.current = isPending;
+  }, [createError, isPending]);
+
+  useEffect(() => {
+    if (createSuccess) {
+      toast.success("Teacher profile created successfully");
+      setTimeout(() => {
+        console.log(id);
+        onClose("createTeacher");
+      }, 100);
+    }
+  }, [createSuccess, onClose]);
+
   return (
     <Dialog
-      open={dialogs["createTeacher"]}
-      onOpenChange={() => onClose("createTeacher")}>
-      <DialogContent className="w-full md:max-w-2xl max-h-[85vh] overflow-auto scrollbar-thin">
+      open={dialogs["createTeacher"] === true ? true : false}
+      onOpenChange={() => {
+        onClose("createTeacher");
+      }}>
+      <DialogContent className="w-full  max-h-[85vh] overflow-auto scrollbar-thin">
         <DialogHeader>
-          <DialogTitle>Create New Teacher Profile</DialogTitle>
+          <DialogTitle>Add a New Teacher Profile</DialogTitle>
           <DialogDescription>
             Fill the form to add a new teacher. All fields with the asterisk (*)
             are required and must be filled before submitting the form.
           </DialogDescription>
         </DialogHeader>
-        <CreateTeacherForm onSubmit={handleSubmit} />
+        <CreateTeacherForm
+          onSubmit={handleTeacherCreation}
+          isPending={isPending}
+        />
         <DialogFooter>
           <DialogClose
             className={cn(buttonVariants({ variant: "secondary" }), "w-full")}>

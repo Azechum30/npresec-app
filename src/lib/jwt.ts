@@ -5,22 +5,25 @@ import { env } from "./server-only-actions/validate-env";
 
 export const generateToken = (userId: string) => {
   const token = jwt.sign({ userId }, env.JWT_SECRET, { expiresIn: "1hr" });
-  return token;
+  // URL encode the token to make it safe for URLs
+  return encodeURIComponent(token);
 };
 
-export const verifyToken = (token: string) => {
+export const verifyToken = (encodedToken: string) => {
   try {
+    // URL decode the token first
+    const token = decodeURIComponent(encodedToken);
     const decodedToken = jwt.verify(token, env.JWT_SECRET) as {
       userId: string;
       exp: number;
     };
 
     if (decodedToken.exp < Date.now() / 1000) {
-      throw new Error("Token has expired!");
+      return null; // Return null for expired tokens instead of throwing
     }
 
     return decodedToken.userId;
   } catch (e) {
-    throw new Error("Inavlid token!");
+    return null; // Return null for invalid tokens instead of throwing
   }
 };

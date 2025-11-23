@@ -80,29 +80,38 @@ export default function UploadComponent<T>({
     setData((prev) => ({ ...prev, data: rows }));
   }
 
-  const dialogId =
-    pathname === "teachers" ? "bulkCreateTeachers" : "bulkCreateDepartments";
+  const dialogId = pathname + "-upload";
 
   function SaveToDatabase() {
     startTransition(async () => {
       const response = await handleUpload(data as any);
 
       if (response?.errors) {
-        response.errors.forEach((e) => toast.error(e));
+        console.log(response.errors);
+        response.errors.forEach((e) => {
+          toast.error(e);
+        });
         // toast.error(response.errors.join("\n"));
       } else if (response.error) {
+        console.log(response.error);
         toast.error(response?.error);
       } else {
         toast.success(`${response?.count} records were uploaded successfully!`);
-        onClose(dialogId);
-        setData(undefined);
-        setColumns([]);
+
+        setTimeout(() => {
+          setData(undefined);
+          setColumns([]);
+          onClose(dialogId);
+        }, 100);
       }
     });
   }
 
   return (
-    <Dialog open={dialogs[dialogId]} onOpenChange={() => onClose(dialogId)}>
+    <Dialog
+      open={dialogs[dialogId] === true ? true : false}
+      onOpenChange={() => onClose(dialogId)}
+      modal={true}>
       <DialogContent
         className={cn(
           "overflow-y-auto",
@@ -129,7 +138,10 @@ export default function UploadComponent<T>({
           </li>
           <li className="leading-6">
             Kindly click on{" "}
-            <a href="#" download className="text-primary">
+            <a
+              href={`/${pathname}/template.csv`}
+              download
+              className="text-primary">
               Template CSV
             </a>{" "}
             to download the sample file.

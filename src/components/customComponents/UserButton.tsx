@@ -14,30 +14,62 @@ import {
 } from "../ui/dropdown-menu";
 import LogoutButton from "./LogoutButton";
 import {
-  Check, Key,
+  Check,
+  Key,
   Laptop2,
   Loader2,
   Monitor,
   Moon,
-  Settings, Shield,
-  Sun, UsersRoundIcon,
+  Settings,
+  Shield,
+  Sun,
+  UsersRoundIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useAuth } from "./SessionProvider";
 import Link from "next/link";
 import { useTheme } from "next-themes";
+import { useEffect, useMemo, useTransition } from "react";
+import { updateThemeAction } from "@/app/(private)/profile/_actions/update-theme-action";
+import { useRouter } from "next/navigation";
 
 export default function UserButton() {
   const user = useAuth();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   const { setTheme, theme } = useTheme();
+  const userPreferredTheme = useMemo(() => {
+    const themes = ["system", "light", "dark"];
+    if (user && user.theme && themes.includes(user.theme)) {
+      return user.theme as "system" | "light" | "dark";
+    }
+    return "system";
+  }, [user?.theme]);
+
+  useEffect(() => {
+    if (user && userPreferredTheme) {
+      setTheme(userPreferredTheme);
+    }
+  }, [user?.theme, userPreferredTheme, setTheme, user]);
+
+  const handleThemeChange = (newTheme: "system" | "light" | "dark") => {
+    setTheme(newTheme);
+
+    startTransition(async () => {
+      const result = await updateThemeAction(newTheme);
+      if (result.success) {
+        router.refresh();
+      }
+    });
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="w-fit md:w-full h-full flex justify-center md:justify-start text-left rounded-none py-2 items-center gap-x-3 border-0 backdrop-blur-xs">
+          className="w-fit md:w-full h-full flex justify-center md:justify-start text-left rounded-none py-2 items-center gap-x-3 border-0 backdrop-blur-xs hover:cursor-pointer">
           <Avatar className="backdrop-blur-xs">
             <AvatarImage src={user?.picture!} />
             <AvatarFallback>CN</AvatarFallback>
@@ -57,7 +89,7 @@ export default function UserButton() {
       <DropdownMenuContent align="end" alignOffset={-150}>
         <DropdownMenuItem>
           <Link
-            href={`/users/${user?.id}`}
+            href={`/profile`}
             className="flex items-center gap-x-2 line-clamp-2">
             <Avatar>
               <AvatarImage src={user?.picture ? user.picture : ""} />
@@ -84,19 +116,25 @@ export default function UserButton() {
           </DropdownMenuSubTrigger>
           <DropdownMenuPortal>
             <DropdownMenuSubContent>
-              <DropdownMenuItem onClick={() => setTheme("system")}>
+              <DropdownMenuItem
+                onClick={() => handleThemeChange("system")}
+                disabled={isPending}>
                 <Laptop2 className="size-4 mr-2" />
                 System
                 {theme === "system" && <Check className="size-4" />}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setTheme("light")}>
+              <DropdownMenuItem
+                onClick={() => handleThemeChange("light")}
+                disabled={isPending}>
                 <Sun className="size-4 mr-2" />
                 Light
                 {theme === "light" && <Check className="size-4" />}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setTheme("dark")}>
+              <DropdownMenuItem
+                onClick={() => handleThemeChange("dark")}
+                disabled={isPending}>
                 <Moon className="size-4 mr-2" />
                 Dark
                 {theme === "dark" && <Check className="size-4" />}
@@ -104,41 +142,53 @@ export default function UserButton() {
             </DropdownMenuSubContent>
           </DropdownMenuPortal>
         </DropdownMenuSub>
-        <DropdownMenuSeparator />
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full flex justify-start items-center text-sm">
-              <Settings className="size-5 mr-2" />
-              Settings
-            </Button>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <Link className="flex items-center gap-1 w-full h-full hover:bg-muted p-2 rounded-md" href="/admin/users">
-                  <DropdownMenuItem>
-                    <UsersRoundIcon className="size-4 mr-2" />
-                    Manage Users
-                  </DropdownMenuItem>
-                </Link>
-                <DropdownMenuSeparator />
-                  <Link className="flex items-center gap-1 w-full h-full hover:bg-muted p-2 rounded-md" href="/admin/roles">
-                    <DropdownMenuItem>
-                      <Shield className="size-4 mr-2" />
+
+        {user?.role?.name === "admin" && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full flex justify-start items-center text-sm">
+                  <Settings className="size-5 mr-2" />
+                  Settings
+                </Button>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    <Link
+                      className="flex items-center gap-1 w-full h-full hover:bg-muted p-2 rounded-md"
+                      href="/admin/users">
+                      <DropdownMenuItem>
+                        <UsersRoundIcon className="size-4 mr-2" />
+                        Manage Users
+                      </DropdownMenuItem>
+                    </Link>
+                    <DropdownMenuSeparator />
+                    <Link
+                      className="flex items-center gap-1 w-full h-full hover:bg-muted p-2 rounded-md"
+                      href="/admin/roles">
+                      <DropdownMenuItem>
+                        <Shield className="size-4 mr-2" />
                         Manage Roles
-                    </DropdownMenuItem>
-                  </Link><DropdownMenuSeparator />
-                  <Link className="flex items-center gap-1 w-full h-full hover:bg-muted p-2 rounded-md" href="/admin/permissions">
-                    <DropdownMenuItem>
-                      <Key className="size-4 mr-2" />
+                      </DropdownMenuItem>
+                    </Link>
+                    <DropdownMenuSeparator />
+                    <Link
+                      className="flex items-center gap-1 w-full h-full hover:bg-muted p-2 rounded-md"
+                      href="/admin/permissions">
+                      <DropdownMenuItem>
+                        <Key className="size-4 mr-2" />
                         Manage Permissions
-                    </DropdownMenuItem>
-                  </Link>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSubTrigger>
-        </DropdownMenuSub>
+                      </DropdownMenuItem>
+                    </Link>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSubTrigger>
+            </DropdownMenuSub>
+          </>
+        )}
         <DropdownMenuSeparator />
         <LogoutButton />
       </DropdownMenuContent>

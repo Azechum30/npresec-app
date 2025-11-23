@@ -1,6 +1,5 @@
 import { TeacherResponseType } from "@/lib/types";
-import { ColumnDef } from "@tanstack/react-table";
-import moment from "moment";
+import { ColumnDef, Row } from "@tanstack/react-table";
 
 import { GenericActions } from "@/components/customComponents/GenericActions";
 import { useDeleteTeacher } from "../hooks/use-delete-teacher";
@@ -8,9 +7,14 @@ import { RowSelections } from "@/components/customComponents/RowSelections";
 import { GenericRowExpansion } from "@/components/customComponents/GenericRowExpansion";
 import { GenericColumnSorting } from "@/components/customComponents/GenericColumnSorting";
 import Image from "next/image";
+import { formatDate } from "@/lib/format-date";
+import { DateFormatType } from "@/lib/validation";
+import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
 
 export const useGetTeacherColumns = () => {
-  const { deleteTeacher } = useDeleteTeacher();
+  const userPreferredDateFormat = useUserPreferredDateFormat();
+
+  const { deleteTeacher, isPending } = useDeleteTeacher();
   return [
     {
       id: "visibility",
@@ -24,18 +28,26 @@ export const useGetTeacherColumns = () => {
     },
     {
       header: "Avatar",
-      cell:({row})=>{
-        const url = row.original.user?.picture;
-        return <div className="rounded-full border border-orange-300 dark:border-orange-200 flex items-center justify-center size-8">
-          <Image
-              src={url ? url : '/no-avatar.jpg'}
-              alt="/Avatar"
+      cell: ({ row }) => {
+        const candidate = row.original.user?.picture ?? "";
+        const isValid =
+          typeof candidate === "string" &&
+          (candidate.startsWith("http://") ||
+            candidate.startsWith("https://") ||
+            candidate.startsWith("/"));
+        const src = isValid ? candidate : "/no-avatar.jpg";
+        return (
+          <div className="rounded-full border border-accent flex items-center justify-center size-8">
+            <Image
+              src={src}
+              alt="Avatar"
               width={30}
               height={30}
               className="rounded-full object-cover size-6 object-top"
-          />
-        </div>
-      }
+            />
+          </div>
+        );
+      },
     },
     {
       header: "EmployeeID",
@@ -57,8 +69,12 @@ export const useGetTeacherColumns = () => {
     {
       header: "BirthDate",
       accessorKey: "birthDate",
+
       cell: ({ row }) => {
-        return moment(row.original.birthDate).format("DD/MM/YY");
+        return formatDate(
+          row.original.birthDate,
+          userPreferredDateFormat as DateFormatType
+        );
       },
     },
     {
@@ -67,10 +83,7 @@ export const useGetTeacherColumns = () => {
     },
     {
       header: "Department",
-      accessorKey: "departmentId",
-      cell: ({ row }) => {
-        return row.original.department?.name;
-      },
+      accessorKey: "department.name",
     },
     {
       header: "Actions",
@@ -81,10 +94,10 @@ export const useGetTeacherColumns = () => {
             row={row}
             onDelete={deleteTeacher}
             secondaryKey="employeeId"
+            isPending={isPending}
           />
         );
       },
-      enableColumnFilter: false,
       enableHiding: false,
       enablePinning: false,
       enableSorting: false,
@@ -93,7 +106,6 @@ export const useGetTeacherColumns = () => {
       id: "expansion",
       header: ({ table }) => <GenericRowExpansion isHeader table={table} />,
       cell: ({ row }) => <GenericRowExpansion isHeader={false} row={row} />,
-      enableGlobalFilter: false,
       enableHiding: false,
       enablePinning: false,
       enableSorting: false,

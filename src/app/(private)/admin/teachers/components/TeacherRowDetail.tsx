@@ -1,27 +1,23 @@
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { TableCell, TableRow } from "@/components/ui/table";
+
+import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
 import { calculateAge } from "@/lib/calculate-age";
+import { formatDate } from "@/lib/format-date";
 import { TeacherResponseType } from "@/lib/types";
+import { DateFormatType } from "@/lib/validation";
 import { yearsAndMonthsUntilRetirement } from "@/lib/yearsUntilRetirement";
 import { Row } from "@tanstack/react-table";
 import { BadgeCent } from "lucide-react";
-import moment from "moment";
 
 type TeacherRowDetailProp = {
   row: Row<TeacherResponseType>;
 };
 export default function TeacherRowDetail({ row }: TeacherRowDetailProp) {
+  const userPreferredDateFormat = useUserPreferredDateFormat();
   return (
     <div>
       <div className="rounded-md border p-4">
-        <div className="border-b py-3">
+        <div className="border-b py-3 ">
           <div className="flex justify-between items-center ">
             <h1 className="uppercase">
               Profile Details of{" "}
@@ -32,7 +28,7 @@ export default function TeacherRowDetail({ row }: TeacherRowDetailProp) {
               <span>STAFF ID: {row.original.employeeId}</span>
             </Badge>
           </div>
-          <p className="mt-4 text-muted-foreground text-sm">
+          <p className="mt-4 text-muted-foreground text-sm text-wrap ">
             This contains a detailed description of{" "}
             <span className="text-primary font-semibold dark:text-primary-foreground">
               {`${row.original.lastName} ${row.original.firstName} ${row.original.middleName}`}
@@ -106,8 +102,9 @@ export default function TeacherRowDetail({ row }: TeacherRowDetailProp) {
                 <span className=" font-semibold">
                   1<sup>st</sup> Appointment Date:
                 </span>{" "}
-                {moment(row.original.dateOfFirstAppointment).format(
-                  "DD/MM/YYYY"
+                {formatDate(
+                  row.original.dateOfFirstAppointment as Date | string,
+                  userPreferredDateFormat as DateFormatType
                 )}
               </div>
               <div className="text-sm text-muted-foreground">
@@ -127,11 +124,11 @@ export default function TeacherRowDetail({ row }: TeacherRowDetailProp) {
               </div>
               <div className="text-sm text-muted-foreground">
                 <span className=" font-semibold">Assigned Classes:</span>{" "}
-                  <ul className="px-8 list-disc">
-                {row.original.classes.map((classItem,index) => (
+                <ul className="px-8 list-disc">
+                  {row.original.classes.map((classItem, index) => (
                     <li key={`${index}-${classItem.id}`}>{classItem.name}</li>
-                ))}
-                  </ul>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>

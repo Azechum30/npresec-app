@@ -20,18 +20,27 @@ export const useGetColumns = () => {
     },
     {
       header: "Avatar",
-      cell: ({row})=> {
-        const url = row.original.user?.picture
-        return <div className="size-8 rounded-full border border-orange-500 dark:border-orange-200 flex items-center justify-center">
-          <Image
-              src={url ? url: "/no-avatar.jpg"}
+      cell: ({ row }) => {
+        const { picture } = row.original.user ?? {};
+        const isValid = picture
+          ? picture.startsWith("http") ||
+            picture.startsWith("https") ||
+            picture.startsWith("/")
+          : false;
+        const url = isValid ? picture : "/no-avatar.jpg";
+
+        return (
+          <div className="size-8 rounded-full border border-orange-500 dark:border-orange-200 flex items-center justify-center">
+            <Image
+              src={url ? url : "/no-avatar.jpg"}
               alt="Avatar"
               width={20}
               height={20}
               className="size-6 rounded-full object-cover object-top"
-          />
-        </div>
-      }
+            />
+          </div>
+        );
+      },
     },
     {
       header: "ID",

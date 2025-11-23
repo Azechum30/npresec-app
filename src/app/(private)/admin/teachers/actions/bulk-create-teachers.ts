@@ -11,6 +11,9 @@ import { generatePassword } from "@/lib/generatePassword";
 import { sendMail } from "@/lib/resend-config";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { hasPermissions } from "@/lib/hasPermission";
+import { Prisma } from "../../../../../../prisma/generated/client";
+import { client } from "@/utils/qstash";
+import { env } from "@/lib/server-only-actions/validate-env";
 
 export const bulkCreateTeachers = async (values: BulkCreateTeachersType) => {
   try {
@@ -19,11 +22,20 @@ export const bulkCreateTeachers = async (values: BulkCreateTeachersType) => {
 
     if (!permission) throw new Error("Unauthorized!");
 
-    const { data, error, success } = BulkCreateTeachersSchema.safeParse(values);
+    const transformedValues = {
+      ...values,
+      data: values.data.map((t) => ({
+        ...t,
+        classes: t.classes?.toString().split(","),
+        courses: t.courses?.toString().split(","),
+      })),
+    };
+    const { data, error, success } =
+      BulkCreateTeachersSchema.safeParse(transformedValues);
 
     if (!success) {
       const zodErrors = error.issues.map((issue) => ({
-        field: [issue.path.join(".")],
+        field: [issue.path[2]],
         message: issue.message,
       }));
 
@@ -44,6 +56,10 @@ export const bulkCreateTeachers = async (values: BulkCreateTeachersType) => {
         teacher.ghcardNumber?.trim() === ""
           ? null
           : teacher.ghcardNumber?.trim(),
+      birthDate: new Date(teacher.birthDate),
+      dateOfFirstAppointment: teacher.dateOfFirstAppointment
+        ? new Date(teacher.dateOfFirstAppointment)
+        : undefined,
       ssnitNumber:
         teacher.ssnitNumber?.trim() === "" ? null : teacher.ssnitNumber?.trim(),
       employeeId:
@@ -152,8 +168,6 @@ export const bulkCreateTeachers = async (values: BulkCreateTeachersType) => {
       });
     }
 
-    if (errors.length > 0) return { errors };
-
     const departmentMap = existingDepartments.reduce(
       (map, dept) => {
         map[dept.name] = dept.id;
@@ -162,12 +176,28 @@ export const bulkCreateTeachers = async (values: BulkCreateTeachersType) => {
       {} as Record<string, string>
     );
 
-    normalizedTeachers.forEach((teacher) => {
+    normalizedTeachers.forEach((teacher, index) => {
       const departmentId = teacher.departmentId as string;
+      const birthDate = teacher.birthDate as Date;
+      const appointmentDate = teacher.dateOfFirstAppointment as Date;
+
+      if (isNaN(birthDate.getTime())) {
+        errors.push(
+          `Invalid birth date for ${normalizedTeachers[index].firstName} ${normalizedTeachers[index].lastName} : Kindly check csv data file. format should be mm/dd/yyyy`
+        );
+      }
+
+      if (isNaN(appointmentDate.getTime())) {
+        errors.push(
+          "Invalid appointment date : Kindly check csv data file. format should be mm/dd/yyyy"
+        );
+      }
+
       if (departmentMap[departmentId]) {
         teacher.departmentId = departmentMap[departmentId];
       }
     });
+    if (errors.length > 0) return { errors };
 
     const hashedTeachers = await Promise.all(
       normalizedTeachers.map(async (teacher) => ({
@@ -219,27 +249,52 @@ export const bulkCreateTeachers = async (values: BulkCreateTeachersType) => {
       )
     );
 
-    await Promise.all(
-      normalizedTeachers.map((teacher) =>
-        sendMail({
-          to: [teacher.email as string],
-          data: {
-            email: teacher.email as string,
-            lastName: teacher.lastName,
-            password: teacher.password,
-          },
-          username: teacher.username as string,
-        })
-      )
-    );
+    // Prepare email data for batch processing
+    const emailData = normalizedTeachers.map((teacher) => ({
+      to: [teacher.email as string],
+      data: {
+        email: teacher.email as string,
+        lastName: teacher.lastName,
+        password: teacher.password,
+      },
+      username: teacher.username as string,
+    }));
+
+    // Send emails in batch
+    await client.publishJSON({
+      url: `${env.NEXT_PUBLIC_URL}/api/send/emails/batch`,
+      body: {
+        emails: emailData,
+      },
+    });
+
+    revalidatePath("/admins/teachers");
 
     return { count: createdTeachers.length };
   } catch (error) {
-    console.error("Could upload teachers: ", error);
-    return {
-      error: getErrorMessage(error),
-    };
-  } finally {
-    revalidatePath("/teachers");
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      console.error("Validation error:", error.message);
+      return {
+        error: `Data validation failed: ${error.message}. Please check your CSV data format.`,
+      };
+    } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        const targetFields = error.meta?.target as string[];
+        return {
+          error: `Duplicate data found: ${targetFields?.join(", ")} already exists.`,
+        };
+      }
+      return {
+        error: `Database constraint error: ${error.message}`,
+      };
+    } else if (error instanceof Error) {
+      console.error("Upload error:", error.message);
+      return { error: error.message };
+    } else {
+      console.error("Could not upload teachers:", error);
+      return {
+        error: getErrorMessage(error),
+      };
+    }
   }
 };

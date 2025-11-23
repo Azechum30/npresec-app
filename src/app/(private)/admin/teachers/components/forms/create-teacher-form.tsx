@@ -1,17 +1,11 @@
 import { useForm } from "react-hook-form";
-import {
-  Form,
-  FormField,
-} from "@/components/ui/form";
-import {
-  TeacherSchema,
-  TeacherType,
-} from "@/lib/validation";
+import { Form, FormField } from "@/components/ui/form";
+import { TeacherSchema, TeacherType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
 import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { getServerSideProps } from "@/app/(private)/admin/departments/actions/getServerSideProps";
 import {
   ClassesResponseType,
@@ -35,11 +29,12 @@ type OnSubmitResponseType = Promise<
 >;
 
 type CreateTeacherProps = {
-  onSubmit: (data: TeacherType) => OnSubmitResponseType;
+  onSubmit: (data: TeacherType) => Promise<void>;
   id?: string;
   defaultValues?: TeacherType;
   onDelete?: () => void;
   isDeletePending?: boolean;
+  isPending?: boolean;
 };
 
 export default function CreateTeacherForm({
@@ -48,6 +43,7 @@ export default function CreateTeacherForm({
   defaultValues,
   onDelete,
   isDeletePending,
+  isPending,
 }: CreateTeacherProps) {
   const form = useForm<TeacherType>({
     resolver: zodResolver(TeacherSchema),
@@ -76,7 +72,7 @@ export default function CreateTeacherForm({
           courses: [],
           isDepartmentHead: false,
           imageURL: "",
-          imageFile: undefined
+          imageFile: undefined,
         },
   });
 
@@ -113,12 +109,8 @@ export default function CreateTeacherForm({
     fetchDepartments().then((value) => console.log(value));
   }, []);
 
-  const [isPending, startTransition] = useTransition();
-
-  function handleSubmit(data: TeacherType) {
-    startTransition(async () => {
-      await onSubmit(data);
-    });
+  async function handleSubmit(data: TeacherType) {
+    onSubmit(data);
   }
 
   return (
@@ -173,7 +165,6 @@ export default function CreateTeacherForm({
                 "Widower",
               ]}
               placeholder="Select Marital Status"
-              className="max-w-md"
               schema={TeacherSchema}
             />
           </div>
@@ -255,52 +246,53 @@ export default function CreateTeacherForm({
             />
 
             {departments && departments.length > 0 && (
-              <SelectWithLabel<TeacherType>
-                name="departmentId"
-                fieldTitle="Assigned Department"
-                data={departments}
-                valueKey="id"
-                selectedKey="name"
-                placeholder="--Select department--"
-              />
+              <div className="w-full">
+                <SelectWithLabel<TeacherType>
+                  name="departmentId"
+                  fieldTitle="Assigned Department"
+                  data={departments}
+                  valueKey="id"
+                  selectedKey="name"
+                  placeholder="--Select department--"
+                />
+              </div>
             )}
           </div>
-            {departments && departments.length > 0 && (
-                <div className="flex flex-col gap-y-2 my-4">
-                    <FormField
-                        control={form.control}
-                        name="isDepartmentHead"
-                        render={({ field }) => {
-                            return (
-                                <div className="flex items-center gap-2">
-                                    <Checkbox
-                                        id="isDepartmentHead"
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                        className="rounded-full "
-                                    />
-                                    <Label
-                                        htmlFor="isDepartmentHead"
-                                        className="text-sm">
-                                        Are you the head of department of your assigned department?
-                                    </Label>
-                                </div>
-                            );
-                        }}
-                    />
-                </div>
-            )}
-            <FileUploadInput<TeacherType>
-                name="imageFile"
-                fieldTitle="Profile Picture"
-                photoURL={defaultValues?.imageURL as string}
-                isEditing={!!id}
-            />
-          <div className=" w-full grid grid-cols-1 md:grid-cols-2 md:space-x-5 space-y-5 md:space-y-0 ">
+          {departments && departments.length > 0 && (
+            <div className="flex flex-col gap-y-2 my-4">
+              <FormField
+                control={form.control}
+                name="isDepartmentHead"
+                render={({ field }) => {
+                  return (
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="isDepartmentHead"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="rounded-full "
+                      />
+                      <Label htmlFor="isDepartmentHead" className="text-sm">
+                        Are you the head of department of your assigned
+                        department?
+                      </Label>
+                    </div>
+                  );
+                }}
+              />
+            </div>
+          )}
+          <FileUploadInput<TeacherType>
+            name="imageFile"
+            fieldTitle="Profile Picture"
+            photoURL={defaultValues?.imageURL as string}
+            isEditing={!!id}
+          />
+          <div className=" w-full grid grid-cols-1 md:grid-cols-2 md:space-x-5 items-baseline space-y-5 md:space-y-0 ">
             {classes && classes.length > 0 && (
               <CheckboxWithArrayValues<TeacherType>
                 name="classes"
-                fieldTitle="Assigned Classes"
+                fieldTitle="Available Classes"
                 data={classes}
                 valueKey="id"
                 labelKey="name"
@@ -310,7 +302,7 @@ export default function CreateTeacherForm({
             {courses && courses.length > 0 && (
               <CheckboxWithArrayValues<TeacherType>
                 name="courses"
-                fieldTitle="Assigned Courses"
+                fieldTitle="Available Courses"
                 data={courses}
                 valueKey="id"
                 labelKey="title"
@@ -319,10 +311,13 @@ export default function CreateTeacherForm({
           </div>
 
           <div className="grid grid-cols-1 space-y-4">
-            <LoadingButton loading={isPending}>
+            <LoadingButton
+              className="hover:cursor-pointer"
+              loading={isPending as boolean}>
               {!!id ? (
                 <>
-                  <Save className="size-5" /> {isPending ? "Saving..." : "Save"}{" "}
+                  <Save className="size-5" />{" "}
+                  {isPending ? "Saving..." : "Save"}{" "}
                 </>
               ) : (
                 <>
@@ -335,6 +330,7 @@ export default function CreateTeacherForm({
               <LoadingButton
                 loading={isDeletePending as boolean}
                 type="button"
+                className="hover:cursor-pointer"
                 variant="destructive"
                 onClick={async () => {
                   const ok = await confirmDelete();

@@ -25,8 +25,9 @@ import {
   ExpandedState,
   RowSelectionState,
 } from "@tanstack/react-table";
-import { IContent } from "json-as-xlsx";
-import React, { JSX, useState } from "react";
+import React, { JSX, useState, useEffect, useMemo } from "react";
+import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
+import { useAuth } from "./SessionProvider";
 
 type DataTableProps<TData> = {
   columns: ColumnDef<TData>[];
@@ -45,13 +46,39 @@ const DataTable = <TData,>({
   renderSubComponent,
   onDelete,
 }: DataTableProps<TData>) => {
+  const user = useAuth();
+
+  const userItemsPerPage = useMemo(() => {
+    const validPageSizes = [10, 25, 50, 100];
+    const userPreference = user?.itemsPerPage;
+
+    if (
+      userPreference &&
+      typeof userPreference === "number" &&
+      validPageSizes.includes(userPreference)
+    ) {
+      return userPreference;
+    }
+    return 10;
+  }, [user?.itemsPerPage]);
+
   const [sorting, setIsSorting] = useState<SortingState>([]);
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 1,
-    pageSize: 10,
-  });
+  const [pagination, setPagination] = useState<PaginationState>(() => ({
+    pageIndex: 0,
+    pageSize: userItemsPerPage,
+  }));
   const [expanded, setExpanded] = useState<ExpandedState>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
+  useEffect(() => {
+    if (pagination.pageSize !== userItemsPerPage) {
+      setPagination((prev) => ({
+        ...prev,
+        pageSize: userItemsPerPage,
+        pageIndex: 0,
+      }));
+    }
+  }, [userItemsPerPage, pagination.pageSize]);
 
   const table = useReactTable({
     columns,
@@ -78,67 +105,77 @@ const DataTable = <TData,>({
   });
 
   return (
-    <div className="mt-4 relative">
-      <TopActions
-        table={table}
-        onDelete={onDelete}
-        data={data}
-        transformer={transformer}
-        filename={filename}
-      />
-      <Table className="border mb-2">
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroups) => (
-            <TableRow key={headerGroups.id} className="bg-secondary">
-              {headerGroups.headers.map((header) => (
-                <TableHead key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.length > 0 ? (
-            table.getRowModel().rows.map((row) => (
-              <React.Fragment key={row.id}>
-                <TableRow>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-                {row.getIsExpanded() && renderSubComponent?.(row) && (
-                  <TableRow className="bg-background">
-                    <TableCell colSpan={row.getVisibleCells().length}>
-                      {renderSubComponent(row)}
-                    </TableCell>
+    <Card className="mt-4 relative">
+      <CardHeader>
+        <TopActions
+          table={table}
+          onDelete={onDelete}
+          data={data}
+          transformer={transformer}
+          filename={filename}
+        />
+      </CardHeader>
+      <CardContent>
+        <Table className="border mb-2">
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroups) => (
+              <TableRow key={headerGroups.id} className="bg-accent">
+                {headerGroups.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.length > 0 ? (
+              table.getRowModel().rows.map((row) => (
+                <React.Fragment key={row.id}>
+                  <TableRow>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
                   </TableRow>
-                )}
-              </React.Fragment>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={table.getAllColumns().length}>
-                No rows found
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-      {/* <div className='border'>
-			</div> */}
-      <TableFooterDescription table={table} />
-    </div>
+                  {row.getIsExpanded() && renderSubComponent && (
+                    <TableRow className="bg-background">
+                      <TableCell colSpan={row.getVisibleCells().length}>
+                        {renderSubComponent(row)}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={table.getAllColumns().length}>
+                  No rows found
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+
+      <CardFooter>
+        <TableFooterDescription
+          table={table}
+          pageSizeOptions={
+            userItemsPerPage as unknown as { itemsPerPage: 10 | 25 | 50 | 100 }
+          }
+        />
+      </CardFooter>
+    </Card>
   );
 };
 

@@ -28,7 +28,7 @@ export const GenericActions = <T extends { id: string }>({
   dialogId,
   secondaryKey,
   onDelete,
-    isPending
+  isPending,
 }: GenericActionsProps<T>) => {
   const pathname = usePathname().split("/").pop();
   const { onOpen } = useGenericDialog();
@@ -39,14 +39,14 @@ export const GenericActions = <T extends { id: string }>({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="hover:cursor-pointer">
             <MoreHorizontal className="size-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuLabel className="text-xs">Actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
+          <DropdownMenuItem className="hover:cursor-pointer">
             {pathname === "students" ? (
               <Link href={`/admin/students/edit/${original.id}`}>
                 <span className="flex items-center gap-1">
@@ -64,6 +64,7 @@ export const GenericActions = <T extends { id: string }>({
             )}
           </DropdownMenuItem>
           <DropdownMenuItem
+            className="hover:cursor-pointer"
             onClick={async () => {
               const ok = await confirmDelete();
               if (ok) {

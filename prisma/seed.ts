@@ -16,10 +16,116 @@ const resources = [
   "attendance",
   "classes",
   "notifications",
+  "transcripts",
+  "documents",
+  "houses",
+  "boardmembers",
+  "events",
+  "lessons",
+  "assignments",
 ];
 const actions = ["create", "view", "edit", "delete"];
 
-const roles = ["admin", "teacher", "student", "parent"];
+const roles = [
+  "admin",
+  "teacher",
+  "student",
+  "parent",
+  "classTeacher",
+  "houseMaster",
+  "hod",
+  "accountant",
+  "librarian",
+];
+
+// Define permissions for each role (admin gets all, others get specific)
+const rolePermissions: Record<
+  string,
+  { resources: string[]; actions?: string[] }
+> = {
+  admin: {
+    resources: [], // Empty means all resources
+    actions: [], // Empty means all actions
+  },
+  teacher: {
+    resources: [
+      "courses",
+      "students",
+      "grades",
+      "attendance",
+      "classes",
+      "notifications",
+      "lessons",
+      "assignments",
+    ],
+    actions: ["view", "create", "edit"], // Teachers typically can't delete critical data
+  },
+  student: {
+    resources: [
+      "courses",
+      "grades",
+      "attendance",
+      "classes",
+      "notifications",
+      "transcripts",
+      "assignments",
+      "events",
+    ],
+    actions: ["view"], // Students typically only view their own data
+  },
+  parent: {
+    resources: [
+      "courses",
+      "grades",
+      "attendance",
+      "classes",
+      "notifications",
+      "transcripts",
+      "students",
+      "events",
+    ],
+    actions: ["view"], // Parents typically only view their children's data
+  },
+  classTeacher: {
+    resources: [
+      "courses",
+      "students",
+      "grades",
+      "attendance",
+      "classes",
+      "notifications",
+      "lessons",
+      "assignments",
+      "events",
+    ],
+    actions: ["view", "create", "edit"],
+  },
+  houseMaster: {
+    resources: ["houses", "students", "attendance", "notifications", "events"],
+    actions: ["view", "create", "edit"],
+  },
+  hod: {
+    resources: [
+      "departments",
+      "courses",
+      "teachers",
+      "students",
+      "classes",
+      "grades",
+      "attendance",
+      "notifications",
+    ],
+    actions: ["view", "create", "edit"],
+  },
+  accountant: {
+    resources: ["students", "users", "notifications"],
+    actions: ["view", "create", "edit"],
+  },
+  librarian: {
+    resources: ["documents", "students", "notifications", "assignments"],
+    actions: ["view", "create", "edit", "delete"],
+  },
+};
 
 async function main() {
   console.log("Seeding database...");
@@ -31,23 +137,73 @@ async function main() {
       create: { name: role },
     });
   }
-  const adminRole = await prisma.role.findUnique({
-    where: { name: "admin" },
+  // Fetch all roles after creation
+  const allRoles = await prisma.role.findMany({
+    where: { name: { in: roles } },
   });
 
+  // Create a map of role names to role IDs for easy access
+  const roleMap = new Map(allRoles.map((role) => [role.name, role.id]));
+
+  // Helper function to check if a role should have a permission
+  const shouldHavePermission = (
+    roleName: string,
+    resource: string,
+    action: string
+  ): boolean => {
+    const permissionConfig = rolePermissions[roleName];
+    if (!permissionConfig) return false;
+
+    // Admin gets all permissions
+    if (
+      roleName === "admin" &&
+      permissionConfig.resources.length === 0 &&
+      (!permissionConfig.actions || permissionConfig.actions.length === 0)
+    ) {
+      return true;
+    }
+
+    // Check if resource is allowed
+    const resourceAllowed = permissionConfig.resources.includes(resource);
+    if (!resourceAllowed) return false;
+
+    // Check if action is allowed (if actions are specified)
+    const actions = permissionConfig.actions || [];
+    if (actions.length > 0 && !actions.includes(action)) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // Create permissions and assign to appropriate roles
   for (const resource of resources) {
     for (const action of actions) {
-      await prisma.permission.upsert({
-        where: { name: `${action}:${resource}` },
-        update: {},
-        create: {
-          name: `${action}:${resource}`,
-          description: `can ${action} ${resource}`,
-          roles: {
-            connect: { id: adminRole?.id },
+      const permissionName = `${action}:${resource}`;
+
+      // Determine which roles should have this permission
+      const allowedRoleIds = allRoles
+        .filter((role) => shouldHavePermission(role.name, resource, action))
+        .map((role) => ({ id: role.id }));
+
+      if (allowedRoleIds.length > 0) {
+        await prisma.permission.upsert({
+          where: { name: permissionName },
+          update: {
+            // Update: set roles that should have this permission
+            roles: {
+              set: allowedRoleIds,
+            },
           },
-        },
-      });
+          create: {
+            name: permissionName,
+            description: `can ${action} ${resource}`,
+            roles: {
+              connect: allowedRoleIds,
+            },
+          },
+        });
+      }
     }
   }
 
@@ -66,6 +222,11 @@ async function main() {
         "ADMIN_USER_EMAIL and ADMIN_USER_PASSWORD must be set in .env file"
       );
 
+    const adminRoleId = roleMap.get("admin");
+    if (!adminRoleId) {
+      throw new Error("Admin role not found");
+    }
+
     const hashedPassword = await argon.hash(adminPassword, {
       type: argon.argon2id,
     });
@@ -77,7 +238,7 @@ async function main() {
         password: hashedPassword,
         role: {
           connect: {
-            id: adminRole?.id,
+            id: adminRoleId,
           },
         },
         resetPasswordRequired: true,

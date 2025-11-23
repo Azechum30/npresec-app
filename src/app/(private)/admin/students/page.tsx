@@ -38,7 +38,7 @@ export default async function StudentsPage() {
       </div>
 
       <Suspense
-        key={"students"}
+        key={user.id ? user.id : (Math.random() * 1000000).toFixed(4)}
         fallback={
           <DataTableSkeleton
             columnCount={7}

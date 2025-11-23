@@ -11,9 +11,11 @@ import { sendMail } from "@/lib/resend-config";
 import { generatePassword } from "@/lib/generatePassword";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { hasPermissions } from "@/lib/hasPermission";
-import { uploadToCloudinary } from "@/utils/upload-to-cloudinary";
+import { queue } from "@/utils/queue";
+import { client } from "@/utils/qstash";
+import { env } from "@/lib/server-only-actions/validate-env";
 
-export const createTeacher = async (values: TeacherType) => {
+export const createTeacher = async (values: unknown) => {
   try {
     const permissions = await hasPermissions("create:teachers");
     if (!permissions) {
@@ -22,7 +24,7 @@ export const createTeacher = async (values: TeacherType) => {
 
     const { data, error, success } = TeacherSchema.safeParse(values);
 
-    if (!success) {
+    if (!success || error) {
       const zodError = error.issues.map((issue) => ({
         field: [issue.path.join(".")],
         message: issue.message,
@@ -145,20 +147,6 @@ export const createTeacher = async (values: TeacherType) => {
       }),
     };
 
-    if (normalizedTeacher.imageFile) {
-      const secure_url = await uploadToCloudinary(
-        normalizedTeacher.imageFile,
-        "teachers"
-      );
-
-      if (secure_url) {
-        normalizedTeacher.imageURL = secure_url;
-        delete normalizedTeacher["imageFile"];
-      } else {
-        delete normalizedTeacher["imageFile"];
-      }
-    }
-
     const {
       email,
       username,
@@ -166,6 +154,7 @@ export const createTeacher = async (values: TeacherType) => {
       password,
       isDepartmentHead,
       imageURL,
+      imageFile,
       ...rest
     } = hashedTeacher;
 
@@ -201,7 +190,7 @@ export const createTeacher = async (values: TeacherType) => {
             password: password,
             roleId: teacherRole.id,
             resetPasswordRequired: true,
-            picture: (imageURL as string) ?? undefined,
+            picture: (imageFile as File) ? "Uploading Pending" : imageURL,
           },
         },
       },
@@ -209,7 +198,30 @@ export const createTeacher = async (values: TeacherType) => {
       select: TeacherSelect,
     });
 
-    await sendMail({
+    if (normalizedTeacher.imageFile) {
+      const arrayBuffer = await (
+        normalizedTeacher.imageFile as File
+      ).arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      const jobData = {
+        file: {
+          buffer: buffer.toString("base64"),
+          name: (normalizedTeacher.imageFile as File).name,
+          type: (normalizedTeacher.imageFile as File).type,
+        },
+        entityId: teacher.userId,
+        folder: "teachers",
+        entityType: "user" as const,
+      };
+
+      await client.publishJSON({
+        url: `${env.NEXT_PUBLIC_URL}/api/images/uploads`,
+        body: jobData,
+      });
+    }
+
+    const emailData = {
       to: [email as string],
       username: teacher.firstName,
       data: {
@@ -217,14 +229,19 @@ export const createTeacher = async (values: TeacherType) => {
         email: email as string,
         password: normalizedTeacher.password,
       },
+    };
+
+    await client.publishJSON({
+      url: `${env.NEXT_PUBLIC_URL}/api/send/emails`,
+      body: emailData,
     });
+
+    revalidatePath("/admin/teachers");
 
     return { teacher };
   } catch (error) {
     console.error("Could not create teacher:", error);
-    return { error: `Something went wrong!` };
-  } finally {
-    revalidatePath("/teachers");
+    return { error: getErrorMessage(error) };
   }
 };
 
@@ -308,36 +325,8 @@ export const updateTeacher = async (id: string, data: TeacherType) => {
       ssnitNumber: rest.ssnitNumber?.trim() || null,
     };
 
-    if (normalizedTeacher.departmentId) {
-      const department = await prisma.department.findUnique({
-        where: {
-          id: normalizedTeacher.departmentId,
-        },
-        select: { head: true },
-      });
-
-      if (department?.head !== null && normalizedTeacher.isDepartmentHead) {
-        return {
-          error: "The Selected department already has a head assigned!",
-        };
-      }
-    }
-
-    if (normalizedTeacher.imageFile) {
-      const secure_url = await uploadToCloudinary(
-        normalizedTeacher.imageFile,
-        "teachers"
-      );
-      if (secure_url) {
-        normalizedTeacher.imageURL = secure_url;
-        delete normalizedTeacher["imageFile"];
-      }
-      {
-        delete normalizedTeacher["imageFile"];
-      }
-    }
-
-    const { isDepartmentHead, imageURL, ...others } = normalizedTeacher;
+    const { isDepartmentHead, imageURL, imageFile, ...others } =
+      normalizedTeacher;
 
     const updatedRecord = await prisma.teacher.update({
       where: {
@@ -375,12 +364,33 @@ export const updateTeacher = async (id: string, data: TeacherType) => {
           update: {
             email: email as string,
             username: username as string,
-            picture: (imageURL as string) ?? undefined,
+            picture: imageFile ? "Upload Pending" : imageURL,
           },
         },
       },
       select: TeacherSelect,
     });
+
+    if (imageFile) {
+      const arrayBuffer = await (imageFile as File).arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const jobData = {
+        file: {
+          buffer: buffer.toString("base64"),
+          name: (normalizedTeacher.imageFile as File).name,
+          type: (normalizedTeacher.imageFile as File).type,
+        },
+        entityId: updatedRecord.userId,
+        folder: "teachers",
+        entityType: "user" as const,
+      };
+      await client.publishJSON({
+        url: `${env.NEXT_PUBLIC_URL}/api/images/uploads`,
+        body: jobData,
+      });
+    }
+
+    revalidatePath("/admin/teachers");
 
     return { data: updatedRecord };
   } catch (error) {
@@ -435,6 +445,8 @@ export const deleteTeacherRequest = async (id: string) => {
     if (!teacherWithUserId) {
       return { error: `No teacher with ID ${id} found!` };
     }
+
+    revalidatePath("/admin/teachers");
 
     return { success: true };
   } catch (error) {

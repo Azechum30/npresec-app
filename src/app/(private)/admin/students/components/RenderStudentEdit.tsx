@@ -28,10 +28,17 @@ export const RenderStudentEdit = ({ studentId }: Props) => {
 
         if (!promiseResult.error && promiseResult.student) {
           const { student } = promiseResult;
+          const { picture } = student.user ?? {};
+          const isValid = picture
+            ? picture.startsWith("http") ||
+              picture.startsWith("https") ||
+              picture.startsWith("/")
+            : false;
+          const url = isValid ? picture : "/no-avatar.jpg";
           loadStudentData({
             ...student,
             email: student.user?.email as string,
-            photoURL: student.user?.picture,
+            photoURL: url,
           });
         }
       });

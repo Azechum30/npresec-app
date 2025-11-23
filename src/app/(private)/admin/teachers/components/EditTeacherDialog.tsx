@@ -11,100 +11,78 @@ import {
 } from "@/components/ui/dialog";
 import CreateTeacherForm from "./forms/create-teacher-form";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { useEffect, useState, useTransition } from "react";
-import {
-  deleteTeacherRequest,
-  getTeacher,
-  updateTeacher,
-} from "../actions/server";
-import { toast } from "sonner";
-import { TeacherType } from "@/lib/validation";
+
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTeacherStore } from "@/hooks/use-generic-store";
 import { buttonVariants } from "@/components/ui/button";
+import { useHandleTeacherUpdate } from "../hooks/use-handle-teacher-update";
+import { useHandleTeacherDelete } from "../hooks/use-handle-teacher.delete";
+import { useFetchInitialTeacherData } from "../hooks/use-fetch-initial-teacher-data";
+import { toast } from "sonner";
+import { useEffect, useRef } from "react";
 
 export default function EditTeacherDialog() {
   const { id, dialogs, onClose } = useGenericDialog();
-  const { updateData, deleteData, addData } = useTeacherStore();
+  const { handleTeacherUpdate, isUpdating, updateError, updateSucess } =
+    useHandleTeacherUpdate();
+  const { handleTeacherDelete, isDeleting, success, error } =
+    useHandleTeacherDelete();
+  const { values, fetchError } = useFetchInitialTeacherData();
 
-  const [defaultValues, setDefaultValues] = useState<TeacherType | undefined>();
-  const [isPending, startTransition] = useTransition();
+  // Show initial fetch error once
+  const didShowFetchErrorRef = useRef(false);
+  useEffect(() => {
+    if (fetchError && !didShowFetchErrorRef.current) {
+      toast.error(fetchError);
+      didShowFetchErrorRef.current = true;
+    }
+  }, [fetchError]);
+
+  // Show update error after an attempt completes
+  const prevUpdatingRef = useRef<boolean>(false);
+  useEffect(() => {
+    const wasUpdating = prevUpdatingRef.current;
+    if (wasUpdating && !isUpdating && updateError) {
+      toast.error(updateError);
+    }
+    prevUpdatingRef.current = isUpdating;
+  }, [isUpdating, updateError]);
+
+  // Show delete error after an attempt completes
+  const prevDeletingRef = useRef<boolean>(false);
+  useEffect(() => {
+    const wasDeleting = prevDeletingRef.current;
+    if (wasDeleting && !isDeleting && error) {
+      toast.error(error);
+    }
+    prevDeletingRef.current = isDeleting;
+  }, [isDeleting, error]);
 
   useEffect(() => {
-    const fetchTeacher = async () => {
-      const res = await getTeacher(id as string);
-
-      if (res.error) {
-        return toast.error(res.error);
-      }
-      if (res.teacher === undefined) {
-        return toast.success("Loading data...");
-      }
-      setDefaultValues({
-        ...res.teacher,
-        email: res.teacher.user?.email as string,
-        username: res.teacher.user?.username as string,
-        ssnitNumber: res.teacher.ssnitNumber || "",
-        licencedNumber: res.teacher.licencedNumber || "",
-        rgNumber: res.teacher.rgNumber || "",
-        rank: res.teacher.rank || "",
-        classes: res.teacher.classes.map((classItem) => classItem.id),
-        courses: res.teacher.courses.map((course) => course.id),
-        departmentId: res.teacher.departmentId,
-        dateOfFirstAppointment:
-          (res.teacher.dateOfFirstAppointment as Date) || undefined,
-        imageURL: res.teacher.user?.picture
-      });
-    };
-
-    if (id) {
-      setDefaultValues(undefined);
-      fetchTeacher().then((value)=>console.log(value));
-    }
-  }, [id]);
-
-  const handleUpdate = async (data: TeacherType) => {
-    updateData(data.employeeId, data as any);
-    const res = await updateTeacher(String(id), data);
-
-    if (res?.error) {
-      toast.error(res.error);
-      updateData(defaultValues?.employeeId as string, defaultValues as any);
-    } else {
-      toast.success("Teacher record updated successfully!");
-      onClose("editTeacher");
-      updateData(res?.data?.employeeId as any, res?.data as any);
-    }
-
-    return res;
-  };
-
-  const handleDelete = async () => {
-    deleteData(defaultValues?.employeeId as string);
-    startTransition(async () => {
-      const res = await deleteTeacherRequest(id as string);
-      if ("error" in res) {
-        const rollbackData = await getTeacher(id as string);
-        if (!(rollbackData.error || rollbackData.teacher === undefined)) {
-          addData(rollbackData.teacher);
-        }
-        toast.error(res.error);
-        return;
-      } else {
+    if (success) {
+      toast.success("Teacher deleted successfully");
+      setTimeout(() => {
         onClose("editTeacher");
-        toast.success("The selected teacher was deleted successfully");
-      }
-    });
-  };
+      }, 100);
+    }
+    if (updateSucess) {
+      toast.success("Changes saved successfully");
+      setTimeout(() => {
+        onClose("editTeacher");
+      }, 100);
+    }
+  }, [success, updateSucess, onClose]);
 
   return (
     <Dialog
-      open={dialogs["editTeacher"]}
+      open={dialogs["editTeacher"] === true ? true : false}
       onOpenChange={() => onClose("editTeacher")}>
       <DialogContent
-        className={cn(defaultValues !== undefined && "max-h-[85vh] overflow-auto max-w-2xl scrollbar-thin")}>
-        {defaultValues ? (
+        className={cn(
+          values !== undefined &&
+            "max-h-[85vh] overflow-auto max-w-2xl scrollbar-thin"
+        )}>
+        {values ? (
           <>
             <DialogHeader>
               <DialogTitle>Edit Teacher Profile</DialogTitle>
@@ -116,10 +94,11 @@ export default function EditTeacherDialog() {
             </DialogHeader>
             <CreateTeacherForm
               id={id}
-              defaultValues={defaultValues}
-              onSubmit={handleUpdate}
-              onDelete={handleDelete}
-              isDeletePending={isPending}
+              defaultValues={values}
+              onSubmit={handleTeacherUpdate}
+              onDelete={handleTeacherDelete}
+              isDeletePending={isDeleting}
+              isPending={isUpdating}
             />
             <DialogFooter>
               <DialogClose

@@ -17,7 +17,7 @@ export const useGenericDialog = create<DialogProps>((set) => ({
   onOpen: (dialogId, id) =>
     set((state) => ({
       dialogs: { ...state.dialogs, [dialogId]: true },
-      id: id,
+      id: id ? id : undefined,
     })),
   onClose: (dialogId) =>
     set((state) => ({

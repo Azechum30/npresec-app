@@ -9,18 +9,36 @@ datasource db {
 }
 
 model User {
-  id                    String       @id @default(cuid())
-  email                 String       @unique
-  username              String       @unique
-  password              String?
-  roleId                String?
-  resetPasswordRequired Boolean      @default(true)
-  picture               String?
-  session               Session[]
-  student               Student?
-  teacher               Teacher?
-  role                  Role?        @relation(fields: [roleId], references: [id])
-  permissions           Permission[] @relation("UserPermissions")
+  id                       String       @id @default(cuid())
+  email                    String       @unique
+  username                 String       @unique
+  password                 String?
+  roleId                   String?
+  name                     String?
+  linkedInUrl              String?
+  xUrl                     String?
+  facebookUrl              String?
+  instagramUrl             String?
+  bio                      String?
+  subscribeToOurNewsLetter Boolean?     @default(false)
+  resetPasswordRequired    Boolean      @default(true)
+  socials                  Json?
+  timezone                 String?      @default("Africa/Accra")
+  dateFormat               String?      @default("DD/MM/YYYY")
+  itemsPerPage             Int?         @default(10)
+  emailNotifications       Json?
+  notificationFrequency    String?      @default("realtime")
+  theme                    String?      @default("system")
+  compactMode              Boolean      @default(false)
+  showTips                 Boolean      @default(false)
+  picture                  String?
+  session                  Session[]
+  student                  Student?
+  teacher                  Teacher?
+  createdAt                DateTime     @default(now())
+  updatedAt                DateTime     @default(now()) @updatedAt
+  role                     Role?        @relation(fields: [roleId], references: [id])
+  permissions              Permission[] @relation("UserPermissions")
 
   @@index([roleId, email, username])
   @@map("users")
@@ -44,7 +62,7 @@ model Department {
   createdAt   DateTime  @default(now())
   updatedat   DateTime  @updatedAt
   classes     Class[]
-  head        Teacher?  @relation("Head", fields: [headId], references: [id])
+  head        Teacher?  @relation("Head", fields: [headId], references: [id], onDelete: SetNull)
   students    Student[]
   teachers    Teacher[] @relation("DepartmentTeachers")
   courses     Course[]  @relation("CourseDepartments")
@@ -72,11 +90,13 @@ model Teacher {
   ghcardNumber           String?     @unique
   phone                  String
   licencedNumber         String?     @unique
+  houseMaster            House?      @relation("HouseMaster")
   departmentHead         Department? @relation("Head")
   department             Department? @relation("DepartmentTeachers", fields: [departmentId], references: [id])
   user                   User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
   classes                Class[]     @relation("ClassTeachers")
   courses                Course[]    @relation("CourseTeachers")
+  grades                 Grade[] // Grades assigned by this teacher
 
   @@index([employeeId, firstName, lastName, gender])
   @@map("teachers")
@@ -175,9 +195,12 @@ model Student {
   attendance       Attendance[]
   documents        Document[]
   grades           Grade[]
+  transcripts      Transcript[]
   currentClass     Class?           @relation(fields: [classId], references: [id])
   department       Department?      @relation(fields: [departmentId], references: [id])
   user             User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  houseId          String?          @unique
+  house            House?           @relation(fields: [houseId], references: [id])
 
   @@index([departmentId, currentLevel])
   @@index([firstName, lastName, studentNumber])
@@ -202,16 +225,32 @@ model Attendance {
 }
 
 model Grade {
-  id        String   @id @default(cuid())
-  courseId  String?
-  studentId String?
-  score     Float
-  semester  Semester
-  year      Int
-  course    Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id             String         @id @default(cuid())
+  courseId       String
+  studentId      String
+  teacherId      String?
+  assessmentType AssessmentType
+  score          Float
+  maxScore       Float          @default(100) // Maximum possible score
+  weight         Float?         @default(1.0) // Weight of this assessment (e.g., 0.3 for 30%)
+  semester       Semester
+  academicYear   Int // e.g., 2024
+  isExempt       Boolean        @default(false) // For exempted assessments
+  isRetake       Boolean        @default(false) // For retake exams
+  remarks        String? // Teacher comments
+  gradedAt       DateTime? // When the grade was assigned
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
-  @@unique([studentId, courseId, semester, year])
+  // Relations
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher Teacher? @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+
+  @@unique([studentId, courseId, assessmentType, semester, academicYear])
+  @@index([studentId, academicYear])
+  @@index([courseId, academicYear, semester])
+  @@index([teacherId, academicYear])
   @@map("grades")
 }
 
@@ -227,9 +266,80 @@ model Document {
   @@map("documents")
 }
 
+model BoardMember {
+  id          String          @id @default(cuid())
+  name        String
+  role        BoardMemberRole @default(Member)
+  affiliation String?
+  bio         String?
+  picture     String?
+  is_active   Boolean         @default(true)
+
+  @@map("board_members")
+}
+
+model Transcript {
+  id             String    @id @default(cuid())
+  studentId      String
+  academicYear   Int
+  semester       Semester?
+  gpa            Float?
+  totalCredits   Int?
+  generatedAt    DateTime  @default(now())
+  pdfUrl         String?
+  isOfficial     Boolean   @default(false)
+  student        Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  transcriptData Json?
+
+  @@unique([studentId, academicYear, semester])
+  @@index([studentId])
+  @@index([academicYear])
+  @@map("transcripts")
+}
+
+model House {
+  id            String      @id @default(cuid())
+  name          String      @unique
+  type          HouseType   @default(DAY)
+  houseGender   HouseGender @default(BOTH)
+  roomCount     Int         @default(0)
+  roomCapacity  Int         @default(0)
+  students      Student[]
+  houseMasterId String?     @unique
+  houseMaster   Teacher?    @relation("HouseMaster", fields: [houseMasterId], references: [id], onDelete: SetNull)
+}
+
+enum HouseGender {
+  MALE
+  FEMALE
+  BOTH
+}
+
+enum HouseType {
+  DAY
+  BOARDING
+  MIXED
+}
+
+enum BoardMemberRole {
+  ChairPerson
+  ViceChairPerson
+  Secretary
+  Member
+}
+
 enum Semester {
   First
   Second
+}
+
+enum AssessmentType {
+  Assignment
+  Midterm
+  Project
+  Examination
 }
 
 enum AttendanceStatus {

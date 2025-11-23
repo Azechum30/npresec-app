@@ -29,6 +29,8 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { rateLimit } from "@/utils/rateLimit";
 import { uploadToCloudinary } from "@/utils/upload-to-cloudinary";
+import { client } from "@/utils/qstash";
+import { env } from "@/lib/server-only-actions/validate-env";
 
 export const createStudent = async (values: StudentType) => {
   try {
@@ -156,21 +158,8 @@ export const createStudent = async (values: StudentType) => {
       sequenceNumber: sequence,
     });
 
-    if (result.data.imageFile) {
-      const secure_url = await uploadToCloudinary(
-        result.data.imageFile,
-        "students"
-      );
-
-      if (secure_url) {
-        result.data.photoURL = secure_url;
-        delete result.data["imageFile"];
-      } else {
-        delete result.data["imageFile"];
-      }
-    }
-
-    const { email, photoURL, classId, departmentId, ...rest } = result.data;
+    const { email, photoURL, imageFile, classId, departmentId, ...rest } =
+      result.data;
 
     const student = await prisma.$transaction(async (tx) => {
       const userCreated = await tx.user.create({
@@ -189,7 +178,7 @@ export const createStudent = async (values: StudentType) => {
               id: studentPermission.id,
             },
           },
-          picture: photoURL ? photoURL : undefined,
+          picture: imageFile instanceof File ? "Upload Pending" : photoURL,
         },
       });
 
@@ -219,7 +208,27 @@ export const createStudent = async (values: StudentType) => {
         },
       });
     });
-    await sendMail({
+
+    if (result.data.imageFile instanceof File) {
+      const arrayBuffer = await (result.data.imageFile as File).arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const jobData = {
+        file: {
+          buffer: buffer.toString("base64"),
+          name: (result.data.imageFile as File).name,
+          type: (result.data.imageFile as File).type,
+        },
+        entityId: student.userId,
+        entityType: "user" as const,
+        folder: "students",
+      };
+      await client.publishJSON({
+        url: `${env.NEXT_PUBLIC_URL}/api/images/uploads`,
+        body: jobData,
+      });
+    }
+
+    const emailData = {
       to: [email],
       username: student.lastName,
       data: {
@@ -227,6 +236,11 @@ export const createStudent = async (values: StudentType) => {
         lastName: student.firstName,
         password: password,
       },
+    };
+
+    await client.publishJSON({
+      url: `${env.NEXT_PUBLIC_URL}/api/send/emails`,
+      body: emailData,
     });
 
     return { student };
@@ -405,35 +419,66 @@ export const updateStudent = async (values: EditStudentType) => {
 
     const cleanData = {
       ...data,
-      studentNumber: studentNumber,
+      studentNumber: existingStudent?.studentNumber ?? studentNumber,
       departmentId: data.departmentId ?? "",
       classId: data.classId ?? "",
       currentLevel: data.currentLevel as (typeof Levels)[number],
     };
     const { email, ...transformData } = cleanData;
 
-    if (transformData.imageFile) {
-      const secure_url = await uploadToCloudinary(
-        transformData.imageFile,
-        "students"
-      );
+    const { imageFile, photoURL, classId, departmentId, ...rest } =
+      transformData;
 
-      if (secure_url) {
-        transformData.photoURL = secure_url;
-        delete transformData["imageFile"];
-      } else {
-        delete transformData["imageFile"];
-      }
-    }
-
+    // Update student record
     await prisma.student.update({
       where: { id },
       data: {
-        ...transformData,
-        classId: transformData.classId ?? undefined,
-        departmentId: transformData.departmentId ?? undefined,
+        ...rest,
+        department: departmentId
+          ? {
+              connect: {
+                id: departmentId,
+              },
+            }
+          : undefined,
+        currentClass: classId
+          ? {
+              connect: {
+                id: classId,
+              },
+            }
+          : undefined,
       },
     });
+
+    // Update user record separately if there's a photo update
+    if (imageFile instanceof File) {
+      const student = await prisma.student.findUnique({
+        where: { id },
+        select: { userId: true },
+      });
+
+      if (student?.userId) {
+        const arrayBuffer = await (
+          transformData.imageFile as File
+        ).arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const jobData = {
+          file: {
+            buffer: buffer.toString("base64"),
+            name: (transformData.imageFile as File).name,
+            type: (transformData.imageFile as File).type,
+          },
+          entityId: student?.userId,
+          entityType: "user" as const,
+          folder: "students",
+        };
+        await client.publishJSON({
+          url: `${env.NEXT_PUBLIC_URL}/api/images/uploads`,
+          body: jobData,
+        });
+      }
+    }
 
     return { success: true };
   } catch (error) {
@@ -507,7 +552,12 @@ export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
     const createStudents: StudentResponseType[] = [];
     const errors: string[] = [];
 
-    for (const student of studentData) {
+    const studentsWithPassword = studentData.map((student) => ({
+      ...student,
+      password: generatePassword(),
+    }));
+
+    for (const student of studentsWithPassword) {
       const classId = classMap.get(student.classId as string);
       const departmentId = departmentMap.get(student.departmentId as string);
 
@@ -555,8 +605,7 @@ export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
         sequenceNumber: sequence,
       });
 
-      const password = generatePassword();
-      const hashedPassword = await argon.hash(password, {
+      const hashedPassword = await argon.hash(student.password, {
         type: argon.argon2id,
       });
 
@@ -613,17 +662,24 @@ export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
       });
 
       createStudents.push(createdStudent);
-
-      await sendMail({
-        to: [student.email],
-        username: student.lastName,
-        data: {
-          email: student.email,
-          lastName: student.firstName,
-          password: password,
-        },
-      });
     }
+
+    const emails = studentsWithPassword.map((student) => ({
+      to: [student.email],
+      username: student.lastName,
+      data: {
+        lastName: student.lastName,
+        email: student.email,
+        password: student.password,
+      },
+    }));
+
+    await client.publishJSON({
+      url: `${env.NEXT_PUBLIC_URL}/api/send/emails/batch`,
+      body: {
+        emails: emails,
+      },
+    });
 
     return { count: createStudents.length };
   } catch (error) {

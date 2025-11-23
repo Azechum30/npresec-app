@@ -63,17 +63,41 @@ export default function SelectWithLabel<T>({
           <FormLabel
             htmlFor={name}
             className={cn(
-              "text-sm font-semibold",
+              "text-sm font-semibold disabled:text-muted-foreground",
               isRequired && "flex items-center gap-1",
-                className
+              className
             )}>
             {fieldTitle}
             {isRequired && <span className="text-red-500">*</span>}
           </FormLabel>
           <FormControl>
-            <Select defaultValue={field.value} onValueChange={field.onChange}>
-              <SelectTrigger className={cn("text-muted-foreground", field.value && "text-foreground")} {...props}>
-                <SelectValue placeholder={placeholder} />
+            <Select
+              value={
+                field.value !== undefined && field.value !== null
+                  ? typeof field.value === "number"
+                    ? String(field.value)
+                    : String(field.value)
+                  : undefined
+              }
+              onValueChange={(value) => {
+                field.onChange(
+                  typeof data[0] === "number" && !isNaN(Number(value))
+                    ? Number(value)
+                    : value
+                );
+              }}>
+              <SelectTrigger
+                aria-invalid={form.formState.errors[0] ? true : false}
+                className={cn(
+                  "text-muted-foreground hover:cursor-pointer w-full max-w-2xl",
+                  field.value && "text-foreground",
+                  className
+                )}
+                {...props}>
+                <SelectValue
+                  placeholder={placeholder}
+                  className="line-clamp-1"
+                />
               </SelectTrigger>
               <SelectContent>
                 {data.map((val, index) => {

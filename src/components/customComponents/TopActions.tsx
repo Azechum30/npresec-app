@@ -29,21 +29,21 @@ export default function TopActions<T>({
 }: TopActionsProps<T>) {
   const transformData: IContent[] = transformer
     ? createDataTransformer(transformer)(data)
-    : data.map((item) => ({ ...item } as IContent));
+    : data.map((item) => ({ ...item }) as IContent);
 
-  const pathname = usePathname().split("/").pop()
+  const pathname = usePathname().split("/").pop();
   return (
     <div
       className={cn(
         "grid grid-col-1 sm:grid-cols-2 lg:grid-flow-col lg:grid-cols-[3fr_1fr_1fr_9.5rem] gap-y-3 sm:gap-x-3 mb-4 ",
         table.getSelectedRowModel().rows.length > 0 &&
           "lg:grid-cols-[3fr_1fr_1fr_1fr_9.5rem]",
-          pathname === "attendance" && "lg:grid-cols-[3fr_1fr_9.5rem]"
-
+        (pathname === "attendance" || pathname === "teachers") &&
+          "lg:grid-cols-[3fr_1fr_9.5rem]"
       )}>
       <FilterSearchInput
         table={table}
-        className="sm:col-span-3 lg:col-span-1 order-4 lg:-order-1"
+        className="sm:col-span-3 lg:col-span-1 order-4 lg:-order-1 lg:max-w-xs"
       />
       <RowSelectionComponent table={table} onDelete={onDelete} className="" />
       <UploadButton className="" />

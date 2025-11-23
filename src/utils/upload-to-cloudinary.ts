@@ -1,30 +1,49 @@
-import {v2 as cloudinary} from 'cloudinary';
+import { v2 as cloudinary } from "cloudinary";
 import { env } from "@/lib/server-only-actions/validate-env";
 
-cloudinary.config({
-	cloud_name: env.CLOUDINARY_CLOUD_NAME,
-	api_key: env.CLOUDINARY_API_KEY,
-	api_secret: env.CLOUDINARY_API_SECRET,
-	secure: true,
-})
+export const cloudinary1 = cloudinary.config({
+  cloud_name: env.CLOUDINARY_CLOUD_NAME,
+  api_key: env.CLOUDINARY_API_KEY,
+  api_secret: env.CLOUDINARY_API_SECRET,
+  secure: true,
+});
 
-export const uploadToCloudinary = async(imageFile: File, sub:string) => {
-	const bytes = await imageFile.arrayBuffer();
-	const buffer = Buffer.from(bytes);
+type SerializedFile = {
+  buffer: string;
+  name: string;
+  type: string;
+};
 
-	const uploadResponse:any = await new Promise((resolve, reject) => {
-		cloudinary.uploader.upload_stream({
-			folder: `npresec/${sub}/`,
-			public_id: `${sub}/${imageFile.name}`,
-			overwrite: true,
-			invalidate: true,
-		},(err, result)=>{
-			if(err) reject(err)
-			resolve(result)
-		}).end(buffer)
-	});
+export const uploadToCloudinary = async (
+  imageFile: SerializedFile,
+  sub: string
+) => {
+  const buffer = Buffer.from(imageFile.buffer, "base64");
 
-	if(!uploadResponse.secure_url) throw new Error('Failed to upload to cloudinary');
+  const uploadResponse: any = await new Promise((resolve, reject) => {
+    cloudinary.uploader
+      .upload_stream(
+        {
+          folder: `npresec/${sub}/`,
+          public_id: imageFile.name,
+          overwrite: true,
+          invalidate: true,
+          quality_analysis: true,
+          format: "webp",
+        },
+        (err, result) => {
+          if (err) reject(err);
+          resolve(result);
+        }
+      )
+      .end(buffer);
+  });
 
-	return uploadResponse.secure_url as string;
+  if (!uploadResponse.secure_url)
+    throw new Error("Failed to upload to cloudinary");
+
+  return {
+    secure_url: uploadResponse.secure_url,
+    public_id: uploadResponse.public_id,
+  };
 };

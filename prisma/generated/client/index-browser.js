@@ -20,12 +20,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.11.1
- * Query Engine version: f40f79ec31188888a2e33acda0ecc8fd10a853a9
+ * Prisma Client JS version: 6.16.2
+ * Query Engine version: 1c57fdcd7e44b29b9313256c76699e91c3ac3c43
  */
 Prisma.prismaVersion = {
-  client: "6.11.1",
-  engine: "f40f79ec31188888a2e33acda0ecc8fd10a853a9"
+  client: "6.16.2",
+  engine: "1c57fdcd7e44b29b9313256c76699e91c3ac3c43"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -126,8 +126,26 @@ exports.Prisma.UserScalarFieldEnum = {
   username: 'username',
   password: 'password',
   roleId: 'roleId',
+  name: 'name',
+  linkedInUrl: 'linkedInUrl',
+  xUrl: 'xUrl',
+  facebookUrl: 'facebookUrl',
+  instagramUrl: 'instagramUrl',
+  bio: 'bio',
+  subscribeToOurNewsLetter: 'subscribeToOurNewsLetter',
   resetPasswordRequired: 'resetPasswordRequired',
-  picture: 'picture'
+  socials: 'socials',
+  timezone: 'timezone',
+  dateFormat: 'dateFormat',
+  itemsPerPage: 'itemsPerPage',
+  emailNotifications: 'emailNotifications',
+  notificationFrequency: 'notificationFrequency',
+  theme: 'theme',
+  compactMode: 'compactMode',
+  showTips: 'showTips',
+  picture: 'picture',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SessionScalarFieldEnum = {
@@ -231,7 +249,8 @@ exports.Prisma.StudentScalarFieldEnum = {
   admissionDate: 'admissionDate',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
+  deletedAt: 'deletedAt',
+  houseId: 'houseId'
 };
 
 exports.Prisma.AttendanceScalarFieldEnum = {
@@ -248,9 +267,19 @@ exports.Prisma.GradeScalarFieldEnum = {
   id: 'id',
   courseId: 'courseId',
   studentId: 'studentId',
+  teacherId: 'teacherId',
+  assessmentType: 'assessmentType',
   score: 'score',
+  maxScore: 'maxScore',
+  weight: 'weight',
   semester: 'semester',
-  year: 'year'
+  academicYear: 'academicYear',
+  isExempt: 'isExempt',
+  isRetake: 'isRetake',
+  remarks: 'remarks',
+  gradedAt: 'gradedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.DocumentScalarFieldEnum = {
@@ -262,14 +291,60 @@ exports.Prisma.DocumentScalarFieldEnum = {
   uploadedAt: 'uploadedAt'
 };
 
+exports.Prisma.BoardMemberScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  role: 'role',
+  affiliation: 'affiliation',
+  bio: 'bio',
+  picture: 'picture',
+  is_active: 'is_active'
+};
+
+exports.Prisma.TranscriptScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  academicYear: 'academicYear',
+  semester: 'semester',
+  gpa: 'gpa',
+  totalCredits: 'totalCredits',
+  generatedAt: 'generatedAt',
+  pdfUrl: 'pdfUrl',
+  isOfficial: 'isOfficial',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  transcriptData: 'transcriptData'
+};
+
+exports.Prisma.HouseScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  type: 'type',
+  houseGender: 'houseGender',
+  roomCount: 'roomCount',
+  roomCapacity: 'roomCapacity',
+  houseMasterId: 'houseMasterId'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
 };
 
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
 };
 
 exports.Prisma.NullsOrder = {
@@ -302,6 +377,32 @@ exports.Semester = exports.$Enums.Semester = {
   Second: 'Second'
 };
 
+exports.AssessmentType = exports.$Enums.AssessmentType = {
+  Assignment: 'Assignment',
+  Midterm: 'Midterm',
+  Project: 'Project',
+  Examination: 'Examination'
+};
+
+exports.BoardMemberRole = exports.$Enums.BoardMemberRole = {
+  ChairPerson: 'ChairPerson',
+  ViceChairPerson: 'ViceChairPerson',
+  Secretary: 'Secretary',
+  Member: 'Member'
+};
+
+exports.HouseType = exports.$Enums.HouseType = {
+  DAY: 'DAY',
+  BOARDING: 'BOARDING',
+  MIXED: 'MIXED'
+};
+
+exports.HouseGender = exports.$Enums.HouseGender = {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE',
+  BOTH: 'BOTH'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Session: 'Session',
@@ -314,7 +415,10 @@ exports.Prisma.ModelName = {
   Student: 'Student',
   Attendance: 'Attendance',
   Grade: 'Grade',
-  Document: 'Document'
+  Document: 'Document',
+  BoardMember: 'BoardMember',
+  Transcript: 'Transcript',
+  House: 'House'
 };
 
 /**

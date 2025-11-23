@@ -2,43 +2,41 @@
 
 import { useTeacherStore } from "@/hooks/use-generic-store";
 import { useGetTeacherColumns } from "./TeacherColumns";
-import { use, useEffect } from "react";
-import { getTeachers } from "../actions/server";
+import { useEffect, useMemo } from "react";
 import DataTable from "@/components/customComponents/data-table";
 import TeacherRowDetail from "./TeacherRowDetail";
-import { useDeleteTeacher } from "../hooks/use-delete-teacher";
-import LoadingState from "@/components/customComponents/Loading";
 import { useBulkDeleteTeachers } from "../hooks/use-bulk-delete-teachers";
-import { TeacherTransformer } from "../utils/teacher-transformer";
+import { createTeacherTransformer } from "../utils/teacher-transformer";
+import { TeacherResponseType } from "@/lib/types";
+import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
+import { DateFormatType } from "@/lib/validation";
 
 type Props = {
-  initialState: Promise<Awaited<ReturnType<typeof getTeachers>>>;
+  initialData: { teachers?: TeacherResponseType[]; error?: string };
 };
 
-export default function RenderTeacherData({ initialState }: Props) {
+export default function RenderTeacherData({ initialData }: Props) {
   const { intialState: storeState, setData } = useTeacherStore();
   const columns = useGetTeacherColumns();
-
-  const promise = use(initialState);
-  const { isPending: isDeletePending } = useDeleteTeacher();
-  const { deleteteachers, isPending } = useBulkDeleteTeachers();
+  const { deleteteachers } = useBulkDeleteTeachers();
+  const userPreferredDateFormat = useUserPreferredDateFormat();
+  const teacherTransformer = useMemo(
+    () => createTeacherTransformer(userPreferredDateFormat as DateFormatType),
+    [userPreferredDateFormat]
+  );
 
   useEffect(() => {
-    if (!promise.error && promise.teachers !== undefined) {
-      setData(promise.teachers);
+    if (!initialData.error && initialData.teachers !== undefined) {
+      setData(initialData.teachers);
     }
-  }, [promise.teachers, setData]);
-
-  if (isDeletePending || isPending) {
-    return <LoadingState />;
-  }
+  }, [initialData.teachers, setData]);
 
   return (
     <>
       <DataTable
         columns={columns}
         data={storeState}
-        transformer={TeacherTransformer}
+        transformer={teacherTransformer}
         filename="Teacher-list"
         onDelete={async (rows) => {
           const ids = rows.map((row) => row.original.id);

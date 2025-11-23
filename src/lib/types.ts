@@ -232,6 +232,9 @@ export const AttendanceSelect = {
       studentNumber: true,
       user: {
         select: {
+          id: true,
+          username: true,
+          role: true,
           picture: true,
         },
       },
@@ -272,4 +275,130 @@ export const PermissionSelect = {
 
 export type PermissionResponseType = Prisma.PermissionGetPayload<{
   select: typeof PermissionSelect;
+}>;
+
+export const BoardMemberSelect = {
+  id: true,
+  name: true,
+  role: true,
+  affiliation: true,
+  is_active: true,
+  picture: true,
+  bio: true,
+} satisfies Prisma.BoardMemberSelect;
+
+export type BoardMemberResponseType = Prisma.BoardMemberGetPayload<{
+  select: typeof BoardMemberSelect;
+}>;
+
+export const GradeSelect = {
+  id: true,
+  courseId: true,
+  studentId: true,
+  teacherId: true,
+  assessmentType: true,
+  score: true,
+  maxScore: true,
+  weight: true,
+  semester: true,
+  academicYear: true,
+  createdAt: true,
+  student: {
+    select: {
+      id: true,
+      studentNumber: true,
+      firstName: true,
+      lastName: true,
+      gender: true,
+      user: {
+        select: {
+          id: true,
+          picture: true,
+        },
+      },
+      currentClass: {
+        select: {
+          id: true,
+          name: true,
+          level: true,
+          department: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  },
+  course: {
+    select: {
+      id: true,
+      title: true,
+    },
+  },
+  teacher: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      gender: true,
+    },
+  },
+} satisfies Prisma.GradeSelect;
+
+export type GradeResponseType = Prisma.GradeGetPayload<{
+  select: typeof GradeSelect;
+}>;
+
+export const UserSelect = {
+  id: true,
+  email: true,
+  username: true,
+  picture: true,
+  resetPasswordRequired: true,
+  session: {
+    select: {
+      id: true,
+      expiresAt: true,
+    },
+  },
+  role: {
+    select: {
+      id: true,
+      name: true,
+      permissions: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  },
+  permissions: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  student: {
+    select: {
+      id: true,
+      studentNumber: true,
+      firstName: true,
+      lastName: true,
+      gender: true,
+    },
+  },
+  teacher: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+    },
+  },
+} satisfies Prisma.UserSelect;
+
+export type UserResponseType = Prisma.UserGetPayload<{
+  select: typeof UserSelect;
 }>;

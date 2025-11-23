@@ -1,12 +1,15 @@
 "use client";
 import {
+  Award,
   BookOpen,
   ClipboardList,
   GraduationCap,
   Home,
   LayoutDashboard,
   LucideBuilding2,
+  Shield,
   UserPen,
+  UserPlus,
 } from "lucide-react";
 import LinkWithStyles from "./LinkWithStyles";
 import UserButton from "./UserButton";
@@ -43,17 +46,27 @@ export const Links = {
         },
       ],
     },
+    {
+      section: "Public Facing",
+      Links: [
+        {
+          title: "Board of Governors",
+          href: "/admin/board-of-governors",
+          icon: <Shield />,
+        },
+      ],
+    },
   ],
   TEACHER: [
     {
       section: "Class Management",
       Links: [
         {
-          title: "My Classes",
-          href: "/my-classes",
-          icon: <LucideBuilding2 />,
+          title: "Students",
+          href: "/teachers",
+          icon: <UserPlus />,
         },
-        { title: "Courses", href: "/courses", icon: <BookOpen /> },
+        { title: "Capture Scores", href: "/scores", icon: <Award /> },
       ],
     },
   ],
@@ -119,7 +132,7 @@ export default function Sidebar() {
                   title={innerLink.title}
                   href={innerLink.href}
                   icon={innerLink.icon}
-                  className="mt-1 p-4 md:px-4 lg:px-4 md:py-2 text-muted-foreground hover:text-inherit hover:bg-blue-100 dark:hover:bg-blue-800 text-sm rounded-full md:rounded-md first:mt-0"
+                  className="mt-1 p-4 md:px-4 lg:px-4 md:py-2 text-muted-foreground hover:text-inherit hover:bg-accent text-sm rounded-full md:rounded-md first:mt-0"
                 />
               ))}
             </div>
