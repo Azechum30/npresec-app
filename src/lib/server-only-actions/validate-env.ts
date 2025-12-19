@@ -11,7 +11,6 @@ const envSchema = z.object({
   ADMIN_USER_PASSWORD: z.string().min(1),
   UPSTASH_REDIS_REST_URL: z.string().url(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
-  REDIS_URL: z.string().url(),
   QSTASH_TOKEN: z.string().min(1),
   QSTASH_URL: z.string().url(),
   QSTASH_CURRENT_SIGNING_KEY: z.string().min(1),
