@@ -1,4 +1,3 @@
-import { toast } from "sonner";
 import { getBoardOfGovernors } from "./actions/server";
 import { BoardMembers } from "./_components/board-members";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
