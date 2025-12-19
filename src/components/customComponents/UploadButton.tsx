@@ -10,14 +10,14 @@ const UploadButton: React.FC<{ className?: string }> = ({ className }) => {
 
   const dialogId = pathname + "-upload";
 
-  if (pathname === "attendance" || pathname === "teachers") return null;
+  if (pathname === "attendance") return null;
   return (
     <Button
       variant="outline"
       onClick={() => onOpen(dialogId, dialogId)}
       className={className}>
       <UploadCloud className="size-5" />
-      Upload
+      Import From Excel
     </Button>
   );
 };

@@ -1,9 +1,8 @@
 "use client";
-import { logOut } from "@/lib/server-only-actions/authenticate";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
 import { Loader2, LogOutIcon } from "lucide-react";
 import LoadingButton from "./LoadingButton";
-import { useActionState, useEffect } from "react";
+import { useTransition } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,22 +11,32 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 export default function LogoutButton() {
   const router = useRouter();
-  const [state, action, isLoading] = useActionState(logOut, {
-    success: false,
-  });
 
-  useEffect(() => {
-    if (state.success) {
-      router.push("/sign-in");
-    }
-  }, [state, router]);
+  const [isPending, startTransition] = useTransition();
+
+  const handleLogout = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    startTransition(async () => {
+      const { error } = await authClient.signOut();
+
+      if (error) {
+        toast.error(error.message || "Could not log user out");
+      } else {
+        toast.success("logout successful");
+        router.push("/sign-in");
+      }
+    });
+  };
 
   return (
     <>
-      <Dialog open={isLoading}>
+      <Dialog open={isPending}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Logging Out</DialogTitle>
@@ -41,10 +50,10 @@ export default function LogoutButton() {
           </div>
         </DialogContent>
       </Dialog>
-      <form action={action}>
+      <form onSubmit={handleLogout}>
         <DropdownMenuItem asChild>
           <LoadingButton
-            loading={isLoading}
+            loading={isPending}
             className="text-sm w-full text-left flex items-center justify-start hover:cursor-pointer"
             size="sm"
             variant="ghost">

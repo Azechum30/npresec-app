@@ -18,10 +18,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { resetPasswordAction } from "@/lib/server-only-actions/authenticate";
 import { toast } from "sonner";
 
-type ResetPasswordFormProps = {
-  onSubmit: () => void;
-};
-
 const ResetPasswordForm = () => {
   const form = useForm<ResetPasswordType>({
     resolver: zodResolver(ResetPasswordSchema),
@@ -42,14 +38,14 @@ const ResetPasswordForm = () => {
     startTransition(async () => {
       const res = await resetPasswordAction({ ...values, token });
 
-      if (res.error) {
+      if (res?.error) {
         toast.error(res.error);
-      } else if (res.errors) {
+      } else if (res?.errors) {
         const errors = res.errors;
         if ("password" in errors) {
           form.setError("password", {
-            type: "server",
-            message: errors.password as string,
+            type: "validate",
+            message: errors.password?.join(",") as string,
           });
         }
       } else {
@@ -72,14 +68,14 @@ const ResetPasswordForm = () => {
           <form
             onSubmit={form.handleSubmit(handlePasswordReset)}
             className="space-y-4 w-full p-4">
-            <InputWithLabel<ResetPasswordType>
+            <InputWithLabel
               name="password"
               fieldTitle="New Password"
               placeholder="Enter a new password"
               type="password"
               className="placeholder:text-xs"
             />
-            <InputWithLabel<ResetPasswordType>
+            <InputWithLabel
               name="confirmPassword"
               fieldTitle="Confirm Password"
               placeholder="re-enter password"

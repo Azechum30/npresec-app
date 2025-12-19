@@ -19,8 +19,8 @@ import { z } from "zod";
 import { isZodFieldRequired } from "@/lib/isZodFieldRequired";
 import { cn } from "@/lib/utils";
 
-type SelectWithLabelProps<T, U = any> = {
-  name: keyof T & string;
+type SelectWithLabelProps<U = any> = {
+  name: string;
   fieldTitle: string;
   className?: string;
   placeholder?: string;
@@ -30,7 +30,7 @@ type SelectWithLabelProps<T, U = any> = {
   selectedKey?: keyof U;
 } & React.ComponentPropsWithRef<typeof Select>;
 
-export default function SelectWithLabel<T>({
+export default function SelectWithLabel({
   name,
   fieldTitle,
   className,
@@ -40,7 +40,7 @@ export default function SelectWithLabel<T>({
   valueKey = "value",
   selectedKey = "label",
   ...props
-}: SelectWithLabelProps<T>) {
+}: SelectWithLabelProps) {
   const form = useFormContext();
 
   const isRequired = (() => {
@@ -104,7 +104,11 @@ export default function SelectWithLabel<T>({
                   if (typeof val === "string" || typeof val === "number") {
                     return (
                       <SelectItem key={index} value={String(val)}>
-                        {val}
+                        {val.toString().includes("_")
+                          ? val.toString().split("_").join(" ")
+                          : val.toString().includes("-")
+                            ? val.toString().split("-").join(" ")
+                            : val}
                       </SelectItem>
                     );
                   }

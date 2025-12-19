@@ -12,26 +12,27 @@ import { z } from "zod";
 import { isZodFieldRequired } from "@/lib/isZodFieldRequired";
 import { cn } from "@/lib/utils";
 
-type DatePickerWithLabelProps<T> = {
-  name: keyof T & string;
+type DatePickerWithLabelProps = {
+  name: string;
   fieldTitle: string;
   startDate?: number;
   endDate?: number;
   fromMonth?: number;
   restrictToCurrentDay?: boolean;
   disable?: boolean;
-  schema?: z.ZodSchema<T>;
+  schema?: z.ZodSchema<any>;
 } & InputHTMLAttributes<HTMLButtonElement>;
 
-export default function DatePickerWithLabel<T>({
+export default function DatePickerWithLabel({
   name,
   fieldTitle,
   schema,
     startDate,
     endDate,
-    fromMonth, restrictToCurrentDay,
-    disable
-}: DatePickerWithLabelProps<T>) {
+  fromMonth,
+  restrictToCurrentDay,
+  disable,
+}: DatePickerWithLabelProps) {
   const form = useFormContext();
 
   const isRequired = (() => {

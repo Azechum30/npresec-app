@@ -41,7 +41,7 @@ export const BioForm = ({
       email: "",
       fullName: "",
       role: "",
-      picture: undefined,
+      image: undefined,
       subscribeToNewsletter: false,
       bio: "",
       social: {
@@ -56,16 +56,14 @@ export const BioForm = ({
 
   const [enableEditing, setEnableEditing] = useState(false);
   const ImageRef = useRef<HTMLInputElement | null>(null);
-  const [ProfilePicturePrevious, setProfilePicturePrevious] = useState<
+  const [ProfileImagePrevious, setProfileImagePrevious] = useState<
     string | null
   >(null);
 
   useEffect(() => {
     if (defaultValues) {
-      setProfilePicturePrevious(
-        defaultValues.picture
-          ? (defaultValues.picture as string)
-          : "/no-avatar.jpg"
+      setProfileImagePrevious(
+        defaultValues.image ? (defaultValues.image as string) : "/no-avatar.jpg"
       );
     }
   }, [defaultValues]);
@@ -83,7 +81,7 @@ export const BioForm = ({
           <div className="flex justify-center items-center">
             <FormField
               control={form.control}
-              name="picture"
+              name="image"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
@@ -99,7 +97,7 @@ export const BioForm = ({
                           const file = e.target.files?.[0];
 
                           if (file && file.size > 5 * 1024 * 1024) {
-                            form.setError("picture", {
+                            form.setError("image", {
                               type: "validate",
                               message:
                                 "File is too large. Maximum size should be 5MB",
@@ -115,7 +113,7 @@ export const BioForm = ({
                             file.type !== "image/jpg" &&
                             file.type !== "image/jpeg"
                           ) {
-                            form.setError("picture", {
+                            form.setError("image", {
                               type: "validate",
                               message:
                                 "File type not supported. Only PNG and JPEG are allowed",
@@ -126,20 +124,18 @@ export const BioForm = ({
                           }
 
                           if (file) {
-                            setProfilePicturePrevious(
-                              URL.createObjectURL(file)
-                            );
+                            setProfileImagePrevious(URL.createObjectURL(file));
                           } else {
-                            setProfilePicturePrevious(null);
+                            setProfileImagePrevious(null);
                           }
 
                           field.onChange(file);
                         }}
                       />
 
-                      {ProfilePicturePrevious && (
+                      {ProfileImagePrevious && (
                         <Image
-                          src={ProfilePicturePrevious}
+                          src={ProfileImagePrevious}
                           alt="User profile image"
                           width={126}
                           height={126}
@@ -200,7 +196,7 @@ export const BioForm = ({
               </div>
             </div>
           </div>
-          <InputWithLabel<BioType>
+          <InputWithLabel
             name="fullName"
             fieldTitle="Full Name"
             className="max-w-full"
@@ -208,7 +204,7 @@ export const BioForm = ({
           />
           <div className="w-full flex flex-col md:flex-row gap-4 md:items-center">
             <div className="flex-1">
-              <InputWithLabel<BioType>
+              <InputWithLabel
                 name="email"
                 fieldTitle="Email"
                 className="w-full"
@@ -217,7 +213,7 @@ export const BioForm = ({
               />
             </div>
             <div className="flex-1">
-              <InputWithLabel<BioType>
+              <InputWithLabel
                 name="role"
                 fieldTitle="Role"
                 className="w-full"
@@ -225,37 +221,37 @@ export const BioForm = ({
               />
             </div>
           </div>
-          <TextAreaWithLabel<BioType>
+          <TextAreaWithLabel
             name="bio"
             fieldTitle="Bio"
             className="max-w-full"
             disabled={!enableEditing}
           />
-          <InputWithLabel<BioType>
+          <InputWithLabel
             name="social.linkedIn"
             fieldTitle="LinkedIn URL"
             className="max-w-full"
             disabled={!enableEditing}
           />
-          <InputWithLabel<BioType>
+          <InputWithLabel
             name="social.x"
             fieldTitle="X (Twitter) URL"
             className="max-w-full"
             disabled={!enableEditing}
           />
-          <InputWithLabel<BioType>
+          <InputWithLabel
             name="social.instagram"
             fieldTitle="Instagram URL"
             className="max-w-full"
             disabled={!enableEditing}
           />
-          <InputWithLabel<BioType>
+          <InputWithLabel
             name="social.github"
             fieldTitle="Github URL"
             className="max-w-full"
             disabled={!enableEditing}
           />
-          <InputWithLabel<BioType>
+          <InputWithLabel
             name="social.facebook"
             fieldTitle="Facebook URL"
             className="max-w-full"

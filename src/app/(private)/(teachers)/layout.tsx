@@ -1,7 +1,6 @@
 import { getAuthUser } from "@/lib/getAuthUser";
 import React from "react";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 
 export default async function TeachersLayout({
   children,
@@ -11,12 +10,13 @@ export default async function TeachersLayout({
   const user = await getAuthUser();
 
   if (!user) {
-    return redirect("/sign-in");
+    // This shouldn't happen since private layout handles auth, but safety check
+    redirect("/sign-in");
   }
 
-  if (user?.role?.name !== "teacher") {
-    const referer = (await headers()).get("referrer") || "/";
-    return redirect(referer);
+  if (user.role?.name !== "teacher") {
+    // Redirect to 403 page instead of potentially causing loops
+    redirect("/403");
   }
 
   return <>{children}</>;

@@ -1,26 +1,15 @@
-import { PrismaClient } from "../../prisma/generated/client";
+import { PrismaClient } from "@/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+import { env } from "./server-only-actions/validate-env";
 
-// Type-safe global variable
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-// Prevent multiple instances in development
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-  });
+const pool = new Pool({ connectionString: env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
 
-// Store in globalThis only in non-production
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+const prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
 
-// Add middleware-specific export
-export const prismaMiddleware =
-  process.env.NODE_ENV === "production"
-    ? prisma
-    : new PrismaClient({
-        log: ["error"],
-      });
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+export { prisma };

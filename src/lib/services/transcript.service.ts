@@ -9,7 +9,7 @@ import {
   AssessmentBreakdown,
   GenerateTranscriptParams,
 } from "@/lib/types/transcript.types";
-import { Semester } from "../../../prisma/generated/client";
+import { Semester } from "@/generated/prisma/client";
 
 /**
  * Converts a numeric grade to letter grade and grade points
@@ -64,7 +64,7 @@ async function fetchStudentGrades(
           credits: true,
         },
       },
-      teacher: {
+      staff: {
         select: {
           id: true,
           firstName: true,

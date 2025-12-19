@@ -30,7 +30,7 @@ export const BioFormAction = async (values: unknown) => {
       role,
       social,
       username,
-      picture,
+      image,
       subscribeToNewsletter,
     } = data;
 
@@ -49,14 +49,14 @@ export const BioFormAction = async (values: unknown) => {
 
     if (!updatedUser) return { error: "Failed to update your profile" };
 
-    if (picture instanceof File) {
-      const arrayBuffer = await picture.arrayBuffer();
+    if (image instanceof File) {
+      const arrayBuffer = await image.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       const FileUploadData = {
         file: {
           buffer: buffer.toString("base64"),
-          name: picture.name,
-          type: picture.type,
+          name: image.name,
+          type: image.type,
         },
         entityType: "user" as const,
         entityId: user.id,

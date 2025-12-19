@@ -6,7 +6,7 @@ import { StudentSelect } from "@/lib/types";
 import {
   AssessmentType,
   Semester,
-} from "../../../../../../prisma/generated/client";
+} from "@/generated/prisma/client";
 
 export const fetchStudentBaseOnQueryAction = async (
   classId: string,

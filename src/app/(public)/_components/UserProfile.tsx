@@ -17,7 +17,7 @@ type UserProfileProps = {
     id?: string;
     email?: string;
     username?: string;
-    picture?: string | null;
+    image?: string | null;
   };
 };
 
@@ -31,7 +31,7 @@ export const UserProfile = ({ user }: UserProfileProps) => {
           variant="ghost"
           className=" h-auto p-0 hover:bg-transparent hover:cursor-pointer">
           <Avatar className="hover:cursor-pointer">
-            <AvatarImage src={user.picture as string} className="" />
+            <AvatarImage src={user.image as string} className="" />
             <AvatarFallback>
               {`${user.username?.[0].toUpperCase()}${user.username?.[1].toUpperCase()}`}
             </AvatarFallback>

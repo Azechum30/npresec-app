@@ -6,7 +6,7 @@ interface DatabaseUserAttributes {
   id: string;
   email: string;
   username: string;
-  picture?: string;
+  image?: string;
 }
 const adapter = new PrismaAdapter(prisma.session, prisma.user);
 
@@ -23,7 +23,7 @@ export const lucia = new Lucia(adapter, {
       id: databaseUserAttributes.id,
       username: databaseUserAttributes.username,
       email: databaseUserAttributes.email,
-      picture: databaseUserAttributes.picture,
+      image: databaseUserAttributes.image,
     };
   },
 });

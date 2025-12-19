@@ -1,8 +1,9 @@
 "use client";
 
+import { createContext, useContext } from "react";
 import { getAuthUser } from "@/lib/getAuthUser";
-import React, { createContext, useContext } from "react";
 
+// Type for the user with role information from getAuthUser
 export type AuthUser = Awaited<ReturnType<typeof getAuthUser>>;
 
 const SessionContext = createContext<AuthUser>(null);
@@ -18,9 +19,7 @@ export default function SessionProvider({
 
 export const useAuth = () => {
   const context = useContext(SessionContext);
-
   if (context === undefined)
     throw new Error("useAuth must be used inside a SessionProvider!");
-
   return context;
 };

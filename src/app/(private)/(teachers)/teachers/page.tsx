@@ -20,14 +20,7 @@ export default async function StudentsListPage({ searchParams }: Props) {
     getAuthUser(),
   ]);
 
-  if (!user) {
-    return redirect("/sign-in");
-  }
-
-  if (user?.role?.name !== "teacher") {
-    const referer = (await headers()).get("referer") || "/";
-    return redirect(referer);
-  }
+  // Layout already handles authentication and role checking, so user is guaranteed to exist and be a teacher
 
   const classId = searchParamsData.classId as string | undefined;
 

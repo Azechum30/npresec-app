@@ -3,10 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { GradeSelect } from "@/lib/types";
 import * as Sentry from "@sentry/nextjs";
 import { getAuthUser } from "@/lib/getAuthUser";
-import {
-  AssessmentType,
-  Semester,
-} from "../../../../../../prisma/generated/client";
+import { AssessmentType, Semester } from "@/generated/prisma/client";
 
 export const getScoresAction = async ({
   assessmentType,
@@ -42,7 +39,7 @@ export const getScoresAction = async ({
     //   return { error: "Permission denied!" };
     // }
 
-    const teacher = await prisma.teacher.findUnique({
+    const teacher = await prisma.staff.findUnique({
       where: { userId: user.id },
     });
 
@@ -52,7 +49,7 @@ export const getScoresAction = async ({
 
     const scores = await prisma.grade.findMany({
       where: {
-        teacherId: teacher.id,
+        staffId: teacher.id,
         semester,
         courseId,
         academicYear,

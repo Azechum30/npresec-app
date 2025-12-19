@@ -26,7 +26,7 @@ export const updateEntityPicture = async (
   if (entityType === "user") {
     await prisma.user.update({
       where: { id: entityId },
-      data: { picture: pictureUrl },
+      data: { image: pictureUrl },
     });
     return { success: true };
   }

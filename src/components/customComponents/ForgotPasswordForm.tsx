@@ -58,7 +58,7 @@ export default function ForgotPassword() {
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
             className="w-full max-w-md space-y-4 bg-inherit ">
-            <InputWithLabel<ResetPasswordType>
+            <InputWithLabel
               name="email"
               fieldTitle="Email"
               placeholder="Enter your email"

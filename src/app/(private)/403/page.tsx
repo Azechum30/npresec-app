@@ -1,8 +1,27 @@
-"use client";
-export default function ForbiddenPage() {
+import { buttonVariants } from "@/components/ui/button";
+import { getAuthUser } from "@/lib/getAuthUser";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+
+export default async function ForbiddenPage() {
+  const user = await getAuthUser();
+
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  const url =
+    user.role?.name === "admin"
+      ? "/admin/dashboard"
+      : user.role?.name === "staff"
+        ? "/teachers"
+        : user.role?.name === "student"
+          ? "/students"
+          : "/";
+
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
-      <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8 max-w-md text-center">
+    <div className="flex flex-col items-center justify-center h-screen bg-background">
+      <div className="bg-accent shadow-md rounded-lg p-8 max-w-lg text-center">
         <div className="text-red-500">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -24,11 +43,14 @@ export default function ForbiddenPage() {
         <p className="text-gray-600 dark:text-gray-400 mt-2">
           You do not have the necessary permissions to access this page.
         </p>
-        <button
-          onClick={() => (window.location.href = "/")}
-          className="mt-4 px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-hidden focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900">
-          Go to Homepage
-        </button>
+        <Link
+          href={url}
+          className={buttonVariants({
+            variant: "destructive",
+            className: "w-full mt-3",
+          })}>
+          Continue to Dashboard
+        </Link>
       </div>
     </div>
   );

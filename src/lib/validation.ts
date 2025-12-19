@@ -107,7 +107,10 @@ const ghanaCardType = z
   .optional()
   .nullable();
 
-export const TeacherSchema = z.object({
+export const STAFF_TYPE = ["Teaching", "Non_Teaching"] as const;
+export const STAFF_CATEGORY = ["Professional", "Non_Professional"] as const;
+
+export const StaffSchema = z.object({
   firstName: requiredString,
   lastName: requiredString,
   middleName: optionalString,
@@ -115,6 +118,8 @@ export const TeacherSchema = z.object({
   departmentId: optionalString,
   birthDate: requiredDate,
   dateOfFirstAppointment: optionalDate,
+  staffType: z.enum(STAFF_TYPE).optional().default("Teaching"),
+  staffCategory: z.enum(STAFF_CATEGORY).optional().default("Professional"),
   gender: requiredString,
   maritalStatus: requiredString,
   rgNumber: registerNumberType,
@@ -133,23 +138,31 @@ export const TeacherSchema = z.object({
   imageFile: z.instanceof(File).optional(),
 });
 
-export type TeacherType = z.infer<typeof TeacherSchema>;
+export type StaffType = z.infer<typeof StaffSchema>;
 
-export const TeacherEditSchema = TeacherSchema.omit({
+export const StaffEditSchema = StaffSchema.omit({
   username: true,
   email: true,
   imageFile: true,
 });
 
-export type TeacherEditType = z.infer<typeof TeacherEditSchema>;
+export type StaffEditType = z.infer<typeof StaffEditSchema>;
 
-export const BulkCreateTeachersSchema = z.object({
+export const BulkCreateStaffSchema = z.object({
   data: z.array(
-    TeacherSchema.omit({ imageFile: true, isDepartmentHead: true })
+    StaffSchema.omit({
+      imageFile: true,
+      isDepartmentHead: true,
+      classes: true,
+      courses: true,
+    }).extend({
+      courses: z.union([z.string(), z.array(z.string())]).optional(),
+      classes: z.union([z.string(), z.array(z.string())]).optional(),
+    })
   ),
 });
 
-export type BulkCreateTeachersType = z.infer<typeof BulkCreateTeachersSchema>;
+export type BulkCreateStaffType = z.infer<typeof BulkCreateStaffSchema>;
 
 /**
  * Schema and TypeScript type Definition for Classes
@@ -166,18 +179,12 @@ export const ClassesSchema = z.object({
       /^[a-zA-Z0-9\s]/,
       "name can only contain letters, numbers and whitespaces"
     ),
-  code: z
-    .string()
-    .min(2, "code must be at least 2 characters long")
-    .max(10, "code must be at most 5 characters long")
-    .regex(
-      /^[A-Z0-9\s]+$/,
-      "Only uppercase characters, numbers and whitespaces are allowed!"
-    ),
+  code: z.string().nullish(),
   level: z.enum(grades),
+  maxCapacity: z.coerce.number().optional(),
   createdAt: z.date().nullish(),
   departmentId: z.string().nullish(),
-  teachers: z.array(z.string()).optional(),
+  staff: z.array(z.string()).optional(),
 });
 
 export type ClassesType = z.infer<typeof ClassesSchema>;
@@ -192,7 +199,7 @@ export const BulkClassesSchema = z.object({
   data: z.array(
     ClassesSchema.omit({ createdAt: true }).extend({
       department: z.string(),
-      teacherId: z.string(),
+      staffId: z.string(),
       createdAt: z.union([z.string(), z.date()]),
     })
   ),
@@ -205,9 +212,10 @@ export const ResetPasswordSchema = z
     password: z
       .string({ message: "new password is required!" })
       .min(8, { message: "password must be at least 8 characters long!" })
+      .max(128, { message: "password must be at most 128 characters long!" })
       .regex(
-        /^[a-zA-Z0-9]+s/,
-        "password must contain lowercase and uppercase characters, including digits!"
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        "password must contain at least one lowercase letter, one uppercase letter, and one digit!"
       ),
     confirmPassword: z.string({ message: "confirm password is required!" }),
     token: z.string({ message: "reset token is required!" }),
@@ -233,10 +241,7 @@ export type BulkDeleteClassesType = z.infer<typeof BulkDeleteClassesSchema>;
 //............................... Courses Schema and Types ...............................//
 
 export const CoursesSchema = z.object({
-  code: z
-    .string()
-    .min(2, "Course code must have a minimum character length of 2!")
-    .max(10, "Course Code must be 10 characters long!"),
+  code: z.string().optional(),
   title: z
     .string()
     .min(5, "Course title must be at least 5 characters long!")
@@ -244,7 +249,7 @@ export const CoursesSchema = z.object({
   description: z.string().nullish(),
   credits: z.coerce.number().int().nullish(),
   departments: z.array(z.string()).optional(),
-  teachers: z.array(z.string()).optional(),
+  staff: z.array(z.string()).optional(),
   classes: z.array(z.string()).optional(),
   createdAt: z.union([z.string(), z.date()]).optional(),
 });
@@ -613,7 +618,7 @@ export const BioSchema = z.object({
   email: z.string().email(),
   fullName: z.string().min(1),
   role: z.string().min(1),
-  picture: z.union([z.string(), z.instanceof(File)]).optional(),
+  image: z.union([z.string(), z.instanceof(File)]).optional(),
   subscribeToNewsletter: z.boolean().optional(),
   bio: z
     .string()
@@ -771,10 +776,32 @@ export type SettingsType = z.infer<typeof SettingsSchema>;
 
 export const HouseSchema = z.object({
   name: z.string().min(1).max(100),
-  type: z.enum(["DAY", "BOARDING", "MIXED"]),
+  residencyType: z.enum(["DAY", "BOARDING", "MIXED"]),
   houseGender: z.enum(["MALE", "FEMALE", "BOTH"]),
-  roomCount: z.number().min(1),
-  roomCapacity: z.number().min(10),
+  houseMasterId: z.string().nullable(),
+  occupancy: z.object({
+    maleOccupancy: z
+      .object({
+        roomCount: z.coerce.number().min(0),
+        roomCapacity: z.coerce.number().min(0),
+      })
+      .optional(),
+
+    femaleOccupancy: z
+      .object({
+        roomCount: z.coerce.number().min(0),
+        roomCapacity: z.coerce.number().min(0),
+      })
+      .optional(),
+  }),
 });
 
 export type HouseType = z.infer<typeof HouseSchema>;
+
+export const RoomSchema = z.object({
+  houseId: z.string().cuid().min(1),
+  capacity: z.coerce.number().min(1),
+  rmGender: z.enum(["MALE", "FEMALE", "BOTH"]).optional(),
+});
+
+export type RoomType = z.infer<typeof RoomSchema>;

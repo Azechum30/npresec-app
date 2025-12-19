@@ -2,24 +2,30 @@ import { UploadCloud } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { FormControl, FormField, FormItem, FormLabel } from "../ui/form";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
 import { Input } from "../ui/input";
-type FileUploadInputProps<T> = {
-  name: keyof T & string;
+type FileUploadInputProps = {
+  name: string;
   fieldTitle: string;
   className?: string;
   photoURL?: string;
   isEditing?: boolean;
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
-export default function FileUploadInput<T>({
+export default function FileUploadInput({
   name,
   fieldTitle,
   className,
   photoURL,
   isEditing,
   ...props
-}: FileUploadInputProps<T>) {
+}: FileUploadInputProps) {
   const form = useFormContext();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -72,15 +78,21 @@ export default function FileUploadInput<T>({
                     return;
                   }
 
-                  if (
-                    (file && file?.type !== "image/png") ||
-                    (file && file?.type !== "image/jpeg")
-                  ) {
+                  const types = [
+                    "image/png",
+                    "image/jpeg",
+                    "image/jpg",
+                  ] as const;
+                  const fileType = file?.type as (typeof types)[number];
+
+                  if (file && file?.type !== fileType) {
                     form.setError(name, {
                       type: "validate",
                       message:
                         "File type not supported. Only PNG and JPEG are allowed",
                     });
+
+                    form.clearErrors(name);
 
                     e.target.value = "";
                     return;
@@ -118,6 +130,7 @@ export default function FileUploadInput<T>({
               )}
             </div>
           </FormControl>
+          <FormMessage />
         </FormItem>
       )}
     />

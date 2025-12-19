@@ -2,11 +2,10 @@ import { ReactNode } from "react";
 import Sidebar from "@/components/customComponents/Sidebar";
 import MainContainer from "@/components/customComponents/MainContainer";
 import SessionProvider from "@/components/customComponents/SessionProvider";
-import { getSession } from "@/lib/get-user";
+import { getSession } from "@/lib/get-session";
 import { redirect } from "next/navigation";
 import TanstackQueryProvider from "@/components/providers/tanstack-query-provider";
 import { getAuthUser } from "@/lib/getAuthUser";
-
 
 export default async function PrivateRoutesLayout({
   children,
@@ -18,7 +17,7 @@ export default async function PrivateRoutesLayout({
     getAuthUser(),
   ]);
 
-  if (!sessionData.user || !sessionData.user) {
+  if (!sessionData?.session || !sessionData.user) {
     return redirect("/sign-in");
   }
 

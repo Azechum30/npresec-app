@@ -1,4 +1,18 @@
-import { Prisma } from "../../prisma/generated/client";
+import { Prisma } from "@/generated/prisma/client";
+
+// Universal nested keys with top-level keys included
+export type NestedKeys<T, Prev extends string = ""> = T extends (infer U)[]
+  ? NestedKeys<U, `${Prev}[number]`> | NestedKeys<U, `${Prev}.${number}`>
+  : T extends object
+    ?
+        | // Include top-level keys when Prev is empty
+        (Prev extends "" ? keyof T & string : never)
+        | {
+            [K in keyof T & string]:
+              | `${Prev}${Prev extends "" ? "" : "."}${K}`
+              | NestedKeys<T[K], `${Prev}${Prev extends "" ? "" : "."}${K}`>;
+          }[keyof T & string]
+    : never;
 
 export const DepartmentInclude = {
   head: {
@@ -19,7 +33,7 @@ export const DepartmentSelect = {
   createdAt: true,
   head: true,
   classes: true,
-  teachers: true,
+  staff: true,
 } satisfies Prisma.DepartmentSelect;
 
 export type DepartmentData = Prisma.DepartmentGetPayload<{
@@ -30,13 +44,15 @@ export type DepartmentResponseType = Prisma.DepartmentGetPayload<{
   select: typeof DepartmentSelect;
 }>;
 
-export const TeacherSelect = {
+export const StaffSelect = {
   id: true,
   employeeId: true,
   firstName: true,
   lastName: true,
   middleName: true,
   birthDate: true,
+  staffType: true,
+  staffCategory: true,
   gender: true,
   departmentId: true,
   maritalStatus: true,
@@ -63,13 +79,13 @@ export const TeacherSelect = {
       id: true,
       username: true,
       email: true,
-      picture: true,
+      image: true,
     },
   },
-} satisfies Prisma.TeacherSelect;
+} satisfies Prisma.StaffSelect;
 
-export type TeacherResponseType = Prisma.TeacherGetPayload<{
-  select: typeof TeacherSelect;
+export type StaffResponseType = Prisma.StaffGetPayload<{
+  select: typeof StaffSelect;
 }>;
 
 export const ClassesSelect = {
@@ -77,7 +93,9 @@ export const ClassesSelect = {
   code: true,
   name: true,
   createdAt: true,
-  teachers: {
+  maxCapacity: true,
+  currentEnrollment: true,
+  staff: {
     select: {
       id: true,
       firstName: true,
@@ -94,7 +112,7 @@ export const ClassesSelect = {
     },
   },
   departmentId: true,
-  teacherId: true,
+  staffId: true,
   courses: {
     select: {
       id: true,
@@ -120,7 +138,7 @@ export const CourseSelect = {
       name: true,
     },
   },
-  teachers: {
+  staff: {
     select: {
       id: true,
       firstName: true,
@@ -150,7 +168,7 @@ export type UserType = Prisma.UserGetPayload<{
         name: true;
       };
     };
-    picture: true;
+    image: true;
     role: {
       select: {
         id: true;
@@ -190,7 +208,7 @@ export const StudentSelect = {
       email: true,
       id: true,
       username: true,
-      picture: true,
+      image: true,
     },
   },
   guardianName: true,
@@ -235,7 +253,7 @@ export const AttendanceSelect = {
           id: true,
           username: true,
           role: true,
-          picture: true,
+          image: true,
         },
       },
     },
@@ -249,6 +267,7 @@ export type AttendanceResponseType = Prisma.AttendanceGetPayload<{
 export const RolesSelect = {
   id: true,
   name: true,
+  createdAt: true,
   permissions: {
     select: {
       id: true,
@@ -265,6 +284,7 @@ export type RolesResponseType = Prisma.RoleGetPayload<{
 export const PermissionSelect = {
   id: true,
   name: true,
+  createdAt: true,
   description: true,
   roles: {
     select: {
@@ -295,7 +315,7 @@ export const GradeSelect = {
   id: true,
   courseId: true,
   studentId: true,
-  teacherId: true,
+  staffId: true,
   assessmentType: true,
   score: true,
   maxScore: true,
@@ -313,7 +333,7 @@ export const GradeSelect = {
       user: {
         select: {
           id: true,
-          picture: true,
+          image: true,
         },
       },
       currentClass: {
@@ -337,7 +357,7 @@ export const GradeSelect = {
       title: true,
     },
   },
-  teacher: {
+  staff: {
     select: {
       id: true,
       firstName: true,
@@ -355,9 +375,9 @@ export const UserSelect = {
   id: true,
   email: true,
   username: true,
-  picture: true,
-  resetPasswordRequired: true,
-  session: {
+  emailVerified: true,
+  image: true,
+  sessions: {
     select: {
       id: true,
       expiresAt: true,
@@ -390,7 +410,7 @@ export const UserSelect = {
       gender: true,
     },
   },
-  teacher: {
+  staff: {
     select: {
       id: true,
       firstName: true,
@@ -401,4 +421,24 @@ export const UserSelect = {
 
 export type UserResponseType = Prisma.UserGetPayload<{
   select: typeof UserSelect;
+}>;
+
+export const HouseSelect = {
+  id: true,
+  name: true,
+  occupancy: true,
+  houseGender: true,
+  residencyType: true,
+  houseMasterId: true,
+  houseMaster: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+    },
+  },
+} satisfies Prisma.HouseSelect;
+
+export type HouseResponseType = Prisma.HouseGetPayload<{
+  select: typeof HouseSelect;
 }>;

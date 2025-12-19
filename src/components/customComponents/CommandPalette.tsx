@@ -28,9 +28,9 @@ export default function CommandPalette() {
   const links =
     role === "admin"
       ? Links.ADMIN
-      : role === "teacher"
-      ? Links.TEACHER
-      : Links.STUDENT;
+      : role === "teaching_staff"
+        ? Links.STAFF
+        : Links.STUDENT;
 
   return (
     <CommandDialog open={open} onOpenChange={onClose}>

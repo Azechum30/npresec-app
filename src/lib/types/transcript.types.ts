@@ -1,5 +1,5 @@
-import { Prisma } from "../../../prisma/generated/client";
-import { Semester, AssessmentType } from "../../../prisma/generated/client";
+import { Prisma } from "@/generated/prisma/client";
+import { Semester, AssessmentType } from "@/generated/prisma/client";
 
 export type GradePoints = 4.0 | 3.5 | 3.0 | 2.5 | 2.0 | 1.5 | 1.0 | 0.5 | 0.0;
 

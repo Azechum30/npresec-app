@@ -14,16 +14,9 @@ type Props = {
 };
 
 export default async function ScoresPage({ searchParams }: Props) {
-  const { user, hasRole } = await getUserWithRole("teacher");
+  const { user } = await getUserWithRole("teacher");
 
-  if (!user) {
-    return redirect("/sign-in");
-  }
-
-  if (!hasRole) {
-    const referer = (await headers()).get("referer") || "/";
-    return redirect(referer);
-  }
+  // Layout already handles authentication and role checking, so user is guaranteed to exist and be a teacher
 
   const { classId, courseId, semester, academicYear, assessmentType } =
     await searchParams;

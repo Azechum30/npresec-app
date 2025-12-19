@@ -15,7 +15,7 @@ export const fetchClassessAction = async (userId: string) => {
       return { error: "User not found" };
     }
 
-    const teacher = await prisma.teacher.findUnique({
+    const teacher = await prisma.staff.findUnique({
       where: { userId: userId },
     });
 
@@ -24,7 +24,7 @@ export const fetchClassessAction = async (userId: string) => {
     }
 
     const classes = await prisma.class.findMany({
-      where: { teachers: { some: { id: teacher.id } } },
+      where: { staff: { some: { id: teacher.id } } },
       select: ClassesSelect,
     });
 

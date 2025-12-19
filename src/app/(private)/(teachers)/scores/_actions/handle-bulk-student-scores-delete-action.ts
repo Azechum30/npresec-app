@@ -2,7 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
-import { Prisma } from "../../../../../../prisma/generated/client";
+import { Prisma } from "@/generated/prisma/client";
 import { getUserWithPermissions } from "@/utils/get-user-with-permission";
 import { z } from "zod";
 
@@ -32,13 +32,13 @@ export const handleBulkStudentScoreDeleteAction = async (
       return { error: errMessage };
     }
 
-    const teacher = await prisma.teacher.findUnique({
+    const teacher = await prisma.staff.findUnique({
       where: { userId: user.id },
     });
     if (!teacher) return { error: "Teacher not found" };
 
     const grades = await prisma.grade.deleteMany({
-      where: { id: { in: data }, teacherId: teacher.id },
+      where: { id: { in: data }, staffId: teacher.id },
     });
 
     if (grades.count !== data.length) {

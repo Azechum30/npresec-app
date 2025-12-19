@@ -1,12 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import Logo from "@/../public/logo.png";
-import { getAuthUser } from "@/lib/getAuthUser";
 import { ThemeSwitcher } from "./ThemeSwitecher";
 import { UserProfile } from "@/app/(public)/_components/UserProfile";
 import { buttonVariants } from "../ui/button";
 import { LogIn } from "lucide-react";
 import { TriggerMobileNavbar } from "./TriggerMobileNavbar";
+import { useSession } from "@/lib/auth-client";
 
 type NavigationLinksProps = {
   href: string;
@@ -32,17 +34,12 @@ export type AuthUserType = {
   id?: string;
   email?: string;
   username?: string;
-  picture?: string | null;
+  image?: string | null;
 };
 
-export default async function Navbar() {
-  const user = await getAuthUser();
-
-  let authUser: AuthUserType = {};
-  if (user) {
-    const { role, permissions, ...rest } = user;
-    authUser = rest;
-  }
+export default function Navbar() {
+  const { data, error } = useSession();
+  if (error) return null;
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-[backdrop-filter]:bg-background/60">
@@ -71,8 +68,8 @@ export default async function Navbar() {
           </div>
           <div className="flex items-center space-x-2">
             <ThemeSwitcher />
-            {user ? (
-              <UserProfile user={authUser} />
+            {data?.user ? (
+              <UserProfile user={data.user} />
             ) : (
               <div className="flex items-center space-x-2">
                 <Link href="/" className={buttonVariants()}>

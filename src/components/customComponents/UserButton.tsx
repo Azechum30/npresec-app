@@ -39,28 +39,12 @@ export default function UserButton() {
   const [isPending, startTransition] = useTransition();
 
   const { setTheme, theme } = useTheme();
-  const userPreferredTheme = useMemo(() => {
-    const themes = ["system", "light", "dark"];
-    if (user && user.theme && themes.includes(user.theme)) {
-      return user.theme as "system" | "light" | "dark";
-    }
-    return "system";
-  }, [user?.theme]);
-
-  useEffect(() => {
-    if (user && userPreferredTheme) {
-      setTheme(userPreferredTheme);
-    }
-  }, [user?.theme, userPreferredTheme, setTheme, user]);
 
   const handleThemeChange = (newTheme: "system" | "light" | "dark") => {
     setTheme(newTheme);
 
     startTransition(async () => {
-      const result = await updateThemeAction(newTheme);
-      if (result.success) {
-        router.refresh();
-      }
+      await updateThemeAction(newTheme);
     });
   };
 
@@ -68,17 +52,19 @@ export default function UserButton() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
-          className="w-fit md:w-full h-full flex justify-center md:justify-start text-left rounded-none py-2 items-center gap-x-3 border-0 backdrop-blur-xs hover:cursor-pointer">
-          <Avatar className="backdrop-blur-xs">
-            <AvatarImage src={user?.picture!} />
+          variant="default"
+          className="w-fit bg-background hover:bg-accent md:w-full h-full flex justify-center md:justify-start text-left rounded-none py-2 items-center gap-x-3 border-0 hover:cursor-pointer">
+          <Avatar className="border p-1.5">
+            <AvatarImage src={user?.image!} />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           {!user ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
             <span className=" hidden  md:flex flex-col">
-              <span className="font-semibold">{user.username}</span>
+              <span className="font-semibold text-accent-foreground">
+                {user.username}
+              </span>
               <span className="sm:hidden lg:inline-block text-xs text-muted-foreground">
                 {user.email}
               </span>
@@ -92,7 +78,7 @@ export default function UserButton() {
             href={`/profile`}
             className="flex items-center gap-x-2 line-clamp-2">
             <Avatar>
-              <AvatarImage src={user?.picture ? user.picture : ""} />
+              <AvatarImage src={user?.image ? user.image : ""} />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
             <span className="flex flex-col">

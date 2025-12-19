@@ -1,9 +1,7 @@
 "use server";
 import "server-only";
 import { prisma } from "../prisma";
-import argon2 from "argon2";
-import { lucia } from "../lucia";
-import {cookies, headers} from "next/headers";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import {
@@ -12,15 +10,14 @@ import {
   SignInType,
   SignInSchema,
   ResetPasswordType,
-  ResetPasswordSchema, ForgotPasswordType,
-    ForgotPasswordSchema
+  ResetPasswordSchema,
+  ForgotPasswordType,
+  ForgotPasswordSchema,
 } from "../validation";
-import { getSession } from "../get-user";
-import { generateToken, verifyToken } from "../jwt";
-import jwt, { JsonWebTokenError } from "jsonwebtoken";
-import * as Sentry from "@sentry/nextjs"
-import {rateLimit} from "@/utils/rateLimit";
-import {sendResetPasswordEmail} from "@/utils/reset-password-email";
+import * as Sentry from "@sentry/nextjs";
+import { rateLimit } from "@/utils/rateLimit";
+import { auth } from "@/lib/auth";
+import { env } from "./validate-env";
 
 export const signUpAction = async (data: SignUpType) => {
   try {
@@ -52,238 +49,317 @@ export const signUpAction = async (data: SignUpType) => {
       return { success: false, error: "Role not found!" };
     }
 
-    const hashedPassword = await argon2.hash(password, {
-      type: argon2.argon2id,
+    // Sign up with Better-auth
+    // Better-auth handles password hashing and session creation automatically
+    // Since username is required in additionalFields, it must be included in the body
+    await auth.api.signUpEmail({
+      body: {
+        email: email.toLowerCase(),
+        password,
+        name: username, // Better-auth's default name field
+        username: username, // Required custom field from additionalFields
+      } as {
+        email: string;
+        password: string;
+        name: string;
+        username: string;
+      },
+      headers: await import("next/headers").then((m) => m.headers()),
     });
 
-    const user = await prisma.user.create({
+    // Get the created user to update with custom fields
+    const createdUser = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (!createdUser) {
+      return { success: false, error: "Failed to create user" };
+    }
+
+    // Update user with custom fields (username, roleId, resetPasswordRequired)
+    await prisma.user.update({
+      where: { id: createdUser.id },
       data: {
         username: username,
-        email: email.toLowerCase(),
-        password: hashedPassword,
-        resetPasswordRequired: false,
         roleId: role.id,
       },
-      include: {
-        role: true,
-      },
     });
-
-    const session = await lucia.createSession(user.id, {});
-    const sessionCookie = lucia.createSessionCookie(session.id);
-    (await cookies()).set(
-      sessionCookie.name,
-      sessionCookie.value,
-      sessionCookie.attributes
-    );
 
     return redirect("/admin/dashboard");
   } catch (error) {
     if (isRedirectError(error)) throw error;
-    console.error(error);
-    Sentry.captureException(error)
+
+    // Better-auth throws errors for validation failures
+    if (error instanceof Error) {
+      // Check for common Better-auth error messages
+      if (
+        error.message.includes("email") ||
+        error.message.includes("Email") ||
+        error.message.includes("already exists") ||
+        error.message.includes("duplicate")
+      ) {
+        return { success: false, error: "Email is already taken!" };
+      }
+      if (
+        error.message.includes("password") ||
+        error.message.includes("Password")
+      ) {
+        return { success: false, error: "Invalid password format" };
+      }
+    }
+
+    console.error("Sign-up error:", error);
+    Sentry.captureException(error);
     return { success: false, error: "Something went wrong!" };
   }
 };
 
-export const signInAction = async (
-  data: SignInType
-): Promise<{
-  error?: string;
-  resetPasswordRequired?: boolean;
-  resetToken?: string;
-}> => {
+export const signInAction = async (data: SignInType) => {
   try {
+    // 1. Validate input
     const { email, password } = SignInSchema.parse(data);
+    const normalizedEmail = email.toLowerCase();
+
+    // 2. Look up user
     const user = await prisma.user.findUnique({
-      where: {
-        email: email.toLowerCase(),
-      },
-      include: {
-        role: true,
-      },
+      where: { email: normalizedEmail },
+      include: { role: true, accounts: true },
     });
 
-    if (!user || !user.password) {
+    if (!user) {
       return { error: "Invalid login credentials" };
     }
 
-    const matchedPassword = await argon2.verify(
-      user.password as string,
-      password
-    );
+    const account =
+      user?.accounts.find((account) => account.providerId === "credential") ??
+      null;
 
-    if (!matchedPassword) return { error: "Invalid login credentials" };
-
-    if (user.resetPasswordRequired) {
-      const resetToken = generateToken(user.id);
-      return { resetPasswordRequired: true, resetToken };
+    if (account) {
+      await auth.api.requestPasswordReset({
+        body: {
+          email: normalizedEmail,
+          redirectTo: `${env.NEXT_PUBLIC_URL}/reset-password`,
+        },
+      });
+      return { resetPasswordRequired: true };
     }
 
-    const session = await lucia.createSession(user.id, {});
-    const sessionCookie = lucia.createSessionCookie(session.id);
-    (await cookies()).set(
-      sessionCookie.name,
-      sessionCookie.value,
-      sessionCookie.attributes
-    );
+    // 4. Attempt sign-in via Better Auth
+    const { user: signedInUser } = await auth.api.signInEmail({
+      body: { email: normalizedEmail, password },
+      headers: await headers(),
+    });
 
-    if (user.role?.name === "admin") {
-      return redirect("/admin/dashboard");
+    if (!signedInUser) {
+      return { error: "Failed to created session" };
     }
 
-    if (user.role?.name === "teacher") {
-      return redirect("/teachers");
+    const authuser = await prisma.user.findUnique({
+      where: { id: signedInUser.id },
+      include: { role: true },
+    });
+    switch (authuser?.role?.name) {
+      case "admin":
+        return redirect("/admin/dashboard");
+      case "teacher":
+        return redirect("/teachers");
+      default:
+        return redirect("/students");
     }
-
-    return redirect("/students");
   } catch (error) {
     if (isRedirectError(error)) throw error;
-    console.error(error);
-    Sentry.captureException(error)
+
+    // 7. Handle Better Auth errors more robustly
+    if (error instanceof Error) {
+      // Better Auth errors often have a `code` property
+      const code = (error as any).code;
+      if (code === "INVALID_CREDENTIALS" || code === "USER_NOT_FOUND") {
+        return { error: "Invalid login credentials" };
+      }
+    }
+
+    console.error("Sign-in error:", error);
+    Sentry.captureException(error);
     return { error: "Something went wrong!" };
   }
 };
 
 export const logOut = async () => {
-  const { session } = await getSession();
-
-  if (session?.id) {
-    await lucia.invalidateSession(session.id as string);
-
-    const sessionCookie = lucia.createBlankSessionCookie();
-    (await cookies()).set(
-      sessionCookie.name,
-      sessionCookie.value,
-      sessionCookie.attributes
-    );
-  }
-
+  await auth.api.signOut({
+    headers: await headers(),
+  });
   return { success: true };
+};
+
+export const getUserRole = async () => {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user) {
+      return { error: "No active session" };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: { role: true },
+    });
+
+    if (!user) {
+      return { error: "User not found" };
+    }
+
+    return {
+      role: user.role?.name || "student",
+      userId: user.id,
+    };
+  } catch (error) {
+    console.error("Failed to get user role:", error);
+    return { error: "Failed to get user role" };
+  }
 };
 
 export const resetPasswordAction = async (values: ResetPasswordType) => {
   try {
-
-    const ip = (await headers()).get("x-forwarded-for") ?? "127.0.0.1"
-    const {success} = await rateLimit.limit(ip);
-
-    if(!success){
-      return {error: "Too many requests. Please try again later!"}
+    // 1. Rate limit
+    const ip = (await headers()).get("x-forwarded-for") ?? "127.0.0.1";
+    const { success } = await rateLimit.limit(ip);
+    if (!success) {
+      return { error: "Too many requests. Please try again later!" };
     }
 
-
-    const validData = ResetPasswordSchema.safeParse(values);
-    let zodErrors = {};
-    if (!validData.success) {
-      validData.error.issues.forEach((issue) => {
-        zodErrors = { ...zodErrors, [issue.path[0]]: issue.message };
-      });
+    // 2. Validate input
+    const parsed = ResetPasswordSchema.safeParse(values);
+    if (!parsed.success) {
+      return { errors: parsed.error.flatten().fieldErrors };
     }
 
-    if (Object.keys(zodErrors).length > 0) {
-      return { errors: zodErrors };
-    }
-
-    if (!validData.data?.token) {
+    const { password, token } = parsed.data;
+    if (!token) {
       return { error: "Token is required!" };
     }
 
-    const userId = verifyToken(validData.data.token);
+    const {} = await auth;
 
-    if (!userId) {
-      return { error: "Invalid token or token has expired!" };
-    }
-
-
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      }
-    })
-
-    const isPasswordMatch = await argon2.verify(user?.password as string, validData.data?.password);
-
-    if(isPasswordMatch){
-      return { error: "New password cannot be the same as the old password!" };
-    }
-    const hashedPassword = await argon2.hash(
-      validData.data?.password as string
-    );
-
-    const updatedPasswordUser = await prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        password: hashedPassword,
-        resetPasswordRequired: false,
-      },
+    // 3. Reset password via Better Auth
+    await auth.api.resetPassword({
+      body: { newPassword: password, token },
+      headers: await headers(),
     });
 
-    if (!updatedPasswordUser) {
-      return { error: "User not found!" };
+    // 4. Clear resetPasswordRequired flag
+    try {
+      // Find verification entry to get identifier (email)
+      const verification = await prisma.verification.findFirst({
+        where: { identifier: { startsWith: "reset-password:" } },
+        orderBy: { createdAt: "desc" },
+      });
+
+      // if (verification) {
+      //   const email = verification.identifier.replace("reset-password:", "");
+      //   await prisma.account.updateMany({
+      //     where: { providerId: "credential", user: { email } },
+      //     data: { resetPasswordRequired: false },
+      //   });
+      // }
+    } catch (updateError) {
+      console.warn("Could not update resetPasswordRequired:", updateError);
     }
 
     return { success: true };
   } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
+    // 5. Error handling
+    if (
+      (error as any).code === "INVALID_TOKEN" ||
+      (error as any).code === "TOKEN_EXPIRED"
+    ) {
       return {
-        error: "Supplied token has expired. Kindly request a new reset link",
+        error:
+          "Invalid token or token has expired. Please request a new reset link.",
       };
-    } else if (error instanceof JsonWebTokenError) {
-      return { error: "Invalid token. Please request reset link" };
-    } else {
-      Sentry.captureException(error);
-      console.error("An error occurred in resetting your password:", error);
-      return { error: "something went wrong!" };
     }
+    if ((error as any).code === "INVALID_PASSWORD") {
+      return { error: "Invalid password format or requirements not met." };
+    }
+
+    if (error instanceof Error) {
+      const msg = error.message.toLowerCase();
+      if (
+        msg.includes("token") ||
+        msg.includes("expired") ||
+        msg.includes("invalid")
+      ) {
+        return {
+          error:
+            "Invalid token or token has expired. Please request a new reset link.",
+        };
+      }
+      if (msg.includes("password")) {
+        return { error: "Invalid password format or requirements not met." };
+      }
+    }
+
+    Sentry.captureException(error);
+    console.error("An error occurred in resetting your password:", error);
+    return { error: "Something went wrong!" };
   }
 };
 
-
-export const forgotPasswordActions = async (value: ForgotPasswordType)=>{
+export const forgotPasswordActions = async (value: ForgotPasswordType) => {
   try {
-
-    const ip = (await headers()).get("x-forwarded-for") ?? "127.0.0.1"
-    const {success} = await rateLimit.limit(ip);
-    if(!success){
-      return {error: "Too many requests. Please try again later!"}
+    const ip = (await headers()).get("x-forwarded-for") ?? "127.0.0.1";
+    const { success } = await rateLimit.limit(ip);
+    if (!success) {
+      return { error: "Too many requests. Please try again later!" };
     }
 
     const validData = ForgotPasswordSchema.safeParse(value);
-    if(!validData.success){
-      const zodError = validData.error.errors.map((e:any)=> `${e.path[0]}, ${e.message}`)
+    if (!validData.success) {
+      const zodError = validData.error.errors.map(
+        (e: any) => `${e.path[0]}, ${e.message}`
+      );
 
-      return {error: zodError}
+      return { error: zodError };
     }
 
-    const user = await prisma.user.findFirst({
-      where:{
-        email: validData.data.email.toLowerCase()
+    const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+    try {
+      const response = await fetch(`${baseUrl}/api/auth/forgot-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: validData.data.email.toLowerCase(),
+          redirectTo: `${process.env.NEXT_PUBLIC_URL}/password-reset`,
+        }),
+      });
+
+      if (!response.ok) {
+        // Log error but don't expose to user for security (prevent email enumeration)
+        const errorText = await response.text();
+        console.error("Password reset request failed:", errorText);
       }
-    })
-
-    if(!user){
-      return {error: "User not found!"}
+    } catch (fetchError) {
+      // Log error but don't expose to user
+      console.error("Password reset request error:", fetchError);
     }
 
-    const token = generateToken(user.id);
-    const resetPasswordUrl = `${process.env.NEXT_PUBLIC_URL}/password-reset?token=${token}`
-
-    const emailResponse = await sendResetPasswordEmail({
-      to: user.email,
-      url: resetPasswordUrl
-    })
-
-    if(emailResponse.error){
-      return {error: emailResponse.error}
+    // Always return success for security (don't reveal if user exists)
+    // Better-auth will send email if user exists, or silently fail if not
+    return { success: true };
+  } catch (error) {
+    // Better-auth may throw errors, but for security we should still return success
+    // to avoid revealing whether the email exists in the system
+    if (error instanceof Error) {
+      // Log the error for debugging but don't expose it to the user
+      console.error("Password reset request error:", error);
     }
 
-    return {success: true}
-  }catch(error){
-    Sentry.captureException(error)
-    console.error("An error occurred in resetting your password:", error);
-    return { error: "something went wrong!" };
+    // Return success even on error to prevent email enumeration attacks
+    // The actual error will be logged via Sentry
+    Sentry.captureException(error);
+    return { success: true };
   }
-}
+};

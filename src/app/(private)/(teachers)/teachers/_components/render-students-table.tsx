@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import DataTable from "@/components/customComponents/data-table";
 import { StudentResponseType } from "@/lib/types";
-import StudentRowDetail from "@/app/(private)/admin/students/components/StudentRowDetail";
+import StudentRowDetail from "@/app/(private)/(admin)/admin/students/components/StudentRowDetail";
 import { StudentTransformer } from "../_utils/student-transformer";
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 

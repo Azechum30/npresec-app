@@ -10,6 +10,7 @@ export const metadata = {
 
 export default async function AuthenticatePage() {
   const user = await getAuthUser();
+
   if (user) {
     if (user.role?.name === "teacher") {
       return redirect("/teachers");
@@ -19,7 +20,5 @@ export default async function AuthenticatePage() {
       return redirect("/admin/dashboard");
     }
   }
-  return (
-   <SignInForm />
-  );
+  return <SignInForm />;
 }

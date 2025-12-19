@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "5mb",
     },
+    authInterrupts: true,
   },
   turbopack: {},
 
@@ -16,6 +17,23 @@ const nextConfig: NextConfig = {
         hostname: "res.cloudinary.com",
       },
     ],
+  },
+
+  // Exclude Node.js-only packages from Edge runtime bundling
+  // Note: This applies to webpack builds. For Turbopack, ensure imports are runtime-guarded
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Exclude Node.js modules from client-side bundle
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        dns: false,
+        net: false,
+        tls: false,
+        fs: false,
+        pg: false,
+      };
+    }
+    return config;
   },
 };
 

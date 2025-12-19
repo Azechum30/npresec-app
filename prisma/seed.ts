@@ -1,15 +1,25 @@
-import { PrismaClient } from "./generated/client";
-import argon from "argon2";
+import "dotenv/config";
+import { PrismaClient } from "@/generated/prisma/client";
 import { env } from "@/lib/server-only-actions/validate-env";
+import { Pool } from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { auth } from "@/lib/auth";
 
-const prisma = new PrismaClient();
+const pool = new Pool({ connectionString: env.DATABASE_URL });
+
+const adapter = new PrismaPg(pool);
+
+const prisma = new PrismaClient({
+  adapter,
+});
+
 const resources = [
   "courses",
   "departments",
   "roles",
   "users",
   "students",
-  "teachers",
+  "staff",
   "parents",
   "grades",
   "permissions",
@@ -23,12 +33,16 @@ const resources = [
   "events",
   "lessons",
   "assignments",
+  "rooms",
 ];
 const actions = ["create", "view", "edit", "delete"];
 
 const roles = [
   "admin",
-  "teacher",
+  "staff",
+  "teaching_staff",
+  "admin_staff",
+  "support_staff",
   "student",
   "parent",
   "classTeacher",
@@ -38,16 +52,15 @@ const roles = [
   "librarian",
 ];
 
-// Define permissions for each role (admin gets all, others get specific)
 const rolePermissions: Record<
   string,
   { resources: string[]; actions?: string[] }
 > = {
   admin: {
-    resources: [], // Empty means all resources
-    actions: [], // Empty means all actions
+    resources: [],
+    actions: [],
   },
-  teacher: {
+  staff: {
     resources: [
       "courses",
       "students",
@@ -58,7 +71,28 @@ const rolePermissions: Record<
       "lessons",
       "assignments",
     ],
-    actions: ["view", "create", "edit"], // Teachers typically can't delete critical data
+    actions: ["view", "create", "edit"],
+  },
+  teaching_staff: {
+    resources: [
+      "courses",
+      "students",
+      "grades",
+      "attendance",
+      "classes",
+      "notifications",
+      "lessons",
+      "assignments",
+    ],
+    actions: ["view", "create", "edit"],
+  },
+  admin_staff: {
+    resources: ["students", "classes", "notifications"],
+    actions: ["view"],
+  },
+  support_staff: {
+    resources: ["notifications"],
+    actions: ["view"],
   },
   student: {
     resources: [
@@ -71,7 +105,7 @@ const rolePermissions: Record<
       "assignments",
       "events",
     ],
-    actions: ["view"], // Students typically only view their own data
+    actions: ["view"],
   },
   parent: {
     resources: [
@@ -84,7 +118,7 @@ const rolePermissions: Record<
       "students",
       "events",
     ],
-    actions: ["view"], // Parents typically only view their children's data
+    actions: ["view"],
   },
   classTeacher: {
     resources: [
@@ -108,7 +142,7 @@ const rolePermissions: Record<
     resources: [
       "departments",
       "courses",
-      "teachers",
+      "staff",
       "students",
       "classes",
       "grades",
@@ -137,15 +171,12 @@ async function main() {
       create: { name: role },
     });
   }
-  // Fetch all roles after creation
   const allRoles = await prisma.role.findMany({
     where: { name: { in: roles } },
   });
 
-  // Create a map of role names to role IDs for easy access
   const roleMap = new Map(allRoles.map((role) => [role.name, role.id]));
 
-  // Helper function to check if a role should have a permission
   const shouldHavePermission = (
     roleName: string,
     resource: string,
@@ -154,7 +185,6 @@ async function main() {
     const permissionConfig = rolePermissions[roleName];
     if (!permissionConfig) return false;
 
-    // Admin gets all permissions
     if (
       roleName === "admin" &&
       permissionConfig.resources.length === 0 &&
@@ -163,11 +193,9 @@ async function main() {
       return true;
     }
 
-    // Check if resource is allowed
     const resourceAllowed = permissionConfig.resources.includes(resource);
     if (!resourceAllowed) return false;
 
-    // Check if action is allowed (if actions are specified)
     const actions = permissionConfig.actions || [];
     if (actions.length > 0 && !actions.includes(action)) {
       return false;
@@ -176,12 +204,10 @@ async function main() {
     return true;
   };
 
-  // Create permissions and assign to appropriate roles
   for (const resource of resources) {
     for (const action of actions) {
       const permissionName = `${action}:${resource}`;
 
-      // Determine which roles should have this permission
       const allowedRoleIds = allRoles
         .filter((role) => shouldHavePermission(role.name, resource, action))
         .map((role) => ({ id: role.id }));
@@ -190,7 +216,6 @@ async function main() {
         await prisma.permission.upsert({
           where: { name: permissionName },
           update: {
-            // Update: set roles that should have this permission
             roles: {
               set: allowedRoleIds,
             },
@@ -227,23 +252,29 @@ async function main() {
       throw new Error("Admin role not found");
     }
 
-    const hashedPassword = await argon.hash(adminPassword, {
-      type: argon.argon2id,
-    });
-
-    await prisma.user.create({
-      data: {
+    const { user } = await auth.api.signUpEmail({
+      body: {
         email: adminEmail,
+        password: adminPassword,
+        name: adminEmail.split("@")[0],
         username: adminEmail.split("@")[0],
-        password: hashedPassword,
-        role: {
-          connect: {
-            id: adminRoleId,
-          },
-        },
-        resetPasswordRequired: true,
+        callbackURL: "/email-verified",
+        rememberMe: true,
       },
     });
+
+    if (user) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          role: {
+            connect: {
+              id: adminRoleId,
+            },
+          },
+        },
+      });
+    }
 
     console.log("Admin user created");
   }

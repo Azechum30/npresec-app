@@ -13,17 +13,17 @@ import { isZodFieldRequired } from "@/lib/isZodFieldRequired";
 import { cn } from "@/lib/utils";
 import { Label } from "../ui/label";
 
-type CheckboxProps<T, U = any> = {
-  name: keyof T & string;
+type CheckboxProps<U = any> = {
+  name: string;
   fieldTitle: string;
   data: U[];
   className?: string;
   valueKey?: keyof U;
   labelKey?: keyof U;
-  schema?: z.ZodSchema<T>;
+  schema?: z.ZodSchema<any>;
 } & React.ComponentPropsWithRef<typeof Checkbox>;
 
-const CheckboxWithArrayValues = <T,>({
+const CheckboxWithArrayValues = ({
   name,
   fieldTitle,
   data,
@@ -32,7 +32,7 @@ const CheckboxWithArrayValues = <T,>({
   labelKey = "label",
   schema,
   ...props
-}: CheckboxProps<T>) => {
+}: CheckboxProps) => {
   const form = useFormContext();
 
   const isRequired = (function () {
@@ -75,7 +75,9 @@ const CheckboxWithArrayValues = <T,>({
                             const currentValue = field.value || [];
                             const newValue = checked
                               ? [...currentValue, item]
-                              : currentValue.filter((val) => val !== item);
+                              : currentValue.filter(
+                                  (val: string | number) => val !== item
+                                );
                             return field.onChange(newValue);
                           }}
                           {...props}
@@ -108,7 +110,9 @@ const CheckboxWithArrayValues = <T,>({
                             const currentValue = field.value || [];
                             const newValue = checked
                               ? [...currentValue, value]
-                              : currentValue.filter((val) => val !== value);
+                              : currentValue.filter(
+                                  (val: string) => val !== value
+                                );
                             return field.onChange(newValue);
                           }}
                           {...props}

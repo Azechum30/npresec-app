@@ -14,7 +14,7 @@ import { useCSVReader } from "react-papaparse";
 import { File, UploadCloud, UploadCloudIcon, X } from "lucide-react";
 
 import { useState, useTransition } from "react";
-import BaseTable from "../../app/(private)/admin/departments/components/BaseTable";
+import BaseTable from "../../app/(private)/(admin)/admin/departments/components/BaseTable";
 import { cn } from "@/lib/utils";
 import LoadingButton from "@/components/customComponents/LoadingButton";
 import { toast } from "sonner";
@@ -102,7 +102,7 @@ export default function UploadComponent<T>({
           setData(undefined);
           setColumns([]);
           onClose(dialogId);
-        }, 100);
+        }, 300);
       }
     });
   }
@@ -138,11 +138,8 @@ export default function UploadComponent<T>({
           </li>
           <li className="leading-6">
             Kindly click on{" "}
-            <a
-              href={`/${pathname}/template.csv`}
-              download
-              className="text-primary">
-              Template CSV
+            <a href={`/${filepath}`} download className="text-primary">
+              {pathname?.toUpperCase()} CSV
             </a>{" "}
             to download the sample file.
           </li>

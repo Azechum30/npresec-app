@@ -11,7 +11,7 @@ export const fetchClasses = async (userId: string) => {
     //   return { error: "You are not authorized to view classes" };
     // }
 
-    const teacher = await prisma.teacher.findUnique({
+    const teacher = await prisma.staff.findUnique({
       where: { userId },
     });
 
@@ -20,7 +20,7 @@ export const fetchClasses = async (userId: string) => {
     }
 
     const classes = await prisma.class.findMany({
-      where: { teachers: { some: { id: teacher.id } } },
+      where: { staff: { some: { id: teacher.id } } },
     });
 
     return { classes: classes || [] };
@@ -38,7 +38,7 @@ export const fetchCourse = async (userId: string) => {
     //   return { error: "You are not authorized to view courses" };
     // }
 
-    const teacher = await prisma.teacher.findUnique({
+    const teacher = await prisma.staff.findUnique({
       where: { userId },
     });
 
@@ -47,7 +47,7 @@ export const fetchCourse = async (userId: string) => {
     }
 
     const courses = await prisma.course.findMany({
-      where: { teachers: { some: { id: teacher.id } } },
+      where: { staff: { some: { id: teacher.id } } },
     });
 
     return { courses: courses || [] };

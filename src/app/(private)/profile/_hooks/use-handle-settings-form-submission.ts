@@ -28,9 +28,6 @@ export const useHandleSettingsFormSubmission = () => {
         if (data.theme) {
           setTheme(data.theme);
         }
-
-        // Refresh router to update server components and user context
-        router.refresh();
       }
     });
   };

@@ -168,7 +168,7 @@ export const CreateStudentScoresForm = ({
         className="space-y-8 border p-3 rounded-md">
         {fetchError && <div className="text-red-500">{fetchError}</div>}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <SelectWithLabel<GradeType>
+          <SelectWithLabel
             name="classId"
             fieldTitle="Class"
             data={classes || []}
@@ -177,7 +177,7 @@ export const CreateStudentScoresForm = ({
             schema={GradeSchema}
             placeholder="Select Class"
           />
-          <SelectWithLabel<GradeType>
+          <SelectWithLabel
             name="courseId"
             fieldTitle="Course"
             data={courses || []}
@@ -186,28 +186,28 @@ export const CreateStudentScoresForm = ({
             schema={GradeSchema}
             placeholder="Select Course"
           />
-          <SelectWithLabel<GradeType>
+          <SelectWithLabel
             name="semester"
             fieldTitle="Semester"
             data={Semester as any}
             schema={GradeSchema}
             placeholder="Select Semester"
           />
-          <SelectWithLabel<GradeType>
+          <SelectWithLabel
             name="academicYear"
             fieldTitle="Academic Year"
             data={years}
             schema={GradeSchema}
             placeholder="Select Academic Year"
           />
-          <SelectWithLabel<GradeType>
+          <SelectWithLabel
             name="assessmentType"
             fieldTitle="Assessment Type"
             data={AssesessmentSchema as any}
             schema={GradeSchema}
             placeholder="Select Assessment Type"
           />
-          <InputWithLabel<GradeType>
+          <InputWithLabel
             type="number"
             name="maxScore"
             fieldTitle="Max Score"
@@ -261,7 +261,7 @@ export const CreateStudentScoresForm = ({
                         <Avatar>
                           <AvatarImage
                             src={
-                              students[index]?.user?.picture || "/no-avatar.jpg"
+                              students[index]?.user?.image || "/no-avatar.jpg"
                             }
                           />
                           <AvatarFallback>
@@ -279,7 +279,7 @@ export const CreateStudentScoresForm = ({
                         {students[index]?.gender}
                       </TableCell>
                       <TableCell>
-                        <InputWithLabel<GradeType>
+                        <InputWithLabel
                           name={`scores.${index}.score`}
                           fieldTitle=""
                           placeholder="Enter Score"

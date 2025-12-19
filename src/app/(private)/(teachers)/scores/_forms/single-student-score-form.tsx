@@ -65,21 +65,21 @@ export const SingleStudentScoreForm = ({
           className="space-y-8 border p-3 rounded-md">
           {fetchError && <ErrorComponent error={fetchError} />}
           <div className="sr-only">
-            <InputWithLabel<SingleStudentScoreType>
+            <InputWithLabel
               name="studentId"
               fieldTitle="Student ID"
               schema={SingleStudentScoreSchema}
               placeholder="Enter Student ID"
             />
           </div>
-          <InputWithLabel<SingleStudentScoreType>
+          <InputWithLabel
             name="studentName"
             fieldTitle="Student Name"
             schema={SingleStudentScoreSchema}
             placeholder="Enter Student Name"
             disabled={!!id}
           />
-          <SelectWithLabel<SingleStudentScoreType>
+          <SelectWithLabel
             name="classId"
             fieldTitle="Class"
             data={classes ?? []}
@@ -89,7 +89,7 @@ export const SingleStudentScoreForm = ({
             placeholder="Select Class"
             disabled={!!id}
           />
-          <SelectWithLabel<SingleStudentScoreType>
+          <SelectWithLabel
             name="courseId"
             fieldTitle="Course"
             data={courses ?? []}
@@ -99,7 +99,7 @@ export const SingleStudentScoreForm = ({
             placeholder="Select Course"
             disabled={!!id}
           />
-          <SelectWithLabel<SingleStudentScoreType>
+          <SelectWithLabel
             name="semester"
             fieldTitle="Semester"
             data={Semester as any}
@@ -107,7 +107,7 @@ export const SingleStudentScoreForm = ({
             placeholder="Select Semester"
             disabled={!!id}
           />
-          <SelectWithLabel<SingleStudentScoreType>
+          <SelectWithLabel
             name="academicYear"
             fieldTitle="Academic Year"
             data={years}
@@ -115,7 +115,7 @@ export const SingleStudentScoreForm = ({
             placeholder="Select Academic Year"
             disabled={!!id}
           />
-          <SelectWithLabel<SingleStudentScoreType>
+          <SelectWithLabel
             name="assessmentType"
             fieldTitle="Assessment Type"
             data={AssesessmentSchema as any}
@@ -123,14 +123,14 @@ export const SingleStudentScoreForm = ({
             placeholder="Select Assessment Type"
             disabled={!!id}
           />
-          <InputWithLabel<SingleStudentScoreType>
+          <InputWithLabel
             name="maxScore"
             fieldTitle="Max Score"
             schema={SingleStudentScoreSchema}
             placeholder="Enter Max Score"
             disabled={!!id}
           />
-          <InputWithLabel<SingleStudentScoreType>
+          <InputWithLabel
             name="score"
             fieldTitle="Score"
             schema={SingleStudentScoreSchema}

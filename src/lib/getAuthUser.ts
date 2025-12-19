@@ -1,20 +1,20 @@
 import { cache } from "react";
-import { getSession } from "./get-user";
+import { getSession } from "./get-session";
 import { prisma } from "./prisma";
 async function getUser() {
-  const { user } = await getSession();
+  const session = await getSession();
 
-  if (!user) {
+  if (!session?.user) {
     return null;
   }
 
   const userWithRelations = await prisma.user.findUnique({
-    where: { id: user.id },
+    where: { id: session.user.id },
     select: {
       id: true,
       username: true,
       email: true,
-      picture: true,
+      image: true,
       name: true,
       bio: true,
       subscribeToOurNewsLetter: true,
@@ -30,6 +30,7 @@ async function getUser() {
       dateFormat: true,
       compactMode: true,
       showTips: true,
+      emailVerified: true,
       role: {
         select: {
           name: true,

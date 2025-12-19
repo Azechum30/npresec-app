@@ -8,7 +8,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
-import { Dispatch, SetStateAction, useMemo } from "react";
+import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import {
   format,
   getYear,
@@ -55,6 +55,7 @@ export default function DatePicker({
   fromMonth,
   disable = false,
 }: DatePickerProps) {
+  const [open, setOpen] = useState(false);
   const currentDate = new Date();
   const currentYear = getYear(currentDate);
   const currentMonth = getMonth(currentDate);
@@ -117,8 +118,20 @@ export default function DatePicker({
     });
   };
 
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (
+      restrictToCurrentDay &&
+      selectedDate &&
+      !isToday(selectedDate)
+    ) {
+      return; // Prevent selection if not today
+    }
+    setDate(selectedDate);
+    setOpen(false); // Close the popover after selecting a date
+  };
+
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           id={id}
@@ -190,16 +203,7 @@ export default function DatePicker({
           <Calendar
             mode="single"
             selected={date}
-            onSelect={(selectedDate) => {
-              if (
-                restrictToCurrentDay &&
-                selectedDate &&
-                !isToday(selectedDate)
-              ) {
-                return; // Prevent selection if not today
-              }
-              setDate(selectedDate);
-            }}
+            onSelect={handleDateSelect}
             month={restrictToCurrentDay ? currentDate : date}
             disabled={(date) => {
               if (restrictToCurrentDay) {

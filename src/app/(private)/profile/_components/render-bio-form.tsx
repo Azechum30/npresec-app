@@ -41,7 +41,7 @@ export const RenderBioForm = () => {
     username: user.username,
     role: user?.role?.name.toUpperCase() || "",
     email: user.email,
-    picture: user.picture || "",
+    image: user.image || "",
     fullName: user.name || "",
     bio: user.bio || "",
     subscribeToNewsletter: user.subscribeToOurNewsLetter || false,

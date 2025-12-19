@@ -1,22 +1,15 @@
-import moment from "moment";
 import { DateFormatType } from "./validation";
+import { formatMap } from "./constants";
+import { localeMap } from "./constants";
 
 export const formatDate = (
   date: Date | string,
   userPreferredDateFormat: DateFormatType
 ) => {
-  const momentDate = moment(date);
+  const newDate = new Date(date);
 
-  switch (userPreferredDateFormat) {
-    case "DD/MM/YYYY":
-      return momentDate.format("DD/MM/YYYY");
-    case "MM/DD/YYYY":
-      return momentDate.format("MM/DD/YYYY");
-    case "YYYY-MM-DD":
-      return momentDate.format("YYYY-MM-DD");
-    case "DD MMM YYYY":
-      return momentDate.format("DD MMM YYYY");
-    default:
-      return momentDate.format("DD/MM/YYYY");
-  }
+  const options = formatMap[userPreferredDateFormat];
+  const locale = localeMap[userPreferredDateFormat] || "en-GB";
+
+  return new Intl.DateTimeFormat(locale, options).format(newDate);
 };

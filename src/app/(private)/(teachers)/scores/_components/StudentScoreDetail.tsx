@@ -14,7 +14,7 @@ export const StudentScoreDetail = ({ row }: StudentScoreDetailProps) => {
     student,
     score,
     maxScore,
-    teacher,
+    staff,
     course,
     createdAt,
     academicYear,
@@ -28,9 +28,7 @@ export const StudentScoreDetail = ({ row }: StudentScoreDetailProps) => {
         <CardTitle className="relative flex justify-start items-center gap-3">
           <div className="size-20 rounded-full border p-2 flex justify-center items-center">
             <Image
-              src={
-                student.user?.picture ? student.user.picture : "/no-avatar.jpg"
-              }
+              src={student.user?.image ? student.user.image : "/no-avatar.jpg"}
               alt={student.firstName + " " + student.lastName}
               width={80}
               height={80}
@@ -96,7 +94,7 @@ export const StudentScoreDetail = ({ row }: StudentScoreDetailProps) => {
               <div className="flex flex-col gap-1 w-full">
                 <p className="text-sm font-medium">Teacher:</p>
                 <p className="text-sm text-muted-foreground">
-                  {teacher?.firstName} {teacher?.lastName}
+                  {staff?.firstName} {staff?.lastName}
                 </p>
               </div>
             </div>

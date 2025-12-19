@@ -13,21 +13,22 @@ import { Input } from "../ui/input";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
 import { isZodFieldRequired } from "@/lib/isZodFieldRequired";
+import { NestedKeys } from "@/lib/types";
 
-type InputWithLabelProps<T> = {
-  name: keyof T & string;
+type InputWithLabelProps = {
+  name: string;
   fieldTitle: string;
   className?: string;
-  schema?: z.ZodSchema<T>;
+  schema?: z.ZodSchema<any>;
 } & InputHTMLAttributes<HTMLInputElement>;
 
-export default function InputWithLabel<T>({
+export default function InputWithLabel({
   name,
   fieldTitle,
   className,
   schema,
   ...props
-}: InputWithLabelProps<any>) {
+}: InputWithLabelProps) {
   const form = useFormContext();
 
   const isRequired = (() => {

@@ -9,9 +9,31 @@ import {
 import { Button } from "../ui/button";
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
+import { updateThemeAction } from "@/app/(private)/profile/_actions/update-theme-action";
+import { useTransition } from "react";
+
+async function saveThemeToDB(theme: "system" | "light" | "dark") {
+  try {
+    // Save to database without revalidation to prevent flicker
+    await fetch("/api/theme", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ theme }),
+    });
+  } catch (error) {
+    console.error("Failed to save theme:", error);
+  }
+}
 
 export default function ThemeToggler({ className }: { className: string }) {
-  const { setTheme } = useTheme();
+  const { setTheme, theme } = useTheme();
+  const [isPending, startTransition] = useTransition();
+
+  const handleThemeChange = (newTheme: "system" | "light" | "dark") => {
+    setTheme(newTheme);
+    // Save to database asynchronously without blocking UI
+    startTransition(() => saveThemeToDB(newTheme));
+  };
 
   return (
     <div className={className}>
@@ -25,14 +47,20 @@ export default function ThemeToggler({ className }: { className: string }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="center">
           <DropdownMenuLabel>Themes</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => setTheme("dark")}>
-            Dark
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("light")}>
+          <DropdownMenuItem onClick={() => handleThemeChange("light")}>
+            <Sun className="h-4 w-4 mr-2" />
             Light
+            {theme === "light" && <span className="ml-auto">✓</span>}
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("system")}>
+          <DropdownMenuItem onClick={() => handleThemeChange("dark")}>
+            <Moon className="h-4 w-4 mr-2" />
+            Dark
+            {theme === "dark" && <span className="ml-auto">✓</span>}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleThemeChange("system")}>
+            <span className="h-4 w-4 mr-2 flex items-center justify-center">💻</span>
             System
+            {theme === "system" && <span className="ml-auto">✓</span>}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

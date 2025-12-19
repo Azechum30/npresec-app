@@ -15,9 +15,9 @@ const link = new RPCLink({
       );
     }
 
-    return `${window.location.origin}/api/rpc`;
+    return `${window.location.origin}/rpc`;
   },
 });
 
 export const client: RouterClient<typeof router> =
-  global.$client ?? createORPCClient(link);
+  globalThis.$client ?? createORPCClient(link);

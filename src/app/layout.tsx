@@ -39,7 +39,7 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange>
+          disableTransitionOnChange={true}>
           <Toaster richColors duration={5000} />
           {children}
         </ThemeProvider>

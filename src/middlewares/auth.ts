@@ -1,12 +1,29 @@
+import { auth } from "@/lib/auth";
 import { ORPCError, os } from "@orpc/server";
-import { getAuthUser } from "@/lib/getAuthUser";
+import { prisma } from "@/lib/prisma";
 
 const middlewareAuth = os
   .$context<{
-    session?: NonNullable<Awaited<ReturnType<typeof getAuthUser>>>;
+    session?: Awaited<ReturnType<typeof auth.api.getSession>>;
   }>()
   .middleware(async ({ context, next }) => {
-    const user = context.session ?? (await getAuthUser());
+    const session =
+      context.session ??
+      (await auth.api.getSession({
+        headers: await import("next/headers").then((m) => m.headers()),
+      }));
+
+    if (!session?.user) {
+      throw new ORPCError("UNAUTHORIZED");
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: {
+        role: { include: { permissions: true } },
+        permissions: true,
+      },
+    });
 
     if (!user) {
       throw new ORPCError("UNAUTHORIZED");

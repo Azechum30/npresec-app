@@ -24,13 +24,13 @@ export const useGetScoresColumns = () => {
     {
       header: "Avatar",
       cell: ({ row }) => {
-        const { picture } = row.original.student.user ?? {};
-        const isValid = picture
-          ? picture.startsWith("http") ||
-            picture.startsWith("https") ||
-            picture.startsWith("/")
+        const { image } = row.original.student.user ?? {};
+        const isValid = image
+          ? image.startsWith("http") ||
+            image.startsWith("https") ||
+            image.startsWith("/")
           : false;
-        const url = isValid ? (picture as string) : "/no-avatar.jpg";
+        const url = isValid ? (image as string) : "/no-avatar.jpg";
         return (
           <div className="size-8 rounded-full border p-1 flex justify-center items-center">
             <Image

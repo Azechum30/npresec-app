@@ -20,9 +20,6 @@ export const updateThemeAction = async (theme: "system" | "light" | "dark") => {
       data: { theme },
     });
 
-    // Revalidate layout to update user context
-    revalidatePath("/", "layout");
-
     return { success: true };
   } catch (e) {
     console.error("Failed to update theme", e);

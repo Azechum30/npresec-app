@@ -4,16 +4,16 @@ import React, { FC, useEffect } from "react";
 import { buttonVariants } from "../ui/button";
 import { X } from "lucide-react";
 import { useState } from "react";
-import { TeacherResponseType } from "@/lib/types";
+import { StaffResponseType } from "@/lib/types";
 
 type TagsInputProps = {
   name: string;
   placeHolder?: string;
-  value: TeacherResponseType[];
-  onChange?: (tags: TeacherResponseType[]) => void;
+  value: StaffResponseType[];
+  onChange?: (tags: StaffResponseType[]) => void;
   onBlur?: () => void;
   ref: React.Ref<HTMLInputElement>;
-  suggestions?: TeacherResponseType[];
+  suggestions?: StaffResponseType[];
 };
 
 export const TagsComponent: FC<TagsInputProps> = ({
@@ -27,7 +27,7 @@ export const TagsComponent: FC<TagsInputProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState("");
   const [filteredSuggestions, setFilteredSuggestions] = useState<
-    TeacherResponseType[]
+    StaffResponseType[]
   >([]);
 
   useEffect(
@@ -51,7 +51,7 @@ export const TagsComponent: FC<TagsInputProps> = ({
     onChange?.(newTags);
   };
 
-  const handleSuggestionClick = (suggestion: TeacherResponseType) => {
+  const handleSuggestionClick = (suggestion: StaffResponseType) => {
     const newTags = [...value, suggestion];
     onChange?.(newTags);
     setInputValue("");

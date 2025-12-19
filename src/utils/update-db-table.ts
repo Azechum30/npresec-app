@@ -10,7 +10,7 @@ export const updateDbTable = async (
   if (entityType === "user") {
     await prisma.user.update({
       where: { id: entityId },
-      data: { picture: pictureUrl },
+      data: { image: pictureUrl },
     });
     revalidatePath("admin/teachers");
     return { success: true };

@@ -102,7 +102,7 @@ export const SettingsForm = ({
           </div>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
-              <SelectWithLabel<SettingsType>
+              <SelectWithLabel
                 name="itemsPerPage"
                 fieldTitle="Items Per Page"
                 data={itemsPerPageOptions as any}
@@ -111,7 +111,7 @@ export const SettingsForm = ({
               />
             </div>
             <div className="flex-1">
-              <SelectWithLabel<SettingsType>
+              <SelectWithLabel
                 name="theme"
                 fieldTitle="Theme"
                 data={themeOptions as any}
@@ -122,7 +122,7 @@ export const SettingsForm = ({
           </div>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
-              <SelectWithLabel<SettingsType>
+              <SelectWithLabel
                 name="dateFormat"
                 fieldTitle="Systemwide Date Format"
                 data={dateFormatOptions as any}
@@ -131,7 +131,7 @@ export const SettingsForm = ({
               />
             </div>
             <div className="flex-1">
-              <SelectWithLabel<SettingsType>
+              <SelectWithLabel
                 name="timezone"
                 fieldTitle="Timezone"
                 data={timezoneOptions as any}
@@ -144,7 +144,7 @@ export const SettingsForm = ({
           </div>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
-              <SelectWithLabel<SettingsType>
+              <SelectWithLabel
                 name="notificationFrequency"
                 fieldTitle="Notification Frequency"
                 data={notificationFrequencyOptions as any}

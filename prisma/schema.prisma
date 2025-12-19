@@ -1,18 +1,16 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "./generated/client"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
   id                       String       @id @default(cuid())
   email                    String       @unique
   username                 String       @unique
-  password                 String?
   roleId                   String?
   name                     String?
   linkedInUrl              String?
@@ -21,7 +19,6 @@ model User {
   instagramUrl             String?
   bio                      String?
   subscribeToOurNewsLetter Boolean?     @default(false)
-  resetPasswordRequired    Boolean      @default(true)
   socials                  Json?
   timezone                 String?      @default("Africa/Accra")
   dateFormat               String?      @default("DD/MM/YYYY")
@@ -31,26 +28,66 @@ model User {
   theme                    String?      @default("system")
   compactMode              Boolean      @default(false)
   showTips                 Boolean      @default(false)
-  picture                  String?
-  session                  Session[]
+  image                    String?
+  emailVerified            Boolean?     @default(false)
+  sessions                 Session[]
   student                  Student?
-  teacher                  Teacher?
+  staff                    Staff?
   createdAt                DateTime     @default(now())
   updatedAt                DateTime     @default(now()) @updatedAt
   role                     Role?        @relation(fields: [roleId], references: [id])
   permissions              Permission[] @relation("UserPermissions")
+  accounts                 Account[]
 
   @@index([roleId, email, username])
   @@map("users")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
 }
 
 model Session {
   id        String   @id
   userId    String
   expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("sessions")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String   @db.Text
+  value      String   @db.Text
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }
 
 model Department {
@@ -62,19 +99,19 @@ model Department {
   createdAt   DateTime  @default(now())
   updatedat   DateTime  @updatedAt
   classes     Class[]
-  head        Teacher?  @relation("Head", fields: [headId], references: [id], onDelete: SetNull)
+  head        Staff?    @relation("Head", fields: [headId], references: [id], onDelete: SetNull)
   students    Student[]
-  teachers    Teacher[] @relation("DepartmentTeachers")
+  staff       Staff[]   @relation("DepartmentStaff")
   courses     Course[]  @relation("CourseDepartments")
 
   @@index([name, code])
   @@map("departments")
 }
 
-model Teacher {
-  id                     String      @id @default(cuid())
-  employeeId             String      @unique
-  userId                 String?     @unique
+model Staff {
+  id                     String        @id @default(cuid())
+  employeeId             String        @unique
+  userId                 String?       @unique
   departmentId           String?
   firstName              String
   lastName               String
@@ -83,23 +120,25 @@ model Teacher {
   dateOfFirstAppointment DateTime?
   gender                 String
   maritalStatus          String
-  rgNumber               String?     @unique
+  rgNumber               String?       @unique
   rank                   String?
   academicQual           String?
-  ssnitNumber            String?     @unique
-  ghcardNumber           String?     @unique
+  ssnitNumber            String?       @unique
+  ghcardNumber           String?       @unique
   phone                  String
-  licencedNumber         String?     @unique
-  houseMaster            House?      @relation("HouseMaster")
-  departmentHead         Department? @relation("Head")
-  department             Department? @relation("DepartmentTeachers", fields: [departmentId], references: [id])
-  user                   User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  classes                Class[]     @relation("ClassTeachers")
-  courses                Course[]    @relation("CourseTeachers")
-  grades                 Grade[] // Grades assigned by this teacher
+  licencedNumber         String?       @unique
+  staffType              StaffType     @default(Teaching)
+  staffCategory          StaffCategory @default(Professional)
+  houseMaster            House?        @relation("HouseMaster")
+  departmentHead         Department?   @relation("Head")
+  department             Department?   @relation("DepartmentStaff", fields: [departmentId], references: [id])
+  user                   User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classes                Class[]       @relation("ClassStaff")
+  courses                Course[]      @relation("CourseStaff")
+  grades                 Grade[] // Grades assigned by this staff member
 
   @@index([employeeId, firstName, lastName, gender])
-  @@map("teachers")
+  @@map("staff")
 }
 
 model Course {
@@ -113,26 +152,28 @@ model Course {
   grades      Grade[]
   classes     Class[]      @relation("ClassCourses")
   departments Department[] @relation("CourseDepartments")
-  teachers    Teacher[]    @relation("CourseTeachers")
+  staff       Staff[]      @relation("CourseStaff")
 
   @@index([code, title])
   @@map("courses")
 }
 
 model Class {
-  id           String       @id @default(cuid())
-  name         String       @unique
-  code         String       @unique
-  level        Level        @default(Year_One)
-  teacherId    String?
-  departmentId String?
-  attendance   Attendance[]
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  department   Department?  @relation(fields: [departmentId], references: [id])
-  students     Student[]
-  courses      Course[]     @relation("ClassCourses")
-  teachers     Teacher[]    @relation("ClassTeachers")
+  id                String       @id @default(cuid())
+  name              String       @unique
+  code              String       @unique
+  level             Level        @default(Year_One)
+  staffId           String?
+  departmentId      String?
+  maxCapacity       Int?
+  currentEnrollment Int          @default(0)
+  attendance        Attendance[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  department        Department?  @relation(fields: [departmentId], references: [id])
+  students          Student[]
+  courses           Course[]     @relation("ClassCourses")
+  staff             Staff[]      @relation("ClassStaff")
 
   @@index([code, name])
   @@map("classes")
@@ -164,20 +205,20 @@ model Permission {
 }
 
 model Student {
-  id               String           @id @default(cuid())
+  id               String             @id @default(cuid())
   firstName        String
   lastName         String
   middleName       String?
-  studentNumber    String           @unique
+  studentNumber    String             @unique
   birthDate        DateTime
   gender           String
   departmentId     String?
-  userId           String?          @unique
+  userId           String?            @unique
   classId          String?
-  dateEnrolled     DateTime         @default(now())
+  dateEnrolled     DateTime           @default(now())
   graduationDate   DateTime?
-  currentLevel     Level            @default(Year_One)
-  status           EnrollmentStatus @default(Active)
+  currentLevel     Level              @default(Year_One)
+  status           EnrollmentStatus   @default(Active)
   phone            String?
   address          String?
   nationality      String?
@@ -188,19 +229,22 @@ model Student {
   guardianAddress  String?
   guardianRelation String
   previousSchool   String?
-  admissionDate    DateTime         @default(now())
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  admissionDate    DateTime           @default(now())
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
   deletedAt        DateTime?
   attendance       Attendance[]
   documents        Document[]
   grades           Grade[]
   transcripts      Transcript[]
-  currentClass     Class?           @relation(fields: [classId], references: [id])
-  department       Department?      @relation(fields: [departmentId], references: [id])
-  user             User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  houseId          String?          @unique
-  house            House?           @relation(fields: [houseId], references: [id])
+  currentClass     Class?             @relation(fields: [classId], references: [id])
+  department       Department?        @relation(fields: [departmentId], references: [id])
+  user             User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  houseId          String?            @unique
+  roomId           String?            @unique
+  room             Room?              @relation(fields: [roomId], references: [id])
+  house            House?             @relation(fields: [houseId], references: [id])
+  promotions       StudentPromotion[]
 
   @@index([departmentId, currentLevel])
   @@index([firstName, lastName, studentNumber])
@@ -228,7 +272,7 @@ model Grade {
   id             String         @id @default(cuid())
   courseId       String
   studentId      String
-  teacherId      String?
+  staffId        String?
   assessmentType AssessmentType
   score          Float
   maxScore       Float          @default(100) // Maximum possible score
@@ -237,20 +281,20 @@ model Grade {
   academicYear   Int // e.g., 2024
   isExempt       Boolean        @default(false) // For exempted assessments
   isRetake       Boolean        @default(false) // For retake exams
-  remarks        String? // Teacher comments
+  remarks        String? // Staff comments
   gradedAt       DateTime? // When the grade was assigned
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
   // Relations
-  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  student Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  teacher Teacher? @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  staff   Staff?  @relation(fields: [staffId], references: [id], onDelete: SetNull)
 
   @@unique([studentId, courseId, assessmentType, semester, academicYear])
   @@index([studentId, academicYear])
   @@index([courseId, academicYear, semester])
-  @@index([teacherId, academicYear])
+  @@index([staffId, academicYear])
   @@map("grades")
 }
 
@@ -302,13 +346,48 @@ model Transcript {
 model House {
   id            String      @id @default(cuid())
   name          String      @unique
-  type          HouseType   @default(DAY)
+  residencyType HouseType   @default(DAY)
   houseGender   HouseGender @default(BOTH)
-  roomCount     Int         @default(0)
-  roomCapacity  Int         @default(0)
+  occupancy     Json
   students      Student[]
+  rooms         Room[]
   houseMasterId String?     @unique
-  houseMaster   Teacher?    @relation("HouseMaster", fields: [houseMasterId], references: [id], onDelete: SetNull)
+  houseMaster   Staff?      @relation("HouseMaster", fields: [houseMasterId], references: [id], onDelete: SetNull)
+
+  @@map("houses")
+}
+
+model Room {
+  id        String      @id @default(cuid())
+  code      String      @unique
+  rmGender  HouseGender @default(BOTH)
+  capacity  Int
+  houseId   String
+  house     House       @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  students  Student[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("rooms")
+}
+
+model StudentPromotion {
+  id            String   @id @default(cuid())
+  studentId     String
+  fromLevel     Level
+  toLevel       Level?
+  academicYear  Int
+  promotedAt    DateTime @default(now())
+  promotedBy    String? // User ID who performed the promotion
+  criteria      Json? // Store promotion criteria details
+  forcePromoted Boolean  @default(false)
+  notes         String?
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, academicYear])
+  @@index([academicYear, fromLevel])
+  @@map("student_promotions")
 }
 
 enum HouseGender {
@@ -361,4 +440,14 @@ enum EnrollmentStatus {
   Suspended
   Graduated
   Withdrawn
+}
+
+enum StaffType {
+  Teaching
+  Non_Teaching
+}
+
+enum StaffCategory {
+  Professional
+  Non_Professional
 }

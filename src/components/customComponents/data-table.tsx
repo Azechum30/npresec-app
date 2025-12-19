@@ -33,6 +33,7 @@ type DataTableProps<TData> = {
   columns: ColumnDef<TData>[];
   data: TData[];
   filename?: string;
+  showImportButton?: boolean;
   transformer?: TransformerFn<TData>;
   renderSubComponent?: (row: Row<TData>) => JSX.Element;
   onDelete?: (rows: Row<TData>[]) => void;
@@ -43,6 +44,7 @@ const DataTable = <TData,>({
   data,
   transformer,
   filename,
+  showImportButton,
   renderSubComponent,
   onDelete,
 }: DataTableProps<TData>) => {
@@ -113,6 +115,7 @@ const DataTable = <TData,>({
           data={data}
           transformer={transformer}
           filename={filename}
+          showImportButton={showImportButton}
         />
       </CardHeader>
       <CardContent>

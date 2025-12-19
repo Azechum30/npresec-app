@@ -1,6 +1,7 @@
 "use client";
 import {
   Award,
+  Bed,
   BookOpen,
   ClipboardList,
   GraduationCap,
@@ -30,7 +31,7 @@ export const Links = {
           icon: <LayoutDashboard />,
         },
         { title: "Students", href: "/admin/students", icon: <GraduationCap /> },
-        { title: "Teachers", href: "/admin/teachers", icon: <UserPen /> },
+        { title: "Staff", href: "/admin/staff", icon: <UserPen /> },
       ],
     },
     {
@@ -56,8 +57,23 @@ export const Links = {
         },
       ],
     },
+    {
+      section: "House & Beds Management",
+      Links: [
+        {
+          title: "Houses",
+          href: "/admin/houses",
+          icon: <Award />,
+        },
+        {
+          title: "Rooms",
+          href: "/admin/houses/rooms",
+          icon: <Bed />,
+        },
+      ],
+    },
   ],
-  TEACHER: [
+  STAFF: [
     {
       section: "Class Management",
       Links: [
@@ -95,36 +111,40 @@ export default function Sidebar() {
   const links =
     role === "admin"
       ? Links.ADMIN
-      : role === "teacher"
-        ? Links.TEACHER
+      : role === "staff"
+        ? Links.STAFF
         : Links.STUDENT;
 
   return (
     <div
       className={cn(
-        "inset-[68px] bg-inherit sticky top-0 left-0 z-30 h-screen border-r aside backdrop-blur-sm overflow-x-clip",
+        "inset-[68px] bg-inherit sticky top-0 left-0 z-30 h-screen border-r aside backdrop-blur-sm overflow-x-clip overflow-y-auto scrollbar-thin",
         open && "open"
       )}>
       <div className="w-fit md:w-full flex flex-col items-center md:items-start gap-y-4 relative h-full sidebar-content">
         <div
           className={cn(
             `${buttonVariants({
-              variant: "outline",
-            })} group backdrop-blur-xs w-fit md:w-full px-4 py-2 text-left justify-center md:justify-start flex gap-x-3 rounded-none items-center h-14 sticky top-0 left-0 z-30 border-0 border-b`
+              variant: "default",
+            })} group bg-background hover:bg-background w-fit md:w-full px-4 py-2 text-left justify-center md:justify-start flex gap-x-3 rounded-none items-center h-14 sticky top-0 left-0 z-30 border-0 border-b`
           )}>
           <div className="size-10 shrink-0 flex items-center justify-center border-2 dark:group-hover:border-gray-600  rounded-full p-1.5 ">
-            <Avatar className="backdrop-blur-xs w-full h-full">
+            <Avatar className="w-full h-full">
               <AvatarImage src="/logo.png" />
               <AvatarFallback>NP</AvatarFallback>
             </Avatar>
           </div>
-          <h1 className="hidden md:block text-base font-semibold">NPRESEC</h1>
+          <h1 className="hidden md:block text-base font-semibold text-accent-foreground">
+            NPRESEC
+          </h1>
         </div>
         {links.map((link) => (
           <div
             key={link.section}
-            className=" w-fit md:w-full flex flex-col items-center md:items-start gap-y-3 px-4 sm:px-2 lg:px-4">
-            <span className=" hidden md:block text-sm">{link.section}</span>
+            className=" w-fit md:w-full flex flex-col items-center md:items-start gap-y-3 px-4 sm:px-2 lg:px-4 ">
+            <span className=" md:w-full md:py-1.5 hidden md:block text-sm border-t">
+              {link.section}
+            </span>
             <div className="w-fit md:w-full">
               {link.Links.map((innerLink) => (
                 <LinkWithStyles

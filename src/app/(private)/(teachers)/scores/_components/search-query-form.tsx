@@ -95,7 +95,7 @@ export const SearchQueryForm = () => {
     <Form {...form}>
       <form className="border rounded-md p-4  my-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2 w-full">
         <div className="w-full md:last-of-type:col-span-2 lg:last-of-type:col-span-1">
-          <SelectWithLabel<z.infer<typeof formSchema>>
+          <SelectWithLabel
             name="classId"
             fieldTitle="Class"
             data={classes || []}
@@ -107,7 +107,7 @@ export const SearchQueryForm = () => {
           />
         </div>
         <div className="w-full md:last-of-type:col-span-2 lg:last-of-type:col-span-1">
-          <SelectWithLabel<z.infer<typeof formSchema>>
+          <SelectWithLabel
             name="courseId"
             fieldTitle="Course"
             data={courses || []}
@@ -119,7 +119,7 @@ export const SearchQueryForm = () => {
           />
         </div>
         <div className="w-full md:last-of-type:col-span-2 lg:last-of-type:col-span-1">
-          <SelectWithLabel<z.infer<typeof formSchema>>
+          <SelectWithLabel
             name="semester"
             fieldTitle="Semester"
             data={Semester as any}
@@ -129,7 +129,7 @@ export const SearchQueryForm = () => {
           />
         </div>
         <div className="w-full md:last-of-type:col-span-2 lg:last-of-type:col-span-1">
-          <SelectWithLabel<z.infer<typeof formSchema>>
+          <SelectWithLabel
             name="academicYear"
             fieldTitle="Academic Year"
             data={years}
@@ -139,7 +139,7 @@ export const SearchQueryForm = () => {
           />
         </div>
         <div className="w-full md:last-of-type:col-span-2 lg:last-of-type:col-span-1">
-          <SelectWithLabel<z.infer<typeof formSchema>>
+          <SelectWithLabel
             name="assessmentType"
             fieldTitle="Assessment Type"
             data={AssesessmentSchema as any}

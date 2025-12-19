@@ -26,7 +26,7 @@ export const createScoresAction = async (values: unknown) => {
       return { error: errorMessage };
     }
 
-    const teacher = await prisma.teacher.findUnique({
+    const teacher = await prisma.staff.findUnique({
       where: { userId: user.id },
       select: { id: true },
     });

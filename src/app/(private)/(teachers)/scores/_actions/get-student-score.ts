@@ -1,7 +1,7 @@
 "use server";
 
 import { getUserWithPermissions } from "@/utils/get-user-with-permission";
-import { Prisma } from "../../../../../../prisma/generated/client";
+import { Prisma } from "@/generated/prisma/client";
 import * as Sentry from "@sentry/nextjs";
 import { GradeSelect } from "@/lib/types";
 import { prisma } from "@/lib/prisma";

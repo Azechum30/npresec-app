@@ -2,8 +2,8 @@ import {
   ClassesResponseType,
   CourseResponseType,
   DepartmentResponseType,
+  StaffResponseType,
   StudentResponseType,
-  TeacherResponseType,
 } from "@/lib/types";
 import { create } from "zustand";
 
@@ -46,7 +46,7 @@ export const createStore = <T, K extends keyof T>(uniqueKey: K) => {
 
 export const useClassesStore = createStore<ClassesResponseType, "code">("code");
 
-export const useTeacherStore = createStore<TeacherResponseType, "employeeId">(
+export const useStaffStore = createStore<StaffResponseType, "employeeId">(
   "employeeId"
 );
 
