@@ -1,17 +1,11 @@
 import { toast } from "sonner";
 import { getBoardOfGovernors } from "./actions/server";
 import { BoardMembers } from "./_components/board-members";
-import LoadingState from "@/components/customComponents/Loading";
+import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
+import { Suspense } from "react";
 
-export default async function BoardOfGovernorsPage() {
-  const { boardMembers, error } = await getBoardOfGovernors();
-
-  if (error) {
-    return toast.error(
-      error || "An error occurred while fetching board of governors"
-    );
-  }
-
+export default function BoardOfGovernorsPage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-5">
@@ -31,17 +25,29 @@ export default async function BoardOfGovernorsPage() {
           <h2 className="text-2xl text-primary mb-3 font-semibold relative after:absolute after:top-full after:w-1/12 after:inset-0 after:h-[1.5px] after:bg-primary after:flex after:items-center">
             List of Board of Governors
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {boardMembers ? (
-              boardMembers.map((member) => (
-                <BoardMembers key={member.id} {...member} />
-              ))
-            ) : (
-              <LoadingState />
-            )}
-          </div>
+          <Suspense fallback={<FallbackComponent />}>
+            <RenderBoardMembers />
+          </Suspense>
         </div>
       </div>
     </div>
   );
 }
+
+const RenderBoardMembers = async () => {
+  const { boardMembers, error } = await getBoardOfGovernors();
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {boardMembers ? (
+        boardMembers.map((member) => (
+          <BoardMembers key={member.id} {...member} />
+        ))
+      ) : boardMembers === undefined ? (
+        <FallbackComponent />
+      ) : error ? (
+        <ErrorComponent error={error} />
+      ) : null}
+    </div>
+  );
+};

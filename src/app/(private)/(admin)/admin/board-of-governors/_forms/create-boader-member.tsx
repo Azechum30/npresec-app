@@ -68,22 +68,23 @@ export const CreateBoardMemberForm = ({
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(handleFormSubmit)}
-          className="space-y-4 w-full h-full text-left rounded-md border p-4 overflow-auto">
+          className="space-y-4 w-full max-h-[80vh] text-left rounded-md border p-4 overflow-auto">
           <InputWithLabel
             fieldTitle="Full Name"
             name="name"
-            schema={BoardOfGovernorsSchema as any}
+            schema={BoardOfGovernorsSchema}
           />
 
           <SelectWithLabel
             fieldTitle="Role"
             name="role"
-            data={BoardRole as any}
+            data={Array.from(BoardRole)}
+            schema={BoardOfGovernorsSchema}
           />
           <InputWithLabel
             fieldTitle="Afilliation"
             name="affiliation"
-            schema={BoardOfGovernorsSchema as any}
+            schema={BoardOfGovernorsSchema}
           />
           <TextAreaWithLabel fieldTitle="Bio" name="bio" />
 

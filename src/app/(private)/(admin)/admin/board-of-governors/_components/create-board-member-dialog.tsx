@@ -34,7 +34,7 @@ export const CreateBoardMemberDialog = () => {
       toast.success("Board member added successfully");
       setTimeout(() => {
         onClose("create-board-member");
-      }, 100);
+      }, 300);
     }
   }, [createSuccess, onClose]);
 
@@ -43,30 +43,31 @@ export const CreateBoardMemberDialog = () => {
       <Dialog
         open={dialogs["create-board-member"] === true ? true : false}
         onOpenChange={() => onClose("create-board-member")}>
-        <DialogContent className="max-h-[85vh] overflow-auto w-full scrollbar-thin">
-          <DialogHeader>
-            <DialogTitle>Add a new Board Member</DialogTitle>
-            <DialogDescription>
-              Kindly fill the form to add a new board member to the system.
-              Remember that fields marked with (*) are required.
-            </DialogDescription>
-          </DialogHeader>
+        {dialogs["create-board-member"] && (
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add a new Board Member</DialogTitle>
+              <DialogDescription>
+                Kindly fill the form to create a new board memberS
+              </DialogDescription>
+            </DialogHeader>
 
-          <CreateBoardMemberForm
-            onSubmit={handleBoardMemberCreation}
-            isCreating={isCreating}
-          />
+            <CreateBoardMemberForm
+              onSubmit={handleBoardMemberCreation}
+              isCreating={isCreating}
+            />
 
-          <DialogFooter>
-            <DialogClose
-              className={buttonVariants({
-                variant: "secondary",
-                className: "w-full",
-              })}>
-              Cancel
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
+            <DialogFooter>
+              <DialogClose
+                className={buttonVariants({
+                  variant: "secondary",
+                  className: "w-full",
+                })}>
+                Cancel
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        )}
       </Dialog>
     </>
   );

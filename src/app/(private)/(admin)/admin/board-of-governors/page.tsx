@@ -3,20 +3,30 @@ import { CreateBoardMemberDialog } from "./_components/create-board-member-dialo
 import { fetchBoardMembers } from "./_actions/fetch-board-members";
 import { RenderBoardMembersTable } from "./_components/render-board-table";
 import { EditBoardMember } from "./_components/edit-board-member";
+import { Suspense } from "react";
+import { FallbackComponent } from "@/components/customComponents/fallback-component";
 
-export default async function AdminBoardOfGovernorsPage() {
-  const { error, boardMembers } = await fetchBoardMembers();
+export default function AdminBoardOfGovernorsPage() {
   return (
     <>
       <div className="flex flex-col md:flex-row gap-4 md:justify-between md:items-center">
-        <h1 className="text-lg font-medium">Board of Governors</h1>
+        <h1 className="text-base font-medium line-clamp-1">
+          Board of Governors
+        </h1>
         <OpenDialogs dialogKey="create-board-member" />
       </div>
       <div>
         <CreateBoardMemberDialog />
-        <RenderBoardMembersTable boardMembers={boardMembers} error={error} />
+        <Suspense fallback={<FallbackComponent />}>
+          <RenderBoardMembersDataTable />
+        </Suspense>
         <EditBoardMember />
       </div>
     </>
   );
 }
+
+export const RenderBoardMembersDataTable = async () => {
+  const { error, boardMembers } = await fetchBoardMembers();
+  return <RenderBoardMembersTable boardMembers={boardMembers} error={error} />;
+};

@@ -2,15 +2,17 @@
 
 import DataTable from "@/components/customComponents/data-table";
 import LoadingState from "@/components/customComponents/Loading";
-import { BoardMemberResponseType } from "@/lib/types";
 import { toast } from "sonner";
 import { useGetBoardMembersColumns } from "../_hooks/use-get-board-members-columns";
 import { useHandleBulkBoardMembersDelete } from "../_hooks/use-handle-bulk-members-delete";
 import { useEffect, useRef } from "react";
 import { BoardMemberDetails } from "./board-member-detail";
+import { getBoardOfGovernors } from "@/app/(public)/about/board-of-governors/actions/server";
+import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
+import { NoDataFound } from "@/components/customComponents/no-data-found";
 
 type RenderBoardMembersTableProps = {
-  boardMembers: BoardMemberResponseType[] | undefined;
+  boardMembers: Awaited<ReturnType<typeof getBoardOfGovernors>>["boardMembers"];
   error: string | undefined;
 };
 
@@ -28,12 +30,6 @@ export const RenderBoardMembersTable = ({
   } = useHandleBulkBoardMembersDelete();
 
   const prevErrorRef = useRef(false);
-
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-    }
-  }, [error]);
 
   useEffect(() => {
     const wasError = prevErrorRef.current;
@@ -55,15 +51,21 @@ export const RenderBoardMembersTable = ({
 
   return (
     <>
-      <DataTable
-        columns={columns}
-        data={boardMembers}
-        onDelete={async (row) => {
-          const ids = row.map((r) => r.original.id);
-          await handleBulkBoardMembersDelete(ids);
-        }}
-        renderSubComponent={(row) => <BoardMemberDetails row={row} />}
-      />
+      {error ? (
+        <ErrorComponent error={error} />
+      ) : boardMembers === undefined ? (
+        <NoDataFound />
+      ) : (
+        <DataTable
+          columns={columns}
+          data={boardMembers}
+          onDelete={async (row) => {
+            const ids = row.map((r) => r.original.id);
+            await handleBulkBoardMembersDelete(ids);
+          }}
+          renderSubComponent={(row) => <BoardMemberDetails row={row} />}
+        />
+      )}
     </>
   );
 };
