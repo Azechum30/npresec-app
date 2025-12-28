@@ -9,6 +9,7 @@ import { buttonVariants } from "../ui/button";
 import { LogIn } from "lucide-react";
 import { TriggerMobileNavbar } from "./TriggerMobileNavbar";
 import { useSession } from "@/lib/auth-client";
+import { Route } from "next";
 
 type NavigationLinksProps = {
   href: string;
@@ -60,8 +61,9 @@ export default function Navbar() {
             {Links.map((link) => (
               <Link
                 key={link.title}
-                href={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                href={link.href as Route}
+                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+              >
                 {link.title}
               </Link>
             ))}
@@ -79,7 +81,8 @@ export default function Navbar() {
                   href="/sign-in"
                   className={buttonVariants({
                     variant: "outline",
-                  })}>
+                  })}
+                >
                   <LogIn className="size-4" aria-hidden={true} />
                   <span>Login</span>
                 </Link>

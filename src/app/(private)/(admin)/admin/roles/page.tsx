@@ -2,23 +2,13 @@ import OpenDialogs from "@/components/customComponents/OpenDialogs";
 import { Suspense } from "react";
 import { RenderRolesDataTable } from "@/app/(private)/(admin)/admin/roles/components/RenderRolesDataTable";
 import { getRoles } from "@/app/(private)/(admin)/admin/roles/actions/queries";
-import { DataTableSkeleton } from "@/components/customComponents/DataTable-Skeleton";
 import { CreateRoleDialog } from "@/app/(private)/(admin)/admin/roles/components/CreateRoleDialog";
 import { UpdateRoleDialog } from "@/app/(private)/(admin)/admin/roles/components/UpdateRoleDialog";
-import { getAuthUser } from "@/lib/getAuthUser";
-import { redirect } from "next/navigation";
-import { headers } from "next/headers";
+import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
+import { NoDataFound } from "@/components/customComponents/no-data-found";
+import { FallbackComponent } from "@/components/customComponents/fallback-component";
 
-export const dynamic = "force-dynamic";
-
-export default async function RolesPage() {
-  const user = await getAuthUser();
-  if (!user || user.role?.name !== "admin") {
-    const referer = (await headers()).get("referer") || "/admin/dashboard";
-    return redirect(referer);
-  }
-
-  const promise = getRoles();
+export default function RolesPage() {
   return (
     <>
       <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
@@ -28,23 +18,8 @@ export default async function RolesPage() {
         <OpenDialogs dialogKey={"createRole"} />
       </div>
 
-      <Suspense
-        fallback={
-          <DataTableSkeleton
-            columnCount={7}
-            cellWidths={[
-              "10rem",
-              "30rem",
-              "10rem",
-              "10rem",
-              "6rem",
-              "6rem",
-              "6rem",
-            ]}
-            filterCount={2}
-          />
-        }>
-        <RenderRolesDataTable promise={promise} />
+      <Suspense fallback={<FallbackComponent />}>
+        <RenderRolesTables />
       </Suspense>
 
       <CreateRoleDialog />
@@ -52,3 +27,17 @@ export default async function RolesPage() {
     </>
   );
 }
+
+const RenderRolesTables = async () => {
+  const { roles, error } = await getRoles();
+
+  if (error) {
+    return <ErrorComponent error={error} />;
+  }
+
+  if (!roles) {
+    return <NoDataFound />;
+  }
+
+  return <RenderRolesDataTable promise={{ roles }} />;
+};

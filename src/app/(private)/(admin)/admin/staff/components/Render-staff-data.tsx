@@ -21,7 +21,7 @@ export default function RenderStaffData({ initialData }: Props) {
   const { preferredDateFormat } = useUserPreferredDateFormat();
   const staffTransformer = useMemo(
     () => createStaffTransformer(preferredDateFormat),
-    [preferredDateFormat]
+    [preferredDateFormat],
   );
 
   return (
@@ -39,8 +39,7 @@ export default function RenderStaffData({ initialData }: Props) {
           filename="Staff-list"
           onDelete={async (rows) => {
             const ids = rows.map((row) => row.original.id);
-            const employeeIds = rows.map((row) => row.original.employeeId);
-            await deletestaff(ids, employeeIds);
+            await deletestaff(ids);
           }}
           renderSubComponent={(row) => <StaffRowDetail row={row} />}
         />

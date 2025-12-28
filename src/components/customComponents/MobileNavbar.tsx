@@ -15,6 +15,7 @@ import { ThemeSwitcher } from "./ThemeSwitecher";
 import { UserProfile } from "@/app/(public)/_components/UserProfile";
 import { LogIn } from "lucide-react";
 import { useAuth } from "./SessionProvider";
+import { Route } from "next";
 
 export const MobileNavbar = () => {
   const { onClose, dialogs } = useGenericDialog();
@@ -29,7 +30,8 @@ export const MobileNavbar = () => {
   return (
     <Sheet
       open={dialogs["mobile-nav"]}
-      onOpenChange={() => onClose("mobile-nav")}>
+      onOpenChange={() => onClose("mobile-nav")}
+    >
       <SheetContent side="left">
         <SheetHeader>
           <SheetTitle>Navigation Menu</SheetTitle>
@@ -42,30 +44,36 @@ export const MobileNavbar = () => {
           <div className="flex flex-col gap-2 px-2">
             {Links.map((link) => (
               <Link
-                href={link.href}
+                onClick={() => onClose("mobile-nav")}
+                href={link.href as Route}
                 key={link.href}
                 className={buttonVariants({
                   variant: "ghost",
                   className: "justify-start hover:text-primary",
-                })}>
+                })}
+              >
                 {link.title}
               </Link>
             ))}
           </div>
           <div className="flex items-center space-x-2 px-4 py-4 border-t">
+            {/*<div className="hidden md:inline-flex">*/}
             <ThemeSwitcher />
+            {/*</div>*/}
             {user ? (
-              <UserProfile user={authUser} />
+              <UserProfile user={authUser} onClose={onClose} />
             ) : (
               <div className="flex items-center space-x-2">
-                <Link href="/" className={buttonVariants()}>
+                {/*<Link href="/" className={buttonVariants()}>
                   Get Started
-                </Link>
+                </Link>*/}
                 <Link
                   href="/sign-in"
+                  onAbort={() => onClose("mobile-nav")}
                   className={buttonVariants({
                     variant: "outline",
-                  })}>
+                  })}
+                >
                   <LogIn className="size-4" aria-hidden={true} />
                   <span>Login</span>
                 </Link>

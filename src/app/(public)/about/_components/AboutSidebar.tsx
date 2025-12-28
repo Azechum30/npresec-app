@@ -1,6 +1,7 @@
 "use client";
 
 import { buttonVariants } from "@/components/ui/button";
+import { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -26,8 +27,9 @@ export const AboutSidebar = () => {
                     ? "justify-start text-[16px] font-bold text-secondary-foreground dark:text-primary-foreground hover:text-primary rounded-none transition-all duration-150 hover:border-border underline "
                     : "justify-start text-[16px] font-normal text-secondary-foreground dark:text-primary-foreground hover:text-primary rounded-none transition-all duration-150 hover:border-border ",
               })}
-              href={link.href}
-              key={link.href}>
+              href={link.href as Route}
+              key={link.href}
+            >
               {link.name}
             </Link>
           );

@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Route } from "next";
 
 const formSchema = z.object({
   classId: z.string().min(1, "Class is required"),
@@ -31,7 +32,7 @@ export const SendClassQueryForm = () => {
   const handleSubmit = (value: string) => {
     const params = new URLSearchParams(searchParam);
     params.set("classId", value);
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}` as Route);
   };
 
   return (
@@ -48,7 +49,8 @@ export const SendClassQueryForm = () => {
                   onValueChange={(value) => {
                     handleSubmit(value);
                     field.onChange(value);
-                  }}>
+                  }}
+                >
                   <SelectTrigger className="w-full max-w-xs hover:cursor-pointer">
                     <SelectValue placeholder="--Select class--" />
                   </SelectTrigger>

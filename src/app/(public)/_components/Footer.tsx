@@ -16,37 +16,38 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useRef } from "react";
+import { Route } from "next";
 
-type AboutLink = {
+type AboutLink<T extends string = string> = {
   title: string;
-  href: string;
+  href: T;
 };
 
-const aboutLinks: AboutLink[] = [
+const aboutLinks: AboutLink<Route>[] = [
   {
     title: "Background of School",
     href: "/about",
   },
   {
     title: "Vision, Mission and Core Values",
-    href: "/about/strategic-vision",
+    href: "/about/vision-mission",
   },
   {
     title: "Board of Governors",
     href: "/about/board-of-governors",
   },
   {
-    title: "Management Team",
-    href: "/about/management-team",
+    title: "Board of Directors",
+    href: "/about/board-of-governors",
   },
-  {
-    title: "School Polcies",
-    href: "/about/school-policies",
-  },
-  {
-    title: "School Organization Structure",
-    href: "/about/school-organization-structure",
-  },
+  // {
+  //   title: "School Polcies",
+  //   href: "/about/",
+  // },
+  // {
+  //   title: "School Organization Structure",
+  //   href: "/about/school-organization-structure",
+  // },
 ];
 
 const AdmissionLinks: AboutLink[] = [
@@ -178,13 +179,14 @@ export const Footer = () => {
         stagger: 0.2,
       });
     },
-    { scope: footerContainerRef }
+    { scope: footerContainerRef },
   );
   return (
     <footer ref={footerContainerRef} className=" relative">
       <div
         className="background-image bg-primary dark:bg-background opacity-50 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-contain bg-center bg-no-repeat"
-        style={{ backgroundImage: "url(/logo.png)" }}></div>
+        style={{ backgroundImage: "url(/logo.png)" }}
+      ></div>
       <div className="px-4 md:px-6 lg:px-8 z-10 relative bg-primary/95 dark:bg-background/95 footer-container">
         <PublicMainContainer className="py-20">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 footer-grid ">
@@ -213,7 +215,8 @@ export const Footer = () => {
                       variant: "link",
                       className:
                         "px-px py-5 text-primary-foreground/75 hover:text-primary-foreground w-full justify-start",
-                    })}>
+                    })}
+                  >
                     {link.title}
                   </Link>
                 ))}
@@ -226,13 +229,14 @@ export const Footer = () => {
               <div>
                 {AdmissionLinks.map((link, index) => (
                   <Link
-                    href={link.href}
+                    href={link.href as Route}
                     key={link.href}
                     className={buttonVariants({
                       variant: "link",
                       className:
                         "px-px py-5 text-primary-foreground/75 hover:text-primary-foreground w-full justify-start",
-                    })}>
+                    })}
+                  >
                     {link.title}
                   </Link>
                 ))}
@@ -245,13 +249,14 @@ export const Footer = () => {
               <div>
                 {keyLinks.map((link, index) => (
                   <Link
-                    href={link.href}
+                    href={link.href as Route}
                     key={link.href}
                     className={buttonVariants({
                       variant: "link",
                       className:
                         "px-px py-5 text-primary-foreground/75 hover:text-primary-foreground w-full justify-start",
-                    })}>
+                    })}
+                  >
                     {link.title}
                   </Link>
                 ))}
@@ -271,14 +276,15 @@ export const Footer = () => {
           {socialLinks.map((link) => (
             <Link
               key={link.href}
-              href={link.href}
+              href={link.href as Route}
               target="_blank"
               className={buttonVariants({
                 variant: "ghost",
                 size: "icon",
                 className:
                   "hover:-translate-y-2 transition-transform duration-500 ease-in-out",
-              })}>
+              })}
+            >
               {link.icon}
             </Link>
           ))}

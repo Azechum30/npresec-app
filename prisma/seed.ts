@@ -164,23 +164,34 @@ const rolePermissions: Record<
 async function main() {
   console.log("Seeding database...");
 
-  for (const role of roles) {
-    await prisma.role.upsert({
-      where: { name: role },
-      update: {},
-      create: { name: role },
+  // Get existing roles to avoid duplicates
+  const existingRoles = await prisma.role.findMany({
+    where: { name: { in: roles } },
+  });
+  const existingRoleNames = new Set(existingRoles.map((role) => role.name));
+
+  // Create only missing roles
+  const rolesToCreate = roles.filter((role) => !existingRoleNames.has(role));
+
+  if (rolesToCreate.length > 0) {
+    console.log(`Creating ${rolesToCreate.length} new roles:`, rolesToCreate);
+    await prisma.role.createMany({
+      data: rolesToCreate.map((name) => ({ name })),
     });
+  } else {
+    console.log("All roles already exist, skipping role creation");
   }
+
+  // Get all roles (existing + newly created)
   const allRoles = await prisma.role.findMany({
     where: { name: { in: roles } },
   });
-
   const roleMap = new Map(allRoles.map((role) => [role.name, role.id]));
 
   const shouldHavePermission = (
     roleName: string,
     resource: string,
-    action: string
+    action: string,
   ): boolean => {
     const permissionConfig = rolePermissions[roleName];
     if (!permissionConfig) return false;
@@ -204,34 +215,61 @@ async function main() {
     return true;
   };
 
+  // Generate all permission names that should exist
+  const expectedPermissions = [];
   for (const resource of resources) {
     for (const action of actions) {
       const permissionName = `${action}:${resource}`;
-
       const allowedRoleIds = allRoles
         .filter((role) => shouldHavePermission(role.name, resource, action))
-        .map((role) => ({ id: role.id }));
+        .map((role) => role.id);
 
       if (allowedRoleIds.length > 0) {
-        await prisma.permission.upsert({
-          where: { name: permissionName },
-          update: {
-            roles: {
-              set: allowedRoleIds,
-            },
-          },
-          create: {
-            name: permissionName,
-            description: `can ${action} ${resource}`,
-            roles: {
-              connect: allowedRoleIds,
-            },
-          },
+        expectedPermissions.push({
+          name: permissionName,
+          description: `can ${action} ${resource}`,
+          roleIds: allowedRoleIds,
         });
       }
     }
   }
 
+  // Get existing permissions
+  const existingPermissions = await prisma.permission.findMany({
+    select: { name: true },
+  });
+  const existingPermissionNames = new Set(
+    existingPermissions.map((perm) => perm.name),
+  );
+
+  // Create only missing permissions
+  const permissionsToCreate = expectedPermissions.filter(
+    (perm) => !existingPermissionNames.has(perm.name),
+  );
+
+  if (permissionsToCreate.length > 0) {
+    console.log(
+      `Creating ${permissionsToCreate.length} new permissions:`,
+      permissionsToCreate.map((p) => p.name),
+    );
+
+    // Create permissions one by one to handle role connections
+    for (const permission of permissionsToCreate) {
+      await prisma.permission.create({
+        data: {
+          name: permission.name,
+          description: permission.description,
+          roles: {
+            connect: permission.roleIds.map((id) => ({ id })),
+          },
+        },
+      });
+    }
+  } else {
+    console.log("All permissions already exist, skipping permission creation");
+  }
+
+  // Check if admin user exists
   const adminUser = await prisma.user.count({
     where: {
       role: { name: "admin" },
@@ -239,45 +277,68 @@ async function main() {
   });
 
   if (adminUser === 0) {
+    console.log("No admin user found, creating admin user...");
+
     const adminEmail = env.ADMIN_USER_EMAIL || "admin@nakpanduripresec.org";
     const adminPassword = env.ADMIN_USER_PASSWORD;
 
-    if (!adminEmail || !adminPassword)
+    if (!adminEmail || !adminPassword) {
       throw new Error(
-        "ADMIN_USER_EMAIL and ADMIN_USER_PASSWORD must be set in .env file"
+        "ADMIN_USER_EMAIL and ADMIN_USER_PASSWORD must be set in .env file",
       );
-
-    const adminRoleId = roleMap.get("admin");
-    if (!adminRoleId) {
-      throw new Error("Admin role not found");
     }
 
-    const { user } = await auth.api.signUpEmail({
-      body: {
-        email: adminEmail,
-        password: adminPassword,
-        name: adminEmail.split("@")[0],
-        username: adminEmail.split("@")[0],
-        callbackURL: "/email-verified",
-        rememberMe: true,
-      },
+    // Check if user with admin email already exists
+    const existingUserWithEmail = await prisma.user.findUnique({
+      where: { email: adminEmail },
     });
 
-    if (user) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          role: {
-            connect: {
-              id: adminRoleId,
-            },
-          },
-        },
-      });
-    }
+    if (existingUserWithEmail) {
+      console.log(
+        "User with admin email already exists, skipping admin creation",
+      );
+    } else {
+      const adminRoleId = roleMap.get("admin");
+      if (!adminRoleId) {
+        throw new Error("Admin role not found");
+      }
 
-    console.log("Admin user created");
+      try {
+        const { user } = await auth.api.signUpEmail({
+          body: {
+            email: adminEmail,
+            password: adminPassword,
+            name: adminEmail.split("@")[0],
+            username: adminEmail.split("@")[0],
+            callbackURL: "/email-verified",
+            rememberMe: true,
+          },
+        });
+
+        if (user) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              role: {
+                connect: {
+                  id: adminRoleId,
+                },
+              },
+            },
+          });
+          console.log("Admin user created successfully");
+        } else {
+          console.error("Failed to create admin user");
+        }
+      } catch (error) {
+        console.error("Error creating admin user:", error);
+        // Don't throw here to allow seeding to complete even if admin creation fails
+      }
+    }
+  } else {
+    console.log("Admin user already exists, skipping admin user creation");
   }
+
   console.log("Seeding completed successfully.");
 }
 

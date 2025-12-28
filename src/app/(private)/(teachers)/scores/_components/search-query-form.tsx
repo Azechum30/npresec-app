@@ -9,6 +9,7 @@ import { AssesessmentSchema, Semester } from "@/lib/validation";
 import { useEffect, useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
+import { Route } from "next";
 
 const formSchema = z.object({
   classId: z.string().min(1, "Class ID is required"),
@@ -58,7 +59,7 @@ export const SearchQueryForm = () => {
   const pathname = usePathname();
 
   const debouncedNavigate = useDebouncedCallback((params) => {
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}` as Route);
   }, 300);
 
   useEffect(() => {

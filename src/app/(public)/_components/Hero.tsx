@@ -12,6 +12,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
+import { Route } from "next";
 
 gsap.registerPlugin(ScrollTrigger);
 gsap.registerPlugin(useGSAP);
@@ -65,7 +66,7 @@ export const Hero = () => {
       return () => cxt.revert();
     },
 
-    { scope: container }
+    { scope: container },
   );
 
   return (
@@ -80,7 +81,8 @@ export const Hero = () => {
           <div className="flex flex-col text-center  items-center space-y-8">
             <Badge
               variant="outline"
-              className="badge dark:text-primary-foreground">
+              className="badge dark:text-primary-foreground"
+            >
               An Institution of Academic Excellence
             </Badge>
             <h1 className="tracking-tight text-4xl md:text-6xl font-bold title dark:text-primary-foreground">
@@ -98,11 +100,12 @@ export const Hero = () => {
 
             <div className="flex flex-col md:flex-row md:items-center gap-4 button ">
               <Link
-                href="/programs"
+                href={"/programs" as Route}
                 className={buttonVariants({
                   size: "lg",
                   className: "hover:-translate-x-4 duration-100 ease-in-out ",
-                })}>
+                })}
+              >
                 <Library className="size-6 opacity-60" aria-hidden={true} />
                 Learning Areas
               </Link>
@@ -112,7 +115,8 @@ export const Hero = () => {
                   size: "lg",
                   variant: "outline",
                   className: "hover:translate-x-4 duration-100 ease-in-out",
-                })}>
+                })}
+              >
                 About Us
               </Link>
             </div>

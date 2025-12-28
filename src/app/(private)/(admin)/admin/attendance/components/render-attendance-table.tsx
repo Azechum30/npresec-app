@@ -1,11 +1,9 @@
 "use client";
 
 import { AttendanceResponseType, ClassesResponseType } from "@/lib/types";
-import { use, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import DataTable from "@/components/customComponents/data-table";
-import { toast } from "sonner";
 import { useGetAttendanceColumns } from "@/app/(private)/(admin)/admin/attendance/hooks/use-get-attendance-columns";
-import LoadingState from "@/components/customComponents/Loading";
 import {
   Select,
   SelectContent,
@@ -21,33 +19,23 @@ import { attendanceTransformer } from "@/app/(private)/(admin)/admin/attendance/
 import { useMultipleDeleteAttendance } from "@/app/(private)/(admin)/admin/attendance/hooks/use-multiple-delete-attendance";
 
 type RenderAttendanceTableProps = {
-  promise: Promise<
-    [
-      {
-        attendance?: AttendanceResponseType[];
-        error?: string;
-      },
-      {
-        data?: ClassesResponseType[];
-        error?: string;
-      },
-    ]
-  >;
+  promise: {
+    attendance: AttendanceResponseType[];
+    data: ClassesResponseType[];
+  };
 };
 
 export const RenderAttendanceTable = ({
   promise,
 }: RenderAttendanceTableProps) => {
   const columns = useGetAttendanceColumns();
-  const [attendancePromise, classPromise] = use(promise);
   const [classId, setClassId] = useState<string>("");
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [status, setStatus] = useState<string>("");
 
   const filterAttendance = useMemo(() => {
-    const initialData = attendancePromise?.attendance;
-    if (!initialData) return [];
+    const initialData = promise.attendance;
 
     return initialData.filter((attendance) => {
       if (classId && attendance.classId !== classId) return false;
@@ -60,25 +48,10 @@ export const RenderAttendanceTable = ({
       if (startDate && attendanceDate < startDate) return false;
       return !(endDate && attendanceDate > endDate);
     });
-  }, [attendancePromise.attendance, classId, startDate, endDate, status]);
+  }, [promise.attendance, classId, startDate, endDate, status]);
 
   const { isPending, handleMultipleDeleteAttendance } =
     useMultipleDeleteAttendance();
-
-  if (attendancePromise?.error || classPromise?.error) {
-    toast.error(attendancePromise?.error || classPromise?.error);
-    return (
-      <div className="text-red-500">
-        {attendancePromise?.error || classPromise?.error}
-      </div>
-    );
-  }
-
-  if (!attendancePromise.attendance || !classPromise?.data) {
-    {
-      return <LoadingState />;
-    }
-  }
 
   return (
     <>
@@ -89,7 +62,7 @@ export const RenderAttendanceTable = ({
               <SelectValue placeholder="Filter By Class" />
             </SelectTrigger>
             <SelectContent>
-              {classPromise.data.map((classItem) => (
+              {promise.data.map((classItem) => (
                 <SelectItem key={classItem.id} value={classItem.id}>
                   {classItem.name}
                 </SelectItem>
@@ -109,13 +82,13 @@ export const RenderAttendanceTable = ({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex flex-col md:flex-row gap-4 md:flex-1 lg:flex-initial">
+        <div className="flex flex-col md:flex-row gap-4">
           <DatePicker
             id={"startData"}
             date={startDate as Date}
             setDate={setStartDate}
             placeholder={"Start Date"}
-            className="w-full md:max-w-xs"
+            className="w-auto md:max-w-xs"
             startYear={new Date().getFullYear() - 2}
             endYear={new Date().getFullYear()}
           />
@@ -124,7 +97,7 @@ export const RenderAttendanceTable = ({
             date={endDate as Date}
             setDate={setEndDate}
             placeholder={"End Date"}
-            className="w-full md:max-w-xs"
+            className="w-auto md:max-w-xs"
             startYear={new Date().getFullYear() - 2}
             endYear={new Date().getFullYear()}
           />
@@ -136,7 +109,8 @@ export const RenderAttendanceTable = ({
               setStartDate(undefined);
               setEndDate(undefined);
               setStatus("");
-            }}>
+            }}
+          >
             <X className="size-5" />
             Clear Filters
           </Button>
@@ -148,7 +122,7 @@ export const RenderAttendanceTable = ({
         transformer={attendanceTransformer}
         filename={
           classId
-            ? `Attendance for ${classPromise.data.filter((value) => value.id === classId)[0].name}`
+            ? `Attendance for ${promise.data.filter((value) => value.id === classId)[0].name}`
             : "Attendance"
         }
         onDelete={async (rows) => {

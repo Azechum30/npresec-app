@@ -12,6 +12,7 @@ import { Links } from "./Sidebar";
 import { useRouter } from "next/navigation";
 import { File } from "lucide-react";
 import { useAuth } from "./SessionProvider";
+import { Route } from "next";
 
 export default function CommandPalette() {
   const { open, onClose } = useOpenCommandPalette();
@@ -22,7 +23,7 @@ export default function CommandPalette() {
 
   const handleCommand = (value: string) => {
     onClose();
-    router.push(value);
+    router.push(value as Route);
   };
 
   const links =
@@ -42,7 +43,8 @@ export default function CommandPalette() {
             {link.Links.map((innerLink) => (
               <CommandItem
                 key={innerLink.href}
-                onSelect={() => handleCommand(innerLink.href)}>
+                onSelect={() => handleCommand(innerLink.href)}
+              >
                 <File className="size-4" />
                 {innerLink.title}
               </CommandItem>

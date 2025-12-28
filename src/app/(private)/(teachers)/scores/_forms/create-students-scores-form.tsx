@@ -36,6 +36,7 @@ import { StudentResponseType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useDebouncedCallback } from "use-debounce";
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
+import { Route } from "next";
 
 type ScoresType = {
   onSubmit: (values: GradeType) => void;
@@ -110,7 +111,7 @@ export const CreateStudentScoresForm = ({
   });
 
   const debouncedNavigate = useDebouncedCallback((params) => {
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}` as Route);
   }, 300);
 
   useEffect(() => {
@@ -165,7 +166,8 @@ export const CreateStudentScoresForm = ({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="space-y-8 border p-3 rounded-md">
+        className="space-y-8 border p-3 rounded-md"
+      >
         {fetchError && <div className="text-red-500">{fetchError}</div>}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <SelectWithLabel
@@ -305,8 +307,9 @@ export const CreateStudentScoresForm = ({
         ) : (
           <div
             className={cn(
-              "w-full flex items-center justify-center text-sm text-muted-foreground"
-            )}>
+              "w-full flex items-center justify-center text-sm text-muted-foreground",
+            )}
+          >
             No students found for the selected class, course, semester and
             academic year. It seems all students have scores entered for them in
             the assessment type you have selected.
@@ -317,7 +320,8 @@ export const CreateStudentScoresForm = ({
           <div className="flex justify-center">
             <LoadingButton
               className="md:w-auto"
-              loading={isSubmitting as boolean}>
+              loading={isSubmitting as boolean}
+            >
               {isSubmitting ? (
                 <>Saving Scores</>
               ) : (

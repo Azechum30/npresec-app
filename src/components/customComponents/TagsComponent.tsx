@@ -31,7 +31,7 @@ export const TagsComponent: FC<TagsInputProps> = ({
       return suggestions.filter(
         (teacher) =>
           teacher.firstName.toLowerCase() === inputValue.toLowerCase() ||
-          teacher.lastName.toLowerCase() === inputValue.toLowerCase()
+          teacher.lastName.toLowerCase() === inputValue.toLowerCase(),
       );
     } else {
       return [];
@@ -47,7 +47,6 @@ export const TagsComponent: FC<TagsInputProps> = ({
     const newTags = [...value, suggestion];
     onChange?.(newTags);
     setInputValue("");
-    setFilteredSuggestions([]);
   };
 
   const handleOnChange = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -58,7 +57,7 @@ export const TagsComponent: FC<TagsInputProps> = ({
     const selectedTeacher = suggestions.find(
       (teacher) =>
         `${teacher.firstName} ${teacher.lastName}`.toLowerCase() ===
-        fullName.toLowerCase()
+        fullName.toLowerCase(),
     );
 
     if (!selectedTeacher) return;
@@ -76,22 +75,25 @@ export const TagsComponent: FC<TagsInputProps> = ({
         <div
           className={cn(
             "gap-2 items-center w-full flex-wrap",
-            value.length === 0 ? "hidden" : "flex"
-          )}>
+            value.length === 0 ? "hidden" : "flex",
+          )}
+        >
           {value.map((tag, index) => (
             <div
               className={cn(
                 "relative",
-                buttonVariants({ variant: "secondary", size: "sm" })
+                buttonVariants({ variant: "secondary", size: "sm" }),
               )}
-              key={index}>
+              key={index}
+            >
               <span className="pe-5">
                 {tag.firstName} {tag.lastName}
               </span>
               <span
                 onClick={() => handleRemove(index)}
-                className="bg-background/75 p-px rounded-full flex justify-center items-center absolute top-1/2 right-2 -translate-y-1/2 z-10 text-red-500 cursor-pointer">
-                <X className="size-1 " />
+                className="bg-accent p-px rounded-full flex justify-center items-center absolute top-1/2 right-2 -translate-y-1/2 z-10 text-foreground cursor-pointer"
+              >
+                <X className="size-4 " />
               </span>
             </div>
           ))}
@@ -111,13 +113,15 @@ export const TagsComponent: FC<TagsInputProps> = ({
         <div
           className={cn(
             "mt-2 w-full flex items-center",
-            buttonVariants({ variant: "secondary", size: "sm" })
-          )}>
+            buttonVariants({ variant: "secondary", size: "sm" }),
+          )}
+        >
           {filteredSuggestions.map((teacher, index) => (
             <span
               key={index}
-              className="w-full p-2 text-sm text-muted-foreground cursor-pointer rounded-md h-full"
-              onClick={() => handleSuggestionClick(teacher)}>
+              className="w-full p-2 text-sm  cursor-pointer rounded-md h-full"
+              onClick={() => handleSuggestionClick(teacher)}
+            >
               {`${teacher.firstName} ${teacher.lastName}`}
             </span>
           ))}

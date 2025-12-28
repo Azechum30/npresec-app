@@ -5,7 +5,7 @@ export default function StudentProvider() {
   return (
     <UploadComponent
       filepath="students/students-template.csv"
-      handleUpload={bulkCreateStudents}
+      handleUploadAction={bulkCreateStudents}
     />
   );
 }

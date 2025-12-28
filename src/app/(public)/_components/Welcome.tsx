@@ -18,6 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { Route } from "next";
 
 type KeyLinksProps = {
   name: string;
@@ -79,7 +80,7 @@ export const Welcome = () => {
 
       return () => ctx.revert();
     },
-    { scope: sectionRef }
+    { scope: sectionRef },
   );
 
   return (
@@ -106,7 +107,8 @@ export const Welcome = () => {
               className={buttonVariants({
                 variant: "link",
                 className: "h-auto justify-start p-0",
-              })}>
+              })}
+            >
               <span>Read More</span>
               <ArrowRight className="size-4 opacity-60" />
             </Link>
@@ -122,11 +124,12 @@ export const Welcome = () => {
               <React.Fragment key={link.name}>
                 <Link
                   key={link.name}
-                  href={link.href}
+                  href={link.href as Route}
                   className={buttonVariants({
                     variant: "link",
                     className: "justify-start text-base gap-8",
-                  })}>
+                  })}
+                >
                   {link.icon}
                   <span>{link.name}</span>
                 </Link>

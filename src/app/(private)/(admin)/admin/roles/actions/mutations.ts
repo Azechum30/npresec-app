@@ -1,11 +1,11 @@
 "use server";
+import "server-only";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { hasPermissions } from "@/lib/hasPermission";
 import { prisma } from "@/lib/prisma";
 import { RoleSchema, UpdateRoleSchema } from "@/lib/validation";
 import * as Sentry from "@sentry/nextjs";
-import { revalidatePath } from "next/cache";
-import "server-only";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
 
 export const createRole = async (values: unknown) => {
@@ -19,7 +19,7 @@ export const createRole = async (values: unknown) => {
 
     if (!unvalidatedData.success) {
       const zodError = unvalidatedData.error.errors.map(
-        (e) => `${e.path[0]}: ${e.message}`
+        (e) => `${e.path[0]}: ${e.message}`,
       );
       return { error: zodError.join("\n") };
     }
@@ -39,13 +39,18 @@ export const createRole = async (values: unknown) => {
       return { error: "Could not create role" };
     }
 
-    revalidatePath("/admin/roles");
+    revalidateTag("roles", "seconds");
 
     return { role };
   } catch (e) {
     Sentry.captureException(e);
     console.error("Could not create role", e);
-    return { error: getErrorMessage(e) };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? getErrorMessage(e)
+          : "Something went wrong!",
+    };
   }
 };
 
@@ -59,7 +64,7 @@ export const updateRole = async (values: unknown) => {
     const result = UpdateRoleSchema.safeParse(values);
     if (!result.success) {
       const zodError = result.error.errors.map(
-        (e) => `${e.path[0]}: ${e.message}`
+        (e) => `${e.path[0]}: ${e.message}`,
       );
       return { error: zodError.join("\n") };
     }
@@ -80,12 +85,17 @@ export const updateRole = async (values: unknown) => {
       return { error: "Could not update Role" };
     }
 
-    revalidatePath("/admin/roles");
+    revalidateTag("roles", "seconds");
     return { role: updatedRole };
   } catch (e) {
     Sentry.captureException(e);
     console.error("Could not update role", e);
-    return { error: getErrorMessage(e) };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? getErrorMessage(e)
+          : "Something went wrong!",
+    };
   }
 };
 
@@ -109,13 +119,18 @@ export const deleteRole = async (value: string) => {
       return { error: "Could not delete role" };
     }
 
-    revalidatePath("/admin/roles");
+    revalidateTag("roles", "seconds");
 
     return { role };
   } catch (e) {
     Sentry.captureException(e);
     console.error("Could not delete role", e);
-    return { error: getErrorMessage(e) };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? getErrorMessage(e)
+          : "Something went wrong!",
+    };
   }
 };
 
@@ -141,11 +156,16 @@ export const bulkDeleteRoles = async (values: unknown) => {
     if (!payload.count) {
       return { error: "Could not delete roles!" };
     }
-    revalidatePath("/admin/roles");
+    revalidateTag("roles", "seconds");
     return { count: payload.count };
   } catch (e) {
     Sentry.captureException(e);
     console.error("Could not delete roles", e);
-    return { error: getErrorMessage(e) };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? getErrorMessage(e)
+          : "Something went wrong!",
+    };
   }
 };

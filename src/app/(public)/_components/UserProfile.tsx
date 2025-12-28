@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Home, Info, UserPlus } from "lucide-react";
+import { Route } from "next";
 import Link from "next/link";
 
 type UserProfileProps = {
@@ -19,17 +20,20 @@ type UserProfileProps = {
     username?: string;
     image?: string | null;
   };
+  onClose?: (dialogId: string) => void;
 };
 
-export const UserProfile = ({ user }: UserProfileProps) => {
+export const UserProfile = ({ user, onClose }: UserProfileProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         asChild
-        className="flex items-center space-x-2 hover:cursor-pointer">
+        className="flex items-center space-x-2 hover:cursor-pointer"
+      >
         <Button
           variant="ghost"
-          className=" h-auto p-0 hover:bg-transparent hover:cursor-pointer">
+          className=" h-auto p-0 hover:bg-transparent hover:cursor-pointer"
+        >
           <Avatar className="hover:cursor-pointer">
             <AvatarImage src={user.image as string} className="" />
             <AvatarFallback>
@@ -48,7 +52,9 @@ export const UserProfile = ({ user }: UserProfileProps) => {
         <DropdownMenuItem asChild>
           <Link
             href="/"
-            className="hover:cursor-pointer text-muted-foreground hover:text-primary transition-colors">
+            onClick={() => onClose?.("mobile-nav")}
+            className="hover:cursor-pointer text-muted-foreground hover:text-primary transition-colors"
+          >
             <Home size={16} aria-hidden={true} />
             <span>Home</span>
           </Link>
@@ -56,15 +62,19 @@ export const UserProfile = ({ user }: UserProfileProps) => {
         <DropdownMenuItem asChild>
           <Link
             href="/about"
-            className="hover:cursor-pointer text-muted-foreground hover:text-primary transition-colors">
+            onClick={() => onClose?.("mobile-nav")}
+            className="hover:cursor-pointer text-muted-foreground hover:text-primary transition-colors"
+          >
             <Info size={16} aria-hidden={true} />
             <span>About</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link
-            href="/admissions"
-            className="hover:cursor-pointer text-muted-foreground hover:text-primary transition-colors">
+            href={"/admissions" as Route}
+            onClick={() => onClose?.("mobile-nav")}
+            className="hover:cursor-pointer text-muted-foreground hover:text-primary transition-colors"
+          >
             <UserPlus size={16} aria-hidden={true} />
             <span>Admissions</span>
           </Link>

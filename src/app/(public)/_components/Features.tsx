@@ -20,6 +20,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useRef } from "react";
+import { Route } from "next";
 
 gsap.registerPlugin(ScrollTrigger);
 gsap.registerPlugin(useGSAP);
@@ -71,7 +72,8 @@ export const Features = () => {
   return (
     <div
       ref={container}
-      className="w-full bg-accent  py-4 md:py-6 lg:py-20 px-4 md:px-6 lg:px-16 shadow-2xl hover:transition-shadow">
+      className="w-full bg-accent  py-4 md:py-6 lg:py-20 px-4 md:px-6 lg:px-16 shadow-2xl hover:transition-shadow"
+    >
       <PublicMainContainer className="bg-background p-4 feature-container">
         <h1 className="text-2xl text-orange-500 font-semibold text-center py-4 relative after:absolute after:bottom-0 after:inset-0 after:w-[52px] after:border-b-2 after:border-primary after:mx-auto feature-title">
           @NPRESEC
@@ -172,20 +174,22 @@ export const Features = () => {
         </div>
         <div className="relative flex gap-2 w-fit mx-auto mb-10 courses">
           <Link
-            href="/requirements"
+            href={"/requirements" as Route}
             className={buttonVariants({
               size: "lg",
               className: "rounded-bl-full rounded-tl-full py-7",
-            })}>
+            })}
+          >
             Requirements
           </Link>
           <Link
-            href="/requirements"
+            href={"/requirements" as Route}
             className={buttonVariants({
               variant: "destructive",
               size: "lg",
               className: "rounded-br-full rounded-tr-full py-7",
-            })}>
+            })}
+          >
             Programmes
           </Link>
 

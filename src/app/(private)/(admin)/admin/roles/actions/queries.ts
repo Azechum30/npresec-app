@@ -1,11 +1,12 @@
 "use server";
+import "server-only";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { hasPermissions } from "@/lib/hasPermission";
 import { prisma } from "@/lib/prisma";
 import { RolesSelect } from "@/lib/types";
 import * as Sentry from "@sentry/nextjs";
-import "server-only";
 import { z } from "zod";
+import { getCachedRoles } from "./get-cached-roles";
 
 export const getRoles = async () => {
   try {
@@ -14,17 +15,18 @@ export const getRoles = async () => {
       return { error: "Permission denied!" };
     }
 
-    const roles = await prisma.role.findMany({
-      select: RolesSelect,
-    });
+    const roles = await getCachedRoles();
 
-    if (!roles) return { error: "No roles found!" };
-
-    return { roles };
+    return { roles: roles ?? [] };
   } catch (e) {
     Sentry.captureException(e);
     console.error("Could not fetch roles", e);
-    return { error: getErrorMessage(e) };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? getErrorMessage(e)
+          : "Something went wrong",
+    };
   }
 };
 
@@ -55,6 +57,11 @@ export const getRole = async (id: string) => {
   } catch (e) {
     Sentry.captureException(e);
     console.error("Could not fetch role", e);
-    return { error: getErrorMessage(e) };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? getErrorMessage(e)
+          : "Something went wrong",
+    };
   }
 };
