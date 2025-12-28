@@ -9,24 +9,15 @@ import {
   SheetTitle,
 } from "../ui/sheet";
 import Link from "next/link";
-import { AuthUserType, Links } from "./Navbar";
+import { Links } from "./Navbar";
 import { buttonVariants } from "../ui/button";
 import { ThemeSwitcher } from "./ThemeSwitecher";
-import { UserProfile } from "@/app/(public)/_components/UserProfile";
 import { LogIn } from "lucide-react";
 import { useAuth } from "./SessionProvider";
 import { Route } from "next";
 
 export const MobileNavbar = () => {
   const { onClose, dialogs } = useGenericDialog();
-  const user = useAuth();
-
-  let authUser: AuthUserType = {};
-
-  if (user) {
-    const { role, permissions, ...rest } = user;
-    authUser = rest;
-  }
   return (
     <Sheet
       open={dialogs["mobile-nav"]}
@@ -60,25 +51,22 @@ export const MobileNavbar = () => {
             {/*<div className="hidden md:inline-flex">*/}
             <ThemeSwitcher />
             {/*</div>*/}
-            {user ? (
-              <UserProfile user={authUser} onClose={onClose} />
-            ) : (
-              <div className="flex items-center space-x-2">
-                {/*<Link href="/" className={buttonVariants()}>
+
+            <div className="flex items-center space-x-2">
+              {/*<Link href="/" className={buttonVariants()}>
                   Get Started
                 </Link>*/}
-                <Link
-                  href="/sign-in"
-                  onAbort={() => onClose("mobile-nav")}
-                  className={buttonVariants({
-                    variant: "outline",
-                  })}
-                >
-                  <LogIn className="size-4" aria-hidden={true} />
-                  <span>Login</span>
-                </Link>
-              </div>
-            )}
+              <Link
+                href="/sign-in"
+                onAbort={() => onClose("mobile-nav")}
+                className={buttonVariants({
+                  variant: "outline",
+                })}
+              >
+                <LogIn className="size-4" aria-hidden={true} />
+                <span>Login</span>
+              </Link>
+            </div>
           </div>
         </nav>
       </SheetContent>

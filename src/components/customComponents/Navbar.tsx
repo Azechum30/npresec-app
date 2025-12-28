@@ -4,11 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import Logo from "@/../public/logo.png";
 import { ThemeSwitcher } from "./ThemeSwitecher";
-import { UserProfile } from "@/app/(public)/_components/UserProfile";
 import { buttonVariants } from "../ui/button";
 import { LogIn } from "lucide-react";
 import { TriggerMobileNavbar } from "./TriggerMobileNavbar";
-import { useSession } from "@/lib/auth-client";
 import { Route } from "next";
 
 type NavigationLinksProps = {
@@ -39,9 +37,6 @@ export type AuthUserType = {
 };
 
 export default function Navbar() {
-  const { data, error } = useSession();
-  if (error) return null;
-
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex min-h-16 items-center px-2 md:px-6 lg:px-8 py-2 relative">
@@ -70,24 +65,22 @@ export default function Navbar() {
           </div>
           <div className="flex items-center space-x-2">
             <ThemeSwitcher />
-            {data?.user ? (
-              <UserProfile user={data.user} />
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Link href="/" className={buttonVariants()}>
-                  Get Started
-                </Link>
-                <Link
-                  href="/sign-in"
-                  className={buttonVariants({
-                    variant: "outline",
-                  })}
-                >
-                  <LogIn className="size-4" aria-hidden={true} />
-                  <span>Login</span>
-                </Link>
-              </div>
-            )}
+            <div className="flex items-center space-x-2">
+              <Link href="/" className={buttonVariants()}>
+                Get Started
+              </Link>
+              <Link
+                href="/sign-in"
+                target="__blank"
+                rel="noreferrer"
+                className={buttonVariants({
+                  variant: "outline",
+                })}
+              >
+                <LogIn className="size-4" aria-hidden={true} />
+                <span>Login</span>
+              </Link>
+            </div>
           </div>
         </nav>
         {/** Mobile Navigation */}

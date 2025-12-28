@@ -1,3 +1,4 @@
+import { checkAuthAction } from "@/app/actions/auth-actions";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -6,12 +7,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getAuthUser } from "@/lib/getAuthUser";
 import Link from "next/link";
 import { unauthorized } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default async function EmailVerifiedPage() {
-  const user = await getAuthUser();
+  const { user } = await checkAuthAction();
 
   if (!user) return unauthorized();
 
@@ -43,7 +45,8 @@ export default async function EmailVerifiedPage() {
           className={buttonVariants({
             variant: "default",
             className: "w-full",
-          })}>
+          })}
+        >
           Continue to Dashboard
         </Link>
       </CardContent>

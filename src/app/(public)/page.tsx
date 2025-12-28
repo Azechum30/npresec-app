@@ -9,8 +9,9 @@ import { Hero } from "./_components/Hero";
 import { Welcome } from "./_components/Welcome";
 import { Features } from "./_components/Features";
 import { Statistics } from "./_components/Statistics";
+import { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Home",
 };
 

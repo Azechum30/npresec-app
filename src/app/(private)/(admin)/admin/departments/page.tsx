@@ -7,6 +7,8 @@ import EditDepartment from "./components/EditDepartment";
 import CreateDepartmentDialog from "./components/create-department-dialog";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 
+export const dynamic = "force-dynamic";
+
 export default function DepartmentPage() {
   return (
     <>
@@ -24,7 +26,7 @@ export default function DepartmentPage() {
   );
 }
 
-export const RenderDepartments = async () => {
+const RenderDepartments = async () => {
   const departments = await getServerSideProps();
 
   return <RenderDepartmentsDataTable initialState={departments} />;

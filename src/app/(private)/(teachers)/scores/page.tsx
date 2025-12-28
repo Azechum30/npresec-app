@@ -4,19 +4,43 @@ import { getScoresAction } from "./_actions/get-scores-action";
 import { AssesessmentType, Semester } from "@/lib/validation";
 import { SearchQueryForm } from "./_components/search-query-form";
 import { RenderScoresTable } from "./_components/render-scores-table";
-import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { getUserWithRole } from "@/utils/get-user-with-role";
 import { SingleStudentScoreDialog } from "./_components/single-student-score-dialog";
+import { unauthorized } from "next/navigation";
+import { Suspense } from "react";
+import { FallbackComponent } from "@/components/customComponents/fallback-component";
 
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export default async function ScoresPage({ searchParams }: Props) {
+export const dynamic = "force-dynamic";
+
+export default function ScoresPage({ searchParams }: Props) {
+  return (
+    <div>
+      <div className="flex flex-col md:flex-row gap-4 md:gap-0 md:justify-between md:items-center">
+        <h1 className="text-base font-medium line-clamp-1">Scores</h1>
+        <OpenDialogs dialogKey="create-students-scores" />
+      </div>
+      <SearchQueryForm />
+
+      <Suspense fallback={<FallbackComponent />}>
+        <RenderScoresDataTable searchParams={searchParams} />
+      </Suspense>
+
+      <CreateStudentsScoresDialog />
+      <SingleStudentScoreDialog />
+    </div>
+  );
+}
+
+const RenderScoresDataTable = async ({ searchParams }: Props) => {
   const { user } = await getUserWithRole("teacher");
 
-  // Layout already handles authentication and role checking, so user is guaranteed to exist and be a teacher
+  if (!user) {
+    return unauthorized();
+  }
 
   const { classId, courseId, semester, academicYear, assessmentType } =
     await searchParams;
@@ -35,16 +59,5 @@ export default async function ScoresPage({ searchParams }: Props) {
     ? await getScoresAction(queryParams)
     : { error: undefined, scores: undefined };
 
-  return (
-    <div>
-      <div className="flex flex-col md:flex-row gap-4 md:gap-0 md:justify-between md:items-center">
-        <h1 className="text-base font-medium line-clamp-1">Scores</h1>
-        <OpenDialogs dialogKey="create-students-scores" />
-      </div>
-      <SearchQueryForm />
-      <RenderScoresTable scores={result.scores} error={result.error} />
-      <CreateStudentsScoresDialog />
-      <SingleStudentScoreDialog />
-    </div>
-  );
-}
+  return <RenderScoresTable scores={result.scores} error={result.error} />;
+};

@@ -8,6 +8,8 @@ import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import { NoDataFound } from "@/components/customComponents/no-data-found";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 
+export const dynamic = "force-dynamic";
+
 export default function RolesPage() {
   return (
     <>

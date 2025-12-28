@@ -1,4 +1,3 @@
-import { verifyToken } from "@/lib/jwt";
 import { getBoardOfGovernorsById } from "../actions/server";
 
 import {
@@ -21,6 +20,8 @@ type BoardOfGovernorsSlugPageProps = {
   };
 };
 
+export const dynamic = "force-dynamic";
+
 export default function BoardOfGovernorsSlugPage({
   params,
 }: BoardOfGovernorsSlugPageProps) {
@@ -36,13 +37,13 @@ export default function BoardOfGovernorsSlugPage({
 const RenderBoardMemberDetails = async ({
   params,
 }: BoardOfGovernorsSlugPageProps) => {
-  const { slug } = params;
+  const slug = await params.slug;
 
-  const userId = await verifyToken(await slug);
+  // const userId = await verifyToken(slug);
 
-  if (!userId) return redirect("/about/board-of-governors");
+  if (!slug) return redirect("/about/board-of-governors");
 
-  const { boardMember, error } = await getBoardOfGovernorsById(userId);
+  const { boardMember, error } = await getBoardOfGovernorsById(slug);
 
   if (error) {
     redirect("/about/board-of-governors");

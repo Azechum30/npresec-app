@@ -8,6 +8,8 @@ import { Suspense } from "react";
 import CreateClassDialog from "./components/CreateClassDialog";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 
+export const dynamic = "force-dynamic";
+
 export default function ClassesPage() {
   return (
     <>
@@ -25,7 +27,7 @@ export default function ClassesPage() {
   );
 }
 
-export const RenderClasses = async () => {
+const RenderClasses = async () => {
   const data = await getClassesAction();
   return <RenderClassesDataTable initialState={data} />;
 };

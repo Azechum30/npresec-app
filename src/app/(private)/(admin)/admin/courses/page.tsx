@@ -7,6 +7,8 @@ import { Suspense } from "react";
 import CreateCourseDialog from "./components/create-course-dialog";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 
+export const dynamic = "force-dynamic";
+
 export default function CoursesPage() {
   return (
     <div className="">
@@ -26,7 +28,7 @@ export default function CoursesPage() {
   );
 }
 
-export const RenderCoursesTable = async () => {
+const RenderCoursesTable = async () => {
   const courses = await getCourses();
   return <RenderCoursesDataTable initialState={courses} />;
 };

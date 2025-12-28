@@ -5,6 +5,8 @@ import { Suspense } from "react";
 
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 
+export const dynamic = "force-dynamic";
+
 export default function UsersPage() {
   return (
     <div>

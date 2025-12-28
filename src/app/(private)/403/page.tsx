@@ -1,10 +1,12 @@
+import { checkAuthAction } from "@/app/actions/auth-actions";
 import { buttonVariants } from "@/components/ui/button";
-import { getAuthUser } from "@/lib/getAuthUser";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default async function ForbiddenPage() {
-  const user = await getAuthUser();
+  const { user } = await checkAuthAction();
 
   if (!user) {
     redirect("/sign-in");
@@ -29,7 +31,8 @@ export default async function ForbiddenPage() {
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
-            strokeWidth={2}>
+            strokeWidth={2}
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -48,7 +51,8 @@ export default async function ForbiddenPage() {
           className={buttonVariants({
             variant: "destructive",
             className: "w-full mt-3",
-          })}>
+          })}
+        >
           Continue to Dashboard
         </Link>
       </div>

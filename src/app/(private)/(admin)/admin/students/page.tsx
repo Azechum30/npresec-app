@@ -6,10 +6,13 @@ import { StudentDataTable } from "./components/render-student-datatable";
 import { getStudents } from "./actions/action";
 import StudentProvider from "./components/StudentProvider";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Admin - Students",
 };
+
+export const dynamic = "force-dynamic";
 
 export default function StudentsPage() {
   return (

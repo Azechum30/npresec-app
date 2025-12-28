@@ -7,6 +7,8 @@ import { Suspense } from "react";
 import { DataTableSkeleton } from "@/components/customComponents/DataTable-Skeleton";
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 
+export const dynamic = "force-dynamic";
+
 type SearchParams = Promise<{
   [key: string]: string | undefined;
 }>;
@@ -37,7 +39,8 @@ export default function RoomsPage(props: { searchParams: SearchParams }) {
             ]}
             shrinkZero
           />
-        }>
+        }
+      >
         <RenderRooms searchParams={props.searchParams} />
       </Suspense>
     </div>

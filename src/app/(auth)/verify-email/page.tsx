@@ -1,3 +1,4 @@
+import { checkAuthAction } from "@/app/actions/auth-actions";
 import LoadingState from "@/components/customComponents/Loading";
 import { ResendVerificationEmailButton } from "@/components/customComponents/resend-verification-email";
 import {
@@ -7,29 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getAuthUser } from "@/lib/getAuthUser";
 import { unauthorized } from "next/navigation";
 
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-export default async function VerifyEmailPage() {
-  // Check if user is already verified on page load
-  const user = await getAuthUser();
+export const dynamic = "force-dynamic";
 
-  if (user && user.emailVerified) {
-    const url =
-      user.role?.name === "admin"
-        ? "/admin/dashboard"
-        : user.role?.name === "teacher"
-          ? "/teachers"
-          : user.role?.name === "student"
-            ? "/students"
-            : "/";
-
-    redirect(url);
-  }
-
+export default function VerifyEmailPage() {
   return (
     <Card>
       <CardHeader>
@@ -48,9 +34,8 @@ export default async function VerifyEmailPage() {
   );
 }
 
-export const RenderResendVerificationButton = async () => {
-  const user = await getAuthUser();
-
+const RenderResendVerificationButton = async () => {
+  const { user } = await checkAuthAction();
   if (!user) return unauthorized();
 
   if (user.emailVerified && user.role?.name === "admin")

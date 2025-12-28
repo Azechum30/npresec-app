@@ -5,6 +5,8 @@ import { BioForm } from "./forms/bio-form";
 import { RenderBioForm } from "./_components/render-bio-form";
 import { RenderSettingsForm } from "./_components/render-settings-form";
 
+export const dynamic = "force-dynamic";
+
 export default function ProfilePage() {
   return (
     <Card>

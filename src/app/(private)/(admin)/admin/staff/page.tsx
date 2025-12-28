@@ -7,9 +7,12 @@ import { Suspense } from "react";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import StaffDataFetcher from "./components/StaffDataFetcher";
 import { getStaff } from "./actions/server";
-export const metadata = {
+import { Metadata } from "next";
+export const metadata: Metadata = {
   title: "Admin - Staff",
 };
+
+export const dynamic = "force-dynamic";
 
 export default function StaffPage() {
   return (

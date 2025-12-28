@@ -5,10 +5,13 @@ import { Suspense } from "react";
 import DashboardContent from "./components/dashboard-content";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAuthUser } from "@/lib/getAuthUser";
+import { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Admin Dashboard - NPRESEC SMIS",
 };
+
+export const dynamic = "force-dynamic";
 
 export default async function DashboardOverviewPage() {
   const user = await getAuthUser();
@@ -39,7 +42,8 @@ function DashboardSkeleton() {
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-xl border bg-card text-card-foreground shadow-sm">
+            className="rounded-xl border bg-card text-card-foreground shadow-sm"
+          >
             <div className="p-6 flex flex-col space-y-2">
               <Skeleton className="h-5 w-1/2" />
               <Skeleton className="h-10 w-1/3" />

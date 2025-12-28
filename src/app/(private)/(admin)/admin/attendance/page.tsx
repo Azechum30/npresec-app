@@ -10,6 +10,8 @@ import { FallbackComponent } from "@/components/customComponents/fallback-compon
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import { NoDataFound } from "@/components/customComponents/no-data-found";
 
+export const dynamic = "force-dynamic";
+
 export default function AttendancePage() {
   return (
     <>

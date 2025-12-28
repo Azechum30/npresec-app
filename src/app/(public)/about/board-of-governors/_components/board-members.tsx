@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { generateToken } from "@/lib/jwt";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,7 +23,7 @@ export const BoardMembers = async ({
   picture,
   is_active,
 }: BoardMembersProps) => {
-  const slug = await generateToken(id);
+  // const slug = await generateToken(id);
   const pictureUrl = picture
     ? picture.startsWith("http") ||
       picture.startsWith("https") ||
@@ -61,8 +60,9 @@ export const BoardMembers = async ({
           <span>{affiliation}</span>
         </p>
         <Link
-          href={`/about/board-of-governors/${slug}`}
-          className={buttonVariants({ variant: "secondary" })}>
+          href={`/about/board-of-governors/${id}`}
+          className={buttonVariants({ variant: "secondary" })}
+        >
           Read More <ArrowRight className="size-4" />
         </Link>
       </div>

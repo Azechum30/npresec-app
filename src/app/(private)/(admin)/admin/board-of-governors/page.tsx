@@ -6,6 +6,8 @@ import { EditBoardMember } from "./_components/edit-board-member";
 import { Suspense } from "react";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 
+export const dynamic = "force-dynamic";
+
 export default function AdminBoardOfGovernorsPage() {
   return (
     <>
@@ -26,7 +28,7 @@ export default function AdminBoardOfGovernorsPage() {
   );
 }
 
-export const RenderBoardMembersDataTable = async () => {
+const RenderBoardMembersDataTable = async () => {
   const { error, boardMembers } = await fetchBoardMembers();
   return <RenderBoardMembersTable boardMembers={boardMembers} error={error} />;
 };

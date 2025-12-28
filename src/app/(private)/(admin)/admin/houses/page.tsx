@@ -6,6 +6,8 @@ import { Suspense } from "react";
 import { DataTableSkeleton } from "@/components/customComponents/DataTable-Skeleton";
 import { EditHouseModal } from "./_components/edit-house-modal";
 
+export const dynamic = "force-dynamic";
+
 export default function HousesPage() {
   return (
     <div className="">
@@ -29,7 +31,8 @@ export default function HousesPage() {
             ]}
             shrinkZero
           />
-        }>
+        }
+      >
         <FetchHouseData />
       </Suspense>
 

@@ -7,6 +7,8 @@ import { RenderPermissionsTable } from "./components/render-permissions-table";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { EditPermissionModal } from "./components/edit-permission-modal";
 
+export const dynamic = "force-dynamic";
+
 export default function PermissionsPage() {
   return (
     <PermissionGuard permission="view:permissions">
