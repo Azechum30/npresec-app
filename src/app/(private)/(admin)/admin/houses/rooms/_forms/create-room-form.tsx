@@ -37,6 +37,7 @@ export const CreateRoomForm = ({
     },
   });
 
+  // Houses fetched once
   const [houses, setHouses] = useState<Awaited<
     ReturnType<typeof client.house.getHouses>
   > | null>(null);
@@ -44,39 +45,19 @@ export const CreateRoomForm = ({
   useEffect(() => {
     const fetchHouses = async () => {
       const { error, data } = await safeClient.house.getHouses();
-
-      if (isDefinedError(error)) {
+      if (error) {
         toast.error(error.message);
         return;
-      } else if (error) {
-        toast.error(error.message);
-        return;
-      } else {
-        setHouses(data);
       }
+      setHouses(data);
     };
-
     fetchHouses();
   }, [safeClient]);
 
-  const selectedHouse = useWatch({
-    control: form.control,
-    name: "houseId",
-  });
-
-  const bedCapacity = useWatch({
-    control: form.control,
-    name: "capacity",
-  });
-
-  const houseGender = useWatch({
-    control: form.control,
-    name: "rmGender",
-  });
-
-  const [filteredHouse, setFilteredHouse] = useState<Awaited<
-    ReturnType<typeof client.house.getHouseById>
-  > | null>(null);
+  // Watch form fields
+  const selectedHouse = useWatch({ control: form.control, name: "houseId" });
+  const bedCapacity = useWatch({ control: form.control, name: "capacity" });
+  const houseGender = useWatch({ control: form.control, name: "rmGender" });
 
   type GenderAggregate = { roomCount: number; bedCount: number };
   type RoomAggregates = Record<"MALE" | "FEMALE", GenderAggregate>;
@@ -85,47 +66,40 @@ export const CreateRoomForm = ({
     house: { id: string; name: string };
   };
 
-  const [roomAggregates, setRoomAggregates] = useState<RoomAggregates | null>(
-    null
+  // Derived: filteredHouse
+  const filteredHouse = useMemo(
+    () => houses?.find((house) => house.id === selectedHouse) ?? null,
+    [houses, selectedHouse]
   );
 
+  // Derived: roomAggregates
+  const roomAggregates = useMemo<RoomAggregates | null>(() => {
+    if (!selectedHouse) return null;
+
+    const roomClient = (
+      safeClient as typeof safeClient & {
+        room: {
+          getRooms: (input: { houseId?: string }) => Promise<{
+            data?: RoomRecord[];
+            error?: { message?: string };
+          }>;
+        };
+      }
+    ).room;
+
+    // We can’t call async inside useMemo, so instead fetch once in effect
+    // and store results in state. But we compute aggregates here.
+    return null; // placeholder, see below
+  }, [selectedHouse, safeClient]);
+
+  // Fetch rooms separately and store raw data
+  const [rooms, setRooms] = useState<RoomRecord[] | null>(null);
   useEffect(() => {
-    const nextHouse =
-      houses?.find((house) => house.id === selectedHouse) ?? null;
-    setFilteredHouse(nextHouse);
-
-    if (!houseGender || !nextHouse) {
-      form.clearErrors("rmGender");
-      return;
-    }
-
-    if (
-      nextHouse.houseGender !== "BOTH" &&
-      nextHouse.houseGender !== houseGender
-    ) {
-      form.setError("rmGender", {
-        type: "validate",
-        message:
-          "The gender for this room does not apply to the selected house",
-      });
-      form.setFocus("rmGender", {
-        shouldSelect: true,
-      });
-      return;
-    }
-
-    form.clearErrors("rmGender");
-  }, [selectedHouse, houseGender, houses, form]);
-
-  useEffect(() => {
-    if (!selectedHouse) {
-      setRoomAggregates(null);
-      return;
-    }
-
-    let isMounted = true;
-
     const fetchRooms = async () => {
+      if (!selectedHouse) {
+        setRooms(null);
+        return;
+      }
       const roomClient = (
         safeClient as typeof safeClient & {
           room: {
@@ -140,52 +114,62 @@ export const CreateRoomForm = ({
       const { error, data } = await roomClient.getRooms({
         houseId: selectedHouse,
       });
-
-      if (!isMounted) return;
-
-      if (isDefinedError(error)) {
+      if (error) {
         toast.error(error.message);
-        setRoomAggregates(null);
-        return;
-      } else if (error) {
-        toast.error(error.message);
-        setRoomAggregates(null);
+        setRooms(null);
         return;
       }
-
-      const base: RoomAggregates = {
-        MALE: { roomCount: 0, bedCount: 0 },
-        FEMALE: { roomCount: 0, bedCount: 0 },
-      };
-
-      data?.forEach((room: RoomRecord) => {
-        if (room.rmGender === "MALE" || room.rmGender === "BOTH") {
-          base.MALE.roomCount += 1;
-          base.MALE.bedCount += room.capacity;
-        }
-
-        if (room.rmGender === "FEMALE" || room.rmGender === "BOTH") {
-          base.FEMALE.roomCount += 1;
-          base.FEMALE.bedCount += room.capacity;
-        }
-      });
-
-      setRoomAggregates(base);
+      setRooms(data ?? []);
     };
-
     fetchRooms();
-
-    return () => {
-      isMounted = false;
-    };
   }, [selectedHouse, safeClient]);
+
+  // Now compute aggregates from rooms
+  const aggregates = useMemo<RoomAggregates | null>(() => {
+    if (!rooms) return null;
+    const base: RoomAggregates = {
+      MALE: { roomCount: 0, bedCount: 0 },
+      FEMALE: { roomCount: 0, bedCount: 0 },
+    };
+    rooms.forEach((room) => {
+      if (room.rmGender === "MALE" || room.rmGender === "BOTH") {
+        base.MALE.roomCount += 1;
+        base.MALE.bedCount += room.capacity;
+      }
+      if (room.rmGender === "FEMALE" || room.rmGender === "BOTH") {
+        base.FEMALE.roomCount += 1;
+        base.FEMALE.bedCount += room.capacity;
+      }
+    });
+    return base;
+  }, [rooms]);
+
+  // Validation effects (no setState, only form methods)
+  useEffect(() => {
+    if (!houseGender || !filteredHouse) {
+      form.clearErrors("rmGender");
+      return;
+    }
+    if (
+      filteredHouse.houseGender !== "BOTH" &&
+      filteredHouse.houseGender !== houseGender
+    ) {
+      form.setError("rmGender", {
+        type: "validate",
+        message:
+          "The gender for this room does not apply to the selected house",
+      });
+      form.setFocus("rmGender", { shouldSelect: true });
+      return;
+    }
+    form.clearErrors("rmGender");
+  }, [houseGender, filteredHouse, form]);
 
   useEffect(() => {
     if (!filteredHouse || !houseGender) {
       form.clearErrors("capacity");
       return;
     }
-
     const plan =
       houseGender === "FEMALE"
         ? filteredHouse.occupancy.femaleOccupancy
@@ -200,7 +184,7 @@ export const CreateRoomForm = ({
     }
 
     const aggregatesForGender =
-      houseGender === "FEMALE" ? roomAggregates?.FEMALE : roomAggregates?.MALE;
+      houseGender === "FEMALE" ? aggregates?.FEMALE : aggregates?.MALE;
 
     const nextRoomCount = (aggregatesForGender?.roomCount ?? 0) + 1;
     if (typeof plan.roomCount === "number" && nextRoomCount > plan.roomCount) {
@@ -225,74 +209,73 @@ export const CreateRoomForm = ({
     }
 
     form.clearErrors("capacity");
-  }, [filteredHouse, houseGender, bedCapacity, roomAggregates, form]);
+  }, [filteredHouse, houseGender, bedCapacity, aggregates, form]);
 
   const handleSubmit = (data: RoomType) => {
     onSubmit(data);
   };
 
   return (
-    <>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(handleSubmit)}
-          className="space-y-4 border p-4 rounded-md">
-          <SelectWithLabel
-            name="houseId"
-            fieldTitle="House"
-            data={houses ?? []}
-            selectedKey="name"
-            valueKey="id"
-            schema={RoomSchema}
-            placeholder="Select house that the room is assigned"
-          />
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-4 border p-4 rounded-md">
+        <SelectWithLabel
+          name="houseId"
+          fieldTitle="House"
+          data={houses ?? []}
+          selectedKey="name"
+          valueKey="id"
+          schema={RoomSchema}
+          placeholder="Select house that the room is assigned"
+        />
 
-          <SelectWithLabel
-            name="rmGender"
-            fieldTitle="Assigned Gender"
-            data={["MALE", "FEMALE", "BOTH"]}
-            schema={RoomSchema}
-            placeholder="Select gender to which room is assigned"
-          />
-          <InputWithLabel
-            name="capacity"
-            fieldTitle="Bed Capacity"
-            schema={RoomSchema}
-            type="number"
-            min={0}
-          />
+        <SelectWithLabel
+          name="rmGender"
+          fieldTitle="Assigned Gender"
+          data={["MALE", "FEMALE", "BOTH"]}
+          schema={RoomSchema}
+          placeholder="Select gender to which room is assigned"
+        />
 
-          <LoadingButton
-            disabled={!form.formState.isValid || isPending}
-            loading={isPending as boolean}>
-            {id ? (
-              <>
-                {isPending ? (
-                  <>
-                    <Save /> Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save /> Update Room
-                  </>
-                )}
-              </>
-            ) : (
-              <>
-                {isPending ? (
-                  <>
-                    <Plus /> Creating...
-                  </>
-                ) : (
-                  <>
-                    <Plus /> Create Room
-                  </>
-                )}
-              </>
-            )}
-          </LoadingButton>
-        </form>
-      </Form>
-    </>
+        <InputWithLabel
+          name="capacity"
+          fieldTitle="Bed Capacity"
+          schema={RoomSchema}
+          type="number"
+          min={0}
+        />
+
+        <LoadingButton
+          disabled={!form.formState.isValid || isPending}
+          loading={isPending}>
+          {id ? (
+            <>
+              {isPending ? (
+                <>
+                  <Save /> Saving...
+                </>
+              ) : (
+                <>
+                  <Save /> Update Room
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              {isPending ? (
+                <>
+                  <Plus /> Creating...
+                </>
+              ) : (
+                <>
+                  <Plus /> Create Room
+                </>
+              )}
+            </>
+          )}
+        </LoadingButton>
+      </form>
+    </Form>
   );
 };

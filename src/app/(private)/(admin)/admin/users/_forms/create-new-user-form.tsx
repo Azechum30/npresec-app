@@ -118,7 +118,7 @@ export const CreateUserForm = ({
                 {isPending ? (
                   <>
                     <SaveIcon />
-                    "Updating user..."
+                    Updating user...
                   </>
                 ) : (
                   <>

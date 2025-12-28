@@ -6,8 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import LoadingButton from "@/components/customComponents/LoadingButton";
-import { useTransition } from "react";
-import { forgotPasswordActions } from "@/lib/server-only-actions/authenticate";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   Card,
@@ -16,6 +15,8 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
+import { authClient } from "@/lib/auth-client";
+import { ErrorComponent } from "./ErrorComponent";
 
 const ResetPasswordSchema = z.object({
   email: z.string().email(),
@@ -30,18 +31,23 @@ export default function ForgotPassword() {
   });
 
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (value: ResetPasswordType) => {
     startTransition(async () => {
-      const promiseResult = await forgotPasswordActions(value);
+      setError(null);
+      const { error } = await authClient.requestPasswordReset({
+        email: value.email,
+        redirectTo: "/reset-password",
+      });
 
-      if (promiseResult.error) {
-        toast.error(promiseResult.error);
+      if (error) {
+        setError(error.message as string);
         return;
       }
 
       toast.success(
-        "A password reset link has been sent to your email. Please check your inbox."
+        "A password reset link has been sent to your email. Please check your inbox.",
       );
     });
   };
@@ -57,7 +63,9 @@ export default function ForgotPassword() {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="w-full max-w-md space-y-4 bg-inherit ">
+            className="w-full max-w-md space-y-4 bg-inherit "
+          >
+            {error && <ErrorComponent error={error} />}
             <InputWithLabel
               name="email"
               fieldTitle="Email"

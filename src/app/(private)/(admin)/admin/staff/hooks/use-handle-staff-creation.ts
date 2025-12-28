@@ -14,12 +14,6 @@ export const useHandleStaffCreation = () => {
         setCreateError(res.error);
         setCreateSuccess(false);
         return;
-      } else if (res.errors) {
-        res.errors.forEach((error: string) => {
-          setCreateError(error);
-          setCreateSuccess(false);
-        });
-        return;
       }
       setCreateError("");
       setCreateSuccess(true);

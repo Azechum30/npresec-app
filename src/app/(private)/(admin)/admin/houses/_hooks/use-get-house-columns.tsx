@@ -38,7 +38,7 @@ export const useGetHouseColumns = () => {
     }
 
     successRef.current = isPending;
-  }, [success, isPending]);
+  }, [success, isPending, router]);
 
   return [
     {

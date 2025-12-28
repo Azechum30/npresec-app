@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { sendMail } from "@/lib/resend-config";
+import { verifySignatureAppRouter } from "@upstash/qstash/dist/nextjs";
 
-export async function POST(req: NextRequest) {
+async function handler(req: NextRequest) {
   try {
     const { to, username, data } = await req.json();
     if (!to || !username || !data) {
@@ -30,3 +31,5 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "Error sending email" }, { status: 500 });
   }
 }
+
+export const POST = verifySignatureAppRouter(handler);

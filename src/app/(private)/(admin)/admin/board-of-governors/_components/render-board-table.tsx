@@ -43,7 +43,7 @@ export const RenderBoardMembersTable = ({
     if (deleteSuccess) {
       toast.success(`${recordCount} board members were deleted!`);
     }
-  }, [deleteSuccess]);
+  }, [deleteSuccess, recordCount]);
 
   if (!boardMembers) {
     return <LoadingState />;

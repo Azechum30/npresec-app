@@ -1,32 +1,29 @@
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
 import Sidebar from "@/components/customComponents/Sidebar";
 import MainContainer from "@/components/customComponents/MainContainer";
-import SessionProvider from "@/components/customComponents/SessionProvider";
-import { getSession } from "@/lib/get-session";
-import { redirect } from "next/navigation";
 import TanstackQueryProvider from "@/components/providers/tanstack-query-provider";
-import { getAuthUser } from "@/lib/getAuthUser";
+import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { checkAuthAction } from "../actions/auth-actions";
+import SessionProvider from "@/components/customComponents/SessionProvider";
 
 export default async function PrivateRoutesLayout({
   children,
 }: {
   readonly children: ReactNode;
 }) {
-  const [sessionData, userData] = await Promise.all([
-    getSession(),
-    getAuthUser(),
-  ]);
+  const { user } = await checkAuthAction();
 
-  if (!sessionData?.session || !sessionData.user) {
-    return redirect("/sign-in");
+  if (!user) {
+    return "No Users";
   }
-
   return (
-    <SessionProvider value={userData}>
+    <SessionProvider value={user}>
       <TanstackQueryProvider>
         <main className="w-full flex transition-all duration-300 ease">
-          <Sidebar />
-          <MainContainer>{children}</MainContainer>
+          <Suspense fallback={<FallbackComponent />}>
+            <Sidebar />
+            <MainContainer>{children}</MainContainer>
+          </Suspense>
         </main>
       </TanstackQueryProvider>
     </SessionProvider>

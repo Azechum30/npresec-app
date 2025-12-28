@@ -32,12 +32,14 @@ export default function Page() {
           Click the button below, and view the sample error on the Sentry{" "}
           <a
             target="_blank"
+            rel="noreferrer"
             href="https://pe-it-solutions.sentry.io/issues/?project=4509157416042496">
             Issues Page
           </a>
           . For more details about setting up Sentry,{" "}
           <a
             target="_blank"
+            rel="noreferrer"
             href="https://docs.sentry.io/platforms/javascript/guides/nextjs/">
             read our docs
           </a>

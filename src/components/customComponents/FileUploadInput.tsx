@@ -1,6 +1,6 @@
 import { UploadCloud } from "lucide-react";
 import Image from "next/image";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, startTransition } from "react";
 import { useFormContext } from "react-hook-form";
 import {
   FormControl,
@@ -33,9 +33,9 @@ export default function FileUploadInput({
 
   useEffect(() => {
     if (isEditing) {
-      setPreview(photoURL as string);
+      startTransition(() => setPreview(photoURL as string));
     }
-  }, [isEditing, setPreview]);
+  }, [isEditing, setPreview, photoURL]);
   return (
     <FormField
       control={form.control}

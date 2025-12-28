@@ -34,8 +34,8 @@ const EditCourseDialog = () => {
 
   useEffect(() => {
     if (!id || !dialogs["editCourse"]) return;
-    setCourse(undefined);
     const fetchCourse = async () => {
+      setCourse(undefined);
       const res = await getCourse(id as string);
       if (res.error || res.course === undefined) {
         return toast.error("Failed to fetch course");
@@ -47,7 +47,7 @@ const EditCourseDialog = () => {
     };
 
     fetchCourse();
-  }, [id]);
+  }, [id, dialogs]);
 
   const handleUpdate = async (values: CoursesType) => {
     const { error } = await updateCourse({ id: id as string, data: values });

@@ -17,9 +17,6 @@ export const useGetUser = () => {
       dialogs["update-user-permissions"]
     )
       return;
-    setfetchError("");
-    setSuccess(false);
-    setUser(undefined);
 
     startFetchingTransition(async () => {
       const { error, user } = await getUserPermisions(id as string);
@@ -40,7 +37,7 @@ export const useGetUser = () => {
       setSuccess(true);
       setUser(user);
     });
-  }, [id]);
+  }, [id, dialogs]);
 
   return { isFetchingUser, fetchError, success, user };
 };

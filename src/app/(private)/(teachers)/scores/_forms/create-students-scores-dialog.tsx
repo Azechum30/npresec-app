@@ -46,7 +46,7 @@ export const CreateStudentsScoresDialog = () => {
       }, 100);
     }
     prevSuccessRef.current = isCreating;
-  }, [isCreating, createSuccess, createCount, onClose]);
+  }, [isCreating, createSuccess, createCount, onClose, setStudents]);
 
   return (
     <Dialog

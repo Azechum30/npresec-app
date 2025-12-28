@@ -15,11 +15,13 @@ export const useFetchRequiredData = () => {
   const user = useAuth();
 
   useEffect(() => {
-    if (!user) {
-      return;
-    }
+    if (!user || !user.id) return;
 
     const fetchData = async () => {
+      setClasses(null);
+      setCourses(null);
+      setFetchError(undefined);
+
       const [classesResult, coursesResult] = await Promise.all([
         fetchClasses(user?.id),
         fetchCourse(user?.id),
@@ -42,13 +44,8 @@ export const useFetchRequiredData = () => {
       setCourses(coursesResult.courses);
     };
 
-    if (user && user.id) {
-      setClasses(null);
-      setCourses(null);
-      setFetchError(undefined);
-      fetchData();
-    }
-  }, [user?.id]);
+    fetchData();
+  }, [user]);
 
   return { classes, courses, fetchError };
 };

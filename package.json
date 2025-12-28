@@ -7,7 +7,7 @@
     "dev": "next dev --turbopack",
     "build": "pnpm exec prisma generate && next build && pnpm exec prisma migrate deploy && pnpm exec prisma db seed",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "db:studio": "npx prisma studio"
   },
@@ -73,7 +73,7 @@
     "express-rate-limit": "^7.5.0",
     "form-data": "^4.0.1",
     "gsap": "^3.13.0",
-    "import-in-the-middle": "^1.13.1",
+    "import-in-the-middle": "^2.0.1",
     "input-otp": "^1.4.2",
     "ioredis": "^5.8.0",
     "json-as-xlsx": "^2.5.6",
@@ -99,7 +99,7 @@
     "react-papaparse": "^4.4.0",
     "react-resizable-panels": "^3.0.3",
     "recharts": "^2.15.4",
-    "require-in-the-middle": "^7.5.2",
+    "require-in-the-middle": "^8.0.1",
     "resend": "^4.1.1",
     "server-only": "^0.0.1",
     "sonner": "^1.7.2",
@@ -111,7 +111,6 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.2.0",
     "@tailwindcss/postcss": "^4.1.11",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.9",
@@ -124,6 +123,8 @@
     "cross-env": "^10.1.0",
     "eslint": "^9.19.0",
     "eslint-config-next": "16.0.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
     "postcss": "^8.5.1",
     "prettier": "^3.5.3",
     "prisma": "^7.2.0",
@@ -140,14 +141,18 @@
   "pnpm": {
     "overrides": {
       "@types/react": "19.2.7",
-      "@types/react-dom": "19.2.3"
+      "@types/react-dom": "19.2.3",
+      "import-in-the-middle": "^2.0.1",
+      "require-in-the-middle": "^8.0.1"
     },
     "onlyBuiltDependencies": [
       "@prisma/client",
       "@prisma/engines",
       "@sentry/cli",
+      "@tailwindcss/oxide",
       "argon2",
       "esbuild",
+      "msgpackr-extract",
       "prisma",
       "sharp"
     ]

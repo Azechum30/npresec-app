@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Input } from "../ui/input";
-import React, { FC, useEffect } from "react";
+import React, { FC, useEffect, useMemo } from "react";
 import { buttonVariants } from "../ui/button";
 import { X } from "lucide-react";
 import { useState } from "react";
@@ -26,25 +26,17 @@ export const TagsComponent: FC<TagsInputProps> = ({
   suggestions = [],
 }) => {
   const [inputValue, setInputValue] = useState("");
-  const [filteredSuggestions, setFilteredSuggestions] = useState<
-    StaffResponseType[]
-  >([]);
-
-  useEffect(
-    function () {
-      if (inputValue) {
-        const filtered = suggestions.filter(
-          (teacher) =>
-            teacher.firstName.toLowerCase() === inputValue.toLowerCase() ||
-            teacher.lastName.toLowerCase() === inputValue.toLowerCase()
-        );
-        setFilteredSuggestions(filtered);
-      } else {
-        setFilteredSuggestions([]);
-      }
-    },
-    [inputValue, suggestions]
-  );
+  const filteredSuggestions = useMemo(() => {
+    if (inputValue) {
+      return suggestions.filter(
+        (teacher) =>
+          teacher.firstName.toLowerCase() === inputValue.toLowerCase() ||
+          teacher.lastName.toLowerCase() === inputValue.toLowerCase()
+      );
+    } else {
+      return [];
+    }
+  }, [inputValue, suggestions]);
 
   const handleRemove = (tagIndex: number) => {
     const newTags = value.filter((_, index) => index !== tagIndex);

@@ -1,6 +1,6 @@
 import { GuardianInfoSchema, GuardianInfoType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useStudentStore } from "../store";
 import { useEffect } from "react";
 import { Form, FormDescription } from "@/components/ui/form";
@@ -26,12 +26,11 @@ export default function GuardianInfoForm() {
     mode: "onBlur",
   });
 
+  const gurdianInfoData = useWatch({ control: form.control });
+
   useEffect(() => {
-    const subscriptions = form.watch((data) => {
-      actions.setGuardianInfo(data);
-    });
-    return () => subscriptions.unsubscribe();
-  }, [actions.setGuardianInfo, form]);
+    actions.setGuardianInfo(gurdianInfoData);
+  }, [actions, gurdianInfoData]);
 
   const { handleCancel } = useCancelEditStudent();
 

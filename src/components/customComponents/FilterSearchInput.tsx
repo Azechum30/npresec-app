@@ -23,7 +23,7 @@ export default function FilterSearchInput({
     }, 1000);
 
     return () => clearTimeout(handleSearch);
-  }, [filter]);
+  }, [filter, table]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilter(e.target.value);

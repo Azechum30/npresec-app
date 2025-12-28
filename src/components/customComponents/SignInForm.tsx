@@ -23,6 +23,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { ErrorComponent } from "./ErrorComponent";
+import { Button } from "../ui/button";
+import { Loader } from "lucide-react";
 
 export default function SignInForm() {
   const form = useForm<SignInType>({
@@ -36,9 +38,14 @@ export default function SignInForm() {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const [signinError, setSignInError] = useState<string | null>(null);
+  const [notEmailVerified, setNotEmailVerified] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
+  const [isSendingEmail, startSendingEmailTransition] = useTransition();
 
   async function onSubmit(values: SignInType) {
     setSignInError(null);
+    setNotEmailVerified(false);
+    setEmail(values.email);
     startTransition(async () => {
       const { error, data } = await authClient.signIn.email({
         email: values.email.toLowerCase(),
@@ -46,9 +53,17 @@ export default function SignInForm() {
       });
 
       if (error) {
+        if (error.message?.includes("Email not verified")) {
+          setNotEmailVerified(true);
+          setSignInError(
+            "Your email is not verified. Kindly visit your inbox to verify your email before you continue to login."
+          );
+          return;
+        }
         setSignInError(error.message || "Failed to sign in");
       } else {
         toast.success("login successful!");
+        setEmail(null);
 
         // Check email verification
         if (!data.user.emailVerified) {
@@ -90,6 +105,23 @@ export default function SignInForm() {
       }
     });
   }
+
+  const sendVerificationMail = () => {
+    startSendingEmailTransition(async () => {
+      await authClient.sendVerificationEmail({
+        email: email as string,
+        callbackURL: "/email-verified",
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success("verification email sent!");
+          },
+          onError: () => {
+            setSignInError("Could not send verification email");
+          },
+        },
+      });
+    });
+  };
   return (
     <Card className="">
       <CardHeader className="text-center">
@@ -104,6 +136,22 @@ export default function SignInForm() {
           </span>
         </div>
         {signinError && <ErrorComponent error={signinError} />}
+
+        {notEmailVerified && email && (
+          <Button
+            disabled={isSendingEmail}
+            variant="outline"
+            className="w-full"
+            onClick={sendVerificationMail}>
+            {isSendingEmail ? (
+              <>
+                <Loader className="size-6 animate-spin" /> Sending Mail...
+              </>
+            ) : (
+              <>Send verification email</>
+            )}
+          </Button>
+        )}
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}

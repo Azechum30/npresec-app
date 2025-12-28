@@ -29,11 +29,11 @@ export const useFetchStudentsBaseOnQuery = () => {
 
     if (!allParamsPresent) return;
 
-    setStudents(undefined);
-    setFetchError(undefined);
-    setFetchSuccess(false);
-
     startTransition(async () => {
+      setStudents(undefined);
+      setFetchError(undefined);
+      setFetchSuccess(false);
+
       const res = await fetchStudentBaseOnQueryAction(
         classId,
         courseId,
@@ -58,7 +58,7 @@ export const useFetchStudentsBaseOnQuery = () => {
       setFetchSuccess(true);
       setStudents(res.students);
     });
-  }, [searchParams]);
+  }, [queryParams]);
 
   return { students, fetchError, fetchSuccess, isPending, setStudents };
 };

@@ -25,9 +25,9 @@ export default function EditClassDialog() {
 
   useEffect(() => {
     if (!id || !dialogs["editClass"]) return;
-    setDefaultValues(undefined);
 
     const fetchClass = async () => {
+      setDefaultValues(undefined);
       const { error, data } = await getClass(id as string);
 
       if (error) {

@@ -8,10 +8,10 @@ import { revalidatePath } from "next/cache";
 
 export const createScoresAction = async (values: unknown) => {
   try {
-    // const permission = await hasPermissions("create:scores");
-    // if (!permission) {
-    //   return { error: "Permission denied!" };
-    // }
+    const permission = await hasPermissions("create:grades");
+    if (!permission) {
+      return { error: "Permission denied!" };
+    }
 
     const user = await getAuthUser();
 

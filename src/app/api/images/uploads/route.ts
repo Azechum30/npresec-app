@@ -2,8 +2,9 @@ import { uploadToCloudinary } from "@/utils/upload-to-cloudinary";
 import { NextRequest } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import { updateDbTable } from "@/utils/update-db-table";
+import { verifySignatureAppRouter } from "@upstash/qstash/dist/nextjs";
 
-export async function POST(req: NextRequest) {
+async function handler(req: NextRequest) {
   try {
     console.log("API route hit - processing image upload");
     const { file, entityId, entityType, folder } = (await req.json()) as {
@@ -62,3 +63,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export const POST = verifySignatureAppRouter(handler);

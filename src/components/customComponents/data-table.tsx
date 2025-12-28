@@ -82,9 +82,13 @@ const DataTable = <TData,>({
     }
   }, [userItemsPerPage, pagination.pageSize]);
 
+  const memoizedColums = useMemo(() => columns, [columns]);
+  const memoizedData = useMemo(() => data, [data]);
+
+   
   const table = useReactTable({
-    columns,
-    data,
+    columns: memoizedColums,
+    data: memoizedData,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),

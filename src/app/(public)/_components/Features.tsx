@@ -108,11 +108,11 @@ export const Features = () => {
               Skill Development
             </h4>
             <p className="leading-loose">
-              We go beyond nurturing students' cognitive abilities by actively
-              engaging them in enriching co-curricular activities like sports,
-              debates, and drama. These experiences are thoughtfully integrated
-              to shape well-rounded individuals, prepared to thrive and
-              contribute meaningfully to our ever-evolving global society.
+              We go beyond nurturing students&apos; cognitive abilities by
+              actively engaging them in enriching co-curricular activities like
+              sports, debates, and drama. These experiences are thoughtfully
+              integrated to shape well-rounded individuals, prepared to thrive
+              and contribute meaningfully to our ever-evolving global society.
             </p>
           </div>
         </div>

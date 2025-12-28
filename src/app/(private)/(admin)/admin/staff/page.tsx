@@ -1,13 +1,12 @@
-import { getStaff } from "./actions/server";
 import EditStaffDialog from "./components/EditStaffDialog";
 import RenderStaffData from "./components/Render-staff-data";
 import StaffBulkUploadProvider from "./components/StaffBulkUploadProvider";
-
 import CreateStaffDialog from "./components/CreateStaffDialog";
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
 import { Suspense } from "react";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
-
+import StaffDataFetcher from "./components/StaffDataFetcher";
+import { getStaff } from "./actions/server";
 export const metadata = {
   title: "Admin - Staff",
 };
@@ -21,7 +20,7 @@ export default function StaffPage() {
       </div>
 
       <Suspense fallback={<FallbackComponent />}>
-        <RenderStaffTable />
+        <RenderStaffDataTable />
       </Suspense>
 
       <StaffBulkUploadProvider />
@@ -31,7 +30,7 @@ export default function StaffPage() {
   );
 }
 
-export const RenderStaffTable = async () => {
-  const staff = await getStaff();
-  return <RenderStaffData initialData={staff} />;
+const RenderStaffDataTable = async () => {
+  const data = await getStaff();
+  return <RenderStaffData initialData={data} />;
 };

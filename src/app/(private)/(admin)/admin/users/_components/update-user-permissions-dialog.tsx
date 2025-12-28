@@ -9,7 +9,6 @@ import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { UpdateUserPermissionsForm } from "../_forms/update-user-permissions-form";
 import { useGetUser } from "../_hooks/use-get-user";
 import { toast } from "sonner";
-import LoadingState from "@/components/customComponents/Loading";
 import { useUpdateUserPermissions } from "../_hooks/use-update-user-permissions";
 import { useEffect, useRef } from "react";
 
@@ -29,7 +28,7 @@ export const UpdateUserPermissionsDialog = () => {
       }, 100);
     }
     prevUpdateSuccessRef.current = isPending;
-  }, [updateSuccess, isPending]);
+  }, [updateSuccess, isPending, onClose]);
 
   if (!isFetchingUser && fetchError) {
     return toast.error(fetchError);

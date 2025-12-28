@@ -11,7 +11,7 @@ import {
 import { useUpload } from "@/hooks/use-open-upload";
 import { Button } from "@/components/ui/button";
 import { useCSVReader } from "react-papaparse";
-import { File, UploadCloud, UploadCloudIcon, X } from "lucide-react";
+import { File, SheetIcon, UploadCloud, UploadCloudIcon, X } from "lucide-react";
 
 import { useState, useTransition } from "react";
 import BaseTable from "../../app/(private)/(admin)/admin/departments/components/BaseTable";
@@ -39,12 +39,12 @@ type onUpload = Promise<
     }
 >;
 type UploadProps<T> = {
-  handleUpload: (data: T) => onUpload;
+  handleUploadAction: (data: T) => onUpload;
   filepath?: string;
 };
 
 export default function UploadComponent<T>({
-  handleUpload,
+  handleUploadAction,
   filepath,
 }: UploadProps<T>) {
   const { dialogs, onClose } = useGenericDialog();
@@ -57,7 +57,7 @@ export default function UploadComponent<T>({
   const pathname = usePathname().split("/").pop();
 
   const formatPath = `${pathname?.charAt(0).toUpperCase()}${pathname?.slice(
-    1
+    1,
   )}`;
 
   function onFileUploadAccepted(results: any) {
@@ -73,7 +73,7 @@ export default function UploadComponent<T>({
           acc[headers[index].accessorKey] = curr;
 
           return acc;
-        }, {})
+        }, {}),
       );
 
     setColumns(headers);
@@ -84,7 +84,7 @@ export default function UploadComponent<T>({
 
   function SaveToDatabase() {
     startTransition(async () => {
-      const response = await handleUpload(data as any);
+      const response = await handleUploadAction(data as any);
 
       if (response?.errors) {
         console.log(response.errors);
@@ -96,7 +96,9 @@ export default function UploadComponent<T>({
         console.log(response.error);
         toast.error(response?.error);
       } else {
-        toast.success(`${response?.count} records were uploaded successfully!`);
+        toast.success(
+          `${response?.count} were succussfully queued for upload!`,
+        );
 
         setTimeout(() => {
           setData(undefined);
@@ -107,108 +109,134 @@ export default function UploadComponent<T>({
     });
   }
 
+  const handleCancel = () => {
+    setData(undefined);
+    setColumns([]);
+    onClose(dialogId);
+  };
+
   return (
     <Dialog
       open={dialogs[dialogId] === true ? true : false}
       onOpenChange={() => onClose(dialogId)}
-      modal={true}>
-      <DialogContent
-        className={cn(
-          "overflow-y-auto",
-          data?.data?.length! > 0 && " h-screen max-w-5xl mx-auto"
-        )}>
-        <DialogHeader>
-          <DialogTitle>Select a CSV File of {formatPath}</DialogTitle>
-          <DialogDescription className="italic underline">
-            Read the instructions carefully for a smooth data upload:
-          </DialogDescription>
-        </DialogHeader>
-        <ul className="list-disc ml-4 text-sm text-muted-foreground ">
-          <li className="leading-6">
-            The file format should be an excel file formatted and saved as a
-            Comma Separated Version (CSV) file.
-          </li>
-          <li className="leading-6">
-            Ensure the column headers are properly named with the casing the
-            server expects. If in doubt contact the System&apos;s Administrator.
-          </li>
-          <li className="leading-6">
-            To avoid confusion or unncessary errors, there is a template CSV
-            file below which you can download and use to capture your data.
-          </li>
-          <li className="leading-6">
-            Kindly click on{" "}
-            <a href={`/${filepath}`} download className="text-primary">
-              {pathname?.toUpperCase()} CSV
-            </a>{" "}
-            to download the sample file.
-          </li>
-        </ul>
-        <CSVReader onUploadAccepted={onFileUploadAccepted}>
-          {({
-            getRootProps,
-            acceptedFile,
-            ProgressBar,
-            getRemoveFileProps,
-          }: any) => (
+      modal={true}
+    >
+      {dialogId && (
+        <DialogContent
+          className={cn(
+            "overflow-y-auto",
+            data?.data?.length! > 0 &&
+              "md:max-w-full mx-auto transition-transform delay-300 ease-linear",
+          )}
+        >
+          <DialogHeader>
+            <DialogTitle>Select a CSV File of {formatPath}</DialogTitle>
+            <DialogDescription className="italic underline">
+              Read the instructions carefully for a smooth data upload:
+            </DialogDescription>
+          </DialogHeader>
+          <ul className="list-disc ml-4 text-sm text-muted-foreground ">
+            <li className="leading-6">
+              The file format should be an excel file formatted and saved as a
+              Comma Separated Version (CSV) file.
+            </li>
+            <li className="leading-6">
+              Ensure the column headers are properly named with the casing the
+              server expects. If in doubt contact the System&apos;s
+              Administrator.
+            </li>
+            <li className="leading-6">
+              To avoid confusion or unncessary errors, there is a template CSV
+              file below which you can download and use to capture your data.
+            </li>
+            <li className="leading-6">
+              Kindly click on{" "}
+              <a href={`/${filepath}`} download className="text-primary">
+                {pathname?.toUpperCase()} CSV
+              </a>{" "}
+              to download the sample file.
+            </li>
+          </ul>
+          <CSVReader onUploadAccepted={onFileUploadAccepted}>
+            {({
+              getRootProps,
+              acceptedFile,
+              ProgressBar,
+              getRemoveFileProps,
+            }: any) => (
+              <>
+                <div
+                  className={cn(
+                    "w-full max-w-md mx-auto rounded-2xl h-[200px] border-2 border-dashed flex flex-col justify-center items-center gap-2 hover:cursor-pointer relative p-6",
+                    data?.data.length! > 0 && "max-w-full h-full",
+                  )}
+                >
+                  <Button
+                    {...getRootProps()}
+                    variant="ghost"
+                    className={cn(
+                      "text-muted-foreground w-full h-full",
+                      acceptedFile && "w-1/2  mx-auto h-auto",
+                    )}
+                  >
+                    <UploadCloudIcon />
+                    Browse
+                  </Button>
+                  {acceptedFile && (
+                    <div className="flex items-center gap-x-1 text-sm text-muted-foreground">
+                      <SheetIcon />
+                      <span className="text-base">{acceptedFile.name}</span>
+                    </div>
+                  )}
+                  {acceptedFile && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute top-5 right-5"
+                      {...getRemoveFileProps()}
+                    >
+                      <X className="text-red-400" />
+                    </Button>
+                  )}
+                  <ProgressBar
+                    style={{
+                      backgroundColor: "#f87171",
+                      height: "3px",
+                    }}
+                  />
+                </div>
+              </>
+            )}
+          </CSVReader>
+          {data && data.data.length !== 0 ? (
             <>
               <div
                 className={cn(
-                  "w-full max-w-md mx-auto rounded-2xl h-[200px] border-2 border-dashed flex flex-col justify-center items-center gap-2 hover:cursor-pointer relative p-3",
-                  data?.data.length! > 0 && "max-w-5xl h-full"
-                )}>
-                <Button
-                  {...getRootProps()}
-                  variant="ghost"
-                  className="text-muted-foreground w-full h-full">
-                  <UploadCloudIcon />
-                  Browse
+                  "mt-4 rounded-md border w-full overflow-auto",
+                  data.data.length > 0 && "max-w-full max-h-[38vh] ",
+                )}
+              >
+                <BaseTable columns={columns} data={data.data} />
+              </div>
+
+              <div className="mt-4 flex flex-col md:flex-row md:justify-end md:items-center md:space-x-4 space-y-4 md:space-y-0">
+                <LoadingButton
+                  className="w-auto"
+                  loading={isPending}
+                  onClick={SaveToDatabase}
+                >
+                  <UploadCloud className="size-5" />
+                  Push to Database
+                </LoadingButton>
+
+                <Button variant="secondary" onClick={handleCancel}>
+                  Cancel
                 </Button>
-                {acceptedFile && (
-                  <div className="flex items-center gap-x-1 text-sm text-muted-foreground">
-                    <File />
-                    {acceptedFile.name}
-                  </div>
-                )}
-                {acceptedFile && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-5 right-5"
-                    {...getRemoveFileProps()}>
-                    <X className="text-red-400" />
-                  </Button>
-                )}
-                <ProgressBar
-                  style={{
-                    backgroundColor: "#f87171",
-                    height: "3px",
-                  }}
-                />
               </div>
             </>
-          )}
-        </CSVReader>
-        {data && data.data.length !== 0 ? (
-          <>
-            <div
-              className={cn(
-                "mt-4 rounded-md border w-full overflow-auto",
-                data.data.length > 0 && "max-w-5xl "
-              )}>
-              <BaseTable columns={columns} data={data.data} />
-            </div>
-
-            <LoadingButton
-              className="mt-4"
-              loading={isPending}
-              onClick={SaveToDatabase}>
-              <UploadCloud className="size-5" />
-              Save
-            </LoadingButton>
-          </>
-        ) : null}
-      </DialogContent>
+          ) : null}
+        </DialogContent>
+      )}
     </Dialog>
   );
 }

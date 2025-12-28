@@ -1,20 +1,17 @@
-import { Download } from "lucide-react"
-import { Button } from "../ui/button"
+import { Download } from "lucide-react";
+import { Button } from "../ui/button";
 
 type ExportToCSVButtonProps = {
-	exportFunc: () => void
-}
+  exportFunc: () => void;
+};
 
 export default function ExportToCSVButton({
-	exportFunc
+  exportFunc,
 }: ExportToCSVButtonProps) {
-	return (
-		<Button
-			variant='outline'
-			onClick={exportFunc}
-		>
-			<Download className='size-5' />
-			Excel
-		</Button>
-	)
+  return (
+    <Button variant="outline" onClick={exportFunc}>
+      <Download className="size-5" />
+      Export to XLSX
+    </Button>
+  );
 }

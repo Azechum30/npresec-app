@@ -65,19 +65,13 @@ export default function DashboardContent({
   promise: Promise<DashboardData>;
 }) {
   const promiseData = use(promise);
-  const [data, setData] = useState<DashboardData>();
+  const [data, setData] = useState<DashboardData>(promiseData);
   const genderTotals = useMemo(() => {
     return [
       (data?.counts.studentMales as number) ?? 0,
       (data?.counts.studentFemales as number) ?? 0,
     ].reduce((acc, cur) => acc + cur, 0);
   }, [data]);
-
-  useEffect(() => {
-    if (promiseData) {
-      setData(promiseData);
-    }
-  }, []);
 
   if (!data) {
     return <LoadingState />;

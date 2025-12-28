@@ -27,7 +27,7 @@ export const FilterByHouseId = () => {
     };
 
     fetchHouses();
-  }, []);
+  }, [safeClient.house]);
 
   const handleSearch = () => {};
 

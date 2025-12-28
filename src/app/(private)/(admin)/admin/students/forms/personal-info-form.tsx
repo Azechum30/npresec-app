@@ -6,7 +6,7 @@ import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
 import { Form, FormDescription } from "@/components/ui/form";
 import { PersonalInfoSchema, PersonalInfoType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 import FileUploadInput from "@/components/customComponents/FileUploadInput";
 import { ChevronRight } from "lucide-react";
@@ -30,13 +30,11 @@ export default function PersonalInfoForm() {
     mode: "onBlur",
   });
 
-  useEffect(() => {
-    const subscription = form.watch((data) => {
-      actions.setPersonalInfo(data);
-    });
+  const personInfoData = useWatch({ control: form.control });
 
-    return () => subscription.unsubscribe();
-  }, [actions.setPersonalInfo, form]);
+  useEffect(() => {
+    actions.setPersonalInfo(personInfoData);
+  }, [actions, personInfoData]);
 
   const { handleCancel } = useCancelEditStudent();
 

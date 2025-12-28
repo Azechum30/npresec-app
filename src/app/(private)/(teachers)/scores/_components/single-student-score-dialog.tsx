@@ -43,7 +43,7 @@ export const SingleStudentScoreDialog = () => {
       }, 100);
     }
     prevUpdateSuccessRef.current = isUpdating;
-  }, [isUpdating, updateSuccess]);
+  }, [isUpdating, updateSuccess, onClose]);
 
   const defaultValues = studentScore
     ? {
@@ -79,9 +79,7 @@ export const SingleStudentScoreDialog = () => {
               Kindly update the student score by filling the form and saving!
             </DialogDescription>
           </DialogHeader>
-          {updateError && prevUpdateErrorRef.current && (
-            <ErrorComponent error={updateError} />
-          )}
+          {updateError && <ErrorComponent error={updateError} />}
           <SingleStudentScoreForm
             onSubmitAction={handleStudentScoreUpdate}
             id={id as string}

@@ -27,10 +27,12 @@ export const UpdateRoleDialog = () => {
   const [error, setError] = useState<string>("");
   useEffect(() => {
     if (!dialogs["updateRole"] || !id) return;
+
     const fetchRole = async () => {
       const result = await getRole(id as string);
       if (result.error) {
         setError(result.error);
+        setRole(undefined);
         return;
       }
       if (result.role) {
@@ -45,10 +47,9 @@ export const UpdateRoleDialog = () => {
         setError("");
       }
     };
-    setRole(undefined);
-    setError("");
+
     fetchRole();
-  }, [id, dialogs["updateRole"]]);
+  }, [id, dialogs]);
 
   const { isPending, handleRoleUpdate } = useHandleRoleUpdate();
 

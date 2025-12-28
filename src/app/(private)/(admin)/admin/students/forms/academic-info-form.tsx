@@ -1,9 +1,9 @@
 import { Form, FormDescription } from "@/components/ui/form";
 import { ClassesResponseType, DepartmentResponseType } from "@/lib/types";
-import { AcademicInfoSchema, AcademicInfoType, status } from "@/lib/validation";
+import { AcademicInfoSchema, AcademicInfoType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { getServerSideProps } from "../../departments/actions/getServerSideProps";
 import { getClassesAction } from "../../classes/actions/server-actions";
 import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
@@ -36,11 +36,11 @@ export default function AcademicInfoForm() {
   >([]);
 
   const { actions } = useStudentStore();
+  const academicInfoData = useWatch({ control: form.control });
 
   useEffect(() => {
-    const subscription = form.watch((data) => actions.setAcademicInfo(data));
-    return () => subscription.unsubscribe();
-  }, [actions.setAcademicInfo, form]);
+    actions.setAcademicInfo(academicInfoData);
+  }, [actions, academicInfoData]);
 
   useEffect(() => {
     const fetchData = async () => {

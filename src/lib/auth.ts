@@ -8,6 +8,7 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+
   experimental: { joins: true },
   emailVerification: {
     sendOnSignUp: true,
@@ -19,7 +20,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
-    sendResetPassword: async ({ user, url }) => {
+    sendResetPassword: async ({ user, url }, request) => {
       void sendEmail({
         to: user.email,
         url: url,
@@ -28,11 +29,20 @@ export const auth = betterAuth({
     },
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // expires in 7 days
+    expiresIn: 60 * 60 * 24, // 1 day
     updateAge: 60 * 60 * 7, // 1 day
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 5, // 5 minutes,
+      strategy: "compact",
+    },
   },
 
   user: {
+    deleteUser: {
+      enabled: true,
+    },
+
     additionalFields: {
       // Core identity fields
       username: {

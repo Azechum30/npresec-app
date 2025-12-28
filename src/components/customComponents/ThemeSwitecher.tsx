@@ -2,13 +2,13 @@
 import { useTheme } from "next-themes";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
-import { useEffect, useState } from "react";
+import { useEffect, useState, startTransition } from "react";
 
 export const ThemeSwitcher = () => {
   const { theme, setTheme } = useTheme();
 
   const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => setIsMounted(true), [isMounted]);
+  useEffect(() => startTransition(() => setIsMounted(true)), [isMounted]);
 
   if (!isMounted) return null; // Prevents hydration mismatch
 

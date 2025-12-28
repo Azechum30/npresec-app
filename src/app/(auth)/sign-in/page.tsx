@@ -1,6 +1,5 @@
+import { checkAuthAction } from "@/app/actions/auth-actions";
 import SignInForm from "@/components/customComponents/SignInForm";
-
-import { getAuthUser } from "@/lib/getAuthUser";
 import { redirect } from "next/navigation";
 
 export const metadata = {
@@ -9,16 +8,19 @@ export const metadata = {
 };
 
 export default async function AuthenticatePage() {
-  const user = await getAuthUser();
+  const { user } = await checkAuthAction();
 
   if (user) {
-    if (user.role?.name === "teacher") {
-      return redirect("/teachers");
-    } else if (user.role?.name === "student") {
-      return redirect("/students");
-    } else {
-      return redirect("/admin/dashboard");
-    }
+    const pathname =
+      user.role?.name === "admin"
+        ? "/admin/dashboard"
+        : user.role?.name === "teaching_staff"
+          ? "/teachers"
+          : user.role?.name === "student"
+            ? "/students"
+            : "/";
+
+    redirect(pathname);
   }
   return <SignInForm />;
 }

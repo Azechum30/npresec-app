@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
-import { sendMail } from "@/lib/resend-config";
+import { sendMail } from "@/lib/resend-config"; // your wrapper around Resend
 import { getEmailBatchConfig } from "@/utils/email-batch-config";
+import { verifySignatureAppRouter } from "@upstash/qstash/dist/nextjs";
 
-export async function POST(req: NextRequest) {
+async function handler(req: NextRequest) {
   try {
     const { emails } = (await req.json()) as {
       emails: {
@@ -23,49 +24,62 @@ export async function POST(req: NextRequest) {
 
     console.log(`Processing batch of ${emails.length} emails`);
 
-    // Get batch configuration
+    // Get batch configuration (size + delay)
     const config = getEmailBatchConfig();
-    const results = [];
+    const results: {
+      success: boolean;
+      email: string[];
+      error?: string;
+    }[] = [];
 
     for (let i = 0; i < emails.length; i += config.batchSize) {
       const batch = emails.slice(i, i + config.batchSize);
 
       console.log(
-        `Processing batch ${Math.floor(i / config.batchSize) + 1}/${Math.ceil(emails.length / config.batchSize)}`
+        `Processing batch ${Math.floor(i / config.batchSize) + 1}/${Math.ceil(
+          emails.length / config.batchSize
+        )}`
       );
 
-      const batchPromises = batch.map(async (emailData) => {
-        try {
-          const { to, username, data } = emailData;
+      try {
+        // Try batch send first
+        const batchResponse = await sendMail(batch); // sendMail detects array → batch send
 
-          if (!to || !username || !data) {
-            throw new Error(
-              `Missing required fields for email: ${to || "unknown"}`
-            );
-          }
-
-          const emailResponse = await sendMail({ to, username, data });
-
-          if (emailResponse.error) {
-            throw new Error(
-              `Failed to send email to ${to}: ${emailResponse.error}`
-            );
-          }
-
-          return { success: true, email: to };
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : "Unknown error";
-          console.error(
-            `Error sending email to ${emailData.to}:`,
-            errorMessage
-          );
-          return { success: false, email: emailData.to, error: errorMessage };
+        if (batchResponse.error) {
+          throw new Error(batchResponse.error);
         }
-      });
 
-      const batchResults = await Promise.all(batchPromises);
-      results.push(...batchResults);
+        results.push(...batch.map((e) => ({ success: true, email: e.to })));
+      } catch (err) {
+        console.error("Batch send failed, falling back to single sends:", err);
+
+        // Fallback: send individually
+        const batchResults = await Promise.all(
+          batch.map(async (emailData) => {
+            try {
+              const emailResponse = await sendMail(emailData); // single send
+              if (emailResponse.error) {
+                throw new Error(emailResponse.error);
+              }
+              return { success: true, email: emailData.to };
+            } catch (error) {
+              const errorMessage =
+                error instanceof Error ? error.message : "Unknown error";
+              console.error(
+                `Error sending email to ${emailData.to}:`,
+                errorMessage
+              );
+              return {
+                success: false,
+                email: emailData.to,
+                error: errorMessage,
+              };
+            }
+          })
+        );
+
+        results.push(...batchResults);
+      }
 
       // Add delay between batches to avoid overwhelming the email service
       if (i + config.batchSize < emails.length) {
@@ -104,3 +118,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export const POST = verifySignatureAppRouter(handler);

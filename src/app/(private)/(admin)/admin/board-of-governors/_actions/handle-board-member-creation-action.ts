@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 
 export const handleBoardMemberCreationAction = async (values: unknown) => {
   try {
-    const permission = await hasPermissions("create:teachers");
+    const permission = await hasPermissions("create:boardmembers");
     if (!permission) {
       return { error: "You do not have permission to perform this action" };
     }

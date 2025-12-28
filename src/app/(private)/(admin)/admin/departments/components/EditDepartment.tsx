@@ -25,9 +25,9 @@ export default function EditDepartment() {
 
   useEffect(() => {
     if (!id || !dialogs["editDepartment"]) return;
-    setDefaultValues(undefined);
 
     const fetchDepartment = async () => {
+      setDefaultValues(undefined);
       try {
         const response = await getDepartment(id as string);
 
@@ -49,7 +49,7 @@ export default function EditDepartment() {
     };
 
     fetchDepartment();
-  }, [id]);
+  }, [id, dialogs]);
 
   async function handleUpdate(data: DepartmentType) {
     const response = await updateDepartmentAction(id as string, data);

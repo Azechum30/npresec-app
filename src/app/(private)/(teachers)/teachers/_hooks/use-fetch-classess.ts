@@ -11,12 +11,12 @@ export const useFetchClassess = () => {
   const user = useAuth();
 
   useEffect(() => {
+    if (!user || !user.id) return;
+
     const fetchClasses = async () => {
-      if (!user) {
-        setFetchError("User not found!");
-        setFetchSuccess(false);
-        return;
-      }
+      setClasses(null);
+      setFetchError(null);
+      setFetchSuccess(false);
 
       const { error, classes } = await fetchClassessAction(user.id);
 
@@ -37,13 +37,8 @@ export const useFetchClassess = () => {
       setClasses(classes);
     };
 
-    if (user && user.id) {
-      setClasses(null);
-      setFetchError(null);
-      setFetchSuccess(false);
-      fetchClasses();
-    }
-  }, [user?.id]);
+    fetchClasses();
+  }, [user]);
 
   return { classes, fetchError, fetchSuccess };
 };

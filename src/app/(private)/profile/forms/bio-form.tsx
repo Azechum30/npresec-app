@@ -58,15 +58,7 @@ export const BioForm = ({
   const ImageRef = useRef<HTMLInputElement | null>(null);
   const [ProfileImagePrevious, setProfileImagePrevious] = useState<
     string | null
-  >(null);
-
-  useEffect(() => {
-    if (defaultValues) {
-      setProfileImagePrevious(
-        defaultValues.image ? (defaultValues.image as string) : "/no-avatar.jpg"
-      );
-    }
-  }, [defaultValues]);
+  >(defaultValues?.image ? (defaultValues.image as string) : "/no-avatar.jpg");
 
   const handleSubmit = (data: BioType) => {
     onSubmit(data);

@@ -12,21 +12,21 @@ export const useFetchInitialStaffData = () => {
   const isEditOpen = dialogs["editStaff"] === true;
 
   useEffect(() => {
-    if (!isEditOpen) {
-      setValues(undefined);
-      return;
-    }
+    if (!isEditOpen || !id) return;
+
     const fetchStaffData = async () => {
       const res = await getStaffMember(id as string);
 
       if (res.error) {
         setFetchError(res.error || "Failed to fetch staff data");
         setFetchSuccess(false);
+        setValues(undefined);
         return;
       }
       if (res.staff === undefined) {
         setFetchError("");
         setFetchSuccess(false);
+        setValues(undefined);
         return;
       }
 
@@ -65,11 +65,8 @@ export const useFetchInitialStaffData = () => {
       });
     };
 
-    if (id) {
-      setValues(undefined);
-      fetchStaffData();
-    }
-  }, [id]);
+    fetchStaffData();
+  }, [id, isEditOpen]);
 
   return { values, fetchError, fetchSucess };
 };

@@ -29,8 +29,8 @@ export const EditHouseModal = () => {
   useEffect(() => {
     if (!id || !dialogs["edit-house"]) return;
 
-    setDefaultValues(undefined);
     const fetchHouse = async () => {
+      setDefaultValues(undefined);
       const safeClient = createSafeClient(client);
       const { data, error } = await safeClient.house.getHouseById({
         id: id as string,
@@ -58,7 +58,7 @@ export const EditHouseModal = () => {
     };
 
     fetchHouse();
-  }, [id]);
+  }, [id, dialogs]);
 
   const handleHouseUpdate = (data: HouseType) => {
     startTransition(async () => {

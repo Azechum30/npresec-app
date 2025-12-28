@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 
 export const handleBoardMemberDelete = async (id: string) => {
   try {
-    const permission = await hasPermissions("delete:teachers");
+    const permission = await hasPermissions("delete:boardmembers");
     if (!permission) return { error: "Permission denied!" };
 
     const { error, data, success } = z

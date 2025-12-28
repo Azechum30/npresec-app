@@ -2,11 +2,20 @@ import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  productionBrowserSourceMaps: false,
+  typedRoutes: true,
+  // cacheComponents: true,
   experimental: {
     serverActions: {
       bodySizeLimit: "5mb",
     },
     authInterrupts: true,
+  },
+  serverExternalPackages: ["require-in-the-middle"],
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
   },
   turbopack: {},
 
@@ -24,6 +33,7 @@ const nextConfig: NextConfig = {
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // Exclude Node.js modules from client-side bundle
+      config.externals = [...(config.externals || []), "require-in-the-middle"];
       config.resolve.fallback = {
         ...config.resolve.fallback,
         dns: false,
@@ -31,6 +41,7 @@ const nextConfig: NextConfig = {
         tls: false,
         fs: false,
         pg: false,
+        "require-in-the-middle": false,
       };
     }
     return config;

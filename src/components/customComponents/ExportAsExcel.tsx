@@ -51,7 +51,7 @@ export const ExportAsExcel = <T extends IContent>({
       )}
       disabled={data.length === 0}>
       <CloudDownloadIcon className="size-5" />
-      Excel
+      Export As XLSX
     </Button>
   );
 };

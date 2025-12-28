@@ -15,6 +15,7 @@ export const usePrefetchBoardMember = () => {
       return;
     }
     const fetchData = async () => {
+      setValues(undefined);
       startFetching(async () => {
         const { error, boardMember } = await getBoardMember(id as string);
 
@@ -42,10 +43,9 @@ export const usePrefetchBoardMember = () => {
     };
 
     if (id) {
-      setValues(undefined);
       fetchData();
     }
-  }, [id]);
+  }, [id, dialogs]);
 
   return { fetchError, isFetchSuccess, isFetching, values };
 };

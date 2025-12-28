@@ -57,7 +57,7 @@ export const EditBoardMember = () => {
       setTimeout(() => onClose("edit-board-of-governor"), 100);
     }
     prevSuccessRef.current = isDeleting;
-  }, [success, isDeleting]);
+  }, [success, isDeleting, onClose]);
 
   useEffect(() => {
     const wasUpdating = prevUpdatingRef.current;
@@ -75,7 +75,7 @@ export const EditBoardMember = () => {
       setTimeout(() => onClose("edit-board-of-governor"), 100);
     }
     prevUpdateSuccessRef.current = isUpdating;
-  }, [updateSuccess, isUpdating]);
+  }, [updateSuccess, isUpdating, onClose]);
 
   return (
     <>
@@ -112,7 +112,7 @@ export const EditBoardMember = () => {
             <DialogHeader>
               <DialogTitle className="sr-only">Loading Member Data</DialogTitle>
               <DialogDescription className="sr-only">
-                Kindly wait while we load the board's member details
+                Kindly wait while we load the board&apos;s member details
               </DialogDescription>
             </DialogHeader>
             <LoadingState />

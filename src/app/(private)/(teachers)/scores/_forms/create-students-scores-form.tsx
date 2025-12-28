@@ -122,7 +122,7 @@ export const CreateStudentScoresForm = ({
       score: 0,
     }));
     replace(newScores);
-  }, [students]);
+  }, [students, replace]);
 
   useEffect(() => {
     const allParamsPresent =

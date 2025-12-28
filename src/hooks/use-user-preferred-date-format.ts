@@ -21,7 +21,7 @@ export const useUserPreferredDateFormat = () => {
   const formatDate = (date: Date) => {
     const locals = localeMap[preferredDateFormat];
     const options = formatMap[preferredDateFormat];
-    return new Intl.DateTimeFormat(locals, options).format(date);
+    return new Intl.DateTimeFormat(locals, options).format(new Date(date));
   };
 
   return { preferredDateFormat, formatDate };

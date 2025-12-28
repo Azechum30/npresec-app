@@ -27,7 +27,7 @@ export const CreateBoardMemberDialog = () => {
     if (wasCreating && !isCreating && createError) {
       toast.error(createError);
     }
-  }, [createError]);
+  }, [createError, isCreating]);
 
   useEffect(() => {
     if (createSuccess) {

@@ -14,11 +14,12 @@ export const useFetchStudentScore = () => {
 
   useEffect(() => {
     if (!id) return;
-    setStudentScore(undefined);
-    setFetchError(undefined);
-    setFetchSuccess(false);
 
     startTransition(async () => {
+      setStudentScore(undefined);
+      setFetchError(undefined);
+      setFetchSuccess(false);
+
       const { error, studentScore } = await getStudentScoreAction(id as string);
       if (error) {
         setFetchError(error);

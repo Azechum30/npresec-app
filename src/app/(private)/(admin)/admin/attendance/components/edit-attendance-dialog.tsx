@@ -23,24 +23,19 @@ export const EditAttendanceDialog = () => {
   const [attendanceResult, setAttendanceResult] = useState<
     SingleStudentAttendance | undefined
   >();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
 
   useEffect(() => {
     const fetchAttendance = async () => {
-      const result = await getSingleAttendance(id as string);
+      if (!id) return;
+      setIsLoading(true);
+      setError(null);
+      const result = await getSingleAttendance(id);
       if (result.error) {
-        return (
-          <Dialog>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Error</DialogTitle>
-                <DialogDescription>{result.error}</DialogDescription>
-              </DialogHeader>
-            </DialogContent>
-          </Dialog>
-        );
-      }
-
-      if (result.attendance) {
+        setError(result.error);
+      } else if (result.attendance) {
         const { classId, date, status, semester, studentId } =
           result.attendance;
         setAttendanceResult({
@@ -51,13 +46,13 @@ export const EditAttendanceDialog = () => {
           semester: semester as string,
         });
       }
+      setIsLoading(false);
     };
 
-    if (id) {
-      setAttendanceResult(undefined);
-      fetchAttendance().then((value) => console.log("fetched attendance"));
+    if (dialogs["editAttendance"]) {
+      fetchAttendance();
     }
-  }, [id, setAttendanceResult]);
+  }, [id, dialogs]);
 
   const { isPending, handleUpdateSingleAttendance } =
     useUpdateSingleAttendance();
@@ -66,7 +61,24 @@ export const EditAttendanceDialog = () => {
     <Dialog
       open={dialogs["editAttendance"]}
       onOpenChange={() => onClose("editAttendance")}>
-      {attendanceResult ? (
+      {isLoading ? (
+        <DialogContent>
+          <DialogHeader className="sr-only">
+            <DialogTitle>Loading</DialogTitle>
+            <DialogDescription>Data is loading...</DialogDescription>
+          </DialogHeader>
+          <LoadingState />
+        </DialogContent>
+      ) : error ? (
+        <Dialog>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Error</DialogTitle>
+              <DialogDescription>{error}</DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+      ) : attendanceResult ? (
         <DialogContent className="w-full max-h-[85vh] overflow-auto scrollbar-thin">
           <DialogHeader>
             <DialogTitle>Edit Attendance</DialogTitle>
@@ -95,15 +107,7 @@ export const EditAttendanceDialog = () => {
             </DialogClose>
           </DialogFooter>
         </DialogContent>
-      ) : (
-        <DialogContent>
-          <DialogHeader className="sr-only">
-            <DialogTitle>Loading</DialogTitle>
-            <DialogDescription>Data is loading...</DialogDescription>
-          </DialogHeader>
-          <LoadingState />
-        </DialogContent>
-      )}
+      ) : null}
     </Dialog>
   );
 };

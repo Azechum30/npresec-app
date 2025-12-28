@@ -11,8 +11,6 @@ import {
   SignInSchema,
   ResetPasswordType,
   ResetPasswordSchema,
-  ForgotPasswordType,
-  ForgotPasswordSchema,
 } from "../validation";
 import * as Sentry from "@sentry/nextjs";
 import { rateLimit } from "@/utils/rateLimit";
@@ -184,13 +182,6 @@ export const signInAction = async (data: SignInType) => {
   }
 };
 
-export const logOut = async () => {
-  await auth.api.signOut({
-    headers: await headers(),
-  });
-  return { success: true };
-};
-
 export const getUserRole = async () => {
   try {
     const session = await auth.api.getSession({
@@ -240,32 +231,11 @@ export const resetPasswordAction = async (values: ResetPasswordType) => {
       return { error: "Token is required!" };
     }
 
-    const {} = await auth;
-
     // 3. Reset password via Better Auth
     await auth.api.resetPassword({
       body: { newPassword: password, token },
       headers: await headers(),
     });
-
-    // 4. Clear resetPasswordRequired flag
-    try {
-      // Find verification entry to get identifier (email)
-      const verification = await prisma.verification.findFirst({
-        where: { identifier: { startsWith: "reset-password:" } },
-        orderBy: { createdAt: "desc" },
-      });
-
-      // if (verification) {
-      //   const email = verification.identifier.replace("reset-password:", "");
-      //   await prisma.account.updateMany({
-      //     where: { providerId: "credential", user: { email } },
-      //     data: { resetPasswordRequired: false },
-      //   });
-      // }
-    } catch (updateError) {
-      console.warn("Could not update resetPasswordRequired:", updateError);
-    }
 
     return { success: true };
   } catch (error) {
@@ -303,63 +273,5 @@ export const resetPasswordAction = async (values: ResetPasswordType) => {
     Sentry.captureException(error);
     console.error("An error occurred in resetting your password:", error);
     return { error: "Something went wrong!" };
-  }
-};
-
-export const forgotPasswordActions = async (value: ForgotPasswordType) => {
-  try {
-    const ip = (await headers()).get("x-forwarded-for") ?? "127.0.0.1";
-    const { success } = await rateLimit.limit(ip);
-    if (!success) {
-      return { error: "Too many requests. Please try again later!" };
-    }
-
-    const validData = ForgotPasswordSchema.safeParse(value);
-    if (!validData.success) {
-      const zodError = validData.error.errors.map(
-        (e: any) => `${e.path[0]}, ${e.message}`
-      );
-
-      return { error: zodError };
-    }
-
-    const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
-    try {
-      const response = await fetch(`${baseUrl}/api/auth/forgot-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: validData.data.email.toLowerCase(),
-          redirectTo: `${process.env.NEXT_PUBLIC_URL}/password-reset`,
-        }),
-      });
-
-      if (!response.ok) {
-        // Log error but don't expose to user for security (prevent email enumeration)
-        const errorText = await response.text();
-        console.error("Password reset request failed:", errorText);
-      }
-    } catch (fetchError) {
-      // Log error but don't expose to user
-      console.error("Password reset request error:", fetchError);
-    }
-
-    // Always return success for security (don't reveal if user exists)
-    // Better-auth will send email if user exists, or silently fail if not
-    return { success: true };
-  } catch (error) {
-    // Better-auth may throw errors, but for security we should still return success
-    // to avoid revealing whether the email exists in the system
-    if (error instanceof Error) {
-      // Log the error for debugging but don't expose it to the user
-      console.error("Password reset request error:", error);
-    }
-
-    // Return success even on error to prevent email enumeration attacks
-    // The actual error will be logged via Sentry
-    Sentry.captureException(error);
-    return { success: true };
   }
 };

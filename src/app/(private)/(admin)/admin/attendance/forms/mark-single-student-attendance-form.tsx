@@ -7,7 +7,7 @@ import {
 } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { getClassesAction } from "@/app/(private)/(admin)/admin/classes/actions/server-actions";
 import { toast } from "sonner";
 
@@ -47,9 +47,6 @@ export const MarkSingleStudentAttendanceForm = ({
   const [classes, setClasses] = useState<
     Pick<ClassesResponseType, "id" | "name">[]
   >([]);
-  const [filteredStudents, setFilteredStudents] = useState<
-    { id: string; fullName: string }[]
-  >([]);
 
   const classId = useWatch({
     control: form.control,
@@ -87,60 +84,43 @@ export const MarkSingleStudentAttendanceForm = ({
             : studentsPromise.students;
 
           setAllStudents(students);
-
-          // For edit mode, set the filteredStudents directly
-          if (id && defaultValues?.studentId) {
-            const student = studentsPromise.students.find(
-              (s) => s.id === defaultValues.studentId
-            );
-            if (student) {
-              setFilteredStudents([
-                {
-                  id: student.id,
-                  fullName: `${student.firstName} ${student.lastName}`,
-                },
-              ]);
-            }
-            return;
-          }
-
-          // For create mode
-          setFilteredStudents(
-            students
-              .filter((student) => !classId || student.classId === classId)
-              .map((student) => ({
-                id: student.id,
-                fullName: `${student.firstName} ${student.lastName}`,
-              }))
-          );
         }
       } catch (error) {
         toast.error("Failed to load data");
       }
     };
     fetchData();
-  }, [id, defaultValues?.classId, defaultValues?.studentId]);
+  }, [id, defaultValues?.classId, defaultValues?.studentId, classId]);
 
-  useEffect(() => {
+  const filteredStudents = useMemo(() => {
     if (!id && classId) {
-      const updatedStudents = allStudents
+      const students = allStudents
         .filter((student) => student.classId === classId)
         .map((student) => ({
           id: student.id,
           fullName: `${student.firstName} ${student.lastName}`,
         }));
-      setFilteredStudents(updatedStudents);
       form.setValue("studentId", "");
-    } else {
-      // Show all students when no class is selected
-      setFilteredStudents(
-        allStudents.map((student) => ({
-          id: student.id,
-          fullName: `${student.firstName} ${student.lastName}`,
-        }))
+      return students;
+    } else if (id && defaultValues?.studentId) {
+      const student = allStudents.find(
+        (s) => s.id === defaultValues.studentId
       );
+      if (student) {
+        return [
+          {
+            id: student.id,
+            fullName: `${student.firstName} ${student.lastName}`,
+          },
+        ];
+      }
     }
-  }, [classId, allStudents, form, id]);
+    // Show all students when no class is selected
+    return allStudents.map((student) => ({
+      id: student.id,
+      fullName: `${student.firstName} ${student.lastName}`,
+    }));
+  }, [classId, allStudents, id, defaultValues, form]);
 
   async function handleSubmit(values: SingleStudentAttendance) {
     await onSubmitAction(values);

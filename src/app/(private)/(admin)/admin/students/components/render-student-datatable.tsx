@@ -1,10 +1,8 @@
 "use client";
 
-import { FC, use, useEffect, useMemo, useTransition } from "react";
+import { FC, useMemo } from "react";
 import { useGetColumns } from "./studentColumns";
-import { useStudentDataStore } from "@/hooks/use-generic-store";
 import DataTable from "@/components/customComponents/data-table";
-import { StudentResponseType } from "@/lib/types";
 import { useBulkDeleteStudents } from "../hooks/use-bulk-delete-students";
 import LoadingState from "@/components/customComponents/Loading";
 import { studentTransformer } from "../utils/utils";

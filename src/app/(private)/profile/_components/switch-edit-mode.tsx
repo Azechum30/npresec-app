@@ -2,8 +2,8 @@
 
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { FileQuestion, ShieldQuestion } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ShieldQuestion } from "lucide-react";
+import { useEffect, useState, startTransition } from "react";
 
 type SwitchEditModeProps = {
   canEdit?: boolean;
@@ -16,7 +16,7 @@ export const SwitchEditMode = ({
 }: SwitchEditModeProps) => {
   const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => setIsMounted(true), [isMounted]);
+  useEffect(() => startTransition(() => setIsMounted(true)), []);
 
   if (!isMounted) return null; // Prevents hydration mismatch
   return (

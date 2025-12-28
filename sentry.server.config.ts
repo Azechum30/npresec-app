@@ -12,4 +12,13 @@ Sentry.init({
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
+
+  // Disable console breadcrumbs to prevent Date.now() errors in server components
+  beforeBreadcrumb: (breadcrumb) => {
+    // Filter out console breadcrumbs to prevent Date.now() timing issues
+    if (breadcrumb.category === 'console') {
+      return null;
+    }
+    return breadcrumb;
+  },
 });

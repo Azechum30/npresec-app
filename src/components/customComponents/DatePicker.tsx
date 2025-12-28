@@ -56,7 +56,8 @@ export default function DatePicker({
   disable = false,
 }: DatePickerProps) {
   const [open, setOpen] = useState(false);
-  const currentDate = new Date();
+  // const currentDate = new Date();
+  const currentDate = useMemo(() => new Date(), []);
   const currentYear = getYear(currentDate);
   const currentMonth = getMonth(currentDate);
   const currentDay = getDate(currentDate);
@@ -85,7 +86,7 @@ export default function DatePicker({
       ),
       value: fromMonth ? String(i + fromMonth) : String(i),
     }));
-  }, [fromMonth, restrictToCurrentDay, currentMonth]);
+  }, [fromMonth, restrictToCurrentDay, currentMonth, currentDate]);
 
   const days = useMemo(() => {
     if (restrictToCurrentDay) {
@@ -119,11 +120,7 @@ export default function DatePicker({
   };
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
-    if (
-      restrictToCurrentDay &&
-      selectedDate &&
-      !isToday(selectedDate)
-    ) {
+    if (restrictToCurrentDay && selectedDate && !isToday(selectedDate)) {
       return; // Prevent selection if not today
     }
     setDate(selectedDate);

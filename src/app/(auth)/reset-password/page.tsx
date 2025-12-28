@@ -1,10 +1,13 @@
+import type { Metadata } from "next";
 import ResetPasswordForm from "@/components/customComponents/ResetPasswordForm";
 import { Suspense } from "react";
 
-export const metadata = {
-  title: "Password Reset",
-  description: "Reset your password",
-  keywords: "password, reset, recovery",
+export const generateMetadata = (): Metadata => {
+  return {
+    title: "Password Reset",
+    description: "Reset your password",
+    keywords: "password, reset, recovery",
+  };
 };
 
 export default function PasswordResetPage() {

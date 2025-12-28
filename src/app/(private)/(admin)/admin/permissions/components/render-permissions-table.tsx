@@ -54,7 +54,7 @@ export const RenderPermissionsTable = ({
       toast.success(`${deleteCount} permission(s) were/was deleted!`);
     }
     wasPreviousBulkDeleteSuccess.current = isBulkPermissionDeletePending;
-  }, [isBulkPermissionDeletePending, isBulkDeleteSuccess]);
+  }, [isBulkPermissionDeletePending, isBulkDeleteSuccess, deleteCount]);
 
   return (
     <>

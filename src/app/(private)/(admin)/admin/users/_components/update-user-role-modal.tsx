@@ -57,7 +57,7 @@ export const UpdateUserRoleModal = () => {
               <DialogHeader>
                 <DialogTitle>Update User Role</DialogTitle>
                 <DialogDescription>
-                  Kindly update the selected user's role and save it in
+                  Kindly update the selected user&apos;s role and save it in
                   real-time
                 </DialogDescription>
               </DialogHeader>

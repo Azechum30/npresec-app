@@ -4,21 +4,23 @@ import { prisma } from "@/lib/prisma";
 import { StaffSelect } from "@/lib/types";
 import { StaffSchema, StaffType } from "@/lib/validation";
 import { Prisma } from "@/generated/prisma/client";
-import { revalidatePath } from "next/cache";
-import { generatePassword } from "@/lib/generatePassword";
+import { revalidateTag } from "next/cache";
 import { getErrorMessage } from "@/lib/getErrorMessage";
-import { hasPermissions } from "@/lib/hasPermission";
-import { client } from "@/utils/qstash";
-import { env } from "@/lib/server-only-actions/validate-env";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getCachedStaff } from "../utils/get-cached-staff";
+import { resolveRole } from "@/lib/resolve-staff-role";
+import { createUserCredentials } from "@/utils/create-user-credentials";
+import { transformAndValidateStaffData } from "@/utils/staff-data-transformer";
+import { checkExistingRelatedRecords } from "../utils/check-existing-related-records";
+import { triggerImageUpload } from "@/utils/trigger-image-upload";
+import { triggerStaffCreation } from "../utils/trigger-staff-creation";
+import { triggerSendEmail } from "@/lib/trigger-send-email";
+import { getUserWithPermissions } from "@/utils/get-user-with-permission";
 
 export const createStaff = async (values: unknown) => {
   try {
-    const permissions = await hasPermissions("create:staff");
-    if (!permissions) {
-      return { error: "Permission denied!" };
-    }
+    const { hasPermission } = await getUserWithPermissions("create:staff");
+
+    if (!hasPermission) return { error: "Permission denied" };
 
     const { data, error, success } = StaffSchema.safeParse(values);
 
@@ -33,14 +35,7 @@ export const createStaff = async (values: unknown) => {
       };
     }
 
-    const normalizedStaff = {
-      ...data,
-      rgNumber: data.rgNumber?.trim() || undefined,
-      ghcardNumber: data.ghcardNumber?.trim() || undefined,
-      licencedNumber: data.licencedNumber?.trim() || undefined,
-      ssnitNumber: data.ssnitNumber?.trim() || undefined,
-      password: generatePassword(),
-    };
+    const normalizedStaff = transformAndValidateStaffData(data);
 
     if (normalizedStaff.departmentId) {
       const department = await prisma.department.findUnique({
@@ -55,252 +50,99 @@ export const createStaff = async (values: unknown) => {
       }
     }
 
-    // Determine appropriate role based on staff type and category
-    let roleName = "staff"; // fallback
-    if (normalizedStaff.staffType === "Teaching") {
-      roleName = "teaching_staff";
-    } else if (normalizedStaff.staffType === "Non_Teaching") {
-      if (normalizedStaff.staffCategory === "Professional") {
-        roleName = "admin_staff";
-      } else if (normalizedStaff.staffCategory === "Non_Professional") {
-        roleName = "support_staff";
-      }
+    const roleName = resolveRole(normalizedStaff);
+
+    const { error: duplicates, staffRole } = await checkExistingRelatedRecords(
+      normalizedStaff,
+      roleName
+    );
+
+    if (duplicates) {
+      return { error: duplicates };
     }
 
-    const [existingStaff, existingUser, staffRole] = await prisma.$transaction([
-      prisma.staff.findFirst({
-        where: {
-          OR: [
-            { employeeId: normalizedStaff.employeeId },
-            { rgNumber: normalizedStaff.rgNumber },
-            { ghcardNumber: normalizedStaff.ghcardNumber },
-            { ssnitNumber: normalizedStaff.ssnitNumber },
-            { licencedNumber: normalizedStaff.licencedNumber },
-          ],
-        },
-      }),
-      prisma.user.findFirst({
-        where: {
-          OR: [
-            { email: normalizedStaff.email },
-            { username: normalizedStaff.username },
-          ],
-        },
-      }),
+    const { password, imageURL, imageFile, email, username, ...rest } =
+      normalizedStaff;
 
-      prisma.role.findFirst({
-        where: {
-          name: roleName,
-        },
-        select: {
-          id: true,
-        },
-      }),
-    ]);
-
-    if (!staffRole) {
-      return { error: "Staff role not found!" };
-    }
-
-    const errors: string[] = [];
-    if (existingUser !== null) {
-      if (existingUser.email === normalizedStaff.email) {
-        errors.push(`Email ${normalizedStaff.email} already exist!`);
-      }
-
-      if (existingUser.username === normalizedStaff.username) {
-        errors.push(`Username ${normalizedStaff.username} is already taken!`);
-      }
-    }
-
-    if (existingStaff !== null) {
-      if (existingStaff.employeeId === normalizedStaff.employeeId) {
-        errors.push(
-          `Employee ID ${normalizedStaff.employeeId} already exists!`
-        );
-      }
-
-      if (existingStaff.rgNumber === normalizedStaff.rgNumber) {
-        errors.push(
-          `Registered No. ${normalizedStaff.rgNumber} already exists!`
-        );
-      }
-
-      if (existingStaff.ghcardNumber === normalizedStaff.ghcardNumber) {
-        errors.push(
-          `GhanaCard No. ${normalizedStaff.ghcardNumber} already exists!`
-        );
-      }
-
-      if (existingStaff.ssnitNumber === normalizedStaff.ssnitNumber) {
-        errors.push(`SSNIT No. ${normalizedStaff.ssnitNumber} already exists!`);
-      }
-
-      if (existingStaff.licencedNumber === normalizedStaff.licencedNumber) {
-        errors.push(
-          `Licenced No. ${normalizedStaff.licencedNumber} already exists!`
-        );
-      }
-    }
-
-    if (errors.length > 0) {
-      return { errors };
-    }
-
-    const {
-      email,
-      username,
-      departmentId,
+    const { user } = await createUserCredentials({
+      email: email,
+      username: username,
+      lastName: rest.lastName,
       password,
-      isDepartmentHead,
-      imageURL,
-      imageFile,
-      ...rest
-    } = normalizedStaff;
-
-    // Create user account first
-    await auth.api.signUpEmail({
-      body: {
-        email: email.toLowerCase(),
-        password,
-        name: `${rest.firstName} ${rest.lastName}`,
-        username: username,
-        callbackURL: "/email-verified",
-      },
-      headers: await headers(),
+      roleId: staffRole?.id as string,
     });
 
-    // Get the created user to connect to staff
-    const createdUser = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-    });
+    const { staff, error: staffCreationError } = await triggerStaffCreation(
+      user.id,
+      rest
+    );
 
-    if (!createdUser) {
-      return { error: "Failed to create user account" };
+    if (staffCreationError) {
+      return { error: staffCreationError };
     }
 
-    // Update user with role
-    await prisma.user.update({
-      where: { id: createdUser.id },
-      data: { roleId: staffRole.id },
-    });
+    if (normalizedStaff.imageFile && staff) {
+      void (await triggerImageUpload(
+        imageFile as File,
+        staff.userId as string,
+        "staff",
+        "user" as const
+      ));
+    }
 
-    // Create staff record
-    const staff = await prisma.staff.create({
-      data: {
-        ...rest,
-
-        department: departmentId
-          ? {
-              connect: { id: departmentId },
-            }
-          : undefined,
-        departmentHead:
-          departmentId && isDepartmentHead
-            ? {
-                connect: { id: departmentId },
-              }
-            : undefined,
-        courses: rest.courses
-          ? {
-              connect: rest.courses.map((courseId) => ({ id: courseId })),
-            }
-          : undefined,
-        classes: rest.classes
-          ? {
-              connect: rest.classes.map((classId) => ({ id: classId })),
-            }
-          : undefined,
-        user: {
-          connect: { id: createdUser.id },
+    if (staff) {
+      const emailData = {
+        to: [email as string],
+        username: staff.firstName,
+        data: {
+          lastName: staff.lastName,
+          email: email as string,
+          password: normalizedStaff.password,
         },
-      },
-      select: StaffSelect,
-    });
-
-    if (normalizedStaff.imageFile) {
-      const arrayBuffer = await (
-        normalizedStaff.imageFile as File
-      ).arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-
-      const jobData = {
-        file: {
-          buffer: buffer.toString("base64"),
-          name: (normalizedStaff.imageFile as File).name,
-          type: (normalizedStaff.imageFile as File).type,
-        },
-        entityId: staff.userId,
-        folder: "staff",
-        entityType: "user" as const,
       };
 
-      await client.publishJSON({
-        url: `${env.NEXT_PUBLIC_URL}/api/images/uploads`,
-        body: jobData,
-      });
+      void triggerSendEmail(emailData);
     }
 
-    const emailData = {
-      to: [email as string],
-      username: staff.firstName,
-      data: {
-        lastName: staff.lastName,
-        email: email as string,
-        password: normalizedStaff.password,
-      },
-    };
-
-    await client.publishJSON({
-      url: `${env.NEXT_PUBLIC_URL}/api/send/emails`,
-      body: emailData,
-    });
-
-    revalidatePath("/admin/staff");
+    void revalidateTag("staff", "seconds");
 
     return { staff };
   } catch (error) {
     console.error("Could not create staff:", error);
-    return { error: getErrorMessage(error) };
+
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? String(error)
+          : "Something went wrong!",
+    };
   }
 };
 
-export const getStaff = async (employeeIds?: string[]) => {
+export const getStaff = async () => {
   try {
-    const permission = await hasPermissions("view:staff");
+    const { hasPermission } = await getUserWithPermissions("view:staff");
 
-    if (!permission) {
-      return { error: "Permission denied!" };
-    }
+    if (!hasPermission) return { error: "Permission denied" };
 
-    let query: Prisma.StaffWhereInput = {};
+    const staffData = await getCachedStaff();
 
-    if (employeeIds) {
-      query = {
-        id: { in: employeeIds },
-      };
-    }
-
-    const staff = await prisma.staff.findMany({
-      where: query,
-      select: StaffSelect,
-      orderBy: {
-        firstName: "asc",
-      },
-    });
-
-    return { staff };
+    return { staff: staffData || [] };
   } catch (error) {
-    return { error: getErrorMessage(error) };
+    console.error("Could not fetch staff:", error);
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? getErrorMessage(error)
+          : "Something went wrong!",
+    };
   }
 };
 
 export const getStaffMember = async (id: string) => {
   try {
-    const permission = await hasPermissions("view:staff");
-    if (!permission) {
-      return { error: "Permission denied!" };
-    }
+    const { hasPermission } = await getUserWithPermissions("view:staff");
+    if (!hasPermission) return { error: "Permission denied" };
 
     const staff = await prisma.staff.findUnique({
       where: { id },
@@ -313,16 +155,19 @@ export const getStaffMember = async (id: string) => {
 
     return { staff };
   } catch (error) {
-    return { error: getErrorMessage(error) };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? getErrorMessage(error)
+          : "Something went wrong!",
+    };
   }
 };
 
 export const updateStaff = async (id: string, data: StaffType) => {
   try {
-    const permission = await hasPermissions("edit:staff");
-    if (!permission) {
-      return { error: "Permission denied!" };
-    }
+    const { hasPermission } = await getUserWithPermissions("update:staff");
+    if (!hasPermission) return { error: "Permission denied" };
 
     const unvalidData = StaffSchema.safeParse(data);
 
@@ -335,18 +180,17 @@ export const updateStaff = async (id: string, data: StaffType) => {
       };
     }
 
-    const { email, username, ...rest } = unvalidData.data;
+    const normalizedStaff = transformAndValidateStaffData(unvalidData.data);
 
-    const normalizedStaff = {
-      ...rest,
-      ghcardNumber: rest.ghcardNumber?.trim() || null,
-      licencedNumber: rest.licencedNumber?.trim() || null,
-      rgNumber: rest.rgNumber?.trim() || null,
-      ssnitNumber: rest.ssnitNumber?.trim() || null,
-    };
-
-    const { isDepartmentHead, imageURL, imageFile, ...others } =
-      normalizedStaff;
+    const {
+      email,
+      username,
+      password,
+      isDepartmentHead,
+      imageURL,
+      imageFile,
+      ...others
+    } = normalizedStaff;
 
     const updatedRecord = await prisma.staff.update({
       where: {
@@ -392,25 +236,15 @@ export const updateStaff = async (id: string, data: StaffType) => {
     });
 
     if (imageFile) {
-      const arrayBuffer = await (imageFile as File).arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const jobData = {
-        file: {
-          buffer: buffer.toString("base64"),
-          name: (normalizedStaff.imageFile as File).name,
-          type: (normalizedStaff.imageFile as File).type,
-        },
-        entityId: updatedRecord.userId,
-        folder: "staff",
-        entityType: "user" as const,
-      };
-      await client.publishJSON({
-        url: `${env.NEXT_PUBLIC_URL}/api/images/uploads`,
-        body: jobData,
-      });
+      void (await triggerImageUpload(
+        imageFile as File,
+        updatedRecord.userId as string,
+        "staff",
+        "user" as const
+      ));
     }
 
-    revalidatePath("/admin/staff");
+    void revalidateTag("staff", "seconds");
 
     return { data: updatedRecord };
   } catch (error) {
@@ -434,17 +268,20 @@ export const updateStaff = async (id: string, data: StaffType) => {
     } else if (error instanceof TypeError) {
       return { error: "Invalid arguments passed!" };
     } else {
-      return { error: getErrorMessage(error) };
+      return {
+        error:
+          process.env.NODE_ENV === "development"
+            ? getErrorMessage(error)
+            : "Something went wrong!",
+      };
     }
   }
 };
 
 export const deleteStaffRequest = async (id: string) => {
   try {
-    const permission = await hasPermissions("delete:staff");
-    if (!permission) {
-      return { error: "Permission denied!" };
-    }
+    const { hasPermission } = await getUserWithPermissions("delete:staff");
+    if (!hasPermission) return { error: "Permission denied" };
 
     const staffWithUserId = await prisma.staff.findFirst({
       where: {
@@ -466,22 +303,24 @@ export const deleteStaffRequest = async (id: string) => {
       return { error: `No staff with ID ${id} found!` };
     }
 
-    revalidatePath("/admin/staff");
+    void revalidateTag("staff", "seconds");
 
     return { success: true };
   } catch (error) {
     console.error(error);
-    return { error: getErrorMessage(error) };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? getErrorMessage(error)
+          : "Something went wrong!",
+    };
   }
 };
 
-export const bulkDeleteStaff = async (rows: string[]) => {
+export const bulkDeleteStaff = async (rows: string[], user?: any) => {
   try {
-    const permission = await hasPermissions("delete:staff");
-    if (!permission) {
-      return { error: "Permission denied!" };
-    }
-
+    const { hasPermission } = await getUserWithPermissions("delete:staff");
+    if (!hasPermission) return { error: "Permission denied" };
     const staffWithUserIds = await prisma.staff.findMany({
       where: {
         id: { in: rows },
@@ -504,11 +343,16 @@ export const bulkDeleteStaff = async (rows: string[]) => {
 
     if (!count) return { error: "Could not delete records!" };
 
-    revalidatePath("/admin/staff");
+    void revalidateTag("staff", "seconds");
 
     return { count };
   } catch (error) {
     console.error(error);
-    return { error: getErrorMessage(error) };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? getErrorMessage(error)
+          : "Something went wrong!",
+    };
   }
 };

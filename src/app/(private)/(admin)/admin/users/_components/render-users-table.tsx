@@ -33,7 +33,7 @@ export const RenderUsersTable = ({ users, error }: RenderUsersTableProps) => {
         `${userDeleteCount} ${userDeleteCount > 1 || userDeleteCount === 0 ? "users" : "user"} deleted successfully`
       );
     }
-  }, [isError, isDeleteSuccess]);
+  }, [isError, isDeleteSuccess, userDeleteCount]);
 
   return (
     <>
