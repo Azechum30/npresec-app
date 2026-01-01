@@ -2,15 +2,15 @@
 import "server-only";
 import * as Sentry from "@sentry/nextjs";
 import { Prisma } from "@/generated/prisma/client";
-import { getUserWithPermissions } from "@/utils/get-user-with-permission";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { UserSelect } from "@/lib/types";
 
 export const getUserPermisions = async (
-  id: Prisma.UserWhereUniqueInput | string
+  id: Prisma.UserWhereUniqueInput | string,
 ) => {
   try {
-    const { hasPermission } = await getUserWithPermissions("view:users");
+    const { hasPermission } = await getUserPermissions("view:users");
     if (!hasPermission) return { error: "Permission denied" };
     if (!id || typeof id !== "string") return { error: "Provide a valid ID" };
 

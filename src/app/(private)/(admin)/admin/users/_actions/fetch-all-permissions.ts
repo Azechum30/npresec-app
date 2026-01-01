@@ -1,14 +1,14 @@
 "use server";
 import "server-only";
 import * as Sentry from "@sentry/nextjs";
-import { getUserWithPermissions } from "@/utils/get-user-with-permission";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { PermissionSelect } from "@/lib/types";
 
 export const fetchAllPermissions = async () => {
   try {
     const { user, hasPermission } =
-      await getUserWithPermissions("view:permissions");
+      await getUserPermissions("view:permissions");
     if (!hasPermission) return { error: "Permission denied!" };
 
     const permissions = await prisma.permission.findMany({

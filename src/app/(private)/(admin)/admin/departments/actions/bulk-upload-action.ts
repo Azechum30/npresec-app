@@ -8,17 +8,14 @@ import {
 import { revalidatePath } from "next/cache";
 import { DepartmentSelect } from "@/lib/types";
 import { getErrorMessage } from "@/lib/getErrorMessage";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 
 export const bulkUploadDepartments = async (
-  values: BulkUploadDepartmentType
+  values: BulkUploadDepartmentType,
 ) => {
   try {
-    const permissions = await hasPermissions(
-      ["view:departments", "create:departments"],
-      { requireAll: true }
-    );
-    if (!permissions) throw new Error("Unauthorized!");
+    const { hasPermission } = await getUserPermissions("create:departments");
+    if (!hasPermission) throw new Error("Unauthorized!");
 
     const { data, error, success } =
       BulkUploadDepartmentSchema.safeParse(values);
@@ -49,8 +46,8 @@ export const bulkUploadDepartments = async (
             where: {
               employeeId: department.headId,
             },
-          })
-      )
+          }),
+      ),
     );
 
     const errors: string[] = [];
@@ -58,7 +55,7 @@ export const bulkUploadDepartments = async (
     HODs.map((t, index) => {
       if (t === null) {
         errors.push(
-          `No Teacher exists with ${normalizedDepartments[index].headId} exist!`
+          `No Teacher exists with ${normalizedDepartments[index].headId} exist!`,
         );
       }
     });
@@ -70,7 +67,7 @@ export const bulkUploadDepartments = async (
         }
         return acc;
       },
-      {} as Record<string, string>
+      {} as Record<string, string>,
     );
 
     normalizedDepartments.forEach((department) => {
@@ -82,7 +79,7 @@ export const bulkUploadDepartments = async (
     const codes = normalizedDepartments.map((department) => department.code);
     const names = normalizedDepartments.map((department) => department.name);
     const headIds = normalizedDepartments.map(
-      (department) => department.headId
+      (department) => department.headId,
     );
 
     const existingDepartments = await prisma.department.findMany({
@@ -107,7 +104,7 @@ export const bulkUploadDepartments = async (
 
         if (headIds.includes(department.headId as string)) {
           errors.push(
-            `The teacher by name ${department.head?.firstName} ${department.head?.lastName} is already assigned!`
+            `The teacher by name ${department.head?.firstName} ${department.head?.lastName} is already assigned!`,
           );
         }
       });
@@ -135,8 +132,8 @@ export const bulkUploadDepartments = async (
               : undefined,
           },
           select: DepartmentSelect,
-        })
-      )
+        }),
+      ),
     );
 
     if (!(departments.length > 0)) {

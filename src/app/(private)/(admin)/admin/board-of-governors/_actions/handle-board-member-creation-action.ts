@@ -1,7 +1,7 @@
 "use server";
 
 import { getErrorMessage } from "@/lib/getErrorMessage";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/server-only-actions/validate-env";
 import { BoardOfGovernorsSchema } from "@/lib/validation";
@@ -10,8 +10,8 @@ import { revalidatePath } from "next/cache";
 
 export const handleBoardMemberCreationAction = async (values: unknown) => {
   try {
-    const permission = await hasPermissions("create:boardmembers");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("create:boardmembers");
+    if (!hasPermission) {
       return { error: "You do not have permission to perform this action" };
     }
 

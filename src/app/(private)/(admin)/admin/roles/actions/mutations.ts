@@ -1,7 +1,7 @@
 "use server";
 import "server-only";
 import { getErrorMessage } from "@/lib/getErrorMessage";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { RoleSchema, UpdateRoleSchema } from "@/lib/validation";
 import * as Sentry from "@sentry/nextjs";
@@ -10,8 +10,8 @@ import { z } from "zod";
 
 export const createRole = async (values: unknown) => {
   try {
-    const permission = await hasPermissions("create:roles");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("create:roles");
+    if (!hasPermission) {
       return { error: "Permission denied" };
     }
 
@@ -56,8 +56,8 @@ export const createRole = async (values: unknown) => {
 
 export const updateRole = async (values: unknown) => {
   try {
-    const permission = await hasPermissions("edit:roles");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("edit:roles");
+    if (!hasPermission) {
       return { error: "Permission denied" };
     }
 
@@ -101,8 +101,8 @@ export const updateRole = async (values: unknown) => {
 
 export const deleteRole = async (value: string) => {
   try {
-    const permission = await hasPermissions("delete:roles");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("delete:roles");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
@@ -136,8 +136,8 @@ export const deleteRole = async (value: string) => {
 
 export const bulkDeleteRoles = async (values: unknown) => {
   try {
-    const permission = await hasPermissions("delete:roles");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("delete:roles");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 

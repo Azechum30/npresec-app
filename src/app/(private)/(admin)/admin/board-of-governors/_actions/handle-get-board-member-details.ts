@@ -3,12 +3,12 @@ import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { id } from "date-fns/locale";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 
 export const getBoardMember = async (id: string) => {
   try {
-    const permission = await hasPermissions("view:teachers");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("view:teachers");
+    if (!hasPermission) {
       console.error("Permission denied");
       return { error: "Permission denied" };
     }

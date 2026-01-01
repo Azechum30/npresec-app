@@ -1,15 +1,15 @@
 "use server";
 import * as Sentry from "@sentry/nextjs";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { ClassesSelect } from "@/lib/types";
 
 export const fetchClassessAction = async (userId: string) => {
   try {
-    // const permission = await hasPermissions("view:classes");
-    // if (!permission) {
-    //   return { error: "Permission denied" };
-    // }
+    const { hasPermission } = await getUserPermissions("view:classes");
+    if (!hasPermission) {
+      return { error: "Permission denied" };
+    }
 
     if (!userId) {
       return { error: "User not found" };

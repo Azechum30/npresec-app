@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import xlsx, { IContent } from "json-as-xlsx";
 import { Button } from "../ui/button";
 import { CloudDownloadIcon } from "lucide-react";
@@ -11,17 +12,25 @@ type ExportXLSXProps<T> = {
   filename?: string;
 };
 
-export const ExportAsExcel = <T extends IContent>({
+// Internal component that handles the actual export logic
+const ExportAsExcelInternal = <T extends IContent>({
   data,
   filename,
 }: ExportXLSXProps<T>) => {
   const user = useAuth();
-  if (!user) return null;
 
-  if (!(user.role?.name == "admin" || user.role?.name == "teacher"))
+  // Check if user has permission
+  const hasPermission =
+    user && (user.role?.name === "admin" || user.role?.name === "teacher");
+
+  // Don't render if no permission
+  if (!hasPermission) {
     return null;
+  }
 
   const handleExport = () => {
+    if (!hasPermission || data.length === 0) return;
+
     const settings = {
       fileName: filename || "export",
       extraLength: 3,
@@ -30,8 +39,8 @@ export const ExportAsExcel = <T extends IContent>({
 
     const formattedData = [
       {
-        sheet: "Sheet 1",
-        columns: Object.keys(data[0]).map((key) => ({
+        sheet: filename ?? "Sheet 1",
+        columns: Object.keys(data[0] || {}).map((key) => ({
           label: key,
           value: key,
         })),
@@ -55,3 +64,12 @@ export const ExportAsExcel = <T extends IContent>({
     </Button>
   );
 };
+
+// Dynamic component with SSR disabled to prevent hydration issues
+export const ExportAsExcel = dynamic(
+  () => Promise.resolve(ExportAsExcelInternal),
+  {
+    ssr: false,
+    loading: () => null, // Don't show loading state to avoid layout shift
+  }
+) as typeof ExportAsExcelInternal;

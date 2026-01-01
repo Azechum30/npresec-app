@@ -21,13 +21,13 @@ import LoadingButton from "@/components/customComponents/LoadingButton";
 import { Save } from "lucide-react";
 
 type SettingsFormProps = {
-  onSubmit: (data: SettingsType) => void;
+  onSubmitAction: (data: SettingsType) => void;
   defaultValues?: SettingsType;
   isPending?: boolean;
 };
 
 export const SettingsForm = ({
-  onSubmit,
+  onSubmitAction,
   defaultValues,
   isPending,
 }: SettingsFormProps) => {
@@ -69,7 +69,7 @@ export const SettingsForm = ({
   }, [form]);
 
   const handleSettingsFormSubmission = (data: SettingsType) => {
-    onSubmit(data);
+    onSubmitAction(data);
   };
 
   return (
@@ -77,7 +77,8 @@ export const SettingsForm = ({
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(handleSettingsFormSubmission)}
-          className="space-y-6 p-4 rounded-md border">
+          className="space-y-6 p-4 rounded-md border"
+        >
           <div className="flex justify-between items-center">
             <SwitchEditMode
               canEdit={enableEditing}
@@ -87,7 +88,8 @@ export const SettingsForm = ({
               <LoadingButton
                 className="w-auto"
                 size="sm"
-                loading={isPending as boolean}>
+                loading={isPending as boolean}
+              >
                 {isPending ? (
                   <>
                     <Save /> Saving...

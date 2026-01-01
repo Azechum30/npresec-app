@@ -16,9 +16,9 @@ export const useHasPermissions = (
     ? permissionNames
     : [permissionNames];
 
-  const userPermissions = user.permissions.map((p) => p.name);
-  const rolePermissions = user.role?.permissions.map((rp) => rp.name) || [];
-  const allPermissions = [...userPermissions, ...rolePermissions];
+  const userPermissions = user?.permissions?.map((p) => p.name);
+  const rolePermissions = user?.role?.permissions?.map((rp) => rp.name) || [];
+  const allPermissions = [...(userPermissions as string[]), ...rolePermissions];
 
   let hasPermission: boolean;
 

@@ -1,14 +1,14 @@
 "use server";
 import { getErrorMessage } from "@/lib/getErrorMessage";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { StudentSelect } from "@/lib/types";
 import * as Sentry from "@sentry/nextjs";
 
 export const fetchStudentsAction = async (classId: string) => {
   try {
-    // const permission = await hasPermissions("view:students");
-    // if (!permission) return { error: "Permission denied" };
+    const { hasPermission } = await getUserPermissions("view:students");
+    if (!hasPermission) return { error: "Permission denied" };
 
     if (!classId) return { error: "Please select a class to view students" };
 

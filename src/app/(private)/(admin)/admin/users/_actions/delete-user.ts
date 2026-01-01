@@ -2,14 +2,14 @@
 import "server-only";
 import * as Sentry from "@sentry/nextjs";
 import { Prisma } from "@/generated/prisma/client";
-import { getUserWithPermissions } from "@/utils/get-user-with-permission";
+import { getUserPermissions } from "@/lib/get-session";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 export const deleteUserAction = async (id: unknown) => {
   try {
-    const { hasPermission } = await getUserWithPermissions("delete:users");
+    const { hasPermission } = await getUserPermissions("delete:users");
     if (!hasPermission) {
       return { error: "Permission denied" };
     }

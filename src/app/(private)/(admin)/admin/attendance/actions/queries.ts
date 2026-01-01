@@ -2,14 +2,14 @@
 import "server-only";
 import * as Sentry from "@sentry/nextjs";
 import { getErrorMessage } from "@/lib/getErrorMessage";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { AttendanceSelect } from "@/lib/types";
 
 export const getAttendance = async () => {
   try {
-    const permission = await hasPermissions("view:attendance");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("view:attendance");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
@@ -27,8 +27,8 @@ export const getAttendance = async () => {
 
 export const getSingleAttendance = async (id: string) => {
   try {
-    const permission = await hasPermissions("view:attendance");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("view:attendance");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 

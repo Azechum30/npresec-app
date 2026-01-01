@@ -3,6 +3,42 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
+  turbopack: {
+    rules: {
+      "*.ts": {
+        loaders: [],
+      },
+      "*.tsx": {
+        loaders: [],
+      },
+    },
+  },
+  // Disable source maps in development to prevent Sentry parsing errors
+  ...(process.env.NODE_ENV === "development" && {
+    webpack: (config, { dev, isServer }) => {
+      if (dev) {
+        config.devtool = false;
+      }
+
+      if (!isServer) {
+        // Exclude Node.js modules from client-side bundle
+        config.externals = [
+          ...(config.externals || []),
+          "require-in-the-middle",
+        ];
+        config.resolve.fallback = {
+          ...config.resolve.fallback,
+          dns: false,
+          net: false,
+          tls: false,
+          fs: false,
+          pg: false,
+          "require-in-the-middle": false,
+        };
+      }
+      return config;
+    },
+  }),
   typedRoutes: true,
   // cacheComponents: true,
   experimental: {
@@ -10,6 +46,8 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "5mb",
     },
     authInterrupts: true,
+    // Disable turbopack source maps in development
+    ...(process.env.NODE_ENV === "development" && {}),
   },
   serverExternalPackages: ["require-in-the-middle"],
   logging: {
@@ -17,9 +55,10 @@ const nextConfig: NextConfig = {
       fullUrl: true,
     },
   },
-  turbopack: {},
+  ...(process.env.NODE_ENV === "production" && { turbopack: {} }),
 
   images: {
+    qualities: [70, 75, 80, 85, 90, 95],
     remotePatterns: [
       {
         protocol: "https",
@@ -28,24 +67,28 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Exclude Node.js-only packages from Edge runtime bundling
-  // Note: This applies to webpack builds. For Turbopack, ensure imports are runtime-guarded
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      // Exclude Node.js modules from client-side bundle
-      config.externals = [...(config.externals || []), "require-in-the-middle"];
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        dns: false,
-        net: false,
-        tls: false,
-        fs: false,
-        pg: false,
-        "require-in-the-middle": false,
-      };
-    }
-    return config;
-  },
+  // Production webpack configuration
+  ...(process.env.NODE_ENV === "production" && {
+    webpack: (config, { isServer }) => {
+      if (!isServer) {
+        // Exclude Node.js modules from client-side bundle
+        config.externals = [
+          ...(config.externals || []),
+          "require-in-the-middle",
+        ];
+        config.resolve.fallback = {
+          ...config.resolve.fallback,
+          dns: false,
+          net: false,
+          tls: false,
+          fs: false,
+          pg: false,
+          "require-in-the-middle": false,
+        };
+      }
+      return config;
+    },
+  }),
 };
 
 export default withSentryConfig(nextConfig, {
@@ -58,24 +101,22 @@ export default withSentryConfig(nextConfig, {
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
 
+  // Disable Sentry webpack plugin in development to prevent source map issues
+  ...(process.env.NODE_ENV === "development" && {
+    dryRun: true,
+    hideSourceMaps: true,
+  }),
+
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
   // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
+  ...(process.env.NODE_ENV === "production" && {
+    widenClientFileUpload: true,
+  }),
 
-  // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-  // This can increase your server load as well as your hosting bill.
-  // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-  // side errors will fail.
   tunnelRoute: "/monitoring",
 
-  // Automatically tree-shake Sentry logger statements to reduce bundle size
-  disableLogger: true,
-
-  // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-  // See the following for more information:
-  // https://docs.sentry.io/product/crons/
-  // https://vercel.com/docs/cron-jobs
-  automaticVercelMonitors: true,
+  disableLogger: process.env.NODE_ENV === "production",
+  automaticVercelMonitors: process.env.NODE_ENV === "production",
 });

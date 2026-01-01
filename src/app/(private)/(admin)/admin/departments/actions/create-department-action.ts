@@ -4,14 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import { DepartmentType, DepartmentSchema } from "@/lib/validation";
 import { DepartmentSelect } from "@/lib/types";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { revalidatePath } from "next/cache";
 
 export const createDepartment = async (values: DepartmentType) => {
   try {
-    const permissions = await hasPermissions("create:departments");
+    const { hasPermission } = await getUserPermissions("create:departments");
 
-    if (!permissions) throw new Error("Unauthorized!");
+    if (!hasPermission) throw new Error("Unauthorized!");
 
     const { data, success, error } = DepartmentSchema.safeParse(values);
 
@@ -65,12 +65,12 @@ export const createDepartment = async (values: DepartmentType) => {
 
 export const updateDepartmentAction = async (
   id: string,
-  values: DepartmentType
+  values: DepartmentType,
 ) => {
   try {
-    const permissions = await hasPermissions("edit:departments");
+    const { hasPermission } = await getUserPermissions("edit:departments");
 
-    if (!permissions)
+    if (!hasPermission)
       return { error: "You do not have permissions to perform this tasks" };
 
     const { data, success, error } = DepartmentSchema.safeParse(values);

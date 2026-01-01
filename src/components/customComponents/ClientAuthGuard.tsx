@@ -3,7 +3,7 @@
 import { ReactNode, useEffect, useState, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import SessionProvider from "./SessionProvider";
-import { checkAuthAction } from "@/app/actions/auth-actions";
+import { getAuthUser } from "@/lib/get-session";
 
 interface ClientAuthGuardProps {
   children: ReactNode;
@@ -25,14 +25,14 @@ export default function ClientAuthGuard({ children }: ClientAuthGuardProps) {
 
     const checkAuth = async () => {
       try {
-        const result = await checkAuthAction();
+        const user = await getAuthUser();
 
-        if (!result.success || !result.user) {
+        if (!user) {
           router.push("/sign-in");
           return;
         }
 
-        setUserData(result.user);
+        setUserData(user);
         setIsAuthenticated(true);
       } catch (error) {
         console.error("Auth check failed:", error);

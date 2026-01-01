@@ -75,6 +75,8 @@ export const useGetStaffColumns = () => {
     {
       header: "Department",
       accessorKey: "department.name",
+      cell: ({ row }) =>
+        row.original.department?.name ? row.original.department.name : "",
     },
     {
       header: "Actions",

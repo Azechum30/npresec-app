@@ -1,22 +1,27 @@
-import React from "react"
-import { getAuthUser } from "@/lib/getAuthUser";
-import { hasPermissions } from "@/lib/hasPermission";
+import React from "react";
+import { getAuthUser, getUserPermissions } from "@/lib/get-session";
 
 type PermissionGuardProps = {
-	permission: string | string[]
-	children: React.ReactNode
-	fallback?: React.ReactNode
-}
+  permission: string | string[];
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+};
 
 export default async function PermissionGuard({
-	permission,
-	children,
-	fallback = null,
+  permission,
+  children,
+  fallback = null,
 }: PermissionGuardProps) {
-	const[session, permissions] = await Promise.all([getAuthUser(), hasPermissions(permission)]);
+  const session = await getAuthUser();
 
-	if(session?.role?.name !== "admin" || !permissions ){
-		return fallback
-	}
-	return <>{children}</>
+  // Handle single permission check (getUserPermissions only accepts string)
+  const permissionToCheck = Array.isArray(permission)
+    ? permission[0]
+    : permission;
+  const { hasPermission } = await getUserPermissions(permissionToCheck);
+
+  if (session?.role?.name !== "admin" || !hasPermission) {
+    return fallback;
+  }
+  return <>{children}</>;
 }

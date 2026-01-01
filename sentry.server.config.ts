@@ -4,21 +4,26 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-Sentry.init({
-  dsn: "https://0fb8a9b27f3f0ffcfa50c127b30fbd53@o4509157414666240.ingest.us.sentry.io/4509157416042496",
+const isDev = process.env.NODE_ENV === "development";
 
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
+// Completely disable Sentry in development to prevent source map parsing errors
+if (!isDev) {
+  Sentry.init({
+    dsn: "https://0fb8a9b27f3f0ffcfa50c127b30fbd53@o4509157414666240.ingest.us.sentry.io/4509157416042496",
 
-  // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
+    // Define how likely traces are sampled
+    tracesSampleRate: 1,
 
-  // Disable console breadcrumbs to prevent Date.now() errors in server components
-  beforeBreadcrumb: (breadcrumb) => {
-    // Filter out console breadcrumbs to prevent Date.now() timing issues
-    if (breadcrumb.category === 'console') {
-      return null;
-    }
-    return breadcrumb;
-  },
-});
+    // Setting this option to true will print useful information to the console while you're setting up Sentry.
+    debug: false,
+
+    // Disable console breadcrumbs to prevent Date.now() errors in server components
+    beforeBreadcrumb: (breadcrumb) => {
+      // Filter out console breadcrumbs to prevent Date.now() timing issues
+      if (breadcrumb.category === "console") {
+        return null;
+      }
+      return breadcrumb;
+    },
+  });
+}

@@ -3,8 +3,11 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 import { nextCookies } from "better-auth/next-js";
 import { sendEmail } from "@/utils/send-email";
+import { customSession } from "better-auth/plugins";
+import { BetterAuthOptions } from "better-auth";
+import { ExtendedSession } from "./auth-client";
 
-export const auth = betterAuth({
+const authOptions = {
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
@@ -139,8 +142,48 @@ export const auth = betterAuth({
       },
     },
   },
-  plugins: [nextCookies()],
+} satisfies BetterAuthOptions;
+
+export const auth = betterAuth({
+  ...authOptions,
+  plugins: [
+    customSession(async ({ user, session }) => {
+      const userWithRole = await prisma.user.findUnique({
+        where: { id: session.userId },
+        select: {
+          role: {
+            select: {
+              id: true,
+              name: true,
+              permissions: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+          permissions: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+
+      return {
+        session,
+        user: {
+          ...user,
+          ...userWithRole,
+        },
+      } as const;
+    }),
+    nextCookies(),
+  ],
 });
 
+// Export the inferred types from better-auth
 export type Session = typeof auth.$Infer.Session;
 export type User = typeof auth.$Infer.Session.user;

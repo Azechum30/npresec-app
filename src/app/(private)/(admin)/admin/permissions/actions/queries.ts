@@ -3,16 +3,16 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import * as Sentry from "@sentry/nextjs";
 import { getErrorMessage } from "@/lib/getErrorMessage";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { PermissionSelect } from "@/lib/types";
 import { Prisma } from "@/generated/prisma/client";
-import { getUserWithPermissions } from "@/utils/get-user-with-permission";
+
 import { z } from "zod";
 
 export const getPermissions = async () => {
   try {
-    const permission = await hasPermissions("view:permissions");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("view:permissions");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
@@ -32,10 +32,10 @@ export const getPermissions = async () => {
 };
 
 export const getPermission = async (
-  id: string | Prisma.PermissionWhereUniqueInput
+  id: string | Prisma.PermissionWhereUniqueInput,
 ) => {
   try {
-    const { hasPermission } = await getUserWithPermissions("view:permissions");
+    const { hasPermission } = await getUserPermissions("view:permissions");
     if (!hasPermission) return { error: "Permission denied" };
 
     const { error, success, data } = z

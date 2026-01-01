@@ -1,9 +1,10 @@
 "use client";
 
+import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormControl, Form, FormField, FormItem, FormLabel } from "../ui/form";
+import { FormControl, Form, FormField, FormItem } from "../ui/form";
 import {
   Select,
   SelectContent,
@@ -11,56 +12,55 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-
-import { useTransition } from "react";
-import { updateItemsPerPage } from "@/app/(private)/profile/_actions/update-items-per-page";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useItemsPerPageSync } from "@/hooks/use-items-per-page-sync";
 
 const itemsPerPageOptions = [10, 25, 50, 100] as const;
 
 export const ItemsPerPageSchema = z.object({
-  itemsPerPage: z
-    .union([z.literal(10), z.literal(25), z.literal(50), z.literal(100)])
-    .default(10),
+  itemsPerPage: z.union([
+    z.literal(10),
+    z.literal(25),
+    z.literal(50),
+    z.literal(100),
+  ]),
 });
 
 export const ItemsPerPage = ({
   defaultValue,
+  onPageSizeChangeAction,
 }: {
   defaultValue?: z.infer<typeof ItemsPerPageSchema>;
+  onPageSizeChangeAction?: (newPageSize: number) => void;
 }) => {
+  const initialPageSize = defaultValue?.itemsPerPage || 10;
+
+  // Use the custom hook for better state synchronization
+  const { currentPageSize, updatePageSize, isPending } = useItemsPerPageSync({
+    initialPageSize,
+    onPageSizeChangeAction,
+  });
+
   const form = useForm<z.infer<typeof ItemsPerPageSchema>>({
     mode: "onBlur",
     defaultValues: {
-      itemsPerPage: defaultValue?.itemsPerPage || 10,
+      itemsPerPage: currentPageSize as 10 | 25 | 50 | 100,
     },
     resolver: zodResolver(ItemsPerPageSchema),
   });
 
-  const [isPending, startTransition] = useTransition();
-  const router = useRouter();
+  // Update form value when currentPageSize changes
+  React.useEffect(() => {
+    form.setValue("itemsPerPage", currentPageSize as 10 | 25 | 50 | 100);
+  }, [currentPageSize, form]);
 
   const handleOnValueChange = (value: (typeof itemsPerPageOptions)[number]) => {
-    form.setValue(
-      "itemsPerPage",
-      value as (typeof itemsPerPageOptions)[number]
-    );
+    // Update form immediately
+    form.setValue("itemsPerPage", value);
 
-    startTransition(async () => {
-      const { error, success } = await updateItemsPerPage(value);
-
-      if (error) {
-        toast.error(error);
-        return;
-      }
-
-      if (success) {
-        router.refresh();
-      }
-    });
-    console.log(value);
+    // Use the custom hook's update function for proper synchronization
+    updatePageSize(value as number);
   };
+
   return (
     <Form {...form}>
       <form>
@@ -73,19 +73,21 @@ export const ItemsPerPage = ({
                 value={field.value.toString()}
                 onValueChange={(value) => {
                   handleOnValueChange(
-                    Number(value) as (typeof itemsPerPageOptions)[number]
+                    Number(value) as (typeof itemsPerPageOptions)[number],
                   );
-                }}>
+                }}
+                disabled={isPending}
+              >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className={isPending ? "opacity-50" : ""}>
                     <SelectValue placeholder="Select the number of rows per page" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   {itemsPerPageOptions.map((option) => (
-                    <SelectItem
-                      key={option}
-                      value={option.toString()}>{`${option} rows`}</SelectItem>
+                    <SelectItem key={option} value={option.toString()}>
+                      {`${option} rows`}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

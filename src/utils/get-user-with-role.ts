@@ -1,7 +1,7 @@
-import { checkAuthAction } from "@/app/actions/auth-actions";
+import { getAuthUser } from "@/lib/get-session";
 
 export const getUserWithRole = async (role: string) => {
-  const { user } = await checkAuthAction();
+  const user = await getAuthUser();
 
   if (!user) {
     return { user: null, hasRole: false };

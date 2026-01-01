@@ -4,17 +4,16 @@ import { prisma } from "@/lib/prisma";
 import { PermissionSchema } from "@/lib/validation";
 import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { Prisma } from "@/generated/prisma/client";
 import { z } from "zod";
-import { getUserWithPermissions } from "@/utils/get-user-with-permission";
 
 const PermissionEditSchema = PermissionSchema.extend({ id: z.string().cuid() });
 
 export const createPermissions = async (values: unknown) => {
   try {
-    const permission = await hasPermissions("create:permissions");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("create:permissions");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
@@ -59,10 +58,10 @@ export const createPermissions = async (values: unknown) => {
 };
 
 export const UpdatePermission = async (
-  values: z.infer<typeof PermissionEditSchema>
+  values: z.infer<typeof PermissionEditSchema>,
 ) => {
   try {
-    const { hasPermission } = await getUserWithPermissions("edit:permissions");
+    const { hasPermission } = await getUserPermissions("edit:permissions");
     if (!hasPermission) return { error: "Permission denied!" };
 
     const { error, success, data } = PermissionEditSchema.safeParse(values);
@@ -105,8 +104,7 @@ export const UpdatePermission = async (
 
 export const deletePermission = async (id: string) => {
   try {
-    const { hasPermission } =
-      await getUserWithPermissions("delete:permissions");
+    const { hasPermission } = await getUserPermissions("delete:permissions");
     if (!hasPermission) return { error: "Permission denied!" };
 
     const {
@@ -144,8 +142,7 @@ export const deletePermission = async (id: string) => {
 
 export const bulkDeletePermissions = async (ids: string[]) => {
   try {
-    const { hasPermission } =
-      await getUserWithPermissions("delete:permissions");
+    const { hasPermission } = await getUserPermissions("delete:permissions");
     if (!hasPermission) return { error: "Permission denied!" };
 
     const parsed = z.array(z.string().cuid()).safeParse(ids);

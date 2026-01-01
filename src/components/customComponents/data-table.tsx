@@ -28,6 +28,7 @@ import {
 import React, { JSX, useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 import { useAuth } from "./SessionProvider";
+import { ExtendedSession } from "@/lib/auth-client";
 
 type DataTableProps<TData> = {
   columns: ColumnDef<TData>[];
@@ -48,7 +49,7 @@ const DataTable = <TData,>({
   renderSubComponent,
   onDelete,
 }: DataTableProps<TData>) => {
-  const user = useAuth();
+  const user = useAuth() as ExtendedSession["user"];
 
   const userItemsPerPage = useMemo(() => {
     const validPageSizes = [10, 25, 50, 100];
@@ -72,20 +73,40 @@ const DataTable = <TData,>({
   const [expanded, setExpanded] = useState<ExpandedState>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
+  // Sync pagination when user preference changes from external updates (like router.refresh)
   useEffect(() => {
-    if (pagination.pageSize !== userItemsPerPage) {
+    // Only update if the user preference has actually changed and we're not in the middle of an optimistic update
+    if (userItemsPerPage !== pagination.pageSize) {
       setPagination((prev) => ({
         ...prev,
         pageSize: userItemsPerPage,
         pageIndex: 0,
       }));
     }
-  }, [userItemsPerPage, pagination.pageSize]);
+  }, [userItemsPerPage, pagination.pageSize]); // Remove pagination.pageSize from dependencies to prevent loops
+
+  // Handle page size change - this will be called from ItemsPerPage component
+  const handlePageSizeChange = (newPageSize: number) => {
+    console.log("handlePageSizeChange called with:", newPageSize);
+    console.log("Current pagination state:", pagination);
+
+    // Optimistically update the table state immediately
+    setPagination((prev) => ({
+      ...prev,
+      pageSize: newPageSize,
+      pageIndex: 0, // Reset to first page when changing page size
+    }));
+
+    console.log("Updated pagination state will be:", {
+      ...pagination,
+      pageSize: newPageSize,
+      pageIndex: 0,
+    });
+  };
 
   const memoizedColums = useMemo(() => columns, [columns]);
   const memoizedData = useMemo(() => data, [data]);
 
-   
   const table = useReactTable({
     columns: memoizedColums,
     data: memoizedData,
@@ -133,7 +154,7 @@ const DataTable = <TData,>({
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 ))}
@@ -149,7 +170,7 @@ const DataTable = <TData,>({
                       <TableCell key={cell.id}>
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext()
+                          cell.getContext(),
                         )}
                       </TableCell>
                     ))}
@@ -180,6 +201,7 @@ const DataTable = <TData,>({
           pageSizeOptions={
             userItemsPerPage as unknown as { itemsPerPage: 10 | 25 | 50 | 100 }
           }
+          onPageSizeChangeAction={handlePageSizeChange}
         />
       </CardFooter>
     </Card>

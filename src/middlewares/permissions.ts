@@ -1,5 +1,5 @@
+import { getAuthUser } from "@/lib/get-session";
 import { ORPCError, os } from "@orpc/server";
-import { getAuthUser } from "@/lib/getAuthUser";
 
 type AuthUser = NonNullable<Awaited<ReturnType<typeof getAuthUser>>>;
 
@@ -20,9 +20,9 @@ function checkUserPermissions(
     : [permissionNames];
 
   // Get all permission names the user has
-  const userPermissions = user.permissions.map((p) => p.name);
+  const userPermissions = user.permissions?.map((p) => p.name);
   const rolePermissions = user.role?.permissions?.map((p) => p.name) || [];
-  const allPermissions = [...userPermissions, ...rolePermissions];
+  const allPermissions = [...(userPermissions as string[]), ...rolePermissions];
 
   if (options.requireAll) {
     // User must have ALL specified permissions

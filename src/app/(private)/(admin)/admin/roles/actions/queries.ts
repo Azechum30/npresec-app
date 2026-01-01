@@ -1,7 +1,7 @@
 "use server";
 import "server-only";
 import { getErrorMessage } from "@/lib/getErrorMessage";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { RolesSelect } from "@/lib/types";
 import * as Sentry from "@sentry/nextjs";
@@ -10,8 +10,8 @@ import { getCachedRoles } from "./get-cached-roles";
 
 export const getRoles = async () => {
   try {
-    const permission = await hasPermissions("view:roles");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("view:roles");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
@@ -32,8 +32,8 @@ export const getRoles = async () => {
 
 export const getRole = async (id: string) => {
   try {
-    const permission = await hasPermissions("view:roles");
-    if (!permission) return { error: "Permission denied" };
+    const { hasPermission } = await getUserPermissions("view:roles");
+    if (!hasPermission) return { error: "Permission denied" };
 
     const result = z.string().safeParse(id);
     if (!result.success) {

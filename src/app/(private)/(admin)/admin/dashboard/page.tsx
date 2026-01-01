@@ -1,10 +1,9 @@
-import { hasPermissions } from "@/lib/hasPermission";
 import { forbidden, redirect, unauthorized } from "next/navigation";
 import { getDashboardData } from "./actions/dashboard-data";
 import { Suspense } from "react";
 import DashboardContent from "./components/dashboard-content";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getAuthUser } from "@/lib/getAuthUser";
+import { getAuthUser } from "@/lib/get-session";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

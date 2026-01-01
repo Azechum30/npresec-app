@@ -1,5 +1,5 @@
 "use server";
-import { getAuthUser } from "@/lib/getAuthUser";
+import { getAuthUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 
 export type DashboardData = {

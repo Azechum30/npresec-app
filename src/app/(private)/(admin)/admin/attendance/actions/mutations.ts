@@ -2,7 +2,7 @@
 import "server-only";
 import * as Sentry from "@sentry/nextjs";
 import { getErrorMessage } from "@/lib/getErrorMessage";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import {
   BulkAttendanceSchema,
   EditSingleStudentAttendanceSchema,
@@ -17,9 +17,9 @@ const semesterType = ["First", "Second"] as const;
 
 export const createAttendance = async (values: unknown) => {
   try {
-    const permission = await hasPermissions("create:attendance");
+    const { hasPermission } = await getUserPermissions("create:attendance");
 
-    if (!permission) {
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
@@ -48,8 +48,8 @@ export const createAttendance = async (values: unknown) => {
             studentId: entry.studentId,
             status: entry.status,
           },
-        })
-      )
+        }),
+      ),
     );
 
     if (!result.length) {
@@ -78,8 +78,8 @@ export const createAttendance = async (values: unknown) => {
 
 export const createSingleAttendance = async (values: unknown) => {
   try {
-    const permission = await hasPermissions("create:attendance");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("create:attendance");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
@@ -134,8 +134,8 @@ export const createSingleAttendance = async (values: unknown) => {
 
 export const updateAttendance = async (values: unknown) => {
   try {
-    const permission = await hasPermissions("edit:attendance");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("edit:attendance");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
     const unValidData = EditSingleStudentAttendanceSchema.safeParse(values);
@@ -173,8 +173,8 @@ export const updateAttendance = async (values: unknown) => {
 
 export const deleteAttendance = async (id: string) => {
   try {
-    const permission = await hasPermissions("delete:attendance");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("delete:attendance");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
     const attendance = await prisma.attendance.delete({
@@ -196,8 +196,8 @@ export const deleteAttendance = async (id: string) => {
 
 export const deleteMultipleAttendance = async (ids: string[]) => {
   try {
-    const permission = await hasPermissions("delete:attendance");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("delete:attendance");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 

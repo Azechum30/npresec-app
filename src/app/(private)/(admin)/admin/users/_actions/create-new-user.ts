@@ -1,7 +1,7 @@
 "use server";
 import "server-only";
 import * as Sentry from "@sentry/nextjs";
-import { getUserWithPermissions } from "@/utils/get-user-with-permission";
+import { getUserPermissions } from "@/lib/get-session";
 import { UserSchema } from "@/lib/validation";
 import { prisma } from "@/lib/prisma";
 import { client } from "@/utils/qstash";
@@ -12,7 +12,7 @@ import { headers } from "next/headers";
 
 export const createNewUserAction = async (values: unknown) => {
   try {
-    const { hasPermission } = await getUserWithPermissions("create:users");
+    const { hasPermission } = await getUserPermissions("create:users");
     if (!hasPermission) return { error: "Permission denied" };
 
     const { error, success, data } = UserSchema.safeParse(values);

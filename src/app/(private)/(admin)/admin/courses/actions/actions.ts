@@ -1,8 +1,7 @@
 "use server";
 
-import { getAuthUser } from "@/lib/getAuthUser";
+import { getAuthUser, getUserPermissions } from "@/lib/get-session";
 import { getErrorMessage } from "@/lib/getErrorMessage";
-import { hasPermissions } from "@/lib/hasPermission";
 import { prisma } from "@/lib/prisma";
 import { CourseSelect } from "@/lib/types";
 import {
@@ -79,8 +78,8 @@ async function generateUniqueCourseCodes(count: number): Promise<string[]> {
 
 export const createCourse = async (values: CoursesType) => {
   try {
-    const permission = await hasPermissions("create:courses");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("create:courses");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
@@ -197,14 +196,14 @@ export const getCourses = async (codes?: string[]) => {
       return { error: "User not found!" };
     }
 
-    const permission = await hasPermissions("view:courses");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("view:courses");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
     let query: Prisma.CourseWhereInput = {};
 
-    if (user.role?.name === "staff") {
+    if (user?.role?.name === "staff") {
       query = {
         staff: {
           some: { id: user.id },
@@ -235,8 +234,8 @@ export const getCourses = async (codes?: string[]) => {
 
 export const getCourse = async (id: string) => {
   try {
-    const permission = await hasPermissions("view:courses");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("view:courses");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
@@ -256,8 +255,8 @@ export const getCourse = async (id: string) => {
 
 export const updateCourse = async (values: CourseUpdateType) => {
   try {
-    const permission = await hasPermissions("edit:courses");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("edit:courses");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
@@ -339,8 +338,8 @@ export const updateCourse = async (values: CourseUpdateType) => {
 
 export const deleteCourse = async (id: string) => {
   try {
-    const permission = await hasPermissions("delete:courses");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("delete:courses");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
@@ -363,8 +362,8 @@ export const deleteCourse = async (id: string) => {
 
 export const bulkDeleteCourses = async (ids: string[]) => {
   try {
-    const permission = await hasPermissions("delete:courses");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("delete:courses");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
@@ -396,9 +395,9 @@ export const bulkDeleteCourses = async (ids: string[]) => {
 
 export const bulkUploadCourses = async (values: BulkUploadCoursesType) => {
   try {
-    const permission = await hasPermissions("create:courses");
+    const { hasPermission } = await getUserPermissions("create:courses");
 
-    if (!permission) {
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
@@ -436,7 +435,7 @@ export const bulkUploadCourses = async (values: BulkUploadCoursesType) => {
     let generatedCodes: string[] = [];
     if (coursesWithoutCodes.length > 0) {
       generatedCodes = await generateUniqueCourseCodes(
-        coursesWithoutCodes.length
+        coursesWithoutCodes.length,
       );
     }
 
@@ -483,17 +482,17 @@ export const bulkUploadCourses = async (values: BulkUploadCoursesType) => {
     ]);
 
     const missingClasses = classes.filter(
-      (className) => !existingClasses.some((cls) => cls.name === className)
+      (className) => !existingClasses.some((cls) => cls.name === className),
     );
 
     const missingTeachers = staff.filter(
       (teacherId) =>
-        !existingTeachers.some((ter) => ter.employeeId === teacherId)
+        !existingTeachers.some((ter) => ter.employeeId === teacherId),
     );
 
     const missingDepartments = departments.filter(
       (departmentName) =>
-        !existingDepartments.some((dp) => dp.name === departmentName)
+        !existingDepartments.some((dp) => dp.name === departmentName),
     );
 
     if (
@@ -535,7 +534,7 @@ export const bulkUploadCourses = async (values: BulkUploadCoursesType) => {
         acc[cls.name] = cls.id;
         return acc;
       },
-      {} as Record<string, string>
+      {} as Record<string, string>,
     );
 
     const teachersMap = existingTeachers.reduce(
@@ -543,7 +542,7 @@ export const bulkUploadCourses = async (values: BulkUploadCoursesType) => {
         acc[tls.employeeId] = tls.id;
         return acc;
       },
-      {} as Record<string, string>
+      {} as Record<string, string>,
     );
 
     const departmentMap = existingDepartments.reduce(
@@ -551,7 +550,7 @@ export const bulkUploadCourses = async (values: BulkUploadCoursesType) => {
         acc[dp.name] = dp.id;
         return acc;
       },
-      {} as Record<string, string>
+      {} as Record<string, string>,
     );
 
     // Assign generated codes to courses without codes
@@ -587,7 +586,7 @@ export const bulkUploadCourses = async (values: BulkUploadCoursesType) => {
     }));
 
     const coursesCreated = await prisma.$transaction(
-      coursesToCreate.map((course) => prisma.course.create({ data: course }))
+      coursesToCreate.map((course) => prisma.course.create({ data: course })),
     );
 
     if (!(coursesCreated.length > 0)) {

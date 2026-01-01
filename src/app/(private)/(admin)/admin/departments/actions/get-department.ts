@@ -1,14 +1,14 @@
 "use server";
 
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { DepartmentSelect } from "@/lib/types";
 
 export const getDepartment = async (id: string) => {
   try {
-    const permissions = await hasPermissions("view:departments");
+    const { hasPermission } = await getUserPermissions("view:departments");
 
-    if (!permissions) throw new Error("Unauthorized!");
+    if (!hasPermission) throw new Error("Unauthorized!");
 
     const department = await prisma.department.findUnique({
       where: {

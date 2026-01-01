@@ -1,6 +1,5 @@
 "use server";
-import { getAuthUser } from "@/lib/getAuthUser";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getAuthUser, getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { GradeSchema } from "@/lib/validation";
 import * as Sentry from "@sentry/nextjs";
@@ -8,8 +7,8 @@ import { revalidatePath } from "next/cache";
 
 export const createScoresAction = async (values: unknown) => {
   try {
-    const permission = await hasPermissions("create:grades");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("create:grades");
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
@@ -66,7 +65,7 @@ export const createScoresAction = async (values: unknown) => {
     }
 
     revalidatePath(
-      `/scores?classID=${classId}&courseID=${courseId}&semester=${semester}&academicYear=${academicYear}&assessmentType=${assessmentType}`
+      `/scores?classID=${classId}&courseID=${courseId}&semester=${semester}&academicYear=${academicYear}&assessmentType=${assessmentType}`,
     );
 
     return { count: result.count };

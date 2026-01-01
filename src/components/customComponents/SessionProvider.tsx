@@ -1,10 +1,9 @@
 "use client";
 
+import { ExtendedSession } from "@/lib/auth-client";
 import { createContext, useContext } from "react";
-import { getAuthUser } from "@/lib/getAuthUser";
 
-// Type for the user with role information from getAuthUser
-export type AuthUser = Awaited<ReturnType<typeof getAuthUser>>;
+export type AuthUser = ExtendedSession["user"] | null;
 
 const SessionContext = createContext<AuthUser>(null);
 

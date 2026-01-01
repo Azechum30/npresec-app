@@ -7,5 +7,22 @@ export const authClient = createAuthClient({
   plugins: [inferAdditionalFields<typeof auth>()],
 });
 
+export type ExtendedSession = typeof authClient.$Infer.Session & {
+  user: {
+    role: {
+      id: string;
+      name: string;
+      permissions?: {
+        id: string;
+        name: string;
+      }[];
+    };
+    permissions?: {
+      id: string;
+      name: string;
+    }[];
+  };
+};
+
 export const { useSession, signIn, signOut, signUp, resetPassword } =
   authClient;

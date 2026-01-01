@@ -3,7 +3,7 @@
 import { Levels } from "@/lib/constants";
 import { generatePassword } from "@/lib/generatePassword";
 import { getErrorMessage } from "@/lib/getErrorMessage";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/resend-config";
 import { StudentResponseType, StudentSelect } from "@/lib/types";
@@ -23,7 +23,6 @@ import {
 } from "@/utils/generateStudentIndex";
 import { Prisma } from "@/generated/prisma/client";
 import * as Sentry from "@sentry/nextjs";
-import bcrypt from "bcryptjs";
 import moment from "moment";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
@@ -32,13 +31,14 @@ import { client } from "@/utils/qstash";
 import { env } from "@/lib/server-only-actions/validate-env";
 import { auth } from "@/lib/auth";
 import { computeGraduationDate } from "@/lib/compute-graduation-date";
+import { validateAndTransformStudentsData } from "../utils/validate-and-transform-students-data";
 
 export const createStudent = async (values: StudentType) => {
   try {
-    const permission = await hasPermissions("create:students");
+    const { hasPermission } = await getUserPermissions("create:students");
     const ip = (await headers()).get("x-forwarded-for") ?? "127.0.0.1";
 
-    if (!permission) {
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
@@ -147,12 +147,12 @@ export const createStudent = async (values: StudentType) => {
     const sequence = latestStudent
       ? Number.isNaN(
           parseInt(
-            latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH)
-          )
+            latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
+          ),
         )
         ? 1
         : parseInt(
-            latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH)
+            latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
           ) + 1
       : 1;
 
@@ -280,8 +280,8 @@ export const createStudent = async (values: StudentType) => {
 
 export const getStudents = async (studentIDs?: string[]) => {
   try {
-    const permission = await hasPermissions("view:students");
-    if (!permission) return { error: "Permission denied" };
+    const { hasPermission } = await getUserPermissions("view:students");
+    if (!hasPermission) return { error: "Permission denied" };
 
     let query: Prisma.StudentWhereInput = {};
 
@@ -299,9 +299,7 @@ export const getStudents = async (studentIDs?: string[]) => {
       },
     });
 
-    if (!students) return { error: "No students found!" };
-
-    return { students };
+    return { students: students ?? [] };
   } catch (error) {
     console.error("Could not fetch students:", error);
     Sentry.captureException(error);
@@ -311,8 +309,8 @@ export const getStudents = async (studentIDs?: string[]) => {
 
 export const bulkDeleteStudents = async (ids: string[]) => {
   try {
-    const permission = await hasPermissions("delete:students");
-    if (!permission) return { error: "Permission denied" };
+    const { hasPermission } = await getUserPermissions("delete:students");
+    if (!hasPermission) return { error: "Permission denied" };
 
     // Get students to update class enrollments before deletion
     const studentsToDelete = await prisma.student.findMany({
@@ -326,7 +324,7 @@ export const bulkDeleteStudents = async (ids: string[]) => {
       if (student.classId) {
         classUpdates.set(
           student.classId,
-          (classUpdates.get(student.classId) || 0) + 1
+          (classUpdates.get(student.classId) || 0) + 1,
         );
       }
     });
@@ -337,8 +335,8 @@ export const bulkDeleteStudents = async (ids: string[]) => {
         prisma.class.update({
           where: { id: classId },
           data: { currentEnrollment: { decrement: decrementCount } },
-        })
-      )
+        }),
+      ),
     );
 
     const { count } = await prisma.student.deleteMany({
@@ -358,8 +356,8 @@ export const bulkDeleteStudents = async (ids: string[]) => {
 
 export const deleteStudent = async (id: string) => {
   try {
-    const permission = hasPermissions("delete:students");
-    if (!permission) return { error: "Permission denied" };
+    const { hasPermission } = await getUserPermissions("delete:students");
+    if (!hasPermission) return { error: "Permission denied" };
 
     const existingStudent = await prisma.student.findUnique({
       where: { id },
@@ -397,8 +395,8 @@ export const deleteStudent = async (id: string) => {
 
 export const getStudent = async (id: string) => {
   try {
-    const permission = await hasPermissions("view:students");
-    if (!permission) return { error: "Permission denied" };
+    const { hasPermission } = await getUserPermissions("view:students");
+    if (!hasPermission) return { error: "Permission denied!" };
 
     const student = await prisma.student.findUnique({
       where: { id },
@@ -417,9 +415,9 @@ export const getStudent = async (id: string) => {
 
 export const updateStudent = async (values: EditStudentType) => {
   try {
-    const permission = await hasPermissions("edit:students");
+    const { hasPermission } = await getUserPermissions("edit:students");
 
-    if (!permission) return { error: "Permission denied" };
+    if (!hasPermission) return { error: "Permission denied" };
 
     const result = EditStudentSchema.safeParse(values);
 
@@ -429,7 +427,7 @@ export const updateStudent = async (values: EditStudentType) => {
           acc[issue.path[0]] = issue.message;
           return acc;
         },
-        {} as Record<string, string>
+        {} as Record<string, string>,
       );
 
       return { error: zodError };
@@ -471,7 +469,7 @@ export const updateStudent = async (values: EditStudentType) => {
     if (yearInDB !== yearInRequest) {
       const sequence = existingStudent?.studentNumber
         ? parseInt(
-            existingStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH)
+            existingStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
           ) + 1
         : 1;
       studentNumber = generateStudentIndex({
@@ -600,20 +598,20 @@ export const updateStudent = async (values: EditStudentType) => {
 
 export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
   try {
-    const permission = await hasPermissions("create:students");
-    if (!permission) return { error: "Permission denied" };
+    const { hasPermission } = await getUserPermissions("create:students");
+    if (!hasPermission) return { error: "Permission denied" };
 
-    const result = BulkCreateStudentsSchema.safeParse(values);
+    const result = validateAndTransformStudentsData(values);
 
-    if (!result.success) {
-      const zodError = result.error.errors.map(
-        (e) => `${e.path[0]}, ${e.message}`
-      );
-
-      return { errors: zodError };
+    if (result.errors) {
+      return {
+        errors: result.errors.flatMap(
+          (e) => `An error occurred at row ${e.row}, ${e.field}: ${e.message}`,
+        ),
+      };
     }
 
-    const { data: studentData } = result.data;
+    const { data: studentData } = result.data!;
 
     const classNames = [
       ...new Set(studentData.map((student) => student.classId)),
@@ -652,11 +650,11 @@ export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
     }
 
     const classMap = new Map(
-      classes.map((classItem) => [classItem.name, classItem.id])
+      classes.map((classItem) => [classItem.name, classItem.id]),
     );
 
     const departmentMap = new Map(
-      departments.map((dept) => [dept.name, dept.id])
+      departments.map((dept) => [dept.name, dept.id]),
     );
 
     // Get class details for capacity validation
@@ -671,7 +669,7 @@ export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
     });
 
     const classDetailsMap = new Map(
-      classDetails.map((classItem) => [classItem.id, classItem])
+      classDetails.map((classItem) => [classItem.id, classItem]),
     );
 
     const createStudents: StudentResponseType[] = [];
@@ -706,7 +704,7 @@ export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
         classDetail.currentEnrollment >= classDetail.maxCapacity
       ) {
         errors.push(
-          `Class "${classDetail.name}" has reached its maximum capacity of ${classDetail.maxCapacity} students`
+          `Class "${classDetail.name}" has reached its maximum capacity of ${classDetail.maxCapacity} students`,
         );
       }
 
@@ -731,12 +729,12 @@ export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
       const sequence = latestStudent?.studentNumber
         ? isNaN(
             parseInt(
-              latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH)
-            )
+              latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
+            ),
           )
           ? 1
           : parseInt(
-              latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH)
+              latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
             ) + 1
         : 1;
 
@@ -745,8 +743,6 @@ export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
         department: student.departmentId! as Department,
         sequenceNumber: sequence,
       });
-
-      const hashedPassword = await bcrypt.hash(student.password, 10);
 
       await auth.api.signUpEmail({
         body: {

@@ -1,4 +1,5 @@
 import ThemeProvider from "@/components/customComponents/theme-provider";
+import RouteTrackingProvider from "@/components/providers/RouteTrackingProvider";
 import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 import { Poppins, Roboto } from "next/font/google";
@@ -39,9 +40,12 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange={true}>
-          <Toaster richColors duration={5000} />
-          {children}
+          disableTransitionOnChange={true}
+        >
+          <RouteTrackingProvider>
+            <Toaster richColors duration={5000} />
+            {children}
+          </RouteTrackingProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -1,15 +1,15 @@
 "use server";
 import * as Sentry from "@sentry/nextjs";
 import { getErrorMessage } from "@/lib/getErrorMessage";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { BoardMemberSelect } from "@/lib/types";
 
 export const fetchBoardMembers = async () => {
   try {
-    const permission = await hasPermissions("view:teachers");
+    const { hasPermission } = await getUserPermissions("view:teachers");
 
-    if (!permission) {
+    if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 

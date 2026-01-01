@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/get-session";
 import { ORPCError, os } from "@orpc/server";
-import { prisma } from "@/lib/prisma";
 
 const middlewareAuth = os
   .$context<{
@@ -17,13 +17,7 @@ const middlewareAuth = os
       throw new ORPCError("UNAUTHORIZED");
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      include: {
-        role: { include: { permissions: true } },
-        permissions: true,
-      },
-    });
+    const user = await getAuthUser();
 
     if (!user) {
       throw new ORPCError("UNAUTHORIZED");

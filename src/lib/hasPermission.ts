@@ -1,4 +1,4 @@
-import { getAuthUser } from "./getAuthUser";
+import { getAuthUser } from "./get-session";
 
 type PermissionCheckOptions = {
   requireAll?: boolean; // If true, user must have ALL permissions
@@ -22,9 +22,9 @@ export async function hasPermissions(
     : [permissionNames];
 
   // Get all permission names the user has
-  const userPermissions = user.permissions.map((p) => p.name);
+  const userPermissions = user.permissions?.map((p) => p.name);
   const rolePermissions = user.role?.permissions?.map((p) => p.name) || [];
-  const allPermissions = [...userPermissions, ...rolePermissions];
+  const allPermissions = [...(userPermissions as string[]), ...rolePermissions];
 
   if (options.requireAll) {
     // User must have ALL specified permissions

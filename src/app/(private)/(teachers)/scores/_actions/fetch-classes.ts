@@ -1,15 +1,15 @@
 "use server";
 
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import * as Sentry from "@sentry/nextjs";
 
 export const fetchClasses = async (userId: string) => {
   try {
-    // const permission = await hasPermissions("view:classes");
-    // if (!permission) {
-    //   return { error: "You are not authorized to view classes" };
-    // }
+    const { hasPermission } = await getUserPermissions("view:classes");
+    if (!hasPermission) {
+      return { error: "You are not authorized to view classes" };
+    }
 
     const teacher = await prisma.staff.findUnique({
       where: { userId },
@@ -33,10 +33,10 @@ export const fetchClasses = async (userId: string) => {
 
 export const fetchCourse = async (userId: string) => {
   try {
-    // const permission = await hasPermissions("view:courses");
-    // if (!permission) {
-    //   return { error: "You are not authorized to view courses" };
-    // }
+    const { hasPermission } = await getUserPermissions("view:courses");
+    if (!hasPermission) {
+      return { error: "You are not authorized to view courses" };
+    }
 
     const teacher = await prisma.staff.findUnique({
       where: { userId },

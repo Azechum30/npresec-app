@@ -1,25 +1,22 @@
 "use server";
 import * as Sentry from "@sentry/nextjs";
 import { prisma } from "@/lib/prisma";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { StudentSelect } from "@/lib/types";
-import {
-  AssessmentType,
-  Semester,
-} from "@/generated/prisma/client";
+import { AssessmentType, Semester } from "@/generated/prisma/client";
 
 export const fetchStudentBaseOnQueryAction = async (
   classId: string,
   courseId: string,
   semester: string,
   academicYear: string,
-  assessmentType: string
+  assessmentType: string,
 ) => {
   try {
-    const permission = await hasPermissions("view:students");
-    // if (!permission) {
-    //   return { error: "You do not have permission to view students" };
-    // }
+    const { hasPermission } = await getUserPermissions("view:students");
+    if (!hasPermission) {
+      return { error: "You do not have permission to view students" };
+    }
 
     if (
       !classId ||

@@ -1,14 +1,14 @@
 "use server";
 import "server-only";
 import * as Sentry from "@sentry/nextjs";
-import { getUserWithPermissions } from "@/utils/get-user-with-permission";
+import { getUserPermissions } from "@/lib/get-session";
 import { UpdateUserRoleSchema } from "@/lib/validation";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 export const updateUserRole = async (values: unknown) => {
   try {
-    const { hasPermission } = await getUserWithPermissions("edit:users");
+    const { hasPermission } = await getUserPermissions("edit:users");
     if (!hasPermission) {
       console.error("Permission denied");
       return { error: "Permission denied" };

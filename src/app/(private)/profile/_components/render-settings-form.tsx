@@ -79,7 +79,7 @@ export const RenderSettingsForm = () => {
   console.log(user.emailNotifications);
   return (
     <SettingsForm
-      onSubmit={handleSettingsFormSubmission}
+      onSubmitAction={handleSettingsFormSubmission}
       isPending={isPending}
       defaultValues={defaultValues}
     />

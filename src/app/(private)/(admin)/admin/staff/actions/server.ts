@@ -14,11 +14,11 @@ import { checkExistingRelatedRecords } from "../utils/check-existing-related-rec
 import { triggerImageUpload } from "@/utils/trigger-image-upload";
 import { triggerStaffCreation } from "../utils/trigger-staff-creation";
 import { triggerSendEmail } from "@/lib/trigger-send-email";
-import { getUserWithPermissions } from "@/utils/get-user-with-permission";
+import { getUserPermissions } from "@/lib/get-session";
 
 export const createStaff = async (values: unknown) => {
   try {
-    const { hasPermission } = await getUserWithPermissions("create:staff");
+    const { hasPermission } = await getUserPermissions("create:staff");
 
     if (!hasPermission) return { error: "Permission denied" };
 
@@ -54,7 +54,7 @@ export const createStaff = async (values: unknown) => {
 
     const { error: duplicates, staffRole } = await checkExistingRelatedRecords(
       normalizedStaff,
-      roleName
+      roleName,
     );
 
     if (duplicates) {
@@ -74,7 +74,7 @@ export const createStaff = async (values: unknown) => {
 
     const { staff, error: staffCreationError } = await triggerStaffCreation(
       user.id,
-      rest
+      rest,
     );
 
     if (staffCreationError) {
@@ -86,7 +86,7 @@ export const createStaff = async (values: unknown) => {
         imageFile as File,
         staff.userId as string,
         "staff",
-        "user" as const
+        "user" as const,
       ));
     }
 
@@ -121,7 +121,7 @@ export const createStaff = async (values: unknown) => {
 
 export const getStaff = async () => {
   try {
-    const { hasPermission } = await getUserWithPermissions("view:staff");
+    const { hasPermission } = await getUserPermissions("view:staff");
 
     if (!hasPermission) return { error: "Permission denied" };
 
@@ -141,7 +141,7 @@ export const getStaff = async () => {
 
 export const getStaffMember = async (id: string) => {
   try {
-    const { hasPermission } = await getUserWithPermissions("view:staff");
+    const { hasPermission } = await getUserPermissions("view:staff");
     if (!hasPermission) return { error: "Permission denied" };
 
     const staff = await prisma.staff.findUnique({
@@ -166,7 +166,7 @@ export const getStaffMember = async (id: string) => {
 
 export const updateStaff = async (id: string, data: StaffType) => {
   try {
-    const { hasPermission } = await getUserWithPermissions("update:staff");
+    const { hasPermission } = await getUserPermissions("update:staff");
     if (!hasPermission) return { error: "Permission denied" };
 
     const unvalidData = StaffSchema.safeParse(data);
@@ -240,7 +240,7 @@ export const updateStaff = async (id: string, data: StaffType) => {
         imageFile as File,
         updatedRecord.userId as string,
         "staff",
-        "user" as const
+        "user" as const,
       ));
     }
 
@@ -280,7 +280,7 @@ export const updateStaff = async (id: string, data: StaffType) => {
 
 export const deleteStaffRequest = async (id: string) => {
   try {
-    const { hasPermission } = await getUserWithPermissions("delete:staff");
+    const { hasPermission } = await getUserPermissions("delete:staff");
     if (!hasPermission) return { error: "Permission denied" };
 
     const staffWithUserId = await prisma.staff.findFirst({
@@ -319,7 +319,7 @@ export const deleteStaffRequest = async (id: string) => {
 
 export const bulkDeleteStaff = async (rows: string[], user?: any) => {
   try {
-    const { hasPermission } = await getUserWithPermissions("delete:staff");
+    const { hasPermission } = await getUserPermissions("delete:staff");
     if (!hasPermission) return { error: "Permission denied" };
     const staffWithUserIds = await prisma.staff.findMany({
       where: {

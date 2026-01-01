@@ -1,5 +1,5 @@
 "use server";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/server-only-actions/validate-env";
 import { BoardOfGovernorsSchema } from "@/lib/validation";
@@ -14,8 +14,8 @@ const EditSchema = BoardOfGovernorsSchema.extend({
 
 export const handleUpdateBoardMemberAction = async (values: unknown) => {
   try {
-    const permission = await hasPermissions("edit:teachers");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("edit:teachers");
+    if (!hasPermission) {
       console.error("Permission denied");
       return { error: "Permission denied" };
     }

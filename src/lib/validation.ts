@@ -10,7 +10,7 @@ export const SignUpSchema = z
       .min(3, "Username must be at least 3 characters long!")
       .regex(
         /^[a-zA-Z0-9_-]+$/,
-        "Only letters, underscores, and hypens are allowed!"
+        "Only letters, underscores, and hypens are allowed!",
       ),
     email: z.string().email("Email is required!"),
     password: z.string().min(8, "Password must be at least 8 characters long!"),
@@ -59,7 +59,7 @@ export const BulkUploadDepartmentSchema = z.object({
   data: z.array(
     DepartmentSchema.omit({ createdAt: true }).extend({
       createdAt: z.union([z.string(), z.date()]),
-    })
+    }),
   ),
 });
 
@@ -91,7 +91,7 @@ const requiredUserName = z
   .string({ required_error: "This field is required!" })
   .regex(
     /^[a-zA-Z0-9]+$/,
-    "Username field accepts only letters! Spaces are not allowed!"
+    "Username field accepts only letters! Spaces are not allowed!",
   );
 const requiredPhoneNumber = z
   .string({ required_error: "phone number is required!" })
@@ -158,7 +158,7 @@ export const BulkCreateStaffSchema = z.object({
     }).extend({
       courses: z.union([z.string(), z.array(z.string())]).optional(),
       classes: z.union([z.string(), z.array(z.string())]).optional(),
-    })
+    }),
   ),
 });
 
@@ -177,7 +177,7 @@ export const ClassesSchema = z.object({
     .string({ required_error: "name is required!" })
     .regex(
       /^[a-zA-Z0-9\s]/,
-      "name can only contain letters, numbers and whitespaces"
+      "name can only contain letters, numbers and whitespaces",
     ),
   code: z.string().nullish(),
   level: z.enum(grades),
@@ -201,7 +201,7 @@ export const BulkClassesSchema = z.object({
       department: z.string(),
       staffId: z.string(),
       createdAt: z.union([z.string(), z.date()]),
-    })
+    }),
   ),
 });
 
@@ -215,7 +215,7 @@ export const ResetPasswordSchema = z
       .max(128, { message: "password must be at most 128 characters long!" })
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "password must contain at least one lowercase letter, one uppercase letter, and one digit!"
+        "password must contain at least one lowercase letter, one uppercase letter, and one digit!",
       ),
     confirmPassword: z.string({ message: "confirm password is required!" }),
     token: z.string({ message: "reset token is required!" }),
@@ -302,7 +302,7 @@ export const AcademicInfoSchema = z.object({
     .string()
     .regex(
       /^[a-zA-Z\_]+$/,
-      "current level only accepts alphabets and underscore"
+      "current level only accepts alphabets and underscore",
     ),
   status: z.enum(status),
   departmentId: optionalString,
@@ -426,7 +426,7 @@ export const PermissionSchema = z.object({
       z.object({
         name: z.string().min(1, "Permission name cannot be empty"),
         description: z.string().optional(),
-      })
+      }),
     )
     .min(1, "At least one permission is required!"),
 });
@@ -582,7 +582,7 @@ export const UserSchema = z
       .min(1, "Username is required")
       .regex(
         /^[a-zA-Z0-9]+$/,
-        "username can only be alphanumeric characters. Spaces are are not allowed"
+        "username can only be alphanumeric characters. Spaces are are not allowed",
       )
       .min(1),
     email: z
@@ -595,7 +595,7 @@ export const UserSchema = z
       .min(6, "password must contain at least 6 characters long")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+[\]{}|':;,.<>?/~`])(?=.{6,}).*$/,
-        "password must contain at least one uppercase character, one lowercase character, one digit and one special character"
+        "password must contain at least one uppercase character, one lowercase character, one digit and one special character",
       ),
 
     confirmPassword: z
@@ -603,7 +603,7 @@ export const UserSchema = z
       .min(6, "password must contain at least 6 characters long")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+[\]{}|':;,.<>?/~`])(?=.{6,}).*$/,
-        "password must contain at least one uppercase character, one lowercase character, one digit and one special character"
+        "password must contain at least one uppercase character, one lowercase character, one digit and one special character",
       ),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -741,7 +741,7 @@ export const SettingsSchema = z.object({
       timezoneOptions.map((tz) => tz.value) as [
         TimezoneValue,
         ...TimezoneValue[],
-      ]
+      ],
     )
     .optional()
     .default("Africa/Accra"),

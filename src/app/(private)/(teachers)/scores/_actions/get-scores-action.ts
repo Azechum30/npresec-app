@@ -2,7 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import { GradeSelect } from "@/lib/types";
 import * as Sentry from "@sentry/nextjs";
-import { getAuthUser } from "@/lib/getAuthUser";
+import { getAuthUser } from "@/lib/get-session";
 import { AssessmentType, Semester } from "@/generated/prisma/client";
 
 export const getScoresAction = async ({
@@ -33,7 +33,7 @@ export const getScoresAction = async ({
 
     const hasPermission =
       user.role?.permissions.some((p) => p.name === "view:scores") ||
-      user.permissions.some((p) => p.name === "view:scores");
+      user?.permissions?.some((p) => p.name === "view:scores");
 
     // if (!hasPermission) {
     //   return { error: "Permission denied!" };

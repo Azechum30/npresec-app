@@ -3,12 +3,11 @@ import { HouseSelect } from "@/lib/types";
 import { HouseSchema } from "@/lib/validation";
 import { authMiddleware } from "@/middlewares/auth";
 import { requirePermissions } from "@/middlewares/permissions";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { Prisma } from "@/generated/prisma/client";
 import { commonErrors } from "@/lib/commonErrors";
-import { id } from "date-fns/locale";
 
 export const createHouse = authMiddleware
   .use(requirePermissions("create:houses"))
@@ -68,8 +67,8 @@ export const getHouses = authMiddleware
             lastName: z.string(),
           })
           .nullable(),
-      })
-    )
+      }),
+    ),
   )
   .errors({
     ...commonErrors,
@@ -103,7 +102,7 @@ export const getHouseById = authMiddleware
           lastName: z.string(),
         })
         .nullable(),
-    })
+    }),
   )
   .errors({
     ...commonErrors,
@@ -189,11 +188,9 @@ export const updateHouse = authMiddleware
           houseGender: data.houseGender,
           residencyType: data.residencyType,
           occupancy: data.occupancy,
-          houseMaster: {
-            connect: data.houseMasterId
-              ? { id: data.houseMasterId }
-              : undefined,
-          },
+          houseMaster: data.houseMasterId
+            ? { connect: { id: data.houseMasterId } }
+            : { disconnect: true },
         },
       });
 

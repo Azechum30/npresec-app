@@ -11,10 +11,7 @@ export async function getAuthUser() {
   if (!session?.user) {
     return null;
   }
-
-  const userWithRelations = await getCachedUser(session.user.id);
-
-  return userWithRelations;
+  return session.user;
 }
 
 const getCachedUser = unstable_cache(
@@ -64,5 +61,5 @@ const getCachedUser = unstable_cache(
     });
   },
   ["getCachedUser"],
-  { tags: ["user"], revalidate: 60 * 60 }
+  { tags: ["user"], revalidate: 60 * 60 },
 );

@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { RenderStudentsTable } from "./_components/render-students-table";
 import { fetchStudentsAction } from "./_actions/fetch-students-action";
 import { SendClassQueryForm } from "./_forms/send-class-query-form";
-import { getAuthUser } from "@/lib/getAuthUser";
+import { getAuthUser } from "@/lib/get-session";
 import { Suspense } from "react";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 

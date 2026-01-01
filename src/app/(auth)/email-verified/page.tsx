@@ -1,4 +1,4 @@
-import { checkAuthAction } from "@/app/actions/auth-actions";
+import { getAuthUser } from "@/lib/get-session";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -9,11 +9,12 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { unauthorized } from "next/navigation";
+import { auth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function EmailVerifiedPage() {
-  const { user } = await checkAuthAction();
+  const user = (await getAuthUser()) as typeof auth.$Infer.Session.user;
 
   if (!user) return unauthorized();
 

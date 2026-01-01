@@ -5,6 +5,7 @@ import { z } from "zod";
 const envSchema = z.object({
   ...EmailConfigSchema.shape,
   ...CloudinaryImageUploadSchema.shape,
+  ARCJET_KEY: z.string().min(1),
   NEXT_PUBLIC_URL: z.string().url(),
   JWT_SECRET: z.string(),
   ADMIN_USER_EMAIL: z.string().email(),
@@ -22,7 +23,7 @@ const parsed = envSchema.safeParse(process.env);
 if (!parsed.success) {
   console.log(
     "❌ Invalid environment variables:",
-    parsed.error.flatten().fieldErrors
+    parsed.error.flatten().fieldErrors,
   );
 
   throw new Error("Invalid environment variables");

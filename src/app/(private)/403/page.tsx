@@ -1,25 +1,34 @@
-import { checkAuthAction } from "@/app/actions/auth-actions";
+import { getUserRole } from "@/lib/get-session";
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Route } from "next";
 
 export const dynamic = "force-dynamic";
 
 export default async function ForbiddenPage() {
-  const { user } = await checkAuthAction();
+  const userRole = await getUserRole();
 
-  if (!user) {
+  if (!userRole) {
     redirect("/sign-in");
   }
 
-  const url =
-    user.role?.name === "admin"
-      ? "/admin/dashboard"
-      : user.role?.name === "staff"
-        ? "/teachers"
-        : user.role?.name === "student"
-          ? "/students"
-          : "/";
+  let url = "/" as Route;
+
+  switch (userRole) {
+    case "admin":
+      url = "/admin/dashboard";
+      break;
+    case "teaching_staff":
+      url = "/teachers";
+      break;
+    case "student":
+      url = "/students";
+      break;
+    default:
+      url = "/";
+      break;
+  }
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-background">

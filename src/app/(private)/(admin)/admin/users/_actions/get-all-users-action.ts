@@ -3,11 +3,11 @@ import * as Sentry from "@sentry/nextjs";
 import { prisma } from "@/lib/prisma";
 import { UserSelect } from "@/lib/types";
 import "server-only";
-import { getUserWithPermissions } from "@/utils/get-user-with-permission";
+import { getUserPermissions } from "@/lib/get-session";
 
 export const getAllUsersAction = async () => {
   try {
-    const { hasPermission } = await getUserWithPermissions("view:users");
+    const { hasPermission } = await getUserPermissions("view:users");
     if (!hasPermission) {
       return { error: "Permission denied" };
     }

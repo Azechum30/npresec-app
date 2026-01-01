@@ -1,4 +1,4 @@
-import { getAuthUser } from "./getAuthUser";
+import { getAuthUser } from "./get-session";
 import { redirect } from "next/navigation";
 
 export async function requireAdmin() {

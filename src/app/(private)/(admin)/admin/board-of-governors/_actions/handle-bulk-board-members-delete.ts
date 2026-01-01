@@ -2,14 +2,14 @@
 import * as Sentry from "@sentry/nextjs";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
 export const handleBulkBoardMembersDeleteAction = async (ids: string[]) => {
   try {
-    const permission = await hasPermissions("delete:teachers");
-    if (!permission) {
+    const { hasPermission } = await getUserPermissions("delete:teachers");
+    if (!hasPermission) {
       return { error: "permission denied!" };
     }
 

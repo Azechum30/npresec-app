@@ -1,6 +1,6 @@
 "use server";
 
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { DepartmentSelect } from "@/lib/types";
 import { Prisma } from "@/generated/prisma/client";
@@ -8,9 +8,9 @@ import { getErrorMessage } from "@/lib/getErrorMessage";
 
 export const getServerSideProps = async (codes?: string[]) => {
   try {
-    const permissions = await hasPermissions("view:departments");
+    const { hasPermission } = await getUserPermissions("view:departments");
 
-    if (!permissions) {
+    if (!hasPermission) {
       return { error: "Permission denied" };
     }
 

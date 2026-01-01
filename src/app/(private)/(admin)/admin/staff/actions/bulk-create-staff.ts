@@ -2,7 +2,7 @@
 
 import { BulkCreateStaffSchema, BulkCreateStaffType } from "@/lib/validation";
 import { getErrorMessage } from "@/lib/getErrorMessage";
-import { hasPermissions } from "@/lib/hasPermission";
+import { getUserPermissions } from "@/lib/get-session";
 
 import { client } from "@/utils/qstash";
 import { env } from "@/lib/server-only-actions/validate-env";
@@ -13,8 +13,8 @@ import { checkEntityExistencePossibleDuplicates } from "../utils/check-enity-exi
 
 export const bulkCreateStaff = async (values: BulkCreateStaffType) => {
   try {
-    const permission = await hasPermissions("create:staff");
-    if (!permission) return { error: "Unauthorized access" };
+    const { hasPermission } = await getUserPermissions("create:staff");
+    if (!hasPermission) return { error: "Unauthorized access" };
 
     if (!values.data?.length) return { error: "No staff data provided" };
     if (values.data.length > 100)
@@ -24,17 +24,17 @@ export const bulkCreateStaff = async (values: BulkCreateStaffType) => {
     if (!validationResult.success) {
       const validationErrors = validationResult.error.issues.map(
         (issue) =>
-          `Row ${issue.path[1] ? (issue.path[1] as number) + 1 : "unknown"}: ${issue.message}`
+          `Row ${issue.path[1] ? (issue.path[1] as number) + 1 : "unknown"}: ${issue.message}`,
       );
       return { error: validationErrors.join("; ") };
     }
 
     const validAndTransformedData = validateAndTransformBulkData(
-      validationResult.data
+      validationResult.data,
     );
 
     const { transformedData } = await checkEntityExistencePossibleDuplicates(
-      validAndTransformedData
+      validAndTransformedData,
     );
 
     void client.batchJSON([

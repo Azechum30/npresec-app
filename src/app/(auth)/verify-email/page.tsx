@@ -1,4 +1,4 @@
-import { checkAuthAction } from "@/app/actions/auth-actions";
+import { getAuthUser } from "@/lib/get-session";
 import LoadingState from "@/components/customComponents/Loading";
 import { ResendVerificationEmailButton } from "@/components/customComponents/resend-verification-email";
 import {
@@ -12,6 +12,7 @@ import { unauthorized } from "next/navigation";
 
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { auth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +36,7 @@ export default function VerifyEmailPage() {
 }
 
 const RenderResendVerificationButton = async () => {
-  const { user } = await checkAuthAction();
+  const user = (await getAuthUser()) as typeof auth.$Infer.Session.user;
   if (!user) return unauthorized();
 
   if (user.emailVerified && user.role?.name === "admin")

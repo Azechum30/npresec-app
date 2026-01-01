@@ -16,6 +16,10 @@ import * as Sentry from "@sentry/nextjs";
 import { rateLimit } from "@/utils/rateLimit";
 import { auth } from "@/lib/auth";
 import { env } from "./validate-env";
+// import { ExtendedUser, getUserRoleName, UserRole } from "@/types/auth";
+import { User } from "@/lib/auth";
+import { getAuthRedirectPathWithLogging } from "@/utils/auth-redirects";
+import { UserRole } from "@/auth-types";
 
 export const signUpAction = async (data: SignUpType) => {
   try {
@@ -46,10 +50,6 @@ export const signUpAction = async (data: SignUpType) => {
     if (!role) {
       return { success: false, error: "Role not found!" };
     }
-
-    // Sign up with Better-auth
-    // Better-auth handles password hashing and session creation automatically
-    // Since username is required in additionalFields, it must be included in the body
     await auth.api.signUpEmail({
       body: {
         email: email.toLowerCase(),
@@ -96,7 +96,7 @@ export const signUpAction = async (data: SignUpType) => {
         error.message.includes("already exists") ||
         error.message.includes("duplicate")
       ) {
-        return { success: false, error: "Email is already taken!" };
+        return { success: false, error: "duplicate email!" };
       }
       if (
         error.message.includes("password") ||
@@ -112,64 +112,66 @@ export const signUpAction = async (data: SignUpType) => {
   }
 };
 
-export const signInAction = async (data: SignInType) => {
+export const signInAction = async (data: SignInType, callbackUrl?: string) => {
   try {
     // 1. Validate input
-    const { email, password } = SignInSchema.parse(data);
-    const normalizedEmail = email.toLowerCase();
+    const validateData = SignInSchema.safeParse(data);
 
-    // 2. Look up user
+    if (!validateData.success) {
+      const error = validateData.error.issues.flatMap(
+        (e) => `${e.path[0]}: ${e.message}`,
+      )[0];
+      return { error };
+    }
+
+    const requestHeaders = await headers();
+
+    await auth.api.signInEmail({
+      body: {
+        email: validateData.data.email,
+        password: validateData.data.password,
+      },
+      headers: requestHeaders,
+    });
+
     const user = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
-      include: { role: true, accounts: true },
+      where: {
+        email: validateData.data.email.toLowerCase(),
+      },
+      include: {
+        role: true,
+        permissions: true,
+      },
     });
 
-    if (!user) {
-      return { error: "Invalid login credentials" };
-    }
+    if (user) {
+      const userRole = getUserRole(user as User);
 
-    const account =
-      user?.accounts.find((account) => account.providerId === "credential") ??
-      null;
-
-    if (account) {
-      await auth.api.requestPasswordReset({
-        body: {
-          email: normalizedEmail,
-          redirectTo: `${env.NEXT_PUBLIC_URL}/reset-password`,
-        },
+      console.log("User signed in:", {
+        userId: user.id,
+        email: user.email,
+        role: userRole,
+        permissions: user.permissions?.length || 0,
       });
-      return { resetPasswordRequired: true };
+
+      // Use shared redirect logic
+      const redirectPath = getAuthRedirectPathWithLogging({
+        callbackUrl: callbackUrl,
+        userRole: userRole,
+        defaultFallback: "/profile",
+      });
+      return {
+        success: true,
+        user: user as User,
+        role: userRole,
+        redirectTo: redirectPath,
+      };
     }
 
-    // 4. Attempt sign-in via Better Auth
-    const { user: signedInUser } = await auth.api.signInEmail({
-      body: { email: normalizedEmail, password },
-      headers: await headers(),
-    });
-
-    if (!signedInUser) {
-      return { error: "Failed to created session" };
-    }
-
-    const authuser = await prisma.user.findUnique({
-      where: { id: signedInUser.id },
-      include: { role: true },
-    });
-    switch (authuser?.role?.name) {
-      case "admin":
-        return redirect("/admin/dashboard");
-      case "teacher":
-        return redirect("/teachers");
-      default:
-        return redirect("/students");
-    }
-  } catch (error) {
+    return { error: "Sign in failed - no user returned" };
+  } catch (error: any) {
     if (isRedirectError(error)) throw error;
-
-    // 7. Handle Better Auth errors more robustly
     if (error instanceof Error) {
-      // Better Auth errors often have a `code` property
       const code = (error as any).code;
       if (code === "INVALID_CREDENTIALS" || code === "USER_NOT_FOUND") {
         return { error: "Invalid login credentials" };
@@ -178,36 +180,12 @@ export const signInAction = async (data: SignInType) => {
 
     console.error("Sign-in error:", error);
     Sentry.captureException(error);
-    return { error: "Something went wrong!" };
-  }
-};
-
-export const getUserRole = async () => {
-  try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      return { error: "No active session" };
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      include: { role: true },
-    });
-
-    if (!user) {
-      return { error: "User not found" };
-    }
-
     return {
-      role: user.role?.name || "student",
-      userId: user.id,
+      error:
+        process.env.NODE_ENV === "development"
+          ? String(error.message)
+          : "Something went wrong!",
     };
-  } catch (error) {
-    console.error("Failed to get user role:", error);
-    return { error: "Failed to get user role" };
   }
 };
 
@@ -274,4 +252,48 @@ export const resetPasswordAction = async (values: ResetPasswordType) => {
     console.error("An error occurred in resetting your password:", error);
     return { error: "Something went wrong!" };
   }
+};
+
+export const sendVerificationEmailAction = async (email: string) => {
+  try {
+    // Rate limit
+    const ip = (await headers()).get("x-forwarded-for") ?? "127.0.0.1";
+    const { success } = await rateLimit.limit(ip);
+    if (!success) {
+      return { error: "Too many requests. Please try again later!" };
+    }
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (!user) {
+      // Don't reveal if user exists or not for security
+      return {
+        success: true,
+        message: "If the email exists, verification email has been sent.",
+      };
+    }
+
+    if (user.emailVerified) {
+      return { error: "Email is already verified." };
+    }
+
+    // Use better-auth's built-in email verification
+    await auth.api.sendVerificationEmail({
+      body: { email: email.toLowerCase() },
+      headers: await headers(),
+    });
+
+    return { success: true, message: "Verification email sent successfully!" };
+  } catch (error) {
+    console.error("Send verification email error:", error);
+    Sentry.captureException(error);
+    return { error: "Failed to send verification email." };
+  }
+};
+
+const getUserRole = (user: User): UserRole => {
+  return user?.role?.name as UserRole;
 };

@@ -1,12 +1,12 @@
 "use server";
 import "server-only";
 import * as Sentry from "@sentry/nextjs";
-import { getUserWithPermissions } from "@/utils/get-user-with-permission";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 
 export const getRolesAction = async () => {
   try {
-    const { hasPermission } = await getUserWithPermissions("view:roles");
+    const { hasPermission } = await getUserPermissions("view:roles");
     if (!hasPermission) {
       console.error("Permission denied");
       return { error: "Permission denied" };

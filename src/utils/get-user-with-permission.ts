@@ -1,4 +1,4 @@
-import { getAuthUser } from "@/lib/getAuthUser";
+import { getAuthUser } from "@/lib/get-session";
 
 export const getUserWithPermissions = async (permissionName: string) => {
   const user = await getAuthUser();
@@ -7,7 +7,7 @@ export const getUserWithPermissions = async (permissionName: string) => {
     return { user: null, hasPermission: false };
   }
 
-  const userPermissions = user.permissions.map((perm) => perm.name) || [];
+  const userPermissions = user.permissions?.map((perm) => perm.name) || [];
   const rolePermissions = user.role?.permissions.map((perm) => perm.name) || [];
 
   const allPermissions = [...userPermissions, ...rolePermissions];

@@ -1,26 +1,33 @@
-import { checkAuthAction } from "@/app/actions/auth-actions";
+import { getUserRole } from "@/lib/get-session";
 import SignInForm from "@/components/customComponents/SignInForm";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
+import { getAuthRedirectPathWithLogging } from "@/utils/auth-redirects";
+import { headers } from "next/headers";
+import { Route } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Authenticate",
   description: "Authenticate to access the system",
 };
 
-export default async function AuthenticatePage() {
-  const { user } = await checkAuthAction();
+type Props = {
+  searchParams: Promise<{ [key: string]: string | undefined }>;
+};
+export default async function AuthenticatePage({ searchParams }: Props) {
+  const userRole = await getUserRole();
+  const { callbackUrl } = await searchParams;
+  const referer = (await headers()).get("x-pathname");
 
-  if (user) {
-    const pathname =
-      user.role?.name === "admin"
-        ? "/admin/dashboard"
-        : user.role?.name === "teaching_staff"
-          ? "/teachers"
-          : user.role?.name === "student"
-            ? "/students"
-            : "/";
+  if (userRole) {
+    const redirectPath = getAuthRedirectPathWithLogging({
+      callbackUrl: callbackUrl,
+      userRole: userRole,
+      defaultFallback: "/profile",
+      referrer: referer ?? undefined,
+    });
 
-    redirect(pathname);
+    redirect(redirectPath as Route);
   }
   return <SignInForm />;
 }
