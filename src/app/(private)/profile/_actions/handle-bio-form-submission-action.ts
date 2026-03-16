@@ -10,7 +10,8 @@ import "server-only";
 
 export const BioFormAction = async (values: unknown) => {
   try {
-    const { user, hasPermission } = await getUserWithPermissions("edit:users");
+    const { user, hasPermission } =
+      await getUserWithPermissions("edit:profile");
 
     if (!user) return { error: "Kindly login to continue" };
 

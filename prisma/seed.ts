@@ -31,6 +31,7 @@ const resources = [
   "assignments",
   "rooms",
   "timelines",
+  "profile",
 ];
 const actions = ["create", "view", "edit", "delete", "export"];
 
@@ -64,6 +65,7 @@ const rolePermissions: Record<
       "notifications",
       "lessons",
       "assignments",
+      "profile",
     ],
     actions: ["view", "create", "edit"],
   },
@@ -77,14 +79,15 @@ const rolePermissions: Record<
       "notifications",
       "lessons",
       "assignments",
+      "profile",
     ],
     actions: ["view", "create", "edit"],
   },
   admin_staff: {
-    resources: ["students", "classes", "notifications"],
+    resources: ["students", "classes", "notifications", "profile"],
     actions: ["view"],
   },
-  support_staff: { resources: ["notifications"], actions: ["view"] },
+  support_staff: { resources: ["notifications", "profile"], actions: ["view"] },
   student: {
     resources: [
       "courses",
@@ -95,6 +98,7 @@ const rolePermissions: Record<
       "transcripts",
       "assignments",
       "events",
+      "profile",
     ],
     actions: ["view"],
   },
@@ -108,6 +112,7 @@ const rolePermissions: Record<
       "transcripts",
       "students",
       "events",
+      "profile",
     ],
     actions: ["view"],
   },
@@ -122,6 +127,7 @@ const rolePermissions: Record<
       "lessons",
       "assignments",
       "events",
+      "profile",
     ],
     actions: ["view", "create", "edit"],
   },
@@ -139,6 +145,7 @@ const rolePermissions: Record<
       "grades",
       "attendance",
       "notifications",
+      "profile",
     ],
     actions: ["view", "create", "edit"],
   },
