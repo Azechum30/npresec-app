@@ -1,18 +1,20 @@
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 
 type EntityTpe = "user" | "boardMember";
 export const updateDbTable = async (
   entityType: EntityTpe,
   entityId: string,
-  pictureUrl: string
+  pictureUrl: string,
 ) => {
   if (entityType === "user") {
     await prisma.user.update({
       where: { id: entityId },
       data: { image: pictureUrl },
     });
-    revalidatePath("admin/teachers");
+    updateTag("students-list");
+    updateTag("users-list");
+    updateTag("staff-list");
     return { success: true };
   }
 
@@ -20,6 +22,6 @@ export const updateDbTable = async (
     where: { id: entityId },
     data: { picture: pictureUrl },
   });
-  revalidatePath("admin/board-of-governors");
+  revalidatePath("/admin/board-of-governors");
   return { success: true };
 };

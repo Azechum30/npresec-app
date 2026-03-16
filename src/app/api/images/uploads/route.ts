@@ -1,8 +1,8 @@
-import { uploadToCloudinary } from "@/utils/upload-to-cloudinary";
-import { NextRequest } from "next/server";
-import { v2 as cloudinary } from "cloudinary";
 import { updateDbTable } from "@/utils/update-db-table";
+import { uploadToCloudinary } from "@/utils/upload-to-cloudinary";
 import { verifySignatureAppRouter } from "@upstash/qstash/dist/nextjs";
+import { v2 as cloudinary } from "cloudinary";
+import { NextRequest } from "next/server";
 
 async function handler(req: NextRequest) {
   try {
@@ -14,24 +14,13 @@ async function handler(req: NextRequest) {
       folder: string;
     };
 
-    console.log("File data:", {
-      name: file.name,
-      type: file.type,
-      bufferLength: file.buffer?.length,
-      entityId,
-      entityType,
-      folder,
-    });
-
     const { secure_url, public_id } = await uploadToCloudinary(
       {
         ...file,
         name: file.name.split("/").pop()?.split(".")[0] ?? "untitled",
       },
-      folder
+      folder,
     );
-
-    console.log("Upload successful:", { secure_url, public_id });
 
     let updatedSecureUrl: string = "";
 
@@ -59,7 +48,7 @@ async function handler(req: NextRequest) {
     const errorMessage = e instanceof Error ? e.message : "Unknown error";
     return Response.json(
       { error: "Failed to process image", details: errorMessage },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

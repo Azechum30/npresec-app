@@ -37,7 +37,6 @@ export const createStudent = async (values: StudentType) => {
   let createdUserId: string | null = null;
 
   try {
-    // 1. Parallel Authorization and Pre-checks
     const [{ hasPermission }, role, existingUser] = await Promise.all([
       getUserPermissions("create:students"),
       prisma.role.findFirst({ where: { name: "student" } }),
