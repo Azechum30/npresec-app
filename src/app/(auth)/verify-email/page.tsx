@@ -10,7 +10,7 @@ import {
 import { getAuthUser, getUserRole, isEmailVerified } from "@/lib/get-session";
 import { unauthorized } from "next/navigation";
 
-import { priorityRoles, UserRole } from "@/auth-types";
+import { priorityRoles, UserRole } from "@/auth-types.d";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
@@ -42,7 +42,7 @@ const RenderResendVerificationButton = async () => {
     getAuthUser(),
   ]);
   const priorityRole = priorityRoles.find((r) =>
-    userRole?.includes(r as UserRole)
+    userRole?.includes(r as UserRole),
   );
   if (!priorityRole || !user) return unauthorized();
 

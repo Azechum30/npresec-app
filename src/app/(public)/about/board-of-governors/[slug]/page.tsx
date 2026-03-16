@@ -18,8 +18,6 @@ type BoardOfGovernorsSlugPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export const dynamic = "force-dynamic";
-
 export default function BoardOfGovernorsSlugPage({
   params,
 }: BoardOfGovernorsSlugPageProps) {

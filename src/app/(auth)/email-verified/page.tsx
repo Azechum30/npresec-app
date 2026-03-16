@@ -1,4 +1,4 @@
-import { priorityRoles, UserRole } from "@/auth-types";
+import { priorityRoles, UserRole } from "@/auth-types.d";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -12,8 +12,6 @@ import { getUserRole, isEmailVerified } from "@/lib/get-session";
 import Link from "next/link";
 import { unauthorized } from "next/navigation";
 import { Suspense } from "react";
-
-// export const dynamic = "force-dynamic";
 
 export default function EmailVerifiedPage() {
   return (
@@ -29,7 +27,7 @@ const RenderEmailVerifiedPage = async () => {
     isEmailVerified(),
   ]);
   const priorityRole = priorityRoles.find((role) =>
-    userRole?.includes(role as UserRole)
+    userRole?.includes(role as UserRole),
   );
 
   if (!priorityRole || !hasVerifiedEmail) return unauthorized();
