@@ -1,5 +1,5 @@
-import { UserRole } from "@/auth-types";
 import { auth } from "@/lib/auth";
+import { UserRole } from "@/lib/types";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
@@ -132,8 +132,8 @@ export const getUserPermissions = async (permissionName: string) => {
       (userRole) =>
         userRole.role?.permissions
           ?.map((perm) => perm.name.toLowerCase())
-          .filter(Boolean) ?? []
-    ) ?? []
+          .filter(Boolean) ?? [],
+    ) ?? [],
   );
 
   return {
@@ -186,7 +186,7 @@ export const requireAnyRole = cache(async (roles: UserRole[]) => {
 
   if (!userRoleNames.length || !hasAccess) {
     throw new Error(
-      `Access denied. One of these roles is required: [${roles.join(", ")}]`
+      `Access denied. One of these roles is required: [${roles.join(", ")}]`,
     );
   }
 

@@ -1,6 +1,6 @@
-import { UserRole } from "@/auth-types";
 import { auth } from "@/lib/auth";
 import { getSession } from "@/lib/get-session";
+import { UserRole } from "@/lib/types";
 import { createAuthRedirect } from "@/utils/auth-redirects";
 import { NextRequest, NextResponse } from "next/server";
 

@@ -4,7 +4,7 @@
  * without server-side errors
  */
 
-import type { UserRole } from "@/auth-types";
+import type { UserRole } from "@/lib/types";
 import { getAuthRedirectPath, isValidCallbackUrl } from "./auth-redirects";
 
 interface TestCase {
@@ -117,7 +117,7 @@ class MockSessionStorage {
  * Safe function to get stored callback URL (works in both client and server)
  */
 function getSafeStoredCallbackUrl(
-  mockStorage?: MockSessionStorage
+  mockStorage?: MockSessionStorage,
 ): string | null {
   // Return null on server-side to prevent errors
   if (typeof window === "undefined" && !mockStorage) {
@@ -274,19 +274,19 @@ export function logVerificationResults(): void {
   });
 
   console.log(
-    `\n📊 Results: ${verification.passedCount}/${verification.totalCount} tests passed`
+    `\n📊 Results: ${verification.passedCount}/${verification.totalCount} tests passed`,
   );
 
   if (verification.overallPassed) {
     console.log(
-      "🎉 All tests passed! The callback URL fix is working correctly."
+      "🎉 All tests passed! The callback URL fix is working correctly.",
     );
     console.log("✅ No more server-side sessionStorage errors");
     console.log("✅ Manual sign-in navigation preserves user context");
     console.log("✅ Security validation prevents malicious redirects");
   } else {
     console.warn(
-      "⚠️  Some tests failed. The callback URL fix may need adjustment."
+      "⚠️  Some tests failed. The callback URL fix may need adjustment.",
     );
   }
 }
@@ -343,10 +343,10 @@ export const browserVerification = {
 
     console.log(`Window available: ${typeof window !== "undefined"}`);
     console.log(
-      `SessionStorage available: ${typeof window !== "undefined" && !!window.sessionStorage}`
+      `SessionStorage available: ${typeof window !== "undefined" && !!window.sessionStorage}`,
     );
     console.log(
-      `Running on: ${typeof window !== "undefined" ? "Client" : "Server"}`
+      `Running on: ${typeof window !== "undefined" ? "Client" : "Server"}`,
     );
 
     if (typeof window !== "undefined") {

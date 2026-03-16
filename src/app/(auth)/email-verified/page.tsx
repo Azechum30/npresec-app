@@ -1,4 +1,3 @@
-import { priorityRoles, UserRole } from "@/auth-types.d";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -9,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getUserRole, isEmailVerified } from "@/lib/get-session";
+import { priorityRoles, UserRole } from "@/lib/types";
 import Link from "next/link";
 import { unauthorized } from "next/navigation";
 import { Suspense } from "react";

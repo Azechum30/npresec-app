@@ -15,12 +15,12 @@
     "incremental": true,
     "plugins": [
       {
-        "name": "next",
-      },
+        "name": "next"
+      }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-    },
+      "@/*": ["./src/*"]
+    }
   },
   "include": [
     "next-env.d.ts",
@@ -30,7 +30,7 @@
     "prisma/seed.ts",
     ".next/dev/types/**/*.ts",
     "src/types/**/*.d.ts",
-    "src/auth-types.d.ts",
+    "src/types/auth-types.d.ts"
   ],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules"]
 }

@@ -3,7 +3,7 @@
  * Use this in development to verify callback URL and referrer handling works correctly
  */
 
-import type { UserRole } from "@/auth-types";
+import type { UserRole } from "@/lib/types";
 import { extractReferrerPath, getAuthRedirectPath } from "./auth-redirects";
 
 interface RedirectTestCase {
@@ -163,7 +163,7 @@ export function logTestResults(): void {
  */
 export function simulateManualNavigation(
   currentPath: string,
-  userRole: UserRole
+  userRole: UserRole,
 ): string {
   console.log(`🔍 Simulating manual /sign-in navigation from ${currentPath}`);
 

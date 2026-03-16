@@ -7,8 +7,8 @@
  * 3. Verify you're redirected back to the original page
  */
 
-import type { UserRole } from "@/auth-types";
 import { getStoredCallbackUrl } from "@/components/providers/RouteTrackingProvider";
+import type { UserRole } from "@/lib/types";
 import { getAuthRedirectPath, isValidCallbackUrl } from "./auth-redirects";
 
 interface TestResult {
@@ -32,7 +32,7 @@ interface TestScenario {
 export function simulateCallbackUrlBehavior(
   currentPath: string,
   userRole: UserRole,
-  explicitCallback?: string
+  explicitCallback?: string,
 ): string {
   // This simulates what happens in AuthPage
   let callbackUrl = explicitCallback;
@@ -86,7 +86,7 @@ export function testExplicitCallback(): TestResult {
   const actual = simulateCallbackUrlBehavior(
     "/sign-in",
     userRole,
-    explicitCallback
+    explicitCallback,
   );
   const expected = explicitCallback;
 
@@ -139,7 +139,7 @@ export function testInvalidCallback(): TestResult {
   const actual = simulateCallbackUrlBehavior(
     "/sign-in",
     userRole,
-    invalidCallback
+    invalidCallback,
   );
   const expected = "/admin/dashboard"; // Should fall back to role-based
 
@@ -200,11 +200,11 @@ export function logCallbackTestResults(): void {
 
   if (failed === 0) {
     console.log(
-      "🎉 All callback URL tests passed! The fix is working correctly."
+      "🎉 All callback URL tests passed! The fix is working correctly.",
     );
   } else {
     console.warn(
-      "⚠️  Some tests failed. The callback URL fix may need adjustment."
+      "⚠️  Some tests failed. The callback URL fix may need adjustment.",
     );
   }
 }
@@ -236,7 +236,7 @@ export const browserTests = {
     const isCorrect = redirectPath === shouldRedirectTo;
 
     console.log(
-      `${isCorrect ? "✅" : "❌"} Expected: ${shouldRedirectTo}, Got: ${redirectPath}`
+      `${isCorrect ? "✅" : "❌"} Expected: ${shouldRedirectTo}, Got: ${redirectPath}`,
     );
 
     if (isCorrect) {
@@ -251,7 +251,7 @@ export const browserTests = {
    */
   simulateAdminStaffIssue(): void {
     console.log(
-      "🎭 Simulating: Admin on /admin/staff manually navigating to /sign-in"
+      "🎭 Simulating: Admin on /admin/staff manually navigating to /sign-in",
     );
 
     // Mock being on /admin/staff
@@ -270,7 +270,7 @@ export const browserTests = {
     } else {
       console.warn("⚠️  The original issue is NOT fixed!");
       console.log(
-        `   User would go to ${result.actual} instead of ${result.expected}`
+        `   User would go to ${result.actual} instead of ${result.expected}`,
       );
     }
   },

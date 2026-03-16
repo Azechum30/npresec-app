@@ -1,4 +1,4 @@
-import { UserRole } from "@/auth-types";
+import { UserRole } from "@/lib/types";
 
 interface RedirectOptions {
   callbackUrl?: string | null;

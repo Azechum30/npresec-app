@@ -1,6 +1,6 @@
 "use client";
-import { UserRole } from "@/auth-types";
 import { useOpenSidebar } from "@/hooks/use-open-sidebar";
+import { UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
   Award,

@@ -15,9 +15,9 @@ import {
   SignUpSchema,
   SignUpType,
 } from "../validation";
-// import { ExtendedUser, getUserRoleName, UserRole } from "@/types/auth";
-import { UserRole } from "@/auth-types";
+
 import { User } from "@/lib/auth";
+import { UserRole } from "@/lib/types";
 import { getAuthRedirectPathWithLogging } from "@/utils/auth-redirects";
 
 export const signUpAction = async (data: SignUpType) => {
@@ -119,7 +119,7 @@ export const signInAction = async (data: SignInType, callbackUrl?: string) => {
 
     if (!validateData.success) {
       const error = validateData.error.issues.flatMap(
-        (e) => `${e.path[0]}: ${e.message}`
+        (e) => `${e.path[0]}: ${e.message}`,
       )[0];
       return { error };
     }
@@ -154,7 +154,7 @@ export const signInAction = async (data: SignInType, callbackUrl?: string) => {
         role: userRole,
         permissions:
           user.roles?.flatMap((rs) =>
-            rs.role?.permissions?.map((p) => p.name).filter(Boolean)
+            rs.role?.permissions?.map((p) => p.name).filter(Boolean),
           )?.length || 0,
       });
 
@@ -168,7 +168,7 @@ export const signInAction = async (data: SignInType, callbackUrl?: string) => {
         "support_staff",
       ];
       const priorityRole = userRole.find((role) =>
-        priorityRoles.includes(role)
+        priorityRoles.includes(role),
       );
 
       // Use shared redirect logic

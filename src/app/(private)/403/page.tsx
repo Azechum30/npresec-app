@@ -1,7 +1,7 @@
-import { UserRole } from "@/auth-types";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { buttonVariants } from "@/components/ui/button";
 import { getUserRole } from "@/lib/get-session";
+import { UserRole } from "@/lib/types";
 import { Route } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -31,7 +31,7 @@ const RenderForbiddenPage = async () => {
   ];
 
   const priorityRole = priorityRoles.find((role) =>
-    userRole?.includes(role as UserRole)
+    userRole?.includes(role as UserRole),
   );
 
   if (!priorityRole) {

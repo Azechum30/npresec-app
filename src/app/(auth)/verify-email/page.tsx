@@ -10,7 +10,7 @@ import {
 import { getAuthUser, getUserRole, isEmailVerified } from "@/lib/get-session";
 import { unauthorized } from "next/navigation";
 
-import { priorityRoles, UserRole } from "@/auth-types.d";
+import { priorityRoles, UserRole } from "@/lib/types";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
