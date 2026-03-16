@@ -1,5 +1,6 @@
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { getAllAssessmentTimelines } from "./_actions/get-all-assessment-timelines";
 import { EditAssessmentTimelineModal } from "./_components/edit-assessment-timeline-modal";
@@ -39,6 +40,7 @@ export default function AssessmentTimelinesPage() {
 }
 
 const RenderAssessmentTimelinesDataTable = async () => {
+  await connection();
   const { error, timelines } = await getAllAssessmentTimelines();
 
   return <RenderAssessmentTimelinesTable error={error} data={timelines} />;

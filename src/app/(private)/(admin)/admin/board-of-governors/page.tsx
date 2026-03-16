@@ -1,5 +1,6 @@
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { fetchBoardMembers } from "./_actions/fetch-board-members";
 import { CreateBoardMemberDialog } from "./_components/create-board-member-dialog";
@@ -29,6 +30,7 @@ export default function AdminBoardOfGovernorsPage() {
 }
 
 const RenderBoardMembersDataTable = async () => {
+  await connection();
   const { error, boardMembers } = await fetchBoardMembers();
   return <RenderBoardMembersTable boardMembers={boardMembers} error={error} />;
 };

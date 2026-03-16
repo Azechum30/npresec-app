@@ -1,13 +1,11 @@
-import { Suspense } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Sparkles, ArrowRight } from "lucide-react";
-import { getBoardOfGovernors } from "./actions/server";
+import { Card, CardContent } from "@/components/ui/card";
+import { ArrowRight, Sparkles, Users } from "lucide-react";
+import { connection } from "next/server";
+import { Suspense } from "react";
 import { BoardMembers } from "./_components/board-members";
-import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import { BoardOfGovernorsClient } from "./_components/BoardOfGovernorsClient";
+import { getBoardOfGovernors } from "./actions/server";
 
 function ModernFallback() {
   return (
@@ -15,8 +13,7 @@ function ModernFallback() {
       {[1, 2, 3, 4, 5, 6].map((item) => (
         <Card
           key={item}
-          className="relative overflow-hidden bg-background/60 backdrop-blur-xl border-border/50"
-        >
+          className="relative overflow-hidden bg-background/60 backdrop-blur-xl border-border/50">
           <CardContent className="p-6">
             <div className="flex items-center gap-4 mb-4">
               <div className="w-16 h-16 bg-gradient-to-br from-muted to-muted/80 rounded-full animate-pulse" />
@@ -51,8 +48,7 @@ function ModernErrorComponent({ error }: { error: string }) {
         <Button
           variant="outline"
           className="border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-950/20"
-          onClick={() => window.location.reload()}
-        >
+          onClick={() => window.location.reload()}>
           Try Again
         </Button>
       </CardContent>
@@ -112,6 +108,7 @@ export default function BoardOfGovernorsPage() {
 }
 
 const RenderBoardMembers = async () => {
+  await connection();
   const { boardMembers, error } = await getBoardOfGovernors();
 
   if (error) {
@@ -145,8 +142,7 @@ const RenderBoardMembers = async () => {
           style={{
             animationDelay: `${index * 0.1}s`,
             animation: "fadeInUp 0.6s ease-out forwards",
-          }}
-        >
+          }}>
           <BoardMembers {...member} />
         </div>
       ))}

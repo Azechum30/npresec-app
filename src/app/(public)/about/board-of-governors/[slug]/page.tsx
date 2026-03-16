@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import Image from "next/image";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 
 type BoardOfGovernorsSlugPageProps = {
@@ -33,6 +34,7 @@ export default function BoardOfGovernorsSlugPage({
 const RenderBoardMemberDetails = async ({
   params,
 }: BoardOfGovernorsSlugPageProps) => {
+  await connection();
   const { slug } = await params;
 
   if (!slug) return redirect("/about/board-of-governors");
@@ -43,7 +45,6 @@ const RenderBoardMemberDetails = async ({
     redirect("/about/board-of-governors");
   }
 
-  // If board member not found, redirect
   if (!boardMember) {
     redirect("/about/board-of-governors");
   }

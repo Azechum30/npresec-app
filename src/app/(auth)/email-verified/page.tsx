@@ -11,6 +11,7 @@ import { getUserRole, isEmailVerified } from "@/lib/get-session";
 import { priorityRoles, UserRole } from "@/lib/types";
 import Link from "next/link";
 import { unauthorized } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 
 export default function EmailVerifiedPage() {
@@ -22,6 +23,7 @@ export default function EmailVerifiedPage() {
 }
 
 const RenderEmailVerifiedPage = async () => {
+  await connection();
   const [userRole, hasVerifiedEmail] = await Promise.all([
     getUserRole(),
     isEmailVerified(),

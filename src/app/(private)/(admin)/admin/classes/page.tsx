@@ -6,6 +6,7 @@ import EditClassDialog from "./components/EditClassDialog";
 import RenderClassesDataTable from "./components/RenderClassesDataTable";
 
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { connection } from "next/server";
 import CreateClassDialog from "./components/CreateClassDialog";
 
 // export const dynamic = "force-dynamic";
@@ -28,6 +29,7 @@ export default function ClassesPage() {
 }
 
 const RenderClasses = async () => {
+  await connection();
   const data = await getClassesAction();
   return <RenderClassesDataTable initialState={data} />;
 };

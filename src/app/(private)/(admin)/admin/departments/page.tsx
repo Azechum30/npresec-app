@@ -1,5 +1,6 @@
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { getServerSideProps } from "./actions/getServerSideProps";
 import DepartmentUploadProvider from "./components/DepartmentUploadProvider";
@@ -27,6 +28,7 @@ export default function DepartmentPage() {
 }
 
 const RenderDepartments = async () => {
+  await connection();
   const departments = await getServerSideProps();
 
   return <RenderDepartmentsDataTable initialState={departments} />;

@@ -12,6 +12,7 @@ import { unauthorized } from "next/navigation";
 
 import { priorityRoles, UserRole } from "@/lib/types";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 
 // export const dynamic = "force-dynamic";
@@ -36,6 +37,7 @@ export default function VerifyEmailPage() {
 }
 
 const RenderResendVerificationButton = async () => {
+  await connection();
   const [userRole, hasEmailVerified, user] = await Promise.all([
     getUserRole(),
     isEmailVerified(),

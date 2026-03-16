@@ -1,5 +1,6 @@
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { getPermissions } from "./actions/queries";
 import { CreatePermissionModal } from "./components/CreatePermissionModal";
@@ -28,6 +29,7 @@ export default function PermissionsPage() {
 }
 
 const RenderPermissionsDataTable = async () => {
+  await connection();
   const { error, permissions } = await getPermissions();
 
   console.log("Permissions", permissions);

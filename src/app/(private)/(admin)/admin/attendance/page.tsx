@@ -8,6 +8,7 @@ import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { NoDataFound } from "@/components/customComponents/no-data-found";
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { connection } from "next/server";
 import { Suspense } from "react";
 
 // export const dynamic = "force-dynamic";
@@ -42,6 +43,7 @@ export default function AttendancePage() {
 }
 
 const RenderAttendanceDataTable = async () => {
+  await connection();
   const promise = await Promise.all([getAttendance(), getClassesAction()]);
 
   if (promise[0].error) {

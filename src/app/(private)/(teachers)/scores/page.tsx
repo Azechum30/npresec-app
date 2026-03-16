@@ -3,6 +3,7 @@ import OpenDialogs from "@/components/customComponents/OpenDialogs";
 import { AssesessmentType, Semester } from "@/lib/validation";
 import { getUserWithRole } from "@/utils/get-user-with-role";
 import { unauthorized } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { getScoresAction } from "./_actions/get-scores-action";
 import { RenderScoresTable } from "./_components/render-scores-table";
@@ -13,8 +14,6 @@ import { CreateStudentsScoresDialog } from "./_forms/create-students-scores-dial
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
-
-// export const dynamic = "force-dynamic";
 
 export default function ScoresPage({ searchParams }: Props) {
   return (
@@ -39,6 +38,7 @@ export default function ScoresPage({ searchParams }: Props) {
 }
 
 const RenderScoresDataTable = async ({ searchParams }: Props) => {
+  await connection();
   const { user } = await getUserWithRole("teaching_staff");
 
   if (!user) {

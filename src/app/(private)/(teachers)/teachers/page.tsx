@@ -1,6 +1,7 @@
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { getAuthUser } from "@/lib/get-session";
 import { Metadata } from "next";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { fetchStudentsAction } from "./_actions/fetch-students-action";
 import { RenderStudentsTable } from "./_components/render-students-table";
@@ -31,6 +32,7 @@ export default function StudentsListPage({ searchParams }: Props) {
 }
 
 const StaffAssignedStudentsTable = async ({ searchParams }: Props) => {
+  await connection();
   const [searchParamsData, user] = await Promise.all([
     searchParams,
     getAuthUser(),

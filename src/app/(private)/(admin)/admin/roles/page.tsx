@@ -6,6 +6,7 @@ import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { NoDataFound } from "@/components/customComponents/no-data-found";
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { connection } from "next/server";
 import { Suspense } from "react";
 
 // export const dynamic = "force-dynamic";
@@ -31,6 +32,7 @@ export default function RolesPage() {
 }
 
 const RenderRolesTables = async () => {
+  await connection();
   const { roles, error } = await getRoles();
 
   if (error) {

@@ -5,6 +5,7 @@ import { UserRole } from "@/lib/types";
 import { Route } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 
 // export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ export default function ForbiddenPage() {
 }
 
 const RenderForbiddenPage = async () => {
+  await connection();
   const userRole = await getUserRole();
 
   const priorityRoles = [
