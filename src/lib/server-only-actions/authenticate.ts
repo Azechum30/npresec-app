@@ -17,8 +17,9 @@ import {
 } from "../validation";
 
 import { User } from "@/lib/auth";
-import { UserRole } from "@/lib/types";
+import { priorityRoles, UserRole } from "@/lib/types";
 import { getAuthRedirectPathWithLogging } from "@/utils/auth-redirects";
+import { BetterAuthError } from "better-auth";
 
 export const signUpAction = async (data: SignUpType) => {
   try {
@@ -148,30 +149,10 @@ export const signInAction = async (data: SignInType, callbackUrl?: string) => {
     if (user) {
       const userRole = getUserRole(user as User);
 
-      console.log("User signed in:", {
-        userId: user.id,
-        email: user.email,
-        role: userRole,
-        permissions:
-          user.roles?.flatMap((rs) =>
-            rs.role?.permissions?.map((p) => p.name).filter(Boolean),
-          )?.length || 0,
-      });
-
-      const priorityRoles = [
-        "admin",
-        "teaching_staff",
-        "student",
-        "staff",
-        "admin_staff",
-        "parent",
-        "support_staff",
-      ];
       const priorityRole = userRole.find((role) =>
         priorityRoles.includes(role),
       );
 
-      // Use shared redirect logic
       const redirectPath = getAuthRedirectPathWithLogging({
         callbackUrl: callbackUrl,
         userRole: priorityRole,
@@ -194,25 +175,26 @@ export const signInAction = async (data: SignInType, callbackUrl?: string) => {
         return { error: "Invalid login credentials" };
       }
     }
+    if (error instanceof BetterAuthError) {
+      return { error: error.message };
+    }
 
     console.error("Sign-in error:", error);
     Sentry.captureException(error);
     return {
-      error: String(error),
+      error: String(error.message ? error.message : error),
     };
   }
 };
 
 export const resetPasswordAction = async (values: ResetPasswordType) => {
   try {
-    // 1. Rate limit
     const ip = (await headers()).get("x-forwarded-for") ?? "127.0.0.1";
     const { success } = await rateLimit.limit(ip);
     if (!success) {
       return { error: "Too many requests. Please try again later!" };
     }
 
-    // 2. Validate input
     const parsed = ResetPasswordSchema.safeParse(values);
     if (!parsed.success) {
       return { errors: parsed.error.flatten().fieldErrors };
@@ -270,20 +252,17 @@ export const resetPasswordAction = async (values: ResetPasswordType) => {
 
 export const sendVerificationEmailAction = async (email: string) => {
   try {
-    // Rate limit
     const ip = (await headers()).get("x-forwarded-for") ?? "127.0.0.1";
     const { success } = await rateLimit.limit(ip);
     if (!success) {
       return { error: "Too many requests. Please try again later!" };
     }
 
-    // Find user by email
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
 
     if (!user) {
-      // Don't reveal if user exists or not for security
       return {
         success: true,
         message: "If the email exists, verification email has been sent.",
@@ -294,7 +273,6 @@ export const sendVerificationEmailAction = async (email: string) => {
       return { error: "Email is already verified." };
     }
 
-    // Use better-auth's built-in email verification
     await auth.api.sendVerificationEmail({
       body: { email: email.toLowerCase() },
       headers: await headers(),

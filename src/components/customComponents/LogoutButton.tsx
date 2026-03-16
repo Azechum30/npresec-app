@@ -1,8 +1,9 @@
 "use client";
-import { DropdownMenuItem } from "../ui/dropdown-menu";
+import { authClient } from "@/lib/auth-client";
 import { Loader2, LogOutIcon } from "lucide-react";
-import LoadingButton from "./LoadingButton";
-import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -10,14 +11,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
-import { toast } from "sonner";
+import { DropdownMenuItem } from "../ui/dropdown-menu";
+import LoadingButton from "./LoadingButton";
 
 export default function LogoutButton() {
   const router = useRouter();
-
   const [isPending, startTransition] = useTransition();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const handleLogout = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,15 +28,18 @@ export default function LogoutButton() {
       if (error) {
         toast.error(error.message || "Could not log user out");
       } else {
-        toast.success("logout successful");
+        setIsRedirecting(true);
+        toast.success("Logout successful");
         router.push("/sign-in");
       }
     });
   };
 
+  const showModal = isPending || isRedirecting;
+
   return (
     <>
-      <Dialog open={isPending}>
+      <Dialog open={showModal}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Logging Out</DialogTitle>
@@ -50,10 +53,11 @@ export default function LogoutButton() {
           </div>
         </DialogContent>
       </Dialog>
+
       <form onSubmit={handleLogout}>
         <DropdownMenuItem asChild>
           <LoadingButton
-            loading={isPending}
+            loading={showModal}
             className="text-sm w-full text-left flex items-center justify-start hover:cursor-pointer"
             size="sm"
             variant="ghost">
