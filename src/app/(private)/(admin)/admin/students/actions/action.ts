@@ -1,14 +1,15 @@
 "use server";
 
-import { Levels } from "@/lib/constants";
+import { Prisma } from "@/generated/prisma/client";
+import { computeGraduationDate } from "@/lib/compute-graduation-date";
 import { generatePassword } from "@/lib/generatePassword";
-import { getErrorMessage } from "@/lib/getErrorMessage";
 import { getUserPermissions } from "@/lib/get-session";
+import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
-import { sendMail } from "@/lib/resend-config";
-import { StudentResponseType, StudentSelect } from "@/lib/types";
+import { env } from "@/lib/server-only-actions/validate-env";
+import { triggerSendEmail } from "@/lib/trigger-send-email";
+import { StudentSelect } from "@/lib/types";
 import {
-  BulkCreateStudentsSchema,
   BulkCreateStudentsType,
   EditStudentSchema,
   EditStudentType,
@@ -16,265 +17,150 @@ import {
   StudentSchema,
   StudentType,
 } from "@/lib/validation";
+import { createUserCredentials } from "@/utils/create-user-credentials";
 import {
   CONSTANTS,
   Department,
   generateStudentIndex,
+  gradelevels,
 } from "@/utils/generateStudentIndex";
-import { Prisma } from "@/generated/prisma/client";
-import * as Sentry from "@sentry/nextjs";
-import moment from "moment";
-import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
-import { rateLimit } from "@/utils/rateLimit";
+import { getCachedStudentService } from "@/utils/get-cached-student-service";
+import { getError } from "@/utils/get-error";
 import { client } from "@/utils/qstash";
-import { env } from "@/lib/server-only-actions/validate-env";
-import { auth } from "@/lib/auth";
-import { computeGraduationDate } from "@/lib/compute-graduation-date";
+import { triggerRollback } from "@/utils/trigger-better-auth-user-delete";
+import { triggerImageUpload } from "@/utils/trigger-image-upload";
+import * as Sentry from "@sentry/nextjs";
+import { updateTag } from "next/cache";
 import { validateAndTransformStudentsData } from "../utils/validate-and-transform-students-data";
 
 export const createStudent = async (values: StudentType) => {
+  let createdUserId: string | null = null;
+
   try {
-    const { hasPermission } = await getUserPermissions("create:students");
-    const ip = (await headers()).get("x-forwarded-for") ?? "127.0.0.1";
-
-    if (!hasPermission) {
-      return { error: "Permission denied!" };
-    }
-
-    const { success } = await rateLimit.limit(ip);
-
-    if (!success) {
-      return { error: "Too many requests. Please try again later." };
-    }
-
-    const result = StudentSchema.safeParse(values);
-
-    if (!result.success) {
-      const zodErrors = result.error.errors
-        .flatMap((e) => `${e.path[0]}: ${e.message}`)
-        .join(",");
-
-      return { error: zodErrors };
-    }
-
-    const [
-      existingUser,
-      existingDepartment,
-      existingClass,
-      existingRole,
-      studentPermission,
-    ] = await prisma.$transaction([
+    // 1. Parallel Authorization and Pre-checks
+    const [{ hasPermission }, role, existingUser] = await Promise.all([
+      getUserPermissions("create:students"),
+      prisma.role.findFirst({ where: { name: "student" } }),
       prisma.user.findUnique({
-        where: {
-          email: result.data.email,
-        },
-      }),
-
-      prisma.department.findUnique({
-        where: {
-          id: result.data.departmentId as string,
-        },
-      }),
-
-      prisma.class.findUnique({
-        where: {
-          id: result.data.classId as string,
-        },
-      }),
-      prisma.role.findFirst({
-        where: { name: "student" },
-      }),
-
-      prisma.permission.findFirst({
-        where: {
-          name: "view:students",
-        },
-        select: { id: true },
+        where: { email: values.email },
+        select: { email: true },
       }),
     ]);
 
-    if (existingUser) {
-      return { error: `${existingUser.email} is already taken!` };
-    }
+    if (!hasPermission) return { error: "Permission denied!" };
+    if (existingUser) return { error: `${values.email} is already taken!` };
+    if (!role) return { error: "Student role not found in system." };
 
-    if (!existingClass) {
-      return { error: "The selected class does not exist" };
-    }
-
-    // Check if class has reached maximum capacity
-    if (
-      existingClass.maxCapacity &&
-      existingClass.currentEnrollment >= existingClass.maxCapacity
-    ) {
+    // 2. Validation
+    const result = StudentSchema.safeParse(values);
+    if (!result.success) {
       return {
-        error: `Class "${existingClass.name}" has reached its maximum capacity of ${existingClass.maxCapacity} students`,
+        error: result.error.errors
+          .map((e) => `${e.path[0]}: ${e.message}`)
+          .join(", "),
       };
     }
 
-    if (!existingDepartment) {
-      return { error: "The selected department does not exist" };
-    }
-
-    if (!existingRole) {
-      return { error: "Student role not found" };
-    }
-
-    if (!studentPermission) {
-      return { error: "Student permission not found!" };
-    }
-
-    const password = generatePassword();
-
-    const admissionYear = new Date(result.data.dateEnrolled).getFullYear();
-
-    const latestStudent = await prisma.student.findFirst({
-      where: {
-        departmentId: existingDepartment.id,
-        dateEnrolled: {
-          gte: new Date(admissionYear, 0, 1),
-          lte: new Date(admissionYear + 1, 0, 1),
-        },
-      },
-      orderBy: {
-        studentNumber: "desc",
-      },
-      select: {
-        studentNumber: true,
-      },
-    });
-
-    const sequence = latestStudent
-      ? Number.isNaN(
-          parseInt(
-            latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
-          ),
-        )
-        ? 1
-        : parseInt(
-            latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
-          ) + 1
-      : 1;
-
-    const studentID = generateStudentIndex({
-      department: existingDepartment.name as Department,
-      admissionYear,
-      sequenceNumber: sequence,
-    });
-
-    const { email, photoURL, imageFile, classId, departmentId, ...rest } =
+    const { email, imageFile, classId, departmentId, photoURL, ...rest } =
       result.data;
+    const password = generatePassword();
+    const admissionYear = new Date(rest.dateEnrolled).getFullYear();
 
-    // Create user account via auth API
-    await auth.api.signUpEmail({
-      body: {
-        email,
-        username: rest.firstName + " " + rest.lastName,
-        password,
-        name: rest.firstName + " " + rest.lastName,
-        callbackURL: "/email-verified",
-      },
-      headers: await headers(),
+    const authResponse = await createUserCredentials({
+      email,
+      username: `${rest.firstName} ${rest.lastName}`,
+      lastName: rest.lastName,
+      roleId: role.id,
+      password,
     });
 
-    // Wrap database operations in a transaction for atomicity
+    if (!authResponse?.user)
+      return { error: "Failed to create authentication credentials" };
+    createdUserId = authResponse.user.id;
+
     const transactionResult = await prisma.$transaction(async (tx) => {
-      // Find the created user
-      const createdUser = await tx.user.findUnique({
-        where: { email },
-        select: { id: true },
+      const latestStudent = await tx.student.findFirst({
+        where: {
+          departmentId,
+          dateEnrolled: {
+            gte: new Date(admissionYear, 0, 1),
+            lt: new Date(admissionYear + 1, 0, 1),
+          },
+        },
+        orderBy: { studentNumber: "desc" },
+        select: { studentNumber: true },
       });
 
-      if (!createdUser) {
-        throw new Error("Failed to find created user account");
-      }
+      const sequence = latestStudent
+        ? (parseInt(
+            latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
+          ) || 0) + 1
+        : 1;
 
-      await tx.user.update({
-        where: { id: createdUser.id },
-        data: { roleId: existingRole.id },
+      const studentID = generateStudentIndex({
+        department: (
+          await tx.department.findUnique({
+            where: { id: departmentId as string },
+            select: { name: true },
+          })
+        )?.name as Department,
+        admissionYear,
+        sequenceNumber: sequence,
       });
 
-      // Create student record
+      // Create Student and Connect User
       const createdStudent = await tx.student.create({
         data: {
           ...rest,
           studentNumber: studentID,
-          currentLevel: rest.currentLevel as (typeof Levels)[number],
+          currentLevel: rest.currentLevel as (typeof gradelevels)[number],
           status: rest.status as (typeof status)[number],
-          graduationDate: rest.graduationDate
-            ? rest.graduationDate
-            : computeGraduationDate(rest.dateEnrolled),
-
-          currentClass: classId
-            ? {
-                connect: { id: classId },
-              }
-            : undefined,
-
-          department: departmentId
-            ? {
-                connect: { id: departmentId },
-              }
-            : undefined,
-          user: {
-            connect: {
-              id: createdUser.id,
-            },
-          },
+          graduationDate: computeGraduationDate(rest.dateEnrolled),
+          currentClass: { connect: { id: classId as string } },
+          department: { connect: { id: departmentId as string } },
+          user: { connect: { id: authResponse.user.id } },
         },
       });
 
-      // Increment class enrollment if classId is provided
-      if (classId) {
-        await tx.class.update({
+      classId &&
+        (await tx.class.update({
           where: { id: classId },
           data: { currentEnrollment: { increment: 1 } },
-        });
-      }
+        }));
 
-      return { createdStudent, createdUser };
+      return createdStudent;
     });
 
-    const { createdStudent } = transactionResult;
-
-    if (result.data.imageFile instanceof File) {
-      const arrayBuffer = await (result.data.imageFile as File).arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const jobData = {
-        file: {
-          buffer: buffer.toString("base64"),
-          name: (result.data.imageFile as File).name,
-          type: (result.data.imageFile as File).type,
-        },
-        entityId: createdStudent.userId,
-        entityType: "user" as const,
-        folder: "students",
-      };
-      await client.publishJSON({
-        url: `${env.NEXT_PUBLIC_URL}/api/images/uploads`,
-        body: jobData,
-      });
+    if (imageFile instanceof File) {
+      void triggerImageUpload(
+        imageFile,
+        transactionResult.id,
+        "students",
+        "user",
+      );
     }
 
-    const emailData = {
+    void triggerSendEmail({
       to: [email],
-      username: createdStudent.lastName,
-      data: {
-        email: email,
-        lastName: createdStudent.firstName,
-        password: password,
-      },
-    };
-
-    await client.publishJSON({
-      url: `${env.NEXT_PUBLIC_URL}/api/send/emails`,
-      body: emailData,
+      username: rest.lastName,
+      data: { email, lastName: rest.firstName, password },
     });
 
-    return { createdStudent };
+    updateTag("students-list");
+    updateTag("users-list");
+
+    return { createdStudent: transactionResult };
   } catch (error) {
-    console.error(error);
-    return { error: getErrorMessage(error) };
+    if (createdUserId) {
+      console.error(`Transaction failed. Rolling back user: ${createdUserId}`);
+
+      await triggerRollback(createdUserId).catch((err) =>
+        console.error("Critical: Rollback failed", err),
+      );
+    }
+
+    console.error("[CREATE_STUDENT_ERROR]:", error);
+    return { error: getError(error) };
   }
 };
 
@@ -291,19 +177,13 @@ export const getStudents = async (studentIDs?: string[]) => {
       };
     }
 
-    const students = await prisma.student.findMany({
-      where: query,
-      select: StudentSelect,
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    const students = await getCachedStudentService();
 
     return { students: students ?? [] };
   } catch (error) {
     console.error("Could not fetch students:", error);
     Sentry.captureException(error);
-    return { error: getErrorMessage(error) };
+    return { error: getError(error) };
   }
 };
 
@@ -312,45 +192,53 @@ export const bulkDeleteStudents = async (ids: string[]) => {
     const { hasPermission } = await getUserPermissions("delete:students");
     if (!hasPermission) return { error: "Permission denied" };
 
-    // Get students to update class enrollments before deletion
     const studentsToDelete = await prisma.student.findMany({
       where: { id: { in: ids } },
-      select: { classId: true },
+      select: { classId: true, userId: true },
     });
 
-    // Group students by class to batch enrollment updates
-    const classUpdates = new Map<string, number>();
-    studentsToDelete.forEach((student) => {
+    if (studentsToDelete.length === 0) return { count: 0 };
+
+    const classDecrementMap: Record<string, number> = {};
+    const userIds: string[] = [];
+
+    for (const student of studentsToDelete) {
+      if (student.userId) userIds.push(student.userId);
       if (student.classId) {
-        classUpdates.set(
-          student.classId,
-          (classUpdates.get(student.classId) || 0) + 1,
-        );
+        classDecrementMap[student.classId] =
+          (classDecrementMap[student.classId] || 0) + 1;
       }
-    });
+    }
 
-    // Update class enrollments
-    await Promise.all(
-      Array.from(classUpdates.entries()).map(([classId, decrementCount]) =>
-        prisma.class.update({
+    const result = await prisma.$transaction(async (tx) => {
+      for (const [classId, decrementCount] of Object.entries(
+        classDecrementMap,
+      )) {
+        await tx.class.update({
           where: { id: classId },
           data: { currentEnrollment: { decrement: decrementCount } },
-        }),
-      ),
-    );
+        });
+      }
 
-    const { count } = await prisma.student.deleteMany({
-      where: {
-        id: { in: ids },
-      },
+      return await tx.user.deleteMany({
+        where: { id: { in: userIds } },
+      });
     });
 
-    if (!count) return { error: "Could not delete students" };
-    return { count };
+    updateTag("students-list");
+    updateTag("users-list");
+
+    console.info(
+      `[BULK_DELETE] Successfully deleted ${result.count} users and updated ${Object.keys(classDecrementMap).length} classes.`,
+    );
+
+    return { count: result.count };
   } catch (error) {
-    console.error("Could not delete students:", error);
+    console.error("[BULK_DELETE_ERROR]:", error);
     Sentry.captureException(error);
-    return { error: getErrorMessage(error) };
+    return {
+      error: getError(error),
+    };
   }
 };
 
@@ -369,27 +257,27 @@ export const deleteStudent = async (id: string) => {
 
     if (!existingStudent) return { error: "No student found!" };
 
-    // Decrement class enrollment before deleting
-    if (existingStudent.classId) {
-      await prisma.class.update({
-        where: { id: existingStudent.classId },
+    await prisma.$transaction(async (tsx) => {
+      await tsx.class.update({
+        where: { id: existingStudent.classId as string },
         data: { currentEnrollment: { decrement: 1 } },
       });
-    }
 
-    const student = await prisma.user.delete({
-      where: {
-        id: existingStudent.userId as string,
-      },
+      return await tsx.user.delete({
+        where: {
+          id: existingStudent.userId as string,
+        },
+      });
     });
 
-    if (!student) return { error: "Could not delete student" };
+    updateTag("students-list");
+    updateTag("users-list");
 
     return { success: true };
   } catch (error) {
     Sentry.captureException(error);
     console.error("Could not delete student: ", error);
-    return { error: getErrorMessage(error) };
+    return { error: getError(error) };
   }
 };
 
@@ -416,183 +304,131 @@ export const getStudent = async (id: string) => {
 export const updateStudent = async (values: EditStudentType) => {
   try {
     const { hasPermission } = await getUserPermissions("edit:students");
-
     if (!hasPermission) return { error: "Permission denied" };
 
     const result = EditStudentSchema.safeParse(values);
-
     if (!result.success) {
-      const zodError = result.error.errors.reduce(
-        (acc, issue) => {
-          acc[issue.path[0]] = issue.message;
-          return acc;
-        },
-        {} as Record<string, string>,
-      );
-
-      return { error: zodError };
+      return {
+        error: result.error.errors
+          .map((e) => `${e.path[0]}: ${e.message}`)
+          .join(", "),
+      };
     }
 
     const { id, data } = result.data;
     const admissionYear = new Date(data.dateEnrolled).getFullYear();
 
-    const [existingStudent, existingDepartment] = await prisma.$transaction([
-      prisma.student.findFirst({
-        where: {
-          departmentId: data.departmentId,
-          dateEnrolled: {
-            gte: new Date(admissionYear, 0, 1),
-            lte: new Date(admissionYear + 1, 0, 1),
-          },
-        },
-        orderBy: {
-          studentNumber: "desc",
-        },
-
-        select: { studentNumber: true, dateEnrolled: true },
-      }),
-      prisma.department.findFirst({
-        where: { id: data.departmentId as string },
-      }),
-    ]);
-
-    let studentNumber = "";
-    const yearInDB = moment(existingStudent?.dateEnrolled)
-      .format("MM/DD/YYYY")
-      .split("/")
-      .pop();
-    const yearInRequest = moment(data.dateEnrolled)
-      .format("MM/DD/YYY")
-      .split("/")
-      .pop();
-
-    if (yearInDB !== yearInRequest) {
-      const sequence = existingStudent?.studentNumber
-        ? parseInt(
-            existingStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
-          ) + 1
-        : 1;
-      studentNumber = generateStudentIndex({
-        department: existingDepartment?.name as Department,
-        admissionYear: admissionYear,
-        sequenceNumber: sequence,
-      });
-    }
-
-    const cleanData = {
-      ...data,
-      studentNumber: existingStudent?.studentNumber ?? studentNumber,
-      departmentId: data.departmentId ?? "",
-      classId: data.classId ?? "",
-      currentLevel: data.currentLevel as (typeof Levels)[number],
-    };
-    const { email, ...transformData } = cleanData;
-
-    const { imageFile, photoURL, classId, departmentId, ...rest } =
-      transformData;
-
-    // Get current student to check if class changed
-    const currentStudent = await prisma.student.findUnique({
-      where: { id },
-      select: { classId: true },
-    });
-
-    // Update student record
-    await prisma.student.update({
-      where: { id },
-      data: {
-        ...rest,
-        department: departmentId
-          ? {
-              connect: {
-                id: departmentId,
-              },
-            }
-          : undefined,
-        currentClass: classId
-          ? {
-              connect: {
-                id: classId,
-              },
-            }
-          : undefined,
-      },
-    });
-
-    // Update enrollment counts if class changed
-    if (currentStudent?.classId !== classId) {
-      // Check capacity of new class before transferring
-      if (classId) {
-        const newClass = await prisma.class.findUnique({
-          where: { id: classId },
-          select: { name: true, maxCapacity: true, currentEnrollment: true },
-        });
-
-        if (!newClass) {
-          return { error: "The selected class does not exist" };
-        }
-
-        // Check if new class has reached maximum capacity
-        if (
-          newClass.maxCapacity &&
-          newClass.currentEnrollment >= newClass.maxCapacity
-        ) {
-          return {
-            error: `Class "${newClass.name}" has reached its maximum capacity of ${newClass.maxCapacity} students`,
-          };
-        }
-      }
-
-      // Decrement enrollment from old class
-      if (currentStudent?.classId) {
-        await prisma.class.update({
-          where: { id: currentStudent.classId },
-          data: { currentEnrollment: { decrement: 1 } },
-        });
-      }
-      // Increment enrollment in new class
-      if (classId) {
-        await prisma.class.update({
-          where: { id: classId },
-          data: { currentEnrollment: { increment: 1 } },
-        });
-      }
-    }
-
-    // Update user record separately if there's a photo update
-    if (imageFile instanceof File) {
-      const student = await prisma.student.findUnique({
+    const transactionResult = await prisma.$transaction(async (tx) => {
+      // Fetch current state to check for changes (Class, Enrollment Year, Department)
+      const current = await tx.student.findUnique({
         where: { id },
+        include: { currentClass: true, department: true },
+      });
+
+      if (!current) throw new Error("Student not found");
+
+      let studentNumber = current.studentNumber;
+
+      const yearInDB = new Date(current.dateEnrolled).getFullYear();
+      if (yearInDB !== admissionYear) {
+        console.info(
+          `[UPDATE_STUDENT] Re-indexing ${current.studentNumber} due to enrollment year change.`,
+        );
+
+        const latest = await tx.student.findFirst({
+          where: {
+            departmentId: data.departmentId,
+            dateEnrolled: {
+              gte: new Date(admissionYear, 0, 1),
+              lt: new Date(admissionYear + 1, 0, 1),
+            },
+          },
+          orderBy: { studentNumber: "desc" },
+          select: { studentNumber: true },
+        });
+
+        const sequence = latest
+          ? (parseInt(latest.studentNumber.slice(-3)) || 0) + 1
+          : 1;
+        const dept = await tx.department.findUnique({
+          where: { id: data.departmentId as string },
+        });
+
+        studentNumber = generateStudentIndex({
+          department: dept?.name as Department,
+          admissionYear,
+          sequenceNumber: sequence,
+        });
+      }
+
+      if (current.classId !== data.classId) {
+        if (data.classId) {
+          const newClass = await tx.class.findUnique({
+            where: { id: data.classId },
+            select: { name: true, maxCapacity: true, currentEnrollment: true },
+          });
+
+          if (!newClass) throw new Error("Target class does not exist");
+          if (
+            newClass.maxCapacity &&
+            newClass.currentEnrollment >= newClass.maxCapacity
+          ) {
+            throw new Error(`Class "${newClass.name}" is at maximum capacity.`);
+          }
+
+          // Increment new class
+          await tx.class.update({
+            where: { id: data.classId },
+            data: { currentEnrollment: { increment: 1 } },
+          });
+        }
+
+        // Decrement old class
+        if (current.classId) {
+          await tx.class.update({
+            where: { id: current.classId },
+            data: { currentEnrollment: { decrement: 1 } },
+          });
+        }
+      }
+      const { imageFile, classId, departmentId, photoURL, email, ...rest } =
+        data;
+
+      const updated = await tx.student.update({
+        where: { id },
+        data: {
+          ...rest,
+          studentNumber,
+          graduationDate: computeGraduationDate(data.dateEnrolled),
+          classId: classId as string,
+          departmentId: departmentId,
+          currentLevel: rest.currentLevel as (typeof gradelevels)[number],
+        },
         select: { userId: true },
       });
 
-      if (student?.userId) {
-        const arrayBuffer = await (
-          transformData.imageFile as File
-        ).arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const jobData = {
-          file: {
-            buffer: buffer.toString("base64"),
-            name: (transformData.imageFile as File).name,
-            type: (transformData.imageFile as File).type,
-          },
-          entityId: student?.userId,
-          entityType: "user" as const,
-          folder: "students",
-        };
-        await client.publishJSON({
-          url: `${env.NEXT_PUBLIC_URL}/api/images/uploads`,
-          body: jobData,
-        });
-      }
+      return updated;
+    });
+
+    if (data.imageFile instanceof File && transactionResult.userId) {
+      console.log(
+        `[UPDATE_STUDENT] Triggering image upload for User: ${transactionResult.userId}`,
+      );
+      void triggerImageUpload(
+        data.imageFile,
+        transactionResult.userId,
+        "students",
+        "user",
+      );
     }
 
+    updateTag("students-list");
+
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
+    console.error("[UPDATE_STUDENT_ERROR]:", error.message);
     Sentry.captureException(error);
-    console.error("Could not edit student:", error);
-    return { error: getErrorMessage(error) };
+    return { error: getError(error) };
   }
 };
 
@@ -602,239 +438,25 @@ export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
     if (!hasPermission) return { error: "Permission denied" };
 
     const result = validateAndTransformStudentsData(values);
-
     if (result.errors) {
       return {
-        errors: result.errors.flatMap(
-          (e) => `An error occurred at row ${e.row}, ${e.field}: ${e.message}`,
-        ),
+        errors: result.errors.flatMap((e) => `Row ${e.row}: ${e.message}`),
       };
     }
 
-    const { data: studentData } = result.data!;
-
-    const classNames = [
-      ...new Set(studentData.map((student) => student.classId)),
-    ];
-
-    const departmentNames = [
-      ...new Set(studentData.map((student) => student.departmentId)),
-    ];
-
-    const [classes, departments, studentRole, studentPermissions] =
-      await prisma.$transaction([
-        prisma.class.findMany({
-          where: { name: { in: classNames as string[] } },
-          select: { id: true, name: true },
-        }),
-        prisma.department.findMany({
-          where: { name: { in: departmentNames as string[] } },
-          select: { id: true, name: true },
-        }),
-        prisma.role.findFirst({
-          where: { name: "student" },
-          select: { id: true },
-        }),
-        prisma.permission.findFirst({
-          where: { name: "view:students" },
-          select: { id: true },
-        }),
-      ]);
-
-    if (!studentRole) {
-      return { error: "Student role not found!" };
-    }
-
-    if (!studentPermissions) {
-      return { error: "Student permission not found!" };
-    }
-
-    const classMap = new Map(
-      classes.map((classItem) => [classItem.name, classItem.id]),
-    );
-
-    const departmentMap = new Map(
-      departments.map((dept) => [dept.name, dept.id]),
-    );
-
-    // Get class details for capacity validation
-    const classDetails = await prisma.class.findMany({
-      where: { id: { in: classes.map((c) => c.id) } },
-      select: {
-        id: true,
-        name: true,
-        maxCapacity: true,
-        currentEnrollment: true,
+    void client.batchJSON([
+      {
+        url: `${env.NEXT_PUBLIC_URL}/api/batch/students/create`,
+        body: { data: result.data },
       },
-    });
+    ]);
 
-    const classDetailsMap = new Map(
-      classDetails.map((classItem) => [classItem.id, classItem]),
-    );
-
-    const createStudents: StudentResponseType[] = [];
-    const errors: string[] = [];
-
-    const studentsWithPassword = studentData.map((student) => ({
-      ...student,
-      password: generatePassword(),
-    }));
-
-    for (const student of studentsWithPassword) {
-      const classId = classMap.get(student.classId as string);
-      const departmentId = departmentMap.get(student.departmentId as string);
-
-      if (!classId) {
-        errors.push(`${student.classId} does not exist`);
-      }
-
-      if (!departmentId) {
-        errors.push(`${student.departmentId} does not exist`);
-      }
-
-      if (errors.length > 0) {
-        return { error: errors.join("\n") };
-      }
-
-      // Check class capacity
-      const classDetail = classDetailsMap.get(classId!);
-      if (
-        classDetail &&
-        classDetail.maxCapacity &&
-        classDetail.currentEnrollment >= classDetail.maxCapacity
-      ) {
-        errors.push(
-          `Class "${classDetail.name}" has reached its maximum capacity of ${classDetail.maxCapacity} students`,
-        );
-      }
-
-      if (errors.length > 0) {
-        return { error: errors.join("\n") };
-      }
-
-      const admissionYear = new Date(student.dateEnrolled).getFullYear();
-
-      const latestStudent = await prisma.student.findFirst({
-        where: {
-          departmentId: departmentId,
-          dateEnrolled: {
-            gte: new Date(admissionYear, 0, 1),
-            lte: new Date(admissionYear + 1, 0, 1),
-          },
-        },
-        select: { studentNumber: true },
-        orderBy: { studentNumber: "desc" },
-      });
-
-      const sequence = latestStudent?.studentNumber
-        ? isNaN(
-            parseInt(
-              latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
-            ),
-          )
-          ? 1
-          : parseInt(
-              latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
-            ) + 1
-        : 1;
-
-      const studentIndex = generateStudentIndex({
-        admissionYear,
-        department: student.departmentId! as Department,
-        sequenceNumber: sequence,
-      });
-
-      await auth.api.signUpEmail({
-        body: {
-          email: student.email.toLowerCase(),
-          username: student.firstName + " " + student.lastName,
-          password: student.password,
-          name: student.firstName + " " + student.lastName,
-          callbackURL: "/email-verified",
-        },
-        headers: await headers(),
-      });
-
-      const createdStudent = await prisma.$transaction(async (tsx) => {
-        const user = await tsx.user.findUnique({
-          where: { email: student.email.toLowerCase() },
-          select: { id: true },
-        });
-
-        if (!user) throw new Error("Failed to create student");
-
-        await tsx.user.update({
-          where: { id: user.id },
-          data: { roleId: studentRole.id },
-        });
-
-        const {
-          email,
-          classId: className,
-          departmentId: departmentName,
-          password,
-          imageFile,
-          ...rest
-        } = student;
-
-        const created_Student = await tsx.student.create({
-          data: {
-            ...rest,
-            studentNumber: studentIndex,
-            birthDate: new Date(rest.birthDate),
-            dateEnrolled: new Date(rest.dateEnrolled),
-            graduationDate: rest.graduationDate
-              ? new Date(rest.graduationDate as string)
-              : computeGraduationDate(rest.dateEnrolled),
-            currentLevel: rest.currentLevel as (typeof Levels)[number],
-            currentClass: {
-              connect: { id: classId },
-            },
-            department: {
-              connect: { id: departmentId },
-            },
-            user: {
-              connect: { id: user.id },
-            },
-          },
-          select: StudentSelect,
-        });
-
-        // Increment class enrollment
-        await tsx.class.update({
-          where: { id: classId },
-          data: { currentEnrollment: { increment: 1 } },
-        });
-
-        return created_Student;
-      });
-
-      createStudents.push(createdStudent);
-    }
-
-    const emails = studentsWithPassword.map((student) => ({
-      to: [student.email],
-      username: student.lastName,
-      data: {
-        lastName: student.lastName,
-        email: student.email,
-        password: student.password,
-      },
-    }));
-
-    await client.publishJSON({
-      url: `${env.NEXT_PUBLIC_URL}/api/send/emails/batch`,
-      body: {
-        emails: emails,
-      },
-    });
-
-    return { count: createStudents.length };
+    return {
+      success: true,
+      message: "Bulk processing started.",
+      count: result.data?.data.length as number,
+    };
   } catch (error) {
-    Sentry.captureException(error);
-    console.error("Could not create students:", error);
-    return { error: getErrorMessage(error) };
-  } finally {
-    revalidatePath("/admin/students");
+    return { error: getError(error) };
   }
 };

@@ -1,13 +1,13 @@
-import { getServerSideProps } from "./actions/getServerSideProps";
-import RenderDepartmentsDataTable from "./components/render-departments-datateble";
-import DepartmentUploadProvider from "./components/DepartmentUploadProvider";
-import { Suspense } from "react";
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { Suspense } from "react";
+import { getServerSideProps } from "./actions/getServerSideProps";
+import DepartmentUploadProvider from "./components/DepartmentUploadProvider";
 import EditDepartment from "./components/EditDepartment";
 import CreateDepartmentDialog from "./components/create-department-dialog";
-import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import RenderDepartmentsDataTable from "./components/render-departments-datateble";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export default function DepartmentPage() {
   return (

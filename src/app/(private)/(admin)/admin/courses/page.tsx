@@ -1,13 +1,14 @@
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
-import RenderCoursesDataTable from "./components/render-courses-dataTable";
-import { getCourses } from "./actions/actions";
-import EditCourseDialog from "./components/edit-course-dialog";
-import CoursesProvider from "./components/CoursesProvider";
-import { Suspense } from "react";
-import CreateCourseDialog from "./components/create-course-dialog";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { connection } from "next/server";
+import { Suspense } from "react";
+import { getCourses } from "./actions/actions";
+import CoursesProvider from "./components/CoursesProvider";
+import CreateCourseDialog from "./components/create-course-dialog";
+import EditCourseDialog from "./components/edit-course-dialog";
+import RenderCoursesDataTable from "./components/render-courses-dataTable";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export default function CoursesPage() {
   return (
@@ -29,6 +30,7 @@ export default function CoursesPage() {
 }
 
 const RenderCoursesTable = async () => {
+  await connection();
   const courses = await getCourses();
   return <RenderCoursesDataTable initialState={courses} />;
 };

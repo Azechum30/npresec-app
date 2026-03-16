@@ -2,33 +2,33 @@ import TableFooterDescription from "@/components/customComponents/TableFooterDat
 import TopActions from "@/components/customComponents/TopActions";
 import {
   Table,
+  TableBody,
+  TableCell,
   TableHead,
   TableHeader,
   TableRow,
-  TableBody,
-  TableCell,
 } from "@/components/ui/table";
+import { ExtendedSession } from "@/lib/auth-client";
 import { fuzzyFilter } from "@/lib/fuzzyFilter";
 import { TransformerFn } from "@/utils/createDataTransformer";
 import {
   ColumnDef,
+  ExpandedState,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   getFilteredRowModel,
-  getSortedRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   PaginationState,
   Row,
+  RowSelectionState,
   SortingState,
   useReactTable,
-  getExpandedRowModel,
-  ExpandedState,
-  RowSelectionState,
 } from "@tanstack/react-table";
-import React, { JSX, useState, useEffect, useMemo } from "react";
+import React, { JSX, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 import { useAuth } from "./SessionProvider";
-import { ExtendedSession } from "@/lib/auth-client";
 
 type DataTableProps<TData> = {
   columns: ColumnDef<TData>[];
@@ -73,9 +73,7 @@ const DataTable = <TData,>({
   const [expanded, setExpanded] = useState<ExpandedState>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
-  // Sync pagination when user preference changes from external updates (like router.refresh)
   useEffect(() => {
-    // Only update if the user preference has actually changed and we're not in the middle of an optimistic update
     if (userItemsPerPage !== pagination.pageSize) {
       setPagination((prev) => ({
         ...prev,
@@ -85,23 +83,12 @@ const DataTable = <TData,>({
     }
   }, [userItemsPerPage, pagination.pageSize]); // Remove pagination.pageSize from dependencies to prevent loops
 
-  // Handle page size change - this will be called from ItemsPerPage component
   const handlePageSizeChange = (newPageSize: number) => {
-    console.log("handlePageSizeChange called with:", newPageSize);
-    console.log("Current pagination state:", pagination);
-
-    // Optimistically update the table state immediately
     setPagination((prev) => ({
       ...prev,
       pageSize: newPageSize,
       pageIndex: 0, // Reset to first page when changing page size
     }));
-
-    console.log("Updated pagination state will be:", {
-      ...pagination,
-      pageSize: newPageSize,
-      pageIndex: 0,
-    });
   };
 
   const memoizedColums = useMemo(() => columns, [columns]);

@@ -1,20 +1,20 @@
 "use server";
-import "server-only";
+import { Prisma } from "@/generated/prisma/client";
+import { getUserPermissions } from "@/lib/get-session";
+import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
+import { resolveRole } from "@/lib/resolve-staff-role";
+import { triggerSendEmail } from "@/lib/trigger-send-email";
 import { StaffSelect } from "@/lib/types";
 import { StaffSchema, StaffType } from "@/lib/validation";
-import { Prisma } from "@/generated/prisma/client";
-import { revalidateTag } from "next/cache";
-import { getErrorMessage } from "@/lib/getErrorMessage";
-import { getCachedStaff } from "../utils/get-cached-staff";
-import { resolveRole } from "@/lib/resolve-staff-role";
 import { createUserCredentials } from "@/utils/create-user-credentials";
 import { transformAndValidateStaffData } from "@/utils/staff-data-transformer";
-import { checkExistingRelatedRecords } from "../utils/check-existing-related-records";
 import { triggerImageUpload } from "@/utils/trigger-image-upload";
+import { revalidateTag } from "next/cache";
+import "server-only";
+import { checkExistingRelatedRecords } from "../utils/check-existing-related-records";
+import { getCachedStaff } from "../utils/get-cached-staff";
 import { triggerStaffCreation } from "../utils/trigger-staff-creation";
-import { triggerSendEmail } from "@/lib/trigger-send-email";
-import { getUserPermissions } from "@/lib/get-session";
 
 export const createStaff = async (values: unknown) => {
   try {
@@ -166,7 +166,7 @@ export const getStaffMember = async (id: string) => {
 
 export const updateStaff = async (id: string, data: StaffType) => {
   try {
-    const { hasPermission } = await getUserPermissions("update:staff");
+    const { hasPermission } = await getUserPermissions("edit:staff");
     if (!hasPermission) return { error: "Permission denied" };
 
     const unvalidData = StaffSchema.safeParse(data);

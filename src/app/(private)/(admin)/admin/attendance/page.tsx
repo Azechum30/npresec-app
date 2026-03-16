@@ -1,16 +1,16 @@
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
-import { CreateAttendanceDialog } from "@/app/(private)/(admin)/admin/attendance/components/createAttendanceDialog";
-import { Suspense } from "react";
-import { RenderAttendanceTable } from "@/app/(private)/(admin)/admin/attendance/components/render-attendance-table";
 import { getAttendance } from "@/app/(private)/(admin)/admin/attendance/actions/queries";
-import { getClassesAction } from "@/app/(private)/(admin)/admin/classes/actions/server-actions";
-import { SingleStudentAttendanceDialog } from "@/app/(private)/(admin)/admin/attendance/components/single-student-attendance-dialog";
+import { CreateAttendanceDialog } from "@/app/(private)/(admin)/admin/attendance/components/createAttendanceDialog";
 import { EditAttendanceDialog } from "@/app/(private)/(admin)/admin/attendance/components/edit-attendance-dialog";
-import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { RenderAttendanceTable } from "@/app/(private)/(admin)/admin/attendance/components/render-attendance-table";
+import { SingleStudentAttendanceDialog } from "@/app/(private)/(admin)/admin/attendance/components/single-student-attendance-dialog";
+import { getClassesAction } from "@/app/(private)/(admin)/admin/classes/actions/server-actions";
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
+import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { NoDataFound } from "@/components/customComponents/no-data-found";
+import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { Suspense } from "react";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export default function AttendancePage() {
   return (

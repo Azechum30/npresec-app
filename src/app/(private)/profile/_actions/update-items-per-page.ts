@@ -1,10 +1,10 @@
 "use server";
-import "server-only";
-import * as Sentry from "@sentry/nextjs";
 import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
-import { revalidateTag } from "next/cache";
-import { revalidatePath } from "next/cache";
+import { getError } from "@/utils/get-error";
+import * as Sentry from "@sentry/nextjs";
+import { revalidatePath, revalidateTag } from "next/cache";
+import "server-only";
 
 export const updateItemsPerPage = async (itemsPerPage: number) => {
   console.log("updateItemsPerPage - New value:", itemsPerPage);
@@ -36,22 +36,24 @@ export const updateItemsPerPage = async (itemsPerPage: number) => {
     revalidatePath("/(private)/(teachers)", "layout");
 
     // Revalidate specific admin pages that use data tables
-    revalidatePath("/(private)/(admin)/admin/students");
-    revalidatePath("/(private)/(admin)/admin/staff");
-    revalidatePath("/(private)/(admin)/admin/users");
-    revalidatePath("/(private)/(admin)/admin/permissions");
-    revalidatePath("/(private)/(admin)/admin/roles");
-    revalidatePath("/(private)/(admin)/admin/departments");
-    revalidatePath("/(private)/(admin)/admin/classes");
-    revalidatePath("/(private)/(admin)/admin/courses");
-    revalidatePath("/(private)/(admin)/admin/houses");
-    revalidatePath("/(private)/(admin)/admin/board-of-governors");
+    revalidateTag("users-list", "seconds");
+    revalidateTag("permissions-list", "seconds");
+    revalidatePath("/admin/students");
+    revalidatePath("/admin/staff");
+    revalidatePath("/admin/users");
+    revalidatePath("/admin/permissions");
+    revalidatePath("/admin/roles");
+    revalidatePath("/admin/departments");
+    revalidatePath("/admin/classes");
+    revalidatePath("/admin/courses");
+    revalidatePath("/admin/houses");
+    revalidatePath("/admin/board-of-governors");
 
     console.log("Cache revalidation completed for itemsPerPage update");
     return { success: true };
   } catch (e) {
     console.error("Failed to update items per page", e);
     Sentry.captureException(e);
-    return { error: "Failed to update items per page" };
+    return { error: getError(e) };
   }
 };

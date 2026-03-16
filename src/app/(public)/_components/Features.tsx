@@ -1,27 +1,27 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { PublicMainContainer } from "./PublicMainContainer";
-import {
-  Network,
-  Users2Icon,
-  TrendingUp,
-  Computer,
-  Palette,
-  Utensils,
-  Clapperboard,
-  Tractor,
-  CircuitBoard,
-  ArrowRight,
-  Sparkles,
-} from "lucide-react";
-import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {
+  ArrowRight,
+  CircuitBoard,
+  Clapperboard,
+  Computer,
+  Network,
+  Palette,
+  Sparkles,
+  Tractor,
+  TrendingUp,
+  Users2Icon,
+  Utensils,
+} from "lucide-react";
 import { Route } from "next";
+import Link from "next/link";
+import { useRef, useState } from "react";
+import { PublicMainContainer } from "./PublicMainContainer";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -148,7 +148,7 @@ export const Features = () => {
             duration: 1,
             ease: "back.out(1.7)",
           },
-          "-=0.8",
+          "-=0.8"
         )
 
         // Title with skew animation
@@ -161,7 +161,7 @@ export const Features = () => {
             duration: 1,
             ease: "power2.out",
           },
-          "-=0.6",
+          "-=0.6"
         )
 
         // Feature cards with 3D flip
@@ -180,7 +180,7 @@ export const Features = () => {
             },
             ease: "back.out(1.3)",
           },
-          "-=0.4",
+          "-=0.4"
         )
 
         // Courses section
@@ -192,7 +192,7 @@ export const Features = () => {
             duration: 1,
             ease: "power2.out",
           },
-          "-=0.8",
+          "-=0.8"
         )
 
         // Course items with wave effect
@@ -210,7 +210,7 @@ export const Features = () => {
             },
             ease: "back.out(1.2)",
           },
-          "-=0.6",
+          "-=0.6"
         )
 
         // CTA buttons
@@ -223,7 +223,7 @@ export const Features = () => {
             duration: 1,
             ease: "back.out(1.4)",
           },
-          "-=0.4",
+          "-=0.4"
         );
 
       // Floating animation for badge
@@ -253,7 +253,7 @@ export const Features = () => {
         ScrollTrigger.getAll().forEach((st) => st.kill());
       };
     },
-    { scope: container },
+    { scope: container }
   );
 
   // Feature card hover animations
@@ -298,8 +298,7 @@ export const Features = () => {
   return (
     <div
       ref={container}
-      className="w-full bg-gradient-to-b from-accent/50 to-background py-8 md:py-12 lg:py-24 px-4 md:px-6 lg:px-16 relative overflow-hidden"
-    >
+      className="w-full bg-gradient-to-b from-accent/50 to-background py-8 md:py-24 px-4 md:px-6 lg:px-16 relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
@@ -333,8 +332,7 @@ export const Features = () => {
                 key={index}
                 className={`feature-card feature-card-${index} group relative p-8 rounded-2xl border border-border/50 bg-gradient-to-br from-background to-accent/20 hover:shadow-xl transition-all duration-500 cursor-pointer overflow-hidden`}
                 onMouseEnter={() => handleFeatureHover(index, true)}
-                onMouseLeave={() => handleFeatureHover(index, false)}
-              >
+                onMouseLeave={() => handleFeatureHover(index, false)}>
                 {/* Background gradient overlay */}
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
@@ -342,8 +340,7 @@ export const Features = () => {
 
                 {/* Icon container */}
                 <div
-                  className={`feature-icon relative z-10 w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br ${feature.color} p-0.5`}
-                >
+                  className={`feature-icon relative z-10 w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br ${feature.color} p-0.5`}>
                   <div className="w-full h-full bg-background rounded-full flex items-center justify-center">
                     <Icon className="w-8 h-8 text-foreground group-hover:text-white transition-colors duration-300" />
                   </div>
@@ -387,18 +384,15 @@ export const Features = () => {
                   key={index}
                   className={`course-item course-item-${index} group relative p-6 rounded-xl ${area.bgColor} border border-border/30 hover:border-current transition-all duration-300 cursor-pointer`}
                   onMouseEnter={() => handleAreaHover(index, true)}
-                  onMouseLeave={() => handleAreaHover(index, false)}
-                >
+                  onMouseLeave={() => handleAreaHover(index, false)}>
                   <div className="flex items-center gap-4">
                     <div
-                      className={`p-3 rounded-lg ${area.color} bg-white dark:bg-background transition-transform duration-300 group-hover:scale-110`}
-                    >
+                      className={`p-3 rounded-lg ${area.color} bg-white dark:bg-background transition-transform duration-300 group-hover:scale-110`}>
                       <Icon className="w-6 h-6" />
                     </div>
                     <div className="flex-1">
                       <h3
-                        className={`font-semibold ${area.color} group-hover:scale-105 transition-transform duration-300`}
-                      >
+                        className={`font-semibold ${area.color} group-hover:scale-105 transition-transform duration-300`}>
                         {area.name}
                       </h3>
                     </div>
@@ -419,8 +413,7 @@ export const Features = () => {
                 size: "lg",
                 className:
                   "group relative overflow-hidden px-8 py-4 rounded-l-full sm:rounded-r-none rounded-r-full text-base font-semibold",
-              })} hover:shadow-lg transition-all duration-300`}
-            >
+              })} hover:shadow-lg transition-all duration-300`}>
               <span className="relative z-10 group-hover:tracking-wider transition-all duration-300">
                 Requirements
               </span>
@@ -434,8 +427,7 @@ export const Features = () => {
                 size: "lg",
                 className:
                   "group relative overflow-hidden px-8 py-4 rounded-r-full sm:rounded-l-none rounded-l-full text-base font-semibold",
-              })} hover:shadow-lg transition-all duration-300`}
-            >
+              })} hover:shadow-lg transition-all duration-300`}>
               <span className="relative z-10 group-hover:tracking-wider transition-all duration-300">
                 Programmes
               </span>

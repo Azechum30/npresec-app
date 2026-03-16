@@ -1,18 +1,4 @@
-import { Prisma } from "@/generated/prisma/client";
-
-// Universal nested keys with top-level keys included
-export type NestedKeys<T, Prev extends string = ""> = T extends (infer U)[]
-  ? NestedKeys<U, `${Prev}[number]`> | NestedKeys<U, `${Prev}.${number}`>
-  : T extends object
-    ?
-        | // Include top-level keys when Prev is empty
-        (Prev extends "" ? keyof T & string : never)
-        | {
-            [K in keyof T & string]:
-              | `${Prev}${Prev extends "" ? "" : "."}${K}`
-              | NestedKeys<T[K], `${Prev}${Prev extends "" ? "" : "."}${K}`>;
-          }[keyof T & string]
-    : never;
+import { Course, Grade, Prisma } from "@/generated/prisma/client";
 
 export const DepartmentInclude = {
   head: {
@@ -252,7 +238,17 @@ export const AttendanceSelect = {
         select: {
           id: true,
           username: true,
-          role: true,
+          roles: {
+            select: {
+              id: true,
+              role: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
           image: true,
         },
       },
@@ -355,6 +351,8 @@ export const GradeSelect = {
     select: {
       id: true,
       title: true,
+      code: true,
+      credits: true,
     },
   },
   staff: {
@@ -377,30 +375,32 @@ export const UserSelect = {
   username: true,
   emailVerified: true,
   image: true,
+  createdAt: true,
   sessions: {
     select: {
       id: true,
       expiresAt: true,
     },
   },
-  role: {
+  roles: {
     select: {
       id: true,
-      name: true,
-      permissions: {
+      roleId: true,
+      role: {
         select: {
           id: true,
           name: true,
+          permissions: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       },
     },
   },
-  permissions: {
-    select: {
-      id: true,
-      name: true,
-    },
-  },
+
   student: {
     select: {
       id: true,
@@ -442,3 +442,63 @@ export const HouseSelect = {
 export type HouseResponseType = Prisma.HouseGetPayload<{
   select: typeof HouseSelect;
 }>;
+
+export const RoomSelect = {
+  id: true,
+  code: true,
+  houseId: true,
+  capacity: true,
+  rmGender: true,
+  house: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+} satisfies Prisma.RoomSelect;
+
+export type RoomResponseType = Prisma.RoomGetPayload<{
+  select: typeof RoomSelect;
+}>;
+
+export type GradePoint = {
+  letter: string;
+  point: number;
+};
+
+export type GradeWithCourse = Grade & { course: Course };
+
+export type CourseAggregateScore = {
+  code: string;
+  title: string;
+  credits: number | null;
+  totalWeighted: number;
+  breakdown: Array<{
+    type: string;
+    rawScore: string;
+    contribution: string;
+  }>;
+  letter: string;
+  points: number;
+};
+
+export const AssessmentTimelinesSelect = {
+  id: true,
+  course: {
+    select: {
+      id: true,
+      title: true,
+    },
+  },
+  academicYear: true,
+  semester: true,
+  assessmentType: true,
+  startDate: true,
+  endDate: true,
+  courseId: true,
+} satisfies Prisma.AssessmentTimelineSelect;
+
+export type AssessmentTimelinesResponseType =
+  Prisma.AssessmentTimelineGetPayload<{
+    select: typeof AssessmentTimelinesSelect;
+  }>;

@@ -1,27 +1,24 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
 import Logo from "@/../public/logo.png";
-import { ThemeSwitcher } from "./ThemeSwitecher";
-import { Button, buttonVariants } from "../ui/button";
-import { Badge } from "../ui/badge";
-import {
-  LogIn,
-  Sparkles,
-  ArrowRight,
-  Home,
-  Users,
-  GraduationCap,
-  Zap,
-} from "lucide-react";
-import { TriggerMobileNavbar } from "./TriggerMobileNavbar";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {
+  ArrowRight,
+  GraduationCap,
+  Home,
+  LogIn,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import { Route } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { ThemeSwitcher } from "./ThemeSwitecher";
+import { TriggerMobileNavbar } from "./TriggerMobileNavbar";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -120,7 +117,7 @@ export default function Navbar() {
             stagger: 0.1,
             ease: "back.out(1.2)",
           },
-          "-=0.5",
+          "-=0.5"
         )
         .to(
           ".navbar-actions",
@@ -131,7 +128,7 @@ export default function Navbar() {
             duration: 0.8,
             ease: "back.out(1.7)",
           },
-          "-=0.4",
+          "-=0.4"
         )
         .to(
           ".navbar-decoration",
@@ -143,7 +140,7 @@ export default function Navbar() {
             stagger: 0.2,
             ease: "elastic.out(1, 0.5)",
           },
-          "-=0.3",
+          "-=0.3"
         );
 
       // Floating animation for decorations
@@ -175,7 +172,7 @@ export default function Navbar() {
         },
       });
     },
-    { scope: container },
+    { scope: container }
   );
 
   const isCurrentPath = (href: string) => {
@@ -198,8 +195,7 @@ export default function Navbar() {
               ? "bg-background/80 backdrop-blur-2xl border-border/50 shadow-lg"
               : "bg-background/95 backdrop-blur-md border-border/30"
           }
-        `}
-      >
+        `}>
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-50" />
 
@@ -208,21 +204,20 @@ export default function Navbar() {
           <Sparkles className="w-4 h-4 text-primary/20" />
         </div>
 
-        <div className="relative container mx-auto flex min-h-16 items-center px-4 md:px-6 lg:px-8 py-2">
+        <div className="relative container mx-auto flex min-h-20 items-center px-4 md:px-6 lg:px-8 py-2">
           {/* Brand Logo */}
           <Link
             href={"/" as Route}
-            className="navbar-brand flex items-center gap-3 mr-6"
-          >
+            className="navbar-brand flex items-center gap-3 mr-6">
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative flex items-center justify-center p-2 bg-gradient-to-br from-background to-accent/30 border border-border/50 rounded-xl shadow-sm group-hover:shadow-lg transition-all duration-300 group-hover:scale-105">
+              <div className="relative flex items-center justify-center p-2 bg-gradient-to-br from-background to-accent/30 border border-border/50 rounded-[50%] shadow-sm group-hover:shadow-lg transition-all duration-300 group-hover:scale-105">
                 <Image
                   src={Logo}
                   alt="NPRESEC Logo"
-                  width={50}
-                  height={50}
-                  className="size-16 object-contain"
+                  width={48}
+                  height={24}
+                  className="w-12 h-6 object-contain"
                 />
               </div>
             </div>
@@ -257,8 +252,7 @@ export default function Navbar() {
                         }
                       `}
                       onMouseEnter={() => setHoveredLink(index)}
-                      onMouseLeave={() => setHoveredLink(null)}
-                    >
+                      onMouseLeave={() => setHoveredLink(null)}>
                       {/* Gradient background on hover */}
                       <div
                         className={`
@@ -281,8 +275,7 @@ export default function Navbar() {
                         className={`
                           absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-background/90 backdrop-blur-md border border-border/50 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-300
                           ${isHovered ? "opacity-100" : "opacity-0"}
-                        `}
-                      >
+                        `}>
                         <p className="text-xs text-muted-foreground whitespace-nowrap">
                           {link.description}
                         </p>
@@ -305,8 +298,7 @@ export default function Navbar() {
                   href={"/" as Route}
                   className={`
                     group relative overflow-hidden px-6 py-2 bg-gradient-to-r from-primary to-secondary text-primary-foreground rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-medium text-sm
-                  `}
-                >
+                  `}>
                   {/* Shimmer effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                   <span className="relative flex items-center gap-2">
@@ -319,8 +311,7 @@ export default function Navbar() {
                   href={"/sign-in" as Route}
                   className={`
                     group relative px-6 py-2 border border-border/50 rounded-xl hover:border-primary/30 transition-all duration-300 hover:shadow-md font-medium text-sm hover:bg-accent/50
-                  `}
-                >
+                  `}>
                   <span className="flex items-center gap-2">
                     <LogIn className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
                     Login
@@ -332,7 +323,7 @@ export default function Navbar() {
 
           {/* Mobile Navigation Trigger */}
           <div className="lg:hidden flex items-center space-x-3 ml-auto">
-            <ThemeSwitcher />
+            {/* <ThemeSwitcher /> */}
             <div className="navbar-actions">
               <TriggerMobileNavbar />
             </div>

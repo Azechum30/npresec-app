@@ -7,9 +7,9 @@ export const getUserWithRole = async (role: string) => {
     return { user: null, hasRole: false };
   }
 
-  const userRole = user.role?.name || "";
+  const userRole = user.roles?.flatMap((r) => r.role.name) || [];
 
-  const hasRole = userRole === role;
+  const hasRole = userRole.includes(role);
 
   return { user, hasRole };
 };

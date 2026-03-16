@@ -1,12 +1,12 @@
-import { Metadata } from "next";
-import { RenderStudentsTable } from "./_components/render-students-table";
-import { fetchStudentsAction } from "./_actions/fetch-students-action";
-import { SendClassQueryForm } from "./_forms/send-class-query-form";
-import { getAuthUser } from "@/lib/get-session";
-import { Suspense } from "react";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { getAuthUser } from "@/lib/get-session";
+import { Metadata } from "next";
+import { Suspense } from "react";
+import { fetchStudentsAction } from "./_actions/fetch-students-action";
+import { RenderStudentsTable } from "./_components/render-students-table";
+import { SendClassQueryForm } from "./_forms/send-class-query-form";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Teachers",

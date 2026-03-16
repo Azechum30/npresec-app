@@ -1,6 +1,7 @@
 import { UserRole } from "@/auth-types";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { cache } from "react";
 import "server-only";
 
@@ -10,22 +11,17 @@ import "server-only";
  */
 export const getSession = cache(async () => {
   try {
-    const session = (await auth.api.getSession({
-      headers: await headers(),
-    })) as typeof auth.$Infer.Session;
+    const currentHeaders = await headers();
 
-    // Return typed session or null
+    const session = (await auth.api.getSession({
+      headers: currentHeaders,
+    })) as typeof auth.$Infer.Session;
     return session;
   } catch (error) {
     console.error("Session fetch error:", error);
-
-    // Fallback without headers
     try {
-      const fallbackSession =
-        (await auth.api.getSession()) as typeof auth.$Infer.Session;
-      return fallbackSession;
-    } catch (fallbackError) {
-      console.error("Fallback session fetch error:", fallbackError);
+    } catch (error) {
+      console.error("Fallback session fetch error:", error);
       return null;
     }
   }
@@ -36,7 +32,7 @@ export const getSession = cache(async () => {
  * Uses React cache for request deduplication
  */
 export const getAuthUser = cache(async () => {
-  const session = (await getSession()) as typeof auth.$Infer.Session;
+  const session = await getSession();
   return session?.user || null;
 });
 
@@ -44,9 +40,14 @@ export const getAuthUser = cache(async () => {
  * Get user role safely
  * Uses React cache for request deduplication
  */
-export const getUserRole = cache(async (): Promise<UserRole | null> => {
-  const user = (await getAuthUser()) as typeof auth.$Infer.Session.user;
-  return (user?.role?.name as UserRole) || null;
+export const getUserRole = cache(async (): Promise<UserRole[] | null> => {
+  const user = await getAuthUser();
+
+  const userRoleNames =
+    user?.roles?.flatMap((rs) => rs.role?.name as UserRole).filter(Boolean) ??
+    [];
+
+  return userRoleNames.length > 0 ? userRoleNames : null;
 });
 
 /**
@@ -55,7 +56,7 @@ export const getUserRole = cache(async (): Promise<UserRole | null> => {
  */
 export const hasRole = cache(async (role: UserRole): Promise<boolean> => {
   const userRole = await getUserRole();
-  return userRole === role;
+  return userRole?.length ? userRole?.includes(role) : false;
 });
 
 /**
@@ -64,7 +65,8 @@ export const hasRole = cache(async (role: UserRole): Promise<boolean> => {
  */
 export const hasAnyRole = cache(async (roles: UserRole[]): Promise<boolean> => {
   const userRole = await getUserRole();
-  return userRole ? roles.includes(userRole) : false;
+
+  return userRole ? roles.some((role) => userRole.includes(role)) : false;
 });
 
 /**
@@ -100,10 +102,10 @@ export const getAuthResult = cache(async () => {
  * Check if user is authenticated
  * Uses React cache for request deduplication
  */
-export const isAuthenticated = cache(async (): Promise<boolean> => {
+export const isAuthenticated = async (): Promise<boolean> => {
   const session = await getSession();
   return !!session?.user;
-});
+};
 
 /**
  * Check if user email is verified
@@ -118,23 +120,27 @@ export const isEmailVerified = cache(async (): Promise<boolean> => {
  * Get user permissions (if you extend this later)
  * Uses React cache for request deduplication
  */
-export const getUserPermissions = cache(async (permissionName: string) => {
-  const user = (await getAuthUser()) as typeof auth.$Infer.Session.user;
+export const getUserPermissions = async (permissionName: string) => {
+  const user = await getAuthUser();
 
   if (!user) {
     return { user: null, hasPermission: false };
   }
 
-  const userPermissions = user?.permissions?.map((perm) => perm.name) || [];
-  const rolePermissions =
-    user.role?.permissions?.map((perm) => perm.name) || [];
+  const allPermissions = new Set(
+    user.roles?.flatMap(
+      (userRole) =>
+        userRole.role?.permissions
+          ?.map((perm) => perm.name.toLowerCase())
+          .filter(Boolean) ?? []
+    ) ?? []
+  );
 
-  const allPermissions = [...userPermissions, ...rolePermissions];
-
-  const hasPermission = allPermissions.includes(permissionName);
-
-  return { hasPermission, user };
-});
+  return {
+    hasPermission: allPermissions.has(permissionName.toLowerCase()),
+    user,
+  };
+};
 
 /**
  * Require authentication - throws if not authenticated
@@ -156,10 +162,12 @@ export const requireAuth = cache(async () => {
  */
 export const requireRole = cache(async (role: UserRole) => {
   const user = (await requireAuth()) as typeof auth.$Infer.Session.user;
-  const userRole = user.role?.name as UserRole;
+  const userRoleNames = user?.roles?.flatMap((rs) => rs.role?.name ?? []) ?? [];
 
-  if (userRole !== role) {
-    throw new Error(`Role '${role}' required`);
+  const hasAccess = userRoleNames.includes(role);
+
+  if (!hasAccess) {
+    redirect("/403");
   }
 
   return user;
@@ -171,10 +179,15 @@ export const requireRole = cache(async (role: UserRole) => {
  */
 export const requireAnyRole = cache(async (roles: UserRole[]) => {
   const user = (await requireAuth()) as typeof auth.$Infer.Session.user;
-  const userRole = user.role?.name as UserRole;
 
-  if (!userRole || !roles.includes(userRole)) {
-    throw new Error(`One of roles [${roles.join(", ")}] required`);
+  const userRoleNames = user?.roles?.flatMap((rs) => rs.role?.name ?? []) ?? [];
+
+  const hasAccess = roles.some((role) => userRoleNames.includes(role));
+
+  if (!userRoleNames.length || !hasAccess) {
+    throw new Error(
+      `Access denied. One of these roles is required: [${roles.join(", ")}]`
+    );
   }
 
   return user;

@@ -6,8 +6,16 @@ import {
   getHouses,
   updateHouse,
 } from "./house";
+import {
+  createRoom,
+  deleteRoomById,
+  deleteRoomsByIds,
+  getRoomById,
+  getRooms,
+  updateRoomById,
+} from "./room";
 import { getStaff } from "./staff";
-import { createRoom, getRooms } from "./room";
+import { updatePassword } from "./user";
 
 export const router = {
   house: {
@@ -24,5 +32,12 @@ export const router = {
   room: {
     createRoom: createRoom,
     getRooms: getRooms,
+    getRoomById: getRoomById,
+    updateRoomById: updateRoomById,
+    deleteRoomById: deleteRoomById,
+    deleteRoomsByIds: deleteRoomsByIds,
+  },
+  user: {
+    updatePassword: updatePassword,
   },
 };

@@ -1,14 +1,14 @@
 "use server";
-import * as Sentry from "@sentry/nextjs";
-import { getErrorMessage } from "@/lib/getErrorMessage";
 import { getUserPermissions } from "@/lib/get-session";
-import { z } from "zod";
+import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import * as Sentry from "@sentry/nextjs";
+import { revalidateTag } from "next/cache";
+import { z } from "zod";
 
 export const handleBoardMemberDelete = async (id: string) => {
   try {
-    const { hasPermission } = await getUserPermissions("delete:boardmembers");
+    const { hasPermission } = await getUserPermissions("delete:staff");
     if (!hasPermission) return { error: "Permission denied!" };
 
     const { error, data, success } = z
@@ -27,7 +27,7 @@ export const handleBoardMemberDelete = async (id: string) => {
 
     if (!boardMember) return { error: "Could not delete board member!" };
 
-    revalidatePath("/admin/board-of-governors");
+    revalidateTag("board-members-list", "seconds");
 
     return { boardMember };
   } catch (e) {

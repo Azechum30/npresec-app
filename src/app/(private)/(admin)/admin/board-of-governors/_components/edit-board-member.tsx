@@ -1,22 +1,19 @@
 "use client";
+import LoadingState from "@/components/customComponents/Loading";
 import {
   Dialog,
   DialogContent,
-  DialogClose,
-  DialogHeader,
   DialogDescription,
-  DialogFooter,
+  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { usePrefetchBoardMember } from "../_hooks/use-prefetch-board-member";
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { CreateBoardMemberForm } from "../_forms/create-boader-member";
-import LoadingState from "@/components/customComponents/Loading";
-import { buttonVariants } from "@/components/ui/button";
 import { useHandleDeleteBoardMember } from "../_hooks/use-handle-delete-board-member";
 import { useHandleUpdateBoardMember } from "../_hooks/use-handle-update-board-member";
+import { usePrefetchBoardMember } from "../_hooks/use-prefetch-board-member";
 
 export const EditBoardMember = () => {
   const { values, fetchError, isFetching } = usePrefetchBoardMember();
@@ -83,7 +80,7 @@ export const EditBoardMember = () => {
         open={dialogs["edit-board-of-governor"] === true ? true : false}
         onOpenChange={() => onClose("edit-board-of-governor")}>
         {values ? (
-          <DialogContent className="max-h-[85vh] overflow-auto w-full scrollbar-thin">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Board Member Details</DialogTitle>
               <DialogDescription>
@@ -97,15 +94,6 @@ export const EditBoardMember = () => {
               onDelete={() => handleDeleteBoardMember(id as string)}
               isCreating={isUpdating}
             />
-            <DialogFooter>
-              <DialogClose
-                className={buttonVariants({
-                  variant: "secondary",
-                  className: "w-full",
-                })}>
-                Cancel
-              </DialogClose>
-            </DialogFooter>
           </DialogContent>
         ) : (
           <DialogContent>

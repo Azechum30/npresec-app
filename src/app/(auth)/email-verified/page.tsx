@@ -1,4 +1,5 @@
-import { getAuthUser } from "@/lib/get-session";
+import { priorityRoles, UserRole } from "@/auth-types";
+import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -7,27 +8,38 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getUserRole, isEmailVerified } from "@/lib/get-session";
 import Link from "next/link";
 import { unauthorized } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { Suspense } from "react";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
-export default async function EmailVerifiedPage() {
-  const user = (await getAuthUser()) as typeof auth.$Infer.Session.user;
+export default function EmailVerifiedPage() {
+  return (
+    <Suspense fallback={<FallbackComponent />}>
+      <RenderEmailVerifiedPage />
+    </Suspense>
+  );
+}
 
-  if (!user) return unauthorized();
+const RenderEmailVerifiedPage = async () => {
+  const [userRole, hasVerifiedEmail] = await Promise.all([
+    getUserRole(),
+    isEmailVerified(),
+  ]);
+  const priorityRole = priorityRoles.find((role) =>
+    userRole?.includes(role as UserRole)
+  );
 
-  if (!user.emailVerified) {
-    return unauthorized();
-  }
+  if (!priorityRole || !hasVerifiedEmail) return unauthorized();
 
   const url =
-    user.role?.name === "admin"
+    priorityRole === "admin"
       ? "/admin/dashboard"
-      : user.role?.name === "teacher"
+      : priorityRole === "teaching_staff"
         ? "/teachers"
-        : user.role?.name === "student"
+        : priorityRole === "student"
           ? "/students"
           : "/";
 
@@ -46,11 +58,10 @@ export default async function EmailVerifiedPage() {
           className={buttonVariants({
             variant: "default",
             className: "w-full",
-          })}
-        >
+          })}>
           Continue to Dashboard
         </Link>
       </CardContent>
     </Card>
   );
-}
+};

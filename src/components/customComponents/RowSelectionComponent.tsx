@@ -1,9 +1,9 @@
 import { Row, Table } from "@tanstack/react-table";
-import { Button } from "../ui/button";
-import { useConfirmDelete } from "./useConfirmDelete";
-import { Loader2, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useTransition } from "react";
+import { Button } from "../ui/button";
 import LoadingState from "./Loading";
+import { useConfirmDelete } from "./useConfirmDelete";
 
 type RowSelectionCompoenentProps<TData> = {
   className?: string;

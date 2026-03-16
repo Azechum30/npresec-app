@@ -8,13 +8,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { CreateRoomForm } from "../_forms/create-room-form";
-import { RoomType } from "@/lib/validation";
-import { useMemo, useTransition } from "react";
 import { client } from "@/lib/orpc";
+import { RoomType } from "@/lib/validation";
 import { createSafeClient, isDefinedError } from "@orpc/client";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useMemo, useTransition } from "react";
+import { toast } from "sonner";
+import { CreateRoomForm } from "../_forms/create-room-form";
 
 export const RoomCreationModal = () => {
   const { dialogs, onClose } = useGenericDialog();
@@ -55,7 +55,10 @@ export const RoomCreationModal = () => {
             </DialogDescription>
           </DialogHeader>
           <>
-            <CreateRoomForm onSubmit={handleSubmit} isPending={isPending} />
+            <CreateRoomForm
+              onSubmitAction={handleSubmit}
+              isPending={isPending}
+            />
           </>
         </DialogContent>
       </Dialog>

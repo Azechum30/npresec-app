@@ -1,16 +1,15 @@
 "use server";
 
-import { getErrorMessage } from "@/lib/getErrorMessage";
 import { getUserPermissions } from "@/lib/get-session";
+import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
-import { env } from "@/lib/server-only-actions/validate-env";
 import { BoardOfGovernorsSchema } from "@/lib/validation";
-import { client } from "@/utils/qstash";
-import { revalidatePath } from "next/cache";
+import { triggerImageUpload } from "@/utils/trigger-image-upload";
+import { revalidateTag } from "next/cache";
 
 export const handleBoardMemberCreationAction = async (values: unknown) => {
   try {
-    const { hasPermission } = await getUserPermissions("create:boardmembers");
+    const { hasPermission } = await getUserPermissions("create:staff");
     if (!hasPermission) {
       return { error: "You do not have permission to perform this action" };
     }
@@ -34,26 +33,15 @@ export const handleBoardMemberCreationAction = async (values: unknown) => {
     });
 
     if (hasPhotoUrl) {
-      const arrayBuffer = await (data.photo_url as File).arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const jobData = {
-        file: {
-          buffer: buffer.toString("base64"), // Convert to base64 string
-          name: (data.photo_url as File).name,
-          type: (data.photo_url as File).type,
-        },
-        entityId: boardMemberData.id,
-        entityType: "boardMember" as const,
-        folder: "board-of-governors",
-      };
-
-      await client.publishJSON({
-        url: `${env.NEXT_PUBLIC_URL}/api/images/uploads`,
-        body: jobData,
-      });
+      void triggerImageUpload(
+        data.photo_url as File,
+        boardMemberData.id,
+        "board-members",
+        "boardMember" as const
+      );
     }
 
-    revalidatePath("/admin/board-of-governors");
+    void revalidateTag("board-members-list", "seconds");
 
     return { boardMember: boardMemberData };
   } catch (e) {

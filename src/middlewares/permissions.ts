@@ -19,18 +19,20 @@ function checkUserPermissions(
     ? permissionNames
     : [permissionNames];
 
-  // Get all permission names the user has
-  const userPermissions = user.permissions?.map((p) => p.name);
-  const rolePermissions = user.role?.permissions?.map((p) => p.name) || [];
-  const allPermissions = [...(userPermissions as string[]), ...rolePermissions];
+  const allPermissions = new Set(
+    user?.roles?.flatMap(
+      (rs) =>
+        rs.role?.permissions?.map((perm) => perm?.name).filter(Boolean) ?? []
+    ) ?? []
+  );
 
   if (options.requireAll) {
     // User must have ALL specified permissions
-    return permissionsToCheck.every((perm) => allPermissions.includes(perm));
+    return permissionsToCheck.every((perm) => allPermissions.has(perm));
   }
 
   // User needs at least ONE of the specified permissions
-  return permissionsToCheck.some((perm) => allPermissions.includes(perm));
+  return permissionsToCheck.some((perm) => allPermissions.has(perm));
 }
 
 /**
@@ -100,15 +102,23 @@ export function requirePermissions(
  *   .handler(...)
  * ```
  */
+
 export function requireRole(roleNames: string | string[]) {
   return os
     .$context<{ user: AuthUser }>()
     .middleware(async ({ context, next }) => {
       const rolesToCheck = Array.isArray(roleNames) ? roleNames : [roleNames];
-      const userRole = context.user.role?.name;
 
-      if (!userRole || !rolesToCheck.includes(userRole)) {
-        throw new ORPCError("FORBIDDEN");
+      const userRoleNames = context.user.roles?.map((rs) => rs.role.name) ?? [];
+
+      const hasAccess = rolesToCheck.some((role) =>
+        userRoleNames.includes(role)
+      );
+
+      if (!userRoleNames.length || !hasAccess) {
+        throw new ORPCError("FORBIDDEN", {
+          message: `Access denied. Required roles: [${rolesToCheck.join(", ")}]`,
+        });
       }
 
       return next();

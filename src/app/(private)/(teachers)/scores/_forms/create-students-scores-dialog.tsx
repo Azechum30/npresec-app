@@ -6,13 +6,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CreateStudentScoresForm } from "./create-students-scores-form";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { useFetchStudentsBaseOnQuery } from "../_hooks/use-fetch-students-base-on-query";
 import { cn } from "@/lib/utils";
-import { useHandleScoresCreation } from "../_hooks/use-handle-scores-creation";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { useFetchStudentsBaseOnQuery } from "../_hooks/use-fetch-students-base-on-query";
+import { useHandleScoresCreation } from "../_hooks/use-handle-scores-creation";
+import { CreateStudentScoresForm } from "./create-students-scores-form";
 
 export const CreateStudentsScoresDialog = () => {
   const { dialogs, onClose } = useGenericDialog();
@@ -48,17 +48,25 @@ export const CreateStudentsScoresDialog = () => {
     prevSuccessRef.current = isCreating;
   }, [isCreating, createSuccess, createCount, onClose, setStudents]);
 
+  const handleClose = () => {
+    const params = new URLSearchParams(window.location.search);
+    params.delete("classID");
+    params.delete("courseID");
+    params.delete("semester");
+    params.delete("academicYear");
+    params.delete("assessmentType");
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.pushState({}, "", newUrl);
+    onClose("create-students-scores");
+  };
+
   return (
     <Dialog
       open={dialogs["create-students-scores"] === true ? true : false}
-      onOpenChange={() => onClose("create-students-scores")}>
-      <DialogContent
-        className={cn(
-          "w-full md:max-w-4xl overflow-y-auto scrollbar-thin",
-          students && students.length > 0 && "h-full"
-        )}>
+      onOpenChange={() => handleClose()}>
+      <DialogContent className={cn("max-h-full w-full md:max-w-5xl")}>
         <DialogHeader>
-          <DialogTitle>Enter Scores</DialogTitle>
+          <DialogTitle>Capture Assessment Scores</DialogTitle>
           <DialogDescription className="prose max-w-prose">
             Select the class, course, semester and academic year and filter to
             get students whose scores are not yet captured for the selected

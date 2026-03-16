@@ -1,19 +1,21 @@
-import { Suspense } from "react";
-import { RenderStudentEdit } from "../../components/RenderStudentEdit";
-import { Metadata } from "next";
-import { getStudent } from "../../actions/action";
-import StudentOnboardingNavbar from "../../components/studentsOnboardingNavbar";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { Metadata } from "next";
+import { connection } from "next/server";
+import { Suspense } from "react";
+import { getStudent } from "../../actions/action";
+import { RenderStudentEdit } from "../../components/RenderStudentEdit";
+import StudentOnboardingNavbar from "../../components/studentsOnboardingNavbar";
 
 type Params = {
   params: Promise<{ id: string }>;
 };
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export const generateMetadata = async ({
   params,
 }: Params): Promise<Metadata> => {
+  await connection();
   const { id } = await params;
   const result = await getStudent(id);
 
@@ -42,6 +44,7 @@ export default function StudentEditPage(params: Params) {
 }
 
 const RendenStudentEditPage = async ({ params }: { params: Params }) => {
+  await connection();
   const { id } = await params.params;
 
   return <RenderStudentEdit studentId={id} />;

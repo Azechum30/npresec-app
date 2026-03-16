@@ -1,11 +1,12 @@
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { Suspense } from "react";
 import { getAllUsersAction } from "./_actions/get-all-users-action";
 import { RenderUsersTable } from "./_components/render-users-table";
-import { Suspense } from "react";
 
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { connection } from "next/server";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export default function UsersPage() {
   return (
@@ -22,6 +23,7 @@ export default function UsersPage() {
 }
 
 const RenderUserTable = async () => {
+  await connection();
   const { error, users } = await getAllUsersAction();
 
   return <RenderUsersTable error={error} users={users} />;

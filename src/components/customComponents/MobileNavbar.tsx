@@ -1,8 +1,17 @@
 "use client";
 
-import { useRef, useState } from "react";
+import Logo from "@/../public/logo.png";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ArrowRight, ChevronRight, LogIn, Sparkles, X } from "lucide-react";
+import { Route } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRef, useState } from "react";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import {
   Sheet,
   SheetContent,
@@ -10,26 +19,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from "../ui/sheet";
-import { Button, buttonVariants } from "../ui/button";
-import { Badge } from "../ui/badge";
-import { Separator } from "../ui/separator";
-import Link from "next/link";
-import Image from "next/image";
-import Logo from "@/../public/logo.png";
 import { Links } from "./Navbar";
 import { ThemeSwitcher } from "./ThemeSwitecher";
-import {
-  LogIn,
-  ArrowRight,
-  Sparkles,
-  ExternalLink,
-  Home,
-  X,
-  ChevronRight,
-} from "lucide-react";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
-import { Route } from "next";
 
 // Register GSAP plugins
 gsap.registerPlugin(useGSAP);
@@ -79,7 +70,7 @@ export const MobileNavbar = () => {
             duration: 0.5,
             ease: "back.out(1.7)",
           },
-          "-=0.3",
+          "-=0.3"
         )
         .to(
           ".mobile-nav-link",
@@ -91,7 +82,7 @@ export const MobileNavbar = () => {
             stagger: 0.1,
             ease: "back.out(1.2)",
           },
-          "-=0.2",
+          "-=0.2"
         )
         .to(
           ".mobile-nav-actions",
@@ -101,7 +92,7 @@ export const MobileNavbar = () => {
             duration: 0.6,
             ease: "power2.out",
           },
-          "-=0.3",
+          "-=0.3"
         )
         .to(
           ".mobile-nav-decoration",
@@ -113,7 +104,7 @@ export const MobileNavbar = () => {
             stagger: 0.2,
             ease: "elastic.out(1, 0.5)",
           },
-          "-=0.4",
+          "-=0.4"
         );
 
       // Floating animation for decorations
@@ -127,7 +118,7 @@ export const MobileNavbar = () => {
         stagger: 0.5,
       });
     },
-    { scope: container, dependencies: [isOpen] },
+    { scope: container, dependencies: [isOpen] }
   );
 
   const handleLinkClick = () => {
@@ -146,12 +137,10 @@ export const MobileNavbar = () => {
     <Sheet open={isOpen} onOpenChange={() => onClose("mobile-nav")}>
       <SheetContent
         side="left"
-        className="w-full sm:w-96 p-0 bg-background/95 backdrop-blur-2xl border-r border-border/50"
-      >
+        className="w-full sm:w-96 p-0 bg-background/95 backdrop-blur-2xl border-r border-border/50">
         <div
           ref={container}
-          className="mobile-nav-content relative h-full overflow-hidden"
-        >
+          className="mobile-nav-content relative h-full overflow-x-hidden overflow-y-auto">
           {/* Background decorations */}
           <div className="mobile-nav-decoration floating-mobile-decoration absolute top-20 right-8 w-16 h-16 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full blur-xl" />
           <div className="mobile-nav-decoration floating-mobile-decoration absolute bottom-1/3 left-4 w-12 h-12 bg-gradient-to-br from-accent/15 to-primary/15 rounded-full blur-lg" />
@@ -167,8 +156,7 @@ export const MobileNavbar = () => {
               variant="ghost"
               size="icon"
               onClick={() => onClose("mobile-nav")}
-              className="absolute top-4 right-4 w-8 h-8 rounded-lg hover:bg-background/80"
-            >
+              className="absolute top-4 right-4 w-8 h-8 rounded-lg hover:bg-background/80">
               <X className="w-4 h-4" />
             </Button>
 
@@ -197,8 +185,7 @@ export const MobileNavbar = () => {
 
             <Badge
               variant="secondary"
-              className="w-fit bg-primary/10 text-primary border-primary/20"
-            >
+              className="w-fit bg-primary/10 text-primary border-primary/20">
               <Sparkles className="w-3 h-3 mr-1" />
               Navigation Menu
             </Badge>
@@ -226,8 +213,7 @@ export const MobileNavbar = () => {
                             ? "bg-primary/10 border-2 border-primary/20 shadow-lg"
                             : "bg-background/60 border-2 border-transparent hover:bg-accent/50 hover:border-accent/30"
                         }
-                      `}
-                    >
+                      `}>
                       {/* Gradient background on hover */}
                       <div
                         className={`
@@ -252,8 +238,7 @@ export const MobileNavbar = () => {
                                 ? `bg-gradient-to-br ${link.gradient} text-white shadow-md`
                                 : "bg-accent/80 text-muted-foreground group-hover:bg-accent group-hover:text-foreground"
                             }
-                          `}
-                        >
+                          `}>
                           <Icon className="w-5 h-5" />
                         </div>
 
@@ -268,8 +253,7 @@ export const MobileNavbar = () => {
                                     ? "text-primary"
                                     : "text-foreground group-hover:text-primary"
                                 }
-                              `}
-                            >
+                              `}>
                               {link.title}
                             </h3>
                             <ChevronRight
@@ -291,8 +275,7 @@ export const MobileNavbar = () => {
                                   ? "text-primary/70"
                                   : "text-muted-foreground group-hover:text-foreground/70"
                               }
-                            `}
-                          >
+                            `}>
                             {link.description}
                           </p>
                         </div>
@@ -319,8 +302,7 @@ export const MobileNavbar = () => {
                   <Link
                     href={"/" as Route}
                     onClick={handleLinkClick}
-                    className="group relative block w-full"
-                  >
+                    className="group relative block w-full">
                     <Button className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 h-12 text-base font-semibold rounded-xl">
                       {/* Shimmer effect */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 rounded-xl" />
@@ -334,12 +316,10 @@ export const MobileNavbar = () => {
                   <Link
                     href={"/sign-in" as Route}
                     onClick={handleLinkClick}
-                    className="block w-full"
-                  >
+                    className="block w-full">
                     <Button
                       variant="outline"
-                      className="w-full border-border/50 rounded-xl hover:border-primary/30 transition-all duration-300 hover:shadow-md h-12 text-base font-medium hover:bg-accent/50"
-                    >
+                      className="w-full border-border/50 rounded-xl hover:border-primary/30 transition-all duration-300 hover:shadow-md h-12 text-base font-medium hover:bg-accent/50">
                       <LogIn className="w-4 h-4 mr-2" />
                       Login
                     </Button>

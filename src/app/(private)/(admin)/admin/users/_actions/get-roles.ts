@@ -1,8 +1,8 @@
 "use server";
-import "server-only";
-import * as Sentry from "@sentry/nextjs";
 import { getUserPermissions } from "@/lib/get-session";
-import { prisma } from "@/lib/prisma";
+import { getCachedRoles } from "@/utils/get-cached-roles";
+import * as Sentry from "@sentry/nextjs";
+import "server-only";
 
 export const getRolesAction = async () => {
   try {
@@ -12,17 +12,17 @@ export const getRolesAction = async () => {
       return { error: "Permission denied" };
     }
 
-    const roles = await prisma.role.findMany({
-      select: {
-        id: true,
-        name: true,
-      },
-    });
+    const roles = await getCachedRoles();
 
     return { roles: roles || [] };
   } catch (e) {
     console.error("Could not fetch roles", e);
     Sentry.captureException(e);
-    return { error: "Something went wrong while fetching roles" };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? String(e)
+          : "Something went wrong!",
+    };
   }
 };

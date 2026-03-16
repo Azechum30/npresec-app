@@ -1,10 +1,10 @@
 "use server";
-import "server-only";
-import * as Sentry from "@sentry/nextjs";
 import { getUserPermissions } from "@/lib/get-session";
-import { UpdateUserRoleSchema } from "@/lib/validation";
 import { prisma } from "@/lib/prisma";
+import { UpdateUserRoleSchema } from "@/lib/validation";
+import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
+import "server-only";
 
 export const updateUserRole = async (values: unknown) => {
   try {
@@ -24,12 +24,22 @@ export const updateUserRole = async (values: unknown) => {
 
     const { userId, roleId } = data;
 
-    const updateUserRole = await prisma.user.update({
-      where: { id: userId },
-      data: { roleId: roleId },
+    const updateUserRoleTransaction = await prisma.$transaction(async (tsx) => {
+      await tsx.userRole.deleteMany({
+        where: { userId },
+      });
+
+      return await prisma.user.update({
+        where: { id: userId },
+        data: {
+          roles: {
+            create: roleId.map((id) => ({ roleId: id })),
+          },
+        },
+      });
     });
 
-    if (!updateUserRole) {
+    if (!updateUserRoleTransaction) {
       console.error("Could not update user role");
       return { error: "Could not update user role" };
     }

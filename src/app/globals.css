@@ -353,32 +353,32 @@ button {
 
   .aside {
     width: 0;
-    transition: width 0.3s ease;
+    transition: width 0.5s ease;
   }
 
   .aside.open {
     width: 20%;
-    transition: width 0.3s ease;
+    transition: width 0.5s ease;
   }
 
   .content {
     width: 100%;
-    transition: width 0.3s ease;
+    transition: width 0.5s ease;
   }
 
   .aside.open ~ .content {
     width: calc(100% - 20%);
-    transition: width 0.3s ease;
+    transition: width 0.5s ease;
   }
 
   .sidebar-content {
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.5s ease;
   }
 
   .aside.open .sidebar-content {
     opacity: 1;
-    transition: opacity 0.3s ease;
+    transition: opacity 2s ease;
   }
 
   @media screen and (max-width: 766px) {

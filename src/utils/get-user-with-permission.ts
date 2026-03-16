@@ -7,12 +7,11 @@ export const getUserWithPermissions = async (permissionName: string) => {
     return { user: null, hasPermission: false };
   }
 
-  const userPermissions = user.permissions?.map((perm) => perm.name) || [];
-  const rolePermissions = user.role?.permissions.map((perm) => perm.name) || [];
+  const rolePermissions =
+    user.roles?.flatMap((rs) => rs.role.permissions.flatMap((p) => p.name)) ||
+    [];
 
-  const allPermissions = [...userPermissions, ...rolePermissions];
-
-  const hasPermission = allPermissions.includes(permissionName);
+  const hasPermission = rolePermissions.includes(permissionName);
 
   return { hasPermission, user };
 };

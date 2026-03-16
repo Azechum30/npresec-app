@@ -1,12 +1,12 @@
 "use server";
-import "server-only";
-import * as Sentry from "@sentry/nextjs";
-import { getUserWithPermissions } from "@/utils/get-user-with-permission";
-import { BioSchema } from "@/lib/validation";
 import { prisma } from "@/lib/prisma";
-import { client } from "@/utils/qstash";
 import { env } from "@/lib/server-only-actions/validate-env";
+import { BioSchema } from "@/lib/validation";
+import { getUserWithPermissions } from "@/utils/get-user-with-permission";
+import { client } from "@/utils/qstash";
+import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
+import "server-only";
 
 export const BioFormAction = async (values: unknown) => {
   try {
@@ -27,7 +27,6 @@ export const BioFormAction = async (values: unknown) => {
       bio,
       email,
       fullName,
-      role,
       social,
       username,
       image,

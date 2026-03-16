@@ -1,12 +1,13 @@
 "use server";
-import "server-only";
-import { prisma } from "@/lib/prisma";
-import * as Sentry from "@sentry/nextjs";
-import { getErrorMessage } from "@/lib/getErrorMessage";
-import { getUserPermissions } from "@/lib/get-session";
-import { PermissionSelect } from "@/lib/types";
 import { Prisma } from "@/generated/prisma/client";
+import { getUserPermissions } from "@/lib/get-session";
+import { prisma } from "@/lib/prisma";
+import { PermissionSelect } from "@/lib/types";
+import * as Sentry from "@sentry/nextjs";
+import "server-only";
 
+import { getCachedPermissions } from "@/utils/get-cached-permissions";
+import { getError } from "@/utils/get-error";
 import { z } from "zod";
 
 export const getPermissions = async () => {
@@ -16,23 +17,22 @@ export const getPermissions = async () => {
       return { error: "Permission denied!" };
     }
 
-    const permissions = await prisma.permission.findMany({
-      select: PermissionSelect,
-      orderBy: { createdAt: "desc" },
-    });
+    const permissions = await getCachedPermissions();
 
-    if (!permissions) return { error: "No permissions found!" };
+    console.log("Available Permissions", permissions);
 
-    return { permissions };
+    return { permissions: permissions ?? [] };
   } catch (e) {
     Sentry.captureException(e);
     console.error("Could not fetch permissions", e);
-    return { error: getErrorMessage(e) };
+    return {
+      error: getError(e),
+    };
   }
 };
 
 export const getPermission = async (
-  id: string | Prisma.PermissionWhereUniqueInput,
+  id: string | Prisma.PermissionWhereUniqueInput
 ) => {
   try {
     const { hasPermission } = await getUserPermissions("view:permissions");
@@ -42,7 +42,7 @@ export const getPermission = async (
       .string({ required_error: "A valid ID is required!" })
       .cuid()
       .safeParse(id);
-    if (!success || error) {
+    if (!success) {
       const message = error.errors
         .flatMap((e) => `${e.path[0]}: ${e.message}`)
         .join(",");
@@ -60,6 +60,8 @@ export const getPermission = async (
   } catch (err: any) {
     console.error("Could not fetch Permission:", err),
       Sentry.captureException(err);
-    return { error: "Something went wrong!" };
+    return {
+      error: getError(err),
+    };
   }
 };

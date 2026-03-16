@@ -1,4 +1,5 @@
 "use server";
+import { ASSESSMENT_WEIGHTS } from "@/lib/constants";
 import { getAuthUser, getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { GradeSchema } from "@/lib/validation";
@@ -25,13 +26,49 @@ export const createScoresAction = async (values: unknown) => {
       return { error: errorMessage };
     }
 
-    const teacher = await prisma.staff.findUnique({
-      where: { userId: user.id },
-      select: { id: true },
-    });
+    const now = new Date();
 
+    const [teacher, timeline] = await Promise.all([
+      prisma.staff.findUnique({
+        where: { userId: user.id },
+        select: { id: true },
+      }),
+
+      prisma.assessmentTimeline.findFirst({
+        where: {
+          assessmentType: data.assessmentType,
+          semester: data.semester,
+          academicYear: data.academicYear,
+          courseId: data.courseId,
+        },
+        select: {
+          endDate: true,
+          startDate: true,
+          assessmentType: true,
+        },
+      }),
+    ]);
+
+    if (!timeline)
+      return { error: "No timeline has been set for this assessment mode" };
+
+    if (now < timeline.startDate)
+      return {
+        error: `Score entry for this assesment mode opens on ${timeline.startDate.toLocaleDateString("en-GH")}. `,
+      };
+
+    if (now > timeline.endDate)
+      return { error: "The deadline for entering this assessment has passed!" };
     if (!teacher) {
       return { error: "No teacher with this User ID found!" };
+    }
+
+    const finalWeight = ASSESSMENT_WEIGHTS[data.assessmentType];
+
+    if (finalWeight === undefined) {
+      return {
+        error: "No weight defined for assessment type " + data.assessmentType,
+      };
     }
 
     const {
@@ -54,9 +91,9 @@ export const createScoresAction = async (values: unknown) => {
         semester,
         academicYear,
         maxScore,
-        weight,
+        weight: finalWeight,
         remarks,
-        teacherId: teacher.id,
+        staffId: teacher.id,
       })),
     });
 

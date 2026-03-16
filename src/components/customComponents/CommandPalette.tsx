@@ -1,5 +1,8 @@
 "use client";
 import { useOpenCommandPalette } from "@/hooks/use-open-command-palette";
+import { File } from "lucide-react";
+import { Route } from "next";
+import { useRouter } from "next/navigation";
 import {
   CommandDialog,
   CommandEmpty,
@@ -8,18 +11,17 @@ import {
   CommandItem,
   CommandList,
 } from "../ui/command";
-import { Links } from "./Sidebar";
-import { useRouter } from "next/navigation";
-import { File } from "lucide-react";
 import { useAuth } from "./SessionProvider";
-import { Route } from "next";
+import { Links } from "./Sidebar";
 
 export default function CommandPalette() {
   const { open, onClose } = useOpenCommandPalette();
   const router = useRouter();
   const user = useAuth();
 
-  const role = user?.role?.name;
+  const role =
+    user?.roles?.flatMap((r) => (r.role?.name ? [r.role.name] : []))?.[0] ||
+    "student";
 
   const handleCommand = (value: string) => {
     onClose();
@@ -30,7 +32,7 @@ export default function CommandPalette() {
     role === "admin"
       ? Links.ADMIN
       : role === "teaching_staff"
-        ? Links.STAFF
+        ? Links.TEACHING_STAFF
         : Links.STUDENT;
 
   return (
@@ -43,8 +45,7 @@ export default function CommandPalette() {
             {link.Links.map((innerLink) => (
               <CommandItem
                 key={innerLink.href}
-                onSelect={() => handleCommand(innerLink.href)}
-              >
+                onSelect={() => handleCommand(innerLink.href)}>
                 <File className="size-4" />
                 {innerLink.title}
               </CommandItem>

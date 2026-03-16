@@ -1,17 +1,13 @@
-import "dotenv/config";
 import { PrismaClient } from "@/generated/prisma/client";
-import { env } from "@/lib/server-only-actions/validate-env";
-import { Pool } from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
 import { auth } from "@/lib/auth";
+import { env } from "@/lib/server-only-actions/validate-env";
+import { PrismaPg } from "@prisma/adapter-pg";
+import "dotenv/config";
+import { Pool } from "pg";
 
 const pool = new Pool({ connectionString: env.DATABASE_URL });
-
 const adapter = new PrismaPg(pool);
-
-const prisma = new PrismaClient({
-  adapter,
-});
+const prisma = new PrismaClient({ adapter });
 
 const resources = [
   "courses",
@@ -34,8 +30,9 @@ const resources = [
   "lessons",
   "assignments",
   "rooms",
+  "timelines",
 ];
-const actions = ["create", "view", "edit", "delete"];
+const actions = ["create", "view", "edit", "delete", "export"];
 
 const roles = [
   "admin",
@@ -56,10 +53,7 @@ const rolePermissions: Record<
   string,
   { resources: string[]; actions?: string[] }
 > = {
-  admin: {
-    resources: [],
-    actions: [],
-  },
+  admin: { resources: [], actions: [] },
   staff: {
     resources: [
       "courses",
@@ -90,10 +84,7 @@ const rolePermissions: Record<
     resources: ["students", "classes", "notifications"],
     actions: ["view"],
   },
-  support_staff: {
-    resources: ["notifications"],
-    actions: ["view"],
-  },
+  support_staff: { resources: ["notifications"], actions: ["view"] },
   student: {
     resources: [
       "courses",
@@ -164,179 +155,124 @@ const rolePermissions: Record<
 async function main() {
   console.log("Seeding database...");
 
-  // Get existing roles to avoid duplicates
+  // Create roles if missing
   const existingRoles = await prisma.role.findMany({
     where: { name: { in: roles } },
   });
-  const existingRoleNames = new Set(existingRoles.map((role) => role.name));
-
-  // Create only missing roles
-  const rolesToCreate = roles.filter((role) => !existingRoleNames.has(role));
+  const existingRoleNames = new Set(existingRoles.map((r) => r.name));
+  const rolesToCreate = roles.filter((r) => !existingRoleNames.has(r));
 
   if (rolesToCreate.length > 0) {
-    console.log(`Creating ${rolesToCreate.length} new roles:`, rolesToCreate);
     await prisma.role.createMany({
       data: rolesToCreate.map((name) => ({ name })),
     });
-  } else {
-    console.log("All roles already exist, skipping role creation");
+    console.log(`Created ${rolesToCreate.length} roles`);
   }
 
-  // Get all roles (existing + newly created)
   const allRoles = await prisma.role.findMany({
     where: { name: { in: roles } },
   });
-  const roleMap = new Map(allRoles.map((role) => [role.name, role.id]));
+  const roleMap = new Map(allRoles.map((r) => [r.name, r.id]));
 
+  // Permission generation
   const shouldHavePermission = (
     roleName: string,
     resource: string,
     action: string,
   ): boolean => {
-    const permissionConfig = rolePermissions[roleName];
-    if (!permissionConfig) return false;
-
+    const config = rolePermissions[roleName];
+    if (!config) return false;
     if (
       roleName === "admin" &&
-      permissionConfig.resources.length === 0 &&
-      (!permissionConfig.actions || permissionConfig.actions.length === 0)
+      config.resources.length === 0 &&
+      (!config.actions || config.actions.length === 0)
     ) {
-      return true;
+      return true; // admin gets everything
     }
-
-    const resourceAllowed = permissionConfig.resources.includes(resource);
-    if (!resourceAllowed) return false;
-
-    const actions = permissionConfig.actions || [];
-    if (actions.length > 0 && !actions.includes(action)) {
-      return false;
-    }
-
-    return true;
+    return (
+      config.resources.includes(resource) &&
+      (!config.actions || config.actions.includes(action))
+    );
   };
 
-  // Generate all permission names that should exist
-  const expectedPermissions = [];
+  const expectedPermissions: {
+    name: string;
+    description: string;
+    roleIds: string[];
+  }[] = [];
   for (const resource of resources) {
     for (const action of actions) {
-      const permissionName = `${action}:${resource}`;
-      const allowedRoleIds = allRoles
-        .filter((role) => shouldHavePermission(role.name, resource, action))
-        .map((role) => role.id);
-
-      if (allowedRoleIds.length > 0) {
+      const name = `${action}:${resource}`;
+      const roleIds = allRoles
+        .filter((r) => shouldHavePermission(r.name, resource, action))
+        .map((r) => r.id);
+      if (roleIds.length > 0) {
         expectedPermissions.push({
-          name: permissionName,
+          name,
           description: `can ${action} ${resource}`,
-          roleIds: allowedRoleIds,
+          roleIds,
         });
       }
     }
   }
 
-  // Get existing permissions
   const existingPermissions = await prisma.permission.findMany({
     select: { name: true },
   });
   const existingPermissionNames = new Set(
-    existingPermissions.map((perm) => perm.name),
+    existingPermissions.map((p) => p.name),
   );
-
-  // Create only missing permissions
   const permissionsToCreate = expectedPermissions.filter(
-    (perm) => !existingPermissionNames.has(perm.name),
+    (p) => !existingPermissionNames.has(p.name),
   );
 
-  if (permissionsToCreate.length > 0) {
-    console.log(
-      `Creating ${permissionsToCreate.length} new permissions:`,
-      permissionsToCreate.map((p) => p.name),
-    );
-
-    // Create permissions one by one to handle role connections
-    for (const permission of permissionsToCreate) {
-      await prisma.permission.create({
-        data: {
-          name: permission.name,
-          description: permission.description,
-          roles: {
-            connect: permission.roleIds.map((id) => ({ id })),
-          },
-        },
-      });
-    }
-  } else {
-    console.log("All permissions already exist, skipping permission creation");
+  for (const perm of permissionsToCreate) {
+    await prisma.permission.create({
+      data: {
+        name: perm.name,
+        description: perm.description,
+        roles: { connect: perm.roleIds.map((id) => ({ id })) },
+      },
+    });
   }
 
-  // Check if admin user exists
-  const adminUser = await prisma.user.count({
-    where: {
-      role: { name: "admin" },
-    },
+  console.log(`Created ${permissionsToCreate.length} permissions`);
+
+  // Ensure admin user exists
+  const adminEmail = env.ADMIN_USER_EMAIL || "admin@nakpanduripresec.org";
+  const adminPassword = env.ADMIN_USER_PASSWORD;
+
+  const adminUser = await prisma.user.findUnique({
+    where: { email: adminEmail },
   });
 
-  if (adminUser === 0) {
-    console.log("No admin user found, creating admin user...");
-
-    const adminEmail = env.ADMIN_USER_EMAIL || "admin@nakpanduripresec.org";
-    const adminPassword = env.ADMIN_USER_PASSWORD;
-
-    if (!adminEmail || !adminPassword) {
-      throw new Error(
-        "ADMIN_USER_EMAIL and ADMIN_USER_PASSWORD must be set in .env file",
-      );
-    }
-
-    // Check if user with admin email already exists
-    const existingUserWithEmail = await prisma.user.findUnique({
-      where: { email: adminEmail },
+  if (!adminUser) {
+    console.log("Creating admin user...");
+    const { user } = await auth.api.signUpEmail({
+      body: {
+        email: adminEmail,
+        password: adminPassword,
+        name: adminEmail.split("@")[0],
+        username: adminEmail.split("@")[0],
+        callbackURL: "/email-verified",
+        rememberMe: true,
+      },
     });
 
-    if (existingUserWithEmail) {
-      console.log(
-        "User with admin email already exists, skipping admin creation",
-      );
-    } else {
+    if (user) {
       const adminRoleId = roleMap.get("admin");
-      if (!adminRoleId) {
-        throw new Error("Admin role not found");
-      }
+      if (!adminRoleId) throw new Error("Admin role not found");
 
-      try {
-        const { user } = await auth.api.signUpEmail({
-          body: {
-            email: adminEmail,
-            password: adminPassword,
-            name: adminEmail.split("@")[0],
-            username: adminEmail.split("@")[0],
-            callbackURL: "/email-verified",
-            rememberMe: true,
-          },
-        });
-
-        if (user) {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              role: {
-                connect: {
-                  id: adminRoleId,
-                },
-              },
-            },
-          });
-          console.log("Admin user created successfully");
-        } else {
-          console.error("Failed to create admin user");
-        }
-      } catch (error) {
-        console.error("Error creating admin user:", error);
-        // Don't throw here to allow seeding to complete even if admin creation fails
-      }
+      await prisma.userRole.create({
+        data: {
+          userId: user.id,
+          roleId: adminRoleId,
+        },
+      });
+      console.log("Admin user created and assigned admin role");
     }
   } else {
-    console.log("Admin user already exists, skipping admin user creation");
+    console.log("Admin user already exists, skipping");
   }
 
   console.log("Seeding completed successfully.");

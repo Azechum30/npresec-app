@@ -1,10 +1,10 @@
 "use server";
-import "server-only";
-import * as Sentry from "@sentry/nextjs";
 import { getUserPermissions } from "@/lib/get-session";
-import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import * as Sentry from "@sentry/nextjs";
+import { revalidateTag } from "next/cache";
+import "server-only";
+import { z } from "zod";
 export const deleteUsersAction = async (values: unknown) => {
   try {
     const { hasPermission } = await getUserPermissions("delete:users");
@@ -31,7 +31,7 @@ export const deleteUsersAction = async (values: unknown) => {
 
     if (!usersToDelete.count) return { error: "Failed to delete users" };
 
-    revalidatePath("/admin/users");
+    revalidateTag("users-list", "seconds");
     return { success: true, count: usersToDelete.count };
   } catch (e) {
     console.error("Failed to delete users", e);

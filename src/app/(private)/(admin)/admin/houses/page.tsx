@@ -1,14 +1,12 @@
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
-import { RenderCreateHouseModal } from "./_components/render-create-house-modal";
-import { client } from "@/lib/orpc";
-import { RenderHouseListTable } from "./_components/render-house-list-table";
-import { Suspense } from "react";
 import { DataTableSkeleton } from "@/components/customComponents/DataTable-Skeleton";
+import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { client } from "@/lib/orpc";
+import { Suspense } from "react";
 import { EditHouseModal } from "./_components/edit-house-modal";
+import { RenderCreateHouseModal } from "./_components/render-create-house-modal";
+import { RenderHouseListTable } from "./_components/render-house-list-table";
 
-export const dynamic = "force-dynamic";
-
-export default function HousesPage() {
+export default async function HousesPage() {
   return (
     <div className="">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
@@ -31,12 +29,12 @@ export default function HousesPage() {
             ]}
             shrinkZero
           />
-        }
-      >
+        }>
         <FetchHouseData />
       </Suspense>
 
       <RenderCreateHouseModal />
+
       <EditHouseModal />
     </div>
   );

@@ -1,11 +1,9 @@
-import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
-import { prisma } from "./prisma";
-import { nextCookies } from "better-auth/next-js";
 import { sendEmail } from "@/utils/send-email";
+import { betterAuth, BetterAuthOptions } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { nextCookies } from "better-auth/next-js";
 import { customSession } from "better-auth/plugins";
-import { BetterAuthOptions } from "better-auth";
-import { ExtendedSession } from "./auth-client";
+import { prisma } from "./prisma";
 
 const authOptions = {
   database: prismaAdapter(prisma, {
@@ -58,11 +56,6 @@ const authOptions = {
         required: false,
       },
       image: {
-        type: "string",
-        required: false,
-      },
-
-      roleId: {
         type: "string",
         required: false,
       },
@@ -151,22 +144,21 @@ export const auth = betterAuth({
       const userWithRole = await prisma.user.findUnique({
         where: { id: session.userId },
         select: {
-          role: {
+          roles: {
             select: {
               id: true,
-              name: true,
-              permissions: {
+              role: {
                 select: {
                   id: true,
                   name: true,
+                  permissions: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
+                  },
                 },
               },
-            },
-          },
-          permissions: {
-            select: {
-              id: true,
-              name: true,
             },
           },
         },

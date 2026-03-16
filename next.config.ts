@@ -40,11 +40,12 @@ const nextConfig: NextConfig = {
     },
   }),
   typedRoutes: true,
-  // cacheComponents: true,
+  cacheComponents: true,
   experimental: {
     serverActions: {
       bodySizeLimit: "5mb",
     },
+
     authInterrupts: true,
     // Disable turbopack source maps in development
     ...(process.env.NODE_ENV === "development" && {}),

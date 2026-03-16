@@ -1,9 +1,9 @@
 "use server";
+import { AssessmentType, Semester } from "@/generated/prisma/client";
+import { getAuthUser } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { GradeSelect } from "@/lib/types";
 import * as Sentry from "@sentry/nextjs";
-import { getAuthUser } from "@/lib/get-session";
-import { AssessmentType, Semester } from "@/generated/prisma/client";
 
 export const getScoresAction = async ({
   assessmentType,
@@ -31,13 +31,13 @@ export const getScoresAction = async ({
       return { error: "Unauthenticated" };
     }
 
-    const hasPermission =
-      user.role?.permissions.some((p) => p.name === "view:scores") ||
-      user?.permissions?.some((p) => p.name === "view:scores");
+    const hasPermission = user.roles
+      ?.flatMap((role) => role.role.permissions.map((p) => p.name))
+      .some((p) => p === "view:grades");
 
-    // if (!hasPermission) {
-    //   return { error: "Permission denied!" };
-    // }
+    if (!hasPermission) {
+      return { error: "Permission denied!" };
+    }
 
     const teacher = await prisma.staff.findUnique({
       where: { userId: user.id },

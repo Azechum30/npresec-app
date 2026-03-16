@@ -1,11 +1,11 @@
 "use server";
-import { getErrorMessage } from "@/lib/getErrorMessage";
+import { Prisma } from "@/generated/prisma/client";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { PermissionSchema } from "@/lib/validation";
+import { getError } from "@/utils/get-error";
 import * as Sentry from "@sentry/nextjs";
-import { revalidatePath } from "next/cache";
-import { getUserPermissions } from "@/lib/get-session";
-import { Prisma } from "@/generated/prisma/client";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
 
 const PermissionEditSchema = PermissionSchema.extend({ id: z.string().cuid() });
@@ -41,24 +41,25 @@ export const createPermissions = async (values: unknown) => {
 
     const permissionsResult = await prisma.permission.createMany({
       data: permissions,
+      skipDuplicates: true,
     });
 
     if (!permissionsResult.count) {
       return { error: "Could not create permissions" };
     }
 
-    revalidatePath("/admin/permissions");
+    revalidateTag("permissions-list", "seconds");
 
     return { count: permissionsResult.count };
   } catch (e) {
     Sentry.captureException(e);
     console.error("An error has occurred:", e);
-    return { error: getErrorMessage(e) };
+    return { error: getError(e) };
   }
 };
 
 export const UpdatePermission = async (
-  values: z.infer<typeof PermissionEditSchema>,
+  values: z.infer<typeof PermissionEditSchema>
 ) => {
   try {
     const { hasPermission } = await getUserPermissions("edit:permissions");
@@ -81,7 +82,7 @@ export const UpdatePermission = async (
 
     if (!permission) return { error: "Failed to update permission" };
 
-    revalidatePath("/admin/permissions");
+    revalidateTag("permissions-list", "seconds");
     return { success: true };
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
@@ -98,7 +99,12 @@ export const UpdatePermission = async (
     }
     console.error("Could not update pemission:", e);
     Sentry.captureException(e);
-    return { error: "Something went wrong!" };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? String(e)
+          : "Something went wrong!",
+    };
   }
 };
 
@@ -130,13 +136,13 @@ export const deletePermission = async (id: string) => {
 
     await prisma.permission.delete({ where: { id: permissionToDelete.id } });
 
-    revalidatePath("/admin/permissions");
+    revalidateTag("permissions-list", "seconds");
 
     return { success: true };
   } catch (e) {
     console.error("Could not delete permission:", e);
     Sentry.captureException(e);
-    return { error: "Something went wrong!" };
+    return { error: getError(e) };
   }
 };
 
@@ -184,11 +190,11 @@ export const bulkDeletePermissions = async (ids: string[]) => {
 
     await prisma.permission.deleteMany({ where: { id: { in: foundIds } } });
 
-    revalidatePath("/admin/permissions");
+    revalidateTag("permissions-list", "seconds");
     return { count: foundIds.length, missingIds };
   } catch (e) {
     console.error("Could not perform bulk delete of permissions:", e);
     Sentry.captureException(e);
-    return { error: "Something went wrong!" };
+    return { error: getError(e) };
   }
 };

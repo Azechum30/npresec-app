@@ -2,19 +2,16 @@
 
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CreateBoardMemberForm } from "../_forms/create-boader-member";
-import { buttonVariants } from "@/components/ui/button";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { useHandleBoardMemberCreation } from "../_hooks/use-handle-board-member-creation";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { CreateBoardMemberForm } from "../_forms/create-boader-member";
+import { useHandleBoardMemberCreation } from "../_hooks/use-handle-board-member-creation";
 
 export const CreateBoardMemberDialog = () => {
   const { dialogs, onClose } = useGenericDialog();
@@ -56,16 +53,6 @@ export const CreateBoardMemberDialog = () => {
               onSubmit={handleBoardMemberCreation}
               isCreating={isCreating}
             />
-
-            <DialogFooter>
-              <DialogClose
-                className={buttonVariants({
-                  variant: "secondary",
-                  className: "w-full",
-                })}>
-                Cancel
-              </DialogClose>
-            </DialogFooter>
           </DialogContent>
         )}
       </Dialog>

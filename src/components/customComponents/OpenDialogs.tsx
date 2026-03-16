@@ -1,8 +1,8 @@
 "use client";
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
+import { PlusCircle } from "lucide-react";
 import { FC } from "react";
 import { Button } from "../ui/button";
-import { PlusCircle } from "lucide-react";
-import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 
 const variantType = [
   "default",
@@ -13,16 +13,20 @@ const variantType = [
   "link",
 ] as const;
 
+const sizeVariants = ["lg", "sm", "icon", "default"] as const;
+
 const OpenDialogs: FC<{
   dialogKey: string;
   title?: string;
   variant?: (typeof variantType)[number];
-}> = ({ dialogKey, title, variant }) => {
+  size?: (typeof sizeVariants)[number];
+}> = ({ dialogKey, title, variant, size }) => {
   const { onOpen } = useGenericDialog();
 
   return (
     <Button
       variant={variant ? variant : "default"}
+      size={size ? size : "default"}
       className="w-full md:w-auto hover:cursor-pointer"
       onClick={() => onOpen(dialogKey, dialogKey)}>
       <PlusCircle className="size-5 mr-1" />

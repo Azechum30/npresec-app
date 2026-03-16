@@ -6,18 +6,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { useFormContext } from "react-hook-form";
-import {
-  FormField,
-  FormMessage,
-  FormItem,
-  FormLabel,
-  FormControl,
-} from "../ui/form";
-import React, { InputHTMLAttributes } from "react";
-import { z } from "zod";
 import { isZodFieldRequired } from "@/lib/isZodFieldRequired";
 import { cn } from "@/lib/utils";
+import React from "react";
+import { useFormContext } from "react-hook-form";
+import { z } from "zod";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
+import { Skeleton } from "../ui/skeleton";
 
 type SelectWithLabelProps<U = any> = {
   name: string;
@@ -100,31 +101,39 @@ export default function SelectWithLabel({
                 />
               </SelectTrigger>
               <SelectContent>
-                {data.map((val, index) => {
-                  if (typeof val === "string" || typeof val === "number") {
-                    return (
-                      <SelectItem key={index} value={String(val)}>
-                        {val.toString().includes("_")
-                          ? val.toString().split("_").join(" ")
-                          : val.toString().includes("-")
-                            ? val.toString().split("-").join(" ")
-                            : val}
-                      </SelectItem>
-                    );
-                  }
+                {!data ? (
+                  <Skeleton className="w-full h-full" />
+                ) : (
+                  <>
+                    {data.map((val, index) => {
+                      if (typeof val === "string" || typeof val === "number") {
+                        return (
+                          <SelectItem key={index} value={String(val)}>
+                            {val.toString().includes("_")
+                              ? val.toString().split("_").join(" ")
+                              : val.toString().includes("-")
+                                ? val.toString().split("-").join(" ")
+                                : val}
+                          </SelectItem>
+                        );
+                      }
 
-                  if (typeof val === "object" && typeof val !== null) {
-                    const value = String(val[valueKey] as keyof typeof val);
-                    const label = String(val[selectedKey] as keyof typeof val);
-                    return (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    );
-                  }
+                      if (typeof val === "object" && typeof val !== null) {
+                        const value = String(val[valueKey] as keyof typeof val);
+                        const label = String(
+                          val[selectedKey] as keyof typeof val
+                        );
+                        return (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        );
+                      }
 
-                  return null;
-                })}
+                      return null;
+                    })}
+                  </>
+                )}
               </SelectContent>
             </Select>
           </FormControl>

@@ -1,14 +1,13 @@
 "use server";
-import * as Sentry from "@sentry/nextjs";
-import { getErrorMessage } from "@/lib/getErrorMessage";
-import { prisma } from "@/lib/prisma";
 import { getUserPermissions } from "@/lib/get-session";
+import { prisma } from "@/lib/prisma";
+import * as Sentry from "@sentry/nextjs";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
-import { revalidatePath } from "next/cache";
 
 export const handleBulkBoardMembersDeleteAction = async (ids: string[]) => {
   try {
-    const { hasPermission } = await getUserPermissions("delete:teachers");
+    const { hasPermission } = await getUserPermissions("delete:staff");
     if (!hasPermission) {
       return { error: "permission denied!" };
     }
@@ -31,7 +30,7 @@ export const handleBulkBoardMembersDeleteAction = async (ids: string[]) => {
       console.error("could not delete any of the board members");
       return { error: "Could not delete any of the board members" };
     }
-    revalidatePath("/admin/board-of-governors");
+    revalidateTag("board-members-list", "seconds");
 
     return { deleteCount: boardMembers.count };
   } catch (e) {

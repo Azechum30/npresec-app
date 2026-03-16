@@ -1,4 +1,7 @@
 "use client";
+import { UserRole } from "@/auth-types";
+import { useOpenSidebar } from "@/hooks/use-open-sidebar";
+import { cn } from "@/lib/utils";
 import {
   Award,
   Bed,
@@ -9,16 +12,15 @@ import {
   LayoutDashboard,
   LucideBuilding2,
   Shield,
+  TimerIcon,
   UserPen,
   UserPlus,
 } from "lucide-react";
-import LinkWithStyles from "./LinkWithStyles";
-import UserButton from "./UserButton";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { cn } from "@/lib/utils";
 import { buttonVariants } from "../ui/button";
-import { useOpenSidebar } from "@/hooks/use-open-sidebar";
+import LinkWithStyles from "./LinkWithStyles";
 import { useAuth } from "./SessionProvider";
+import UserButton from "./UserButton";
 
 export const Links = {
   ADMIN: [
@@ -48,6 +50,13 @@ export const Links = {
       ],
     },
     {
+      section: "Result Management",
+      Links: [
+        { title: "Grades", href: "/admin/grades", icon: <Award /> },
+        { title: "Timelines", href: "/admin/timelines", icon: <TimerIcon /> },
+      ],
+    },
+    {
       section: "Public Facing",
       Links: [
         {
@@ -73,7 +82,7 @@ export const Links = {
       ],
     },
   ],
-  STAFF: [
+  TEACHING_STAFF: [
     {
       section: "Class Management",
       Links: [
@@ -105,28 +114,35 @@ export default function Sidebar() {
   const { open } = useOpenSidebar();
 
   const user = useAuth();
-  const role = user?.role?.name;
+  const roles =
+    user?.roles?.flatMap((rs) => rs.role?.name as UserRole).filter(Boolean) ??
+    [];
 
-  // Get links based on the user's role
-  const links =
-    role === "admin"
-      ? Links.ADMIN
-      : role === "staff"
-        ? Links.STAFF
-        : Links.STUDENT;
+  let links:
+    | typeof Links.ADMIN
+    | typeof Links.TEACHING_STAFF
+    | typeof Links.STUDENT = [];
+
+  if (roles.includes("admin")) {
+    links = Links.ADMIN;
+  } else if (roles.includes("teaching_staff")) {
+    links = Links.TEACHING_STAFF;
+  } else if (roles.includes("student")) {
+    links = Links.STUDENT;
+  }
 
   return (
     <div
       className={cn(
-        "inset-[68px] bg-inherit sticky top-0 left-0 z-30 h-screen border-r aside backdrop-blur-sm overflow-x-clip overflow-y-auto scrollbar-thin",
-        open && "open"
+        "inset-[68px] bg-inherit sticky top-0 left-0 bottom-0 z-30 h-svh border-r aside backdrop-blur-sm overflow-x-hidden overflow-y-auto scrollbar-thin",
+        open && "open",
       )}>
-      <div className="w-fit md:w-full flex flex-col items-center md:items-start gap-y-4 relative h-full sidebar-content">
+      <div className="self-start w-fit md:w-full flex flex-col items-center md:items-start gap-y-4 relative h-full sidebar-content">
         <div
           className={cn(
             `${buttonVariants({
               variant: "default",
-            })} group bg-background hover:bg-background w-fit md:w-full px-4 py-2 text-left justify-center md:justify-start flex gap-x-3 rounded-none items-center h-14 sticky top-0 left-0 z-30 border-0 border-b`
+            })} group bg-background hover:bg-background w-fit md:w-full px-4 py-2 text-left justify-center md:justify-start flex gap-x-3 rounded-none items-center h-14 sticky top-0 left-0 z-30 border-0 border-b`,
           )}>
           <div className="size-10 shrink-0 flex items-center justify-center border-2 dark:group-hover:border-gray-600  rounded-full p-1.5 ">
             <Avatar className="w-full h-full">

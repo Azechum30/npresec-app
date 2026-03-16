@@ -1,7 +1,5 @@
 "use client";
 
-import * as React from "react";
-import { DashboardData } from "../actions/dashboard-data";
 import {
   Card,
   CardContent,
@@ -18,11 +16,13 @@ import {
   TrendingUp,
   UserPen,
 } from "lucide-react";
+import * as React from "react";
+import { DashboardData } from "../actions/dashboard-data";
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { use, useEffect, useMemo, useState } from "react";
+import { columns } from "@/app/(private)/(admin)/admin/dashboard/components/DashboardColumns";
+import { BaseDataTable } from "@/components/customComponents/BaseDataTable";
 import LoadingState from "@/components/customComponents/Loading";
+import { Button } from "@/components/ui/button";
 import {
   ChartConfig,
   ChartContainer,
@@ -30,23 +30,23 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 import {
+  Bar,
   BarChart,
   CartesianGrid,
+  Cell,
+  Label,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  Bar,
-  Cell,
-  PieChart,
-  Legend,
-  Pie,
-  LineChart,
-  Line,
-  Label,
 } from "recharts";
-import { BaseDataTable } from "@/components/customComponents/BaseDataTable";
-import { columns } from "@/app/(private)/(admin)/admin/dashboard/components/DashboardColumns";
 
 const chartOptions = {
   desktop: {
@@ -62,10 +62,10 @@ const chartOptions = {
 export default function DashboardContent({
   promise,
 }: {
-  promise: Promise<DashboardData>;
+  promise: DashboardData;
 }) {
-  const promiseData = use(promise);
-  const [data, setData] = useState<DashboardData>(promiseData);
+  // const promiseData = use(promise);
+  const [data, setData] = useState<DashboardData>(() => promise);
   const genderTotals = useMemo(() => {
     return [
       (data?.counts.studentMales as number) ?? 0,

@@ -1,16 +1,15 @@
-import { Row, Table } from "@tanstack/react-table";
-import ColumnVisibility from "./ColumnVisibility";
-import FilterSearchInput from "./FilterSearchInput";
-import UploadButton from "./UploadButton";
-import { ExportAsExcel } from "./ExportAsExcel";
-import RowSelectionComponent from "./RowSelectionComponent";
 import { cn } from "@/lib/utils";
 import {
   createDataTransformer,
   TransformerFn,
 } from "@/utils/createDataTransformer";
+import { Row, Table } from "@tanstack/react-table";
 import { IContent } from "json-as-xlsx";
-import { usePathname } from "next/navigation";
+import ColumnVisibility from "./ColumnVisibility";
+import { ExportAsExcel } from "./ExportAsExcel";
+import FilterSearchInput from "./FilterSearchInput";
+import RowSelectionComponent from "./RowSelectionComponent";
+import UploadButton from "./UploadButton";
 
 type TopActionsProps<T> = {
   table: Table<T>;
@@ -32,8 +31,6 @@ export default function TopActions<T>({
   const transformData: IContent[] = transformer
     ? createDataTransformer(transformer)(data)
     : data.map((item) => ({ ...item }) as IContent);
-
-  const pathname = usePathname().split("/").pop();
   return (
     <div
       className={cn(
@@ -48,7 +45,11 @@ export default function TopActions<T>({
       />
       <RowSelectionComponent table={table} onDelete={onDelete} className="" />
       {showImportButton && <UploadButton className="" />}
-      <ExportAsExcel data={transformData} filename={filename} />
+      <ExportAsExcel
+        data={transformData}
+        filename={filename}
+        className={cn(!showImportButton && "sm:col-span-2 lg:col-span-1")}
+      />
       <ColumnVisibility table={table} className="hidden lg:inline-flex" />
     </div>
   );

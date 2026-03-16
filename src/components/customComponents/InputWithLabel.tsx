@@ -1,7 +1,10 @@
 "use client";
 
+import { isZodFieldRequired } from "@/lib/isZodFieldRequired";
+import { cn } from "@/lib/utils";
 import { InputHTMLAttributes } from "react";
 import { useFormContext } from "react-hook-form";
+import { z } from "zod";
 import {
   FormControl,
   FormField,
@@ -10,10 +13,6 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
-import { cn } from "@/lib/utils";
-import { z } from "zod";
-import { isZodFieldRequired } from "@/lib/isZodFieldRequired";
-import { NestedKeys } from "@/lib/types";
 
 type InputWithLabelProps = {
   name: string;
@@ -50,7 +49,7 @@ export default function InputWithLabel({
             className={cn(
               "text-sm font-semibold",
               isRequired && "flex items-center gap-1",
-              className
+              className,
             )}>
             {fieldTitle}
             {isRequired && <span className="text-red-500">*</span>}

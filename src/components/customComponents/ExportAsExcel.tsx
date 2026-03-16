@@ -1,35 +1,40 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import xlsx, { IContent } from "json-as-xlsx";
-import { Button } from "../ui/button";
-import { CloudDownloadIcon } from "lucide-react";
-import { useAuth } from "./SessionProvider";
 import { cn } from "@/lib/utils";
+import xlsx, { IContent } from "json-as-xlsx";
+import { CloudDownloadIcon } from "lucide-react";
+import dynamic from "next/dynamic";
+import { Button } from "../ui/button";
+import { useAuth } from "./SessionProvider";
 
 type ExportXLSXProps<T> = {
   data: T[];
   filename?: string;
+  className?: string;
 };
 
 // Internal component that handles the actual export logic
 const ExportAsExcelInternal = <T extends IContent>({
   data,
   filename,
+  className,
 }: ExportXLSXProps<T>) => {
   const user = useAuth();
 
   // Check if user has permission
-  const hasPermission =
-    user && (user.role?.name === "admin" || user.role?.name === "teacher");
+
+  const requiredRoles = ["admin", "teaching_staff"];
+  const userRoles = user?.roles?.map((r) => r.role?.name).filter(Boolean) ?? [];
+
+  const hasRole = requiredRoles.some((r) => userRoles.includes(r));
 
   // Don't render if no permission
-  if (!hasPermission) {
+  if (!hasRole) {
     return null;
   }
 
   const handleExport = () => {
-    if (!hasPermission || data.length === 0) return;
+    if (!hasRole || data.length === 0) return;
 
     const settings = {
       fileName: filename || "export",
@@ -56,7 +61,8 @@ const ExportAsExcelInternal = <T extends IContent>({
       variant="outline"
       onClick={handleExport}
       className={cn(
-        data.length === 0 && "pointer-events-none disabled:pointer-events-none"
+        data.length === 0 && "pointer-events-none disabled:pointer-events-none",
+        className
       )}
       disabled={data.length === 0}>
       <CloudDownloadIcon className="size-5" />

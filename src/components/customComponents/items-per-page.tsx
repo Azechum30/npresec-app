@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { useItemsPerPageSync } from "@/hooks/use-items-per-page-sync";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormControl, Form, FormField, FormItem } from "../ui/form";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Form, FormControl, FormField, FormItem } from "../ui/form";
 import {
   Select,
   SelectContent,
@@ -12,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { useItemsPerPageSync } from "@/hooks/use-items-per-page-sync";
 
 const itemsPerPageOptions = [10, 25, 50, 100] as const;
 
@@ -54,10 +54,7 @@ export const ItemsPerPage = ({
   }, [currentPageSize, form]);
 
   const handleOnValueChange = (value: (typeof itemsPerPageOptions)[number]) => {
-    // Update form immediately
     form.setValue("itemsPerPage", value);
-
-    // Use the custom hook's update function for proper synchronization
     updatePageSize(value as number);
   };
 
@@ -73,11 +70,10 @@ export const ItemsPerPage = ({
                 value={field.value.toString()}
                 onValueChange={(value) => {
                   handleOnValueChange(
-                    Number(value) as (typeof itemsPerPageOptions)[number],
+                    Number(value) as (typeof itemsPerPageOptions)[number]
                   );
                 }}
-                disabled={isPending}
-              >
+                disabled={isPending}>
                 <FormControl>
                   <SelectTrigger className={isPending ? "opacity-50" : ""}>
                     <SelectValue placeholder="Select the number of rows per page" />

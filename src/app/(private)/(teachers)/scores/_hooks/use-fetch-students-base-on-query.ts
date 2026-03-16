@@ -1,6 +1,6 @@
-import { useState, useEffect, useTransition, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
 import { StudentResponseType } from "@/lib/types";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { fetchStudentBaseOnQueryAction } from "../_actions/fetch-stuents-base-on-query";
 
 export const useFetchStudentsBaseOnQuery = () => {
@@ -39,7 +39,7 @@ export const useFetchStudentsBaseOnQuery = () => {
         courseId,
         semester,
         academicYear,
-        assessmentType
+        assessmentType,
       );
 
       if (res?.error) {

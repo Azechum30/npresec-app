@@ -1,10 +1,10 @@
 "use server";
-import "server-only";
-import * as Sentry from "@sentry/nextjs";
 import { Prisma } from "@/generated/prisma/client";
 import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { UserSelect } from "@/lib/types";
+import * as Sentry from "@sentry/nextjs";
+import "server-only";
 
 export const getUserPermisions = async (
   id: Prisma.UserWhereUniqueInput | string,
@@ -21,10 +21,17 @@ export const getUserPermisions = async (
 
     if (!user) return { error: "No user found" };
 
-    return { user: user };
+    console.log("Fetched user data in getUserPermisions:", user);
+
+    return { user };
   } catch (e) {
     console.error("Could not fetch user", e);
     Sentry.captureException(e);
-    return { error: "Something went wrong, Please try again!" };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? String(e)
+          : "Something went wrong!",
+    };
   }
 };

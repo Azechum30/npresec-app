@@ -1,21 +1,18 @@
 "use server";
-import * as Sentry from "@sentry/nextjs";
-import { getErrorMessage } from "@/lib/getErrorMessage";
 import { getUserPermissions } from "@/lib/get-session";
-import { prisma } from "@/lib/prisma";
-import { BoardMemberSelect } from "@/lib/types";
+import { getErrorMessage } from "@/lib/getErrorMessage";
+import * as Sentry from "@sentry/nextjs";
+import { getCachedBoardMembers } from "../_utils/get-cached-board-members";
 
 export const fetchBoardMembers = async () => {
   try {
-    const { hasPermission } = await getUserPermissions("view:teachers");
+    const { hasPermission } = await getUserPermissions("view:staff");
 
     if (!hasPermission) {
       return { error: "Permission denied!" };
     }
 
-    const boardMembers = await prisma.boardMember.findMany({
-      select: BoardMemberSelect,
-    });
+    const boardMembers = await getCachedBoardMembers();
     if (!boardMembers) {
       return { error: "No board members found!" };
     }

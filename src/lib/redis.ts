@@ -1,8 +1,8 @@
 import "server-only";
 
 import { Redis } from "@upstash/redis";
-import { prisma } from "./prisma";
 import { unstable_cache } from "next/cache";
+import { prisma } from "./prisma";
 
 const redis = Redis.fromEnv();
 
@@ -24,7 +24,7 @@ export const getCachedUserRole = async (userId: string) => {
         select: {
           id: true,
           emailVerified: true,
-          role: { select: { name: true } },
+          roles: { select: { role: { select: { name: true } } } },
         },
       });
     },

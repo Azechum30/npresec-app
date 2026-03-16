@@ -68,7 +68,7 @@ export const CreateBoardMemberForm = ({
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(handleFormSubmit)}
-          className="space-y-4 w-full max-h-[80vh] text-left rounded-md border p-4 overflow-auto">
+          className="space-y-6 w-full max-h-[80vh] text-left rounded-md border p-4 overflow-auto">
           <InputWithLabel
             fieldTitle="Full Name"
             name="name"
@@ -80,11 +80,13 @@ export const CreateBoardMemberForm = ({
             name="role"
             data={Array.from(BoardRole)}
             schema={BoardOfGovernorsSchema}
+            placeholder="Select role"
           />
           <InputWithLabel
             fieldTitle="Afilliation"
             name="affiliation"
             schema={BoardOfGovernorsSchema}
+            placeholder="e.g school, church"
           />
           <TextAreaWithLabel fieldTitle="Bio" name="bio" />
 
@@ -95,22 +97,23 @@ export const CreateBoardMemberForm = ({
             photoURL={defaultValues ? (defaultValues.photo_url as string) : ""}
           />
 
-          <div>
+          <div className="space-y-4">
             <FormField
               control={form.control}
               name="is_active"
               render={({ field }) => (
-                <FormItem className="flex space-x-2">
+                <FormItem className="flex items-start space-x-2">
                   <FormControl>
                     <Checkbox
                       id="is_active"
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      className="inline-flex items-center justify-center"
                     />
                   </FormControl>
                   <FormLabel
                     htmlFor="is_active"
-                    className=" hover:cursor-pointer">
+                    className=" hover:cursor-pointer leading-4">
                     Kindly indicate whether the person is an active member by
                     clicking on the chcekbox.
                   </FormLabel>

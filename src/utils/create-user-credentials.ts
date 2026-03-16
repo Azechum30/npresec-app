@@ -1,6 +1,6 @@
-import { headers } from "next/headers";
-import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { headers } from "next/headers";
 
 export const createUserCredentials = async ({
   email,
@@ -37,7 +37,13 @@ export const createUserCredentials = async ({
   const createdUser = await prisma.user.update({
     where: { id: user.id },
     data: {
-      roleId,
+      roles: {
+        create: {
+          role: {
+            connect: { id: roleId },
+          },
+        },
+      },
     },
   });
 

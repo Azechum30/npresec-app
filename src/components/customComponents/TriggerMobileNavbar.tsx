@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Menu, X, Sparkles } from "lucide-react";
-import { Button } from "../ui/button";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import { Menu, Sparkles, X } from "lucide-react";
+import { useState } from "react";
+import { Button } from "../ui/button";
 
 export const TriggerMobileNavbar = () => {
   const { onOpen, dialogs } = useGenericDialog();
@@ -26,7 +26,7 @@ export const TriggerMobileNavbar = () => {
       gsap.fromTo(
         ".mobile-nav-trigger",
         { scale: 1 },
-        { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1 },
+        { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1 }
       );
     }
   }, [isOpen, isPressed]);
@@ -52,8 +52,7 @@ export const TriggerMobileNavbar = () => {
         className={`
           absolute -top-1 -right-1 transition-all duration-300 pointer-events-none
           ${isHovered ? "opacity-100 scale-100" : "opacity-0 scale-0"}
-        `}
-      >
+        `}>
         <Sparkles className="w-3 h-3 text-primary" />
       </div>
 
@@ -64,13 +63,12 @@ export const TriggerMobileNavbar = () => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={`
-          mobile-nav-trigger relative w-11 h-11 rounded-xl transition-all duration-300
+          mobile-nav-trigger relative size-11 rounded-xl transition-all duration-300
           bg-background/60 backdrop-blur-md border border-border/50
           hover:bg-background/80 hover:border-primary/30 hover:shadow-lg
           active:scale-95
           ${isOpen ? "bg-primary/10 border-primary/30" : ""}
-        `}
-      >
+        `}>
         {/* Gradient overlay */}
         <div
           className={`
@@ -84,14 +82,14 @@ export const TriggerMobileNavbar = () => {
           {isOpen ? (
             <X
               className={`
-                w-5 h-5 transition-all duration-300
+                size-5 transition-all duration-300
                 ${isOpen ? "text-primary" : "text-foreground"}
               `}
             />
           ) : (
             <Menu
               className={`
-                w-5 h-5 transition-all duration-300
+                size-5 transition-all duration-300
                 ${isHovered ? "text-primary" : "text-foreground"}
               `}
             />

@@ -1,6 +1,9 @@
 "use server";
-import { getAuthUser } from "@/lib/get-session";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
+import { getError } from "@/utils/get-error";
+
+import * as Sentry from "@sentry/nextjs";
 
 export type DashboardData = {
   counts: {
@@ -41,145 +44,152 @@ export type DashboardData = {
   }[];
 };
 
-export async function getDashboardData(): Promise<DashboardData> {
-  const user = await getAuthUser();
-  if (!user || user.role?.name !== "admin") {
-    throw new Error("Unauthorized access to dashboard data");
-  }
-  const [
-    studentCount,
-    teacherCount,
-    departmentCount,
-    classCount,
-    courseCount,
-    recentStudents,
-    departmentDistribution,
-    classDistribution,
-    studentMales,
-    studentFemales,
-    yearOneMales,
-    yearTwoMales,
-    yearThreeMales,
-    yearOneFemales,
-    yearTwoFemales,
-    yearThreeFemales,
-  ] = await Promise.all([
-    prisma.student.count(),
-    prisma.staff.count(),
-    prisma.department.count(),
-    prisma.class.count(),
-    prisma.course.count(),
+export async function getDashboardData() {
+  try {
+    const { hasPermission } = await getUserPermissions("view:users");
+    if (!hasPermission) {
+      return { error: "Permission denied!" };
+    }
 
-    // Get 5 most recent students with their department and class
-    prisma.student.findMany({
-      take: 5,
-      orderBy: {
-        dateEnrolled: "desc",
-      },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        studentNumber: true,
-        dateEnrolled: true,
-        currentLevel: true,
-        department: {
-          select: {
-            name: true,
-          },
-        },
-        currentClass: {
-          select: {
-            name: true,
-          },
-        },
-        user: {
-          select: {
-            image: true,
-          },
-        },
-      },
-    }),
-    // Get department distribution
-    prisma.department.findMany({
-      select: {
-        name: true,
-        _count: {
-          select: {
-            students: true,
-          },
-        },
-      },
-    }),
-    // Get class distribution
-    prisma.class.findMany({
-      select: {
-        name: true,
-        _count: {
-          select: {
-            students: true,
-          },
-        },
-      },
-    }),
-    prisma.student.count({ where: { gender: "Male" } }),
-    prisma.student.count({ where: { gender: "Female" } }),
-    prisma.student.count({
-      where: { currentLevel: "Year_One", gender: "Male" },
-    }),
-    prisma.student.count({
-      where: { currentLevel: "Year_Two", gender: "Male" },
-    }),
-    prisma.student.count({
-      where: { currentLevel: "Year_Three", gender: "Male" },
-    }),
-    prisma.student.count({
-      where: { currentLevel: "Year_One", gender: "Female" },
-    }),
-    prisma.student.count({
-      where: { currentLevel: "Year_Two", gender: "Female" },
-    }),
-    prisma.student.count({
-      where: { currentLevel: "Year_Three", gender: "Female" },
-    }),
-  ]);
-
-  return {
-    counts: {
-      students: studentCount,
-      teachers: teacherCount,
-      departments: departmentCount,
-      classes: classCount,
-      courses: courseCount,
+    const [
+      studentCount,
+      teacherCount,
+      departmentCount,
+      classCount,
+      courseCount,
+      recentStudents,
+      departmentDistribution,
+      classDistribution,
       studentMales,
       studentFemales,
-      yearGroupGender: {
-        yearOneMales,
-        yearOneFemales,
-        yearTwoMales,
-        yearTwoFemales,
-        yearThreeMales,
-        yearThreeFemales,
+      yearOneMales,
+      yearTwoMales,
+      yearThreeMales,
+      yearOneFemales,
+      yearTwoFemales,
+      yearThreeFemales,
+    ] = await Promise.all([
+      prisma.student.count(),
+      prisma.staff.count(),
+      prisma.department.count(),
+      prisma.class.count(),
+      prisma.course.count(),
+
+      // Get 5 most recent students with their department and class
+      prisma.student.findMany({
+        take: 5,
+        orderBy: {
+          dateEnrolled: "desc",
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          studentNumber: true,
+          dateEnrolled: true,
+          currentLevel: true,
+          department: {
+            select: {
+              name: true,
+            },
+          },
+          currentClass: {
+            select: {
+              name: true,
+            },
+          },
+          user: {
+            select: {
+              image: true,
+            },
+          },
+        },
+      }),
+      // Get department distribution
+      prisma.department.findMany({
+        select: {
+          name: true,
+          _count: {
+            select: {
+              students: true,
+            },
+          },
+        },
+      }),
+      // Get class distribution
+      prisma.class.findMany({
+        select: {
+          name: true,
+          _count: {
+            select: {
+              students: true,
+            },
+          },
+        },
+      }),
+      prisma.student.count({ where: { gender: "Male" } }),
+      prisma.student.count({ where: { gender: "Female" } }),
+      prisma.student.count({
+        where: { currentLevel: "Year_One", gender: "Male" },
+      }),
+      prisma.student.count({
+        where: { currentLevel: "Year_Two", gender: "Male" },
+      }),
+      prisma.student.count({
+        where: { currentLevel: "Year_Three", gender: "Male" },
+      }),
+      prisma.student.count({
+        where: { currentLevel: "Year_One", gender: "Female" },
+      }),
+      prisma.student.count({
+        where: { currentLevel: "Year_Two", gender: "Female" },
+      }),
+      prisma.student.count({
+        where: { currentLevel: "Year_Three", gender: "Female" },
+      }),
+    ]);
+
+    return {
+      counts: {
+        students: studentCount,
+        teachers: teacherCount,
+        departments: departmentCount,
+        classes: classCount,
+        courses: courseCount,
+        studentMales,
+        studentFemales,
+        yearGroupGender: {
+          yearOneMales,
+          yearOneFemales,
+          yearTwoMales,
+          yearTwoFemales,
+          yearThreeMales,
+          yearThreeFemales,
+        },
       },
-    },
-    recentStudents: recentStudents.map((student) => ({
-      id: student.id,
-      firstName: student.firstName,
-      lastName: student.lastName,
-      studentNumber: student.studentNumber,
-      departmentName: student.department?.name,
-      className: student.currentClass?.name,
-      dateEnrolled: student.dateEnrolled,
-      yearGroup: student.currentLevel.split("_").join(" "),
-      photoUrl: student.user?.image ?? "",
-    })),
-    departmentDistribution: departmentDistribution.map((dept) => ({
-      name: dept.name,
-      studentCount: dept._count.students,
-    })),
-    classDistribution: classDistribution.map((cls) => ({
-      name: cls.name,
-      studentCount: cls._count.students,
-    })),
-  };
+      recentStudents: recentStudents.map((student) => ({
+        id: student.id,
+        firstName: student.firstName,
+        lastName: student.lastName,
+        studentNumber: student.studentNumber,
+        departmentName: student.department?.name,
+        className: student.currentClass?.name,
+        dateEnrolled: student.dateEnrolled,
+        yearGroup: student.currentLevel.split("_").join(" "),
+        photoUrl: student.user?.image ?? "",
+      })),
+      departmentDistribution: departmentDistribution.map((dept) => ({
+        name: dept.name,
+        studentCount: dept._count.students,
+      })),
+      classDistribution: classDistribution.map((cls) => ({
+        name: cls.name,
+        studentCount: cls._count.students,
+      })),
+    };
+  } catch (e) {
+    console.error("Failed to fetch dashboard data", e);
+    Sentry.captureException(e);
+    return { error: getError(e) };
+  }
 }

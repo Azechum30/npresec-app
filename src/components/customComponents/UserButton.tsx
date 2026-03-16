@@ -1,5 +1,23 @@
 "use client";
 
+import { updateThemeAction } from "@/app/(private)/profile/_actions/update-theme-action";
+import {
+  Check,
+  Key,
+  Laptop2,
+  Loader2,
+  Monitor,
+  Moon,
+  Settings,
+  Shield,
+  Sun,
+  UsersRoundIcon,
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -13,30 +31,17 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import LogoutButton from "./LogoutButton";
-import {
-  Check,
-  Key,
-  Laptop2,
-  Loader2,
-  Monitor,
-  Moon,
-  Settings,
-  Shield,
-  Sun,
-  UsersRoundIcon,
-} from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useAuth } from "./SessionProvider";
-import Link from "next/link";
-import { useTheme } from "next-themes";
-import { useEffect, useMemo, useTransition } from "react";
-import { updateThemeAction } from "@/app/(private)/profile/_actions/update-theme-action";
-import { useRouter } from "next/navigation";
 
 export default function UserButton() {
   const user = useAuth();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  const requiredRole = "admin";
+  const userRoleNames =
+    user?.roles?.map((r) => r.role?.name).filter(Boolean) ?? [];
+  const hasRole = userRoleNames.includes(requiredRole);
 
   const { setTheme, theme } = useTheme();
 
@@ -61,7 +66,7 @@ export default function UserButton() {
           {!user ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
-            <span className=" hidden  md:flex flex-col">
+            <span className=" hidden md:flex flex-col">
               <span className="font-semibold text-accent-foreground">
                 {user.username}
               </span>
@@ -73,10 +78,10 @@ export default function UserButton() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" alignOffset={-150}>
-        <DropdownMenuItem>
+        <DropdownMenuItem asChild>
           <Link
             href={`/profile`}
-            className="flex items-center gap-x-2 line-clamp-2">
+            className="w-full flex items-center space-x-2 flex-nowrap">
             <Avatar>
               <AvatarImage src={user?.image ? user.image : ""} />
               <AvatarFallback>CN</AvatarFallback>
@@ -129,7 +134,7 @@ export default function UserButton() {
           </DropdownMenuPortal>
         </DropdownMenuSub>
 
-        {user?.role?.name === "admin" && (
+        {hasRole && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuSub>
@@ -143,32 +148,32 @@ export default function UserButton() {
                 </Button>
                 <DropdownMenuPortal>
                   <DropdownMenuSubContent>
-                    <Link
-                      className="flex items-center gap-1 w-full h-full hover:bg-muted p-2 rounded-md"
-                      href="/admin/users">
-                      <DropdownMenuItem>
+                    <DropdownMenuItem asChild className="hover:cursor-pointer">
+                      <Link
+                        className="flex items-center gap-1 w-full hover:bg-accent hover:cursor-pointer rounded-md"
+                        href="/admin/users">
                         <UsersRoundIcon className="size-4 mr-2" />
                         Manage Users
-                      </DropdownMenuItem>
-                    </Link>
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <Link
-                      className="flex items-center gap-1 w-full h-full hover:bg-muted p-2 rounded-md"
-                      href="/admin/roles">
-                      <DropdownMenuItem>
+                    <DropdownMenuItem asChild className="hover:cursor-pointer">
+                      <Link
+                        className="flex items-center gap-1 w-full hover:bg-accent hover:cursor-pointer rounded-md"
+                        href="/admin/roles">
                         <Shield className="size-4 mr-2" />
                         Manage Roles
-                      </DropdownMenuItem>
-                    </Link>
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <Link
-                      className="flex items-center gap-1 w-full h-full hover:bg-muted p-2 rounded-md"
-                      href="/admin/permissions">
-                      <DropdownMenuItem>
+                    <DropdownMenuItem asChild className="hover:cursor-pointer">
+                      <Link
+                        className="flex items-center gap-1 w-full hover:bg-accent hover:cursor-pointer  rounded-md"
+                        href="/admin/permissions">
                         <Key className="size-4 mr-2" />
                         Manage Permissions
-                      </DropdownMenuItem>
-                    </Link>
+                      </Link>
+                    </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>
               </DropdownMenuSubTrigger>

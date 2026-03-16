@@ -1,10 +1,10 @@
 "use client";
 
 import { useAuth } from "@/components/customComponents/SessionProvider";
-import { BioForm } from "../forms/bio-form";
-import { useHandleBioFormSubmission } from "../_hooks/use-handle-bio-form-submission";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { useHandleBioFormSubmission } from "../_hooks/use-handle-bio-form-submission";
+import { BioForm } from "../forms/bio-form";
 
 export const RenderBioForm = () => {
   const user = useAuth();
@@ -39,7 +39,6 @@ export const RenderBioForm = () => {
 
   const defaultValues = {
     username: user.username,
-    role: user?.role?.name.toUpperCase() || "",
     email: user.email,
     image: user.image || "",
     fullName: user.name || "",

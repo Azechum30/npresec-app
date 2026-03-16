@@ -1,5 +1,8 @@
 import { getBoardOfGovernorsById } from "../actions/server";
 
+import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { FormattedText } from "@/components/customComponents/FormattedText";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -7,17 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { FormattedText } from "@/components/customComponents/FormattedText";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { FallbackComponent } from "@/components/customComponents/fallback-component";
 
 type BoardOfGovernorsSlugPageProps = {
-  params: {
-    slug: Promise<string>;
-  };
+  params: Promise<{ slug: string }>;
 };
 
 export const dynamic = "force-dynamic";
@@ -37,9 +35,7 @@ export default function BoardOfGovernorsSlugPage({
 const RenderBoardMemberDetails = async ({
   params,
 }: BoardOfGovernorsSlugPageProps) => {
-  const slug = await params.slug;
-
-  // const userId = await verifyToken(slug);
+  const { slug } = await params;
 
   if (!slug) return redirect("/about/board-of-governors");
 

@@ -1,11 +1,10 @@
 "use server";
-import "server-only";
-import * as Sentry from "@sentry/nextjs";
-import { Prisma } from "@/generated/prisma/client";
 import { getUserPermissions } from "@/lib/get-session";
-import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import * as Sentry from "@sentry/nextjs";
+import { revalidateTag } from "next/cache";
+import "server-only";
+import { z } from "zod";
 
 export const deleteUserAction = async (id: unknown) => {
   try {
@@ -29,7 +28,7 @@ export const deleteUserAction = async (id: unknown) => {
 
     if (!userToDelete) return { error: "Failed to delete user" };
 
-    revalidatePath("/admin/users");
+    revalidateTag("users-list", "seconds");
 
     return { success: true };
   } catch (e) {

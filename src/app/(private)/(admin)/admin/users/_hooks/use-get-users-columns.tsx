@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { UserResponseType } from "@/lib/types";
 import { ColumnDef } from "@tanstack/react-table";
-import { PencilIcon } from "lucide-react";
+import { Edit } from "lucide-react";
 import Image from "next/image";
-import { useHandleUserDelete } from "./use-delete-user";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { useHandleUserDelete } from "./use-delete-user";
 
 export const useGetUsersColumns = () => {
   const { onOpen } = useGenericDialog();
@@ -82,10 +82,19 @@ export const useGetUsersColumns = () => {
     },
     {
       header: "Role",
-      accessorFn: (row) =>
-        row.role?.name.includes("_")
-          ? row.role.name.split("_").join(" ").toUpperCase()
-          : row.role?.name.toUpperCase(),
+      cell: ({ row }) => {
+        const roles = row.original.roles?.flatMap((rs) =>
+          rs.role.name.split("_").join(" "),
+        );
+
+        return (
+          <div className="line-clamp-2">
+            {roles.map((role) => (
+              <div key={role}>{role}</div>
+            ))}
+          </div>
+        );
+      },
     },
 
     {
@@ -107,7 +116,7 @@ export const useGetUsersColumns = () => {
             variant="ghost"
             size="sm"
             onClick={() => onOpen("update-user-permissions", row.original.id)}>
-            <PencilIcon />
+            <Edit />
             Edit
           </Button>
         );

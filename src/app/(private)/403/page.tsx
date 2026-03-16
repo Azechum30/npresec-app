@@ -1,21 +1,46 @@
-import { getUserRole } from "@/lib/get-session";
+import { UserRole } from "@/auth-types";
+import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { buttonVariants } from "@/components/ui/button";
+import { getUserRole } from "@/lib/get-session";
+import { Route } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Route } from "next";
+import { Suspense } from "react";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
-export default async function ForbiddenPage() {
+export default function ForbiddenPage() {
+  return (
+    <Suspense fallback={<FallbackComponent />}>
+      <RenderForbiddenPage />
+    </Suspense>
+  );
+}
+
+const RenderForbiddenPage = async () => {
   const userRole = await getUserRole();
 
-  if (!userRole) {
+  const priorityRoles = [
+    "admin",
+    "teaching_staff",
+    "student",
+    "staff",
+    "parent",
+    "admin_staff",
+    "support_staff",
+  ];
+
+  const priorityRole = priorityRoles.find((role) =>
+    userRole?.includes(role as UserRole)
+  );
+
+  if (!priorityRole) {
     redirect("/sign-in");
   }
 
   let url = "/" as Route;
 
-  switch (userRole) {
+  switch (priorityRole) {
     case "admin":
       url = "/admin/dashboard";
       break;
@@ -40,8 +65,7 @@ export default async function ForbiddenPage() {
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
-            strokeWidth={2}
-          >
+            strokeWidth={2}>
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -60,11 +84,10 @@ export default async function ForbiddenPage() {
           className={buttonVariants({
             variant: "destructive",
             className: "w-full mt-3",
-          })}
-        >
+          })}>
           Continue to Dashboard
         </Link>
       </div>
     </div>
   );
-}
+};

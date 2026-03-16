@@ -8,38 +8,38 @@ datasource db {
 }
 
 model User {
-  id                       String       @id @default(cuid())
-  email                    String       @unique
-  username                 String       @unique
-  roleId                   String?
+  id                       String     @id @default(cuid())
+  email                    String     @unique
+  username                 String     @unique
+  roles                    UserRole[]
   name                     String?
   linkedInUrl              String?
   xUrl                     String?
   facebookUrl              String?
   instagramUrl             String?
   bio                      String?
-  subscribeToOurNewsLetter Boolean?     @default(false)
+  subscribeToOurNewsLetter Boolean?   @default(false)
   socials                  Json?
-  timezone                 String?      @default("Africa/Accra")
-  dateFormat               String?      @default("DD/MM/YYYY")
-  itemsPerPage             Int?         @default(10)
+  timezone                 String?    @default("Africa/Accra")
+  dateFormat               String?    @default("DD/MM/YYYY")
+  itemsPerPage             Int?       @default(10)
   emailNotifications       Json?
-  notificationFrequency    String?      @default("realtime")
-  theme                    String?      @default("system")
-  compactMode              Boolean      @default(false)
-  showTips                 Boolean      @default(false)
+  notificationFrequency    String?    @default("realtime")
+  theme                    String?    @default("system")
+  compactMode              Boolean    @default(false)
+  showTips                 Boolean    @default(false)
   image                    String?
-  emailVerified            Boolean?     @default(false)
+  emailVerified            Boolean?   @default(false)
   sessions                 Session[]
   student                  Student?
   staff                    Staff?
-  createdAt                DateTime     @default(now())
-  updatedAt                DateTime     @default(now()) @updatedAt
-  role                     Role?        @relation(fields: [roleId], references: [id])
-  permissions              Permission[] @relation("UserPermissions")
-  accounts                 Account[]
+  createdAt                DateTime   @default(now())
+  updatedAt                DateTime   @default(now()) @updatedAt
+  // role                     Role?        @relation(fields: [roleId], references: [id])
 
-  @@index([roleId, email, username])
+  accounts Account[]
+
+  @@index([email, username])
   @@map("users")
 }
 
@@ -61,6 +61,17 @@ model Account {
 
   @@index([userId])
   @@map("accounts")
+}
+
+model UserRole {
+  id     String @id @default(cuid())
+  userId String
+  roleId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@index([userId, roleId])
+  @@map("user_roles")
 }
 
 model Session {
@@ -142,17 +153,18 @@ model Staff {
 }
 
 model Course {
-  id          String       @id @default(cuid())
-  code        String       @unique
-  title       String       @unique
-  description String?
-  credits     Int?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  grades      Grade[]
-  classes     Class[]      @relation("ClassCourses")
-  departments Department[] @relation("CourseDepartments")
-  staff       Staff[]      @relation("CourseStaff")
+  id                  String               @id @default(cuid())
+  code                String               @unique
+  title               String               @unique
+  description         String?
+  credits             Int?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  grades              Grade[]
+  classes             Class[]              @relation("ClassCourses")
+  departments         Department[]         @relation("CourseDepartments")
+  staff               Staff[]              @relation("CourseStaff")
+  assessmentTimelines AssessmentTimeline[]
 
   @@index([code, title])
   @@map("courses")
@@ -184,7 +196,7 @@ model Role {
   name        String       @unique
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  users       User[]
+  users       UserRole[]
   permissions Permission[] @relation("RolePermissions")
 
   @@index([name])
@@ -198,53 +210,53 @@ model Permission {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   roles       Role[]   @relation("RolePermissions")
-  users       User[]   @relation("UserPermissions")
 
   @@index([name])
   @@map("permissions")
 }
 
 model Student {
-  id               String             @id @default(cuid())
-  firstName        String
-  lastName         String
-  middleName       String?
-  studentNumber    String             @unique
-  birthDate        DateTime
-  gender           String
-  departmentId     String?
-  userId           String?            @unique
-  classId          String?
-  dateEnrolled     DateTime           @default(now())
-  graduationDate   DateTime?
-  currentLevel     Level              @default(Year_One)
-  status           EnrollmentStatus   @default(Active)
-  phone            String?
-  address          String?
-  nationality      String?
-  religion         String?
-  guardianName     String
-  guardianPhone    String
-  guardianEmail    String?
-  guardianAddress  String?
-  guardianRelation String
-  previousSchool   String?
-  admissionDate    DateTime           @default(now())
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  deletedAt        DateTime?
-  attendance       Attendance[]
-  documents        Document[]
-  grades           Grade[]
-  transcripts      Transcript[]
-  currentClass     Class?             @relation(fields: [classId], references: [id])
-  department       Department?        @relation(fields: [departmentId], references: [id])
-  user             User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  houseId          String?            @unique
-  roomId           String?            @unique
-  room             Room?              @relation(fields: [roomId], references: [id])
-  house            House?             @relation(fields: [houseId], references: [id])
-  promotions       StudentPromotion[]
+  id                String             @id @default(cuid())
+  firstName         String
+  lastName          String
+  middleName        String?
+  studentNumber     String             @unique
+  birthDate         DateTime
+  gender            String
+  departmentId      String?
+  userId            String?            @unique
+  classId           String?
+  dateEnrolled      DateTime           @default(now())
+  graduationDate    DateTime?
+  currentLevel      Level              @default(Year_One)
+  status            EnrollmentStatus   @default(Active)
+  phone             String?
+  address           String?
+  nationality       String?
+  religion          String?
+  guardianName      String
+  guardianPhone     String
+  guardianEmail     String?
+  guardianAddress   String?
+  guardianRelation  String
+  previousSchool    String?
+  admissionDate     DateTime           @default(now())
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  deletedAt         DateTime?
+  attendance        Attendance[]
+  semesterSummaries SemesterSummary[]
+  documents         Document[]
+  grades            Grade[]
+  transcripts       Transcript[]
+  currentClass      Class?             @relation(fields: [classId], references: [id])
+  department        Department?        @relation(fields: [departmentId], references: [id])
+  user              User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  houseId           String?            @unique
+  roomId            String?            @unique
+  room              Room?              @relation(fields: [roomId], references: [id])
+  house             House?             @relation(fields: [houseId], references: [id])
+  promotions        StudentPromotion[]
 
   @@index([departmentId, currentLevel])
   @@index([firstName, lastName, studentNumber])
@@ -266,6 +278,34 @@ model Attendance {
   @@unique([studentId, date, classId])
   @@unique([studentId, date])
   @@map("attendance")
+}
+
+model SemesterSummary {
+  id           String @id @default(cuid())
+  studentId    String
+  semester     String
+  academicYear Int
+
+  tgp Float
+  tcr Int
+  gpa Float
+
+  ccr  Int
+  cgv  Float
+  cgpa Float
+
+  classRank     Int?
+  totalStudents Int?
+  isPublished   Boolean  @default(false)
+  remarks       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, academicYear, semester])
+  @@index([studentId, academicYear])
+  @@map("semester_summaries")
 }
 
 model Grade {
@@ -320,6 +360,20 @@ model BoardMember {
   is_active   Boolean         @default(true)
 
   @@map("board_members")
+}
+
+model AssessmentTimeline {
+  id             String         @id @default(cuid())
+  courseId       String
+  academicYear   Int
+  semester       String
+  assessmentType AssessmentType
+  startDate      DateTime
+  endDate        DateTime
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, academicYear, semester, assessmentType])
 }
 
 model Transcript {

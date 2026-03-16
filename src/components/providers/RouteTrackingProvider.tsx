@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef } from "react";
-import { usePathname, useRouter } from "next/navigation";
 import { isValidCallbackUrl } from "@/utils/auth-redirects";
+import { usePathname, useRouter } from "next/navigation";
+import { createContext, useContext, useEffect, useRef } from "react";
 
 interface RouteEntry {
   path: string;
@@ -19,7 +19,7 @@ interface RouteTrackingContextType {
 }
 
 const RouteTrackingContext = createContext<RouteTrackingContextType | null>(
-  null,
+  null
 );
 
 interface RouteTrackingProviderProps {
@@ -211,7 +211,7 @@ export function useRouteTracking(): RouteTrackingContextType {
 
   if (!context) {
     throw new Error(
-      "useRouteTracking must be used within a RouteTrackingProvider",
+      "useRouteTracking must be used within a RouteTrackingProvider"
     );
   }
 

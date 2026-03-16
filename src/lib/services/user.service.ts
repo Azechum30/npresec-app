@@ -1,11 +1,13 @@
-
 import { auth } from "@/lib/auth";
 import { generatePassword } from "@/lib/generatePassword";
 import { prisma } from "@/lib/prisma";
 import { resolveRole } from "@/lib/resolve-staff-role";
 import { headers } from "next/headers";
 
-export const createStaffUser = async (staffData: any, roleMap: Map<string, string>) => {
+export const createStaffUser = async (
+  staffData: any,
+  roleMap: Map<string, string>,
+) => {
   try {
     const password = generatePassword();
 
@@ -30,9 +32,11 @@ export const createStaffUser = async (staffData: any, roleMap: Map<string, strin
       const roleId = roleMap.get(roleName);
 
       if (roleId) {
-        await prisma.user.update({
+        await prisma.userRole.update({
           where: { id: user.id },
-          data: { roleId },
+          data: {
+            roleId,
+          },
         });
       }
 

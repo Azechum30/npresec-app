@@ -1,14 +1,12 @@
 "use server";
-import "server-only";
-import * as Sentry from "@sentry/nextjs";
 import { getUserPermissions } from "@/lib/get-session";
-import { UserSchema } from "@/lib/validation";
 import { prisma } from "@/lib/prisma";
-import { client } from "@/utils/qstash";
-import { env } from "@/lib/server-only-actions/validate-env";
-import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { triggerSendEmail } from "@/lib/trigger-send-email";
+import { UserSchema } from "@/lib/validation";
+import { createUserCredentials } from "@/utils/create-user-credentials";
+import * as Sentry from "@sentry/nextjs";
+import { revalidateTag } from "next/cache";
+import "server-only";
 
 export const createNewUserAction = async (values: unknown) => {
   try {
@@ -45,51 +43,45 @@ export const createNewUserAction = async (values: unknown) => {
       return { error: "Username is already taken!" };
     }
 
-    await auth.api.signUpEmail({
-      body: {
-        email: data.email.trim().toLowerCase(),
-        username: data.username,
-        name: data.username,
-        password: data.password,
-        callbackURL: "/email-verified",
-      },
-      headers: await headers(),
+    const { user } = await createUserCredentials({
+      email: data.email.trim().toLowerCase(),
+      username: data.username,
+      lastName: data.username,
+      password: data.password,
+      roleId: data.role,
     });
 
-    const createdUser = await prisma.$transaction(async (tx) => {
-      const user = await tx.user.findUnique({
-        where: { email: data.email.trim().toLowerCase() },
-        select: { id: true },
+    if (!user) {
+      await prisma.user.delete({
+        where: { email: data.email },
       });
-      if (!user) throw new Error("Failed to create user");
+    }
 
-      return await tx.user.update({
-        where: { id: user.id },
-        data: { roleId: data.role },
-      });
-    });
+    if (user) {
+      const emailConfig = {
+        to: [user.email],
+        username: user.username,
+        data: {
+          lastName: user.username,
+          email: user.email,
+          password: data.password,
+        },
+      };
 
-    const emailConfig = {
-      to: [createdUser.email],
-      username: createdUser.username,
-      data: {
-        lastName: createdUser.username,
-        email: createdUser.email,
-        password: data.password,
-      },
-    };
+      void triggerSendEmail(emailConfig);
+    }
 
-    await client.publishJSON({
-      url: `${env.NEXT_PUBLIC_URL}/api/send/emails`,
-      body: emailConfig,
-    });
-
-    revalidatePath("/admin/users");
+    void revalidateTag("users-list", "seconds");
 
     return { success: true };
   } catch (e) {
     console.error("Failed to create user", e);
     Sentry.captureException(e);
-    return { error: "Something went wrong! Please try again" };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? String(e)
+          : "Something went wrong! Please try again",
+    };
   }
 };

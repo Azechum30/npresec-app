@@ -68,12 +68,12 @@ export const createStudent = authMiddleware
         const sequenceNumber = lastStudent
           ? Number.isNaN(
               parseInt(
-                lastStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH)
-              )
+                lastStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
+              ),
             )
             ? 1
             : parseInt(
-                lastStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH)
+                lastStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
               ) + 1
           : 1;
 
@@ -102,7 +102,7 @@ export const createStudent = authMiddleware
             message: "Could not create student credentials",
           });
 
-        await ctx.user.update({
+        await ctx.userRole.update({
           where: { id: user.id },
           data: {
             roleId: studentRole.id,

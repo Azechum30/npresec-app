@@ -1,5 +1,6 @@
 "use client";
 
+import LoadingState from "@/components/customComponents/Loading";
 import {
   Dialog,
   DialogContent,
@@ -7,15 +8,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { UpdateUserRoleForm } from "../_forms/update-user-role-form";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { useGetUser } from "../_hooks/use-get-user";
+import { cn } from "@/lib/utils";
 import { UserRoleUpdateType } from "@/lib/validation";
 import { useTransition } from "react";
-import { updateUserRole } from "../_actions/update-user-role";
 import { toast } from "sonner";
-import LoadingState from "@/components/customComponents/Loading";
-import { cn } from "@/lib/utils";
+import { updateUserRole } from "../_actions/update-user-role";
+import { UpdateUserRoleForm } from "../_forms/update-user-role-form";
+import { useGetUser } from "../_hooks/use-get-user";
 
 export const UpdateUserRoleModal = () => {
   const { id, dialogs, onClose } = useGenericDialog();
@@ -25,7 +25,7 @@ export const UpdateUserRoleModal = () => {
   const defaultValues = user
     ? {
         userId: user.id,
-        roleId: user.role?.id as string,
+        roleId: user?.roles?.flatMap((rs) => rs.role.id),
       }
     : undefined;
 
@@ -71,7 +71,7 @@ export const UpdateUserRoleModal = () => {
             </>
           ) : (
             <>
-              <DialogHeader className="sr-only">
+              <DialogHeader className="sr-only w-fit">
                 <DialogTitle>Loading User data</DialogTitle>,
                 <DialogDescription></DialogDescription>
               </DialogHeader>

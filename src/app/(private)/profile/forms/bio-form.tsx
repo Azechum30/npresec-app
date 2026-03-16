@@ -1,6 +1,9 @@
 "use client";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import LoadingButton from "@/components/customComponents/LoadingButton";
+import TextAreaWithLabel from "@/components/customComponents/TextareaWithLabel";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -9,18 +12,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { BioSchema, BioType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera, Save } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { SwitchEditMode } from "../_components/switch-edit-mode";
-import { useEffect, useRef, useState } from "react";
-import TextAreaWithLabel from "@/components/customComponents/TextareaWithLabel";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { BioSchema, BioType } from "@/lib/validation";
+import { useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { SwitchEditMode } from "../_components/switch-edit-mode";
 
 type BioFormValues = {
   onSubmit: (data: BioType) => void;
@@ -40,7 +39,6 @@ export const BioForm = ({
       username: "",
       email: "",
       fullName: "",
-      role: "",
       image: undefined,
       subscribeToNewsletter: false,
       bio: "",
@@ -201,14 +199,6 @@ export const BioForm = ({
                 fieldTitle="Email"
                 className="w-full"
                 type="email"
-                disabled={!!defaultValues}
-              />
-            </div>
-            <div className="flex-1">
-              <InputWithLabel
-                name="role"
-                fieldTitle="Role"
-                className="w-full"
                 disabled={!!defaultValues}
               />
             </div>

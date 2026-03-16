@@ -75,7 +75,7 @@ export const CreateHouseForm = ({
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
-          className="space-y-4 p-4 rounded-md border">
+          className="space-y-6 p-4 rounded-md border scrollbar-thin max-h-[80svh] overflow-auto ">
           <InputWithLabel
             name="name"
             fieldTitle="House Name"

@@ -7,21 +7,21 @@ import { Form } from "@/components/ui/form";
 import { client } from "@/lib/orpc";
 import { RoomSchema, RoomType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createSafeClient, isDefinedError } from "@orpc/client";
+import { createSafeClient } from "@orpc/client";
 import { Plus, Save } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 type CreateRoomFormProps = {
-  onSubmit: (data: RoomType) => void;
+  onSubmitAction: (data: RoomType) => void;
   id?: string;
   isPending: boolean;
   defaultValues?: RoomType;
 };
 
 export const CreateRoomForm = ({
-  onSubmit,
+  onSubmitAction: onSubmit,
   id,
   isPending,
   defaultValues,
@@ -69,10 +69,9 @@ export const CreateRoomForm = ({
   // Derived: filteredHouse
   const filteredHouse = useMemo(
     () => houses?.find((house) => house.id === selectedHouse) ?? null,
-    [houses, selectedHouse]
+    [houses, selectedHouse],
   );
 
-  // Derived: roomAggregates
   const roomAggregates = useMemo<RoomAggregates | null>(() => {
     if (!selectedHouse) return null;
 

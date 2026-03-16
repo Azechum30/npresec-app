@@ -1,18 +1,18 @@
 "use server";
 
+import { Prisma } from "@/generated/prisma/client";
 import { getAuthUser, getUserPermissions } from "@/lib/get-session";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
 import { CourseSelect } from "@/lib/types";
 import {
-  BulkUploadCourses as BulkUploadCoursesType,
   BulkUploadCoursesSchema,
+  BulkUploadCourses as BulkUploadCoursesType,
   CoursesSchema,
   CoursesType,
   CourseUpdateSchema,
   CourseUpdateType,
 } from "@/lib/validation";
-import { Prisma } from "@/generated/prisma/client";
 import { revalidatePath } from "next/cache";
 import { generateCourseCode } from "../utils/generate-course-code";
 
@@ -203,7 +203,7 @@ export const getCourses = async (codes?: string[]) => {
 
     let query: Prisma.CourseWhereInput = {};
 
-    if (user?.role?.name === "staff") {
+    if (user.roles?.flatMap((r) => r.role.name).includes("teaching_staff")) {
       query = {
         staff: {
           some: { id: user.id },

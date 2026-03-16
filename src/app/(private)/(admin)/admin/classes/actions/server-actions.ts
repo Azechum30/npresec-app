@@ -4,9 +4,12 @@ import "server-only";
 
 import { getErrorMessage } from "@/lib/getErrorMessage";
 
+import { Prisma } from "@/generated/prisma/client";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { ClassesSelect } from "@/lib/types";
 import {
+  BulkClassesSchema,
   BulkClassesType,
   BulkDeleteClassesSchema,
   BulkDeleteClassesType,
@@ -15,19 +18,16 @@ import {
   gradesType,
   UpdateClassSchema,
   UpdateClassType,
-  BulkClassesSchema,
 } from "@/lib/validation";
-import { Prisma } from "@/generated/prisma/client";
+import { CONSTANTS } from "@/utils/generateStudentIndex";
 import { revalidatePath } from "next/cache";
 import "server-only";
-import { getUserWithPermissions } from "@/utils/get-user-with-permission";
 import { z } from "zod";
-import { CONSTANTS } from "@/utils/generateStudentIndex";
 import { generateUniqueClassCode } from "../utils/generate-class-code";
 
 export const createClassAction = async (values: ClassesType) => {
   try {
-    const { hasPermission } = await getUserWithPermissions("create:classes");
+    const { hasPermission } = await getUserPermissions("create:classes");
 
     if (!hasPermission) return { error: "Permission denied!" };
 
@@ -152,7 +152,7 @@ export const createClassAction = async (values: ClassesType) => {
 
 export const getClassesAction = async (codes?: string[]) => {
   try {
-    const { hasPermission } = await getUserWithPermissions("view:classes");
+    const { hasPermission } = await getUserPermissions("view:classes");
 
     if (!hasPermission) return { error: "Permision denied" };
 
@@ -180,7 +180,7 @@ export const getClassesAction = async (codes?: string[]) => {
 
 export const getClass = async (id: string) => {
   try {
-    const { hasPermission } = await getUserWithPermissions("view:classes");
+    const { hasPermission } = await getUserPermissions("view:classes");
 
     if (!hasPermission) return { error: "Permission denied!" };
 
@@ -201,7 +201,7 @@ export const getClass = async (id: string) => {
 
 export const updateClass = async (values: UpdateClassType) => {
   try {
-    const hasPermission = await getUserWithPermissions("edit:classes");
+    const hasPermission = await getUserPermissions("edit:classes");
 
     if (!hasPermission) return { error: "Permission denied!" };
 
@@ -254,7 +254,7 @@ export const deleteClass = async (
   id: string | Prisma.ClassWhereUniqueInput
 ) => {
   try {
-    const hasPermission = await getUserWithPermissions("delete:classes");
+    const hasPermission = await getUserPermissions("delete:classes");
 
     if (!hasPermission) return { error: "Permission denied" };
 
@@ -289,7 +289,7 @@ export const deleteClass = async (
 
 export const bulkDeleteClasses = async (ids: BulkDeleteClassesType) => {
   try {
-    const hasPermission = await getUserWithPermissions("delete:classes");
+    const hasPermission = await getUserPermissions("delete:classes");
     if (!hasPermission) return { error: "Permission denied!" };
     const { error, success, data } = BulkDeleteClassesSchema.safeParse(ids);
 
@@ -328,7 +328,7 @@ export const updateClassEnrollment = async (
   currentEnrollment: number
 ) => {
   try {
-    const hasPermission = await getUserWithPermissions("edit:classes");
+    const hasPermission = await getUserPermissions("edit:classes");
 
     if (!hasPermission) return { error: "Permission denied!" };
 
@@ -355,7 +355,7 @@ export const updateClassEnrollment = async (
 
 export const bulkUploadClasses = async (values: BulkClassesType) => {
   try {
-    const hasPermission = await getUserWithPermissions("create:classes");
+    const hasPermission = await getUserPermissions("create:classes");
     if (!hasPermission) return { error: "Permission denied" };
     const errors: string[] = [];
 

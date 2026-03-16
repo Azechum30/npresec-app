@@ -1,14 +1,14 @@
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
-import { Suspense } from "react";
-import { RenderRolesDataTable } from "@/app/(private)/(admin)/admin/roles/components/RenderRolesDataTable";
 import { getRoles } from "@/app/(private)/(admin)/admin/roles/actions/queries";
 import { CreateRoleDialog } from "@/app/(private)/(admin)/admin/roles/components/CreateRoleDialog";
+import { RenderRolesDataTable } from "@/app/(private)/(admin)/admin/roles/components/RenderRolesDataTable";
 import { UpdateRoleDialog } from "@/app/(private)/(admin)/admin/roles/components/UpdateRoleDialog";
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
-import { NoDataFound } from "@/components/customComponents/no-data-found";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { NoDataFound } from "@/components/customComponents/no-data-found";
+import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { Suspense } from "react";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export default function RolesPage() {
   return (

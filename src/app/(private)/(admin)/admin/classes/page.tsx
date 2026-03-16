@@ -1,14 +1,14 @@
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { Suspense } from "react";
 import { getClassesAction } from "./actions/server-actions";
-import RenderClassesDataTable from "./components/RenderClassesDataTable";
 import ClassesProvider from "./components/ClassesProvider";
 import EditClassDialog from "./components/EditClassDialog";
-import { Suspense } from "react";
+import RenderClassesDataTable from "./components/RenderClassesDataTable";
 
-import CreateClassDialog from "./components/CreateClassDialog";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import CreateClassDialog from "./components/CreateClassDialog";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export default function ClassesPage() {
   return (

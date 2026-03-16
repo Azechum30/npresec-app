@@ -1,5 +1,5 @@
+import { AdminAuthGuard } from "@/components/customComponents/admin-guard";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import { requireAdmin } from "@/lib/admin-guard";
 import { ReactNode, Suspense } from "react";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -11,7 +11,5 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 }
 
 const AdminGuard = async ({ children }: { children: ReactNode }) => {
-  await requireAdmin();
-
-  return <>{children}</>;
+  return <AdminAuthGuard>{children}</AdminAuthGuard>;
 };

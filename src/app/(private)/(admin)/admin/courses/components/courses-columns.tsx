@@ -1,12 +1,11 @@
+import { GenericActions } from "@/components/customComponents/GenericActions";
+import { RowSelections } from "@/components/customComponents/RowSelections";
+import { Button } from "@/components/ui/button";
+import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
 import { CourseResponseType } from "@/lib/types";
 import { ColumnDef } from "@tanstack/react-table";
-import moment from "moment";
-import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
-import { RowSelections } from "@/components/customComponents/RowSelections";
 import { useDeleteCourse } from "../hooks/use-delete-course";
-import { GenericActions } from "@/components/customComponents/GenericActions";
-import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
 
 export const useGetCourseColumns = () => {
   const { deletecourse, isPending } = useDeleteCourse();
@@ -43,9 +42,16 @@ export const useGetCourseColumns = () => {
     {
       header: "Department",
       cell: ({ row }) => {
-        return row.original.departments
-          .map((department) => (department.name ? department.name : ""))
-          .join(", ");
+        const departments = row.original.departments.map(
+          (department) => department.name,
+        );
+        return (
+          <div className="line-clamp-2">
+            {departments.map((name) => (
+              <div key={name}>{name}</div>
+            ))}
+          </div>
+        );
       },
     },
     {

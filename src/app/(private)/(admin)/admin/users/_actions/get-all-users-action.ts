@@ -1,9 +1,8 @@
 "use server";
-import * as Sentry from "@sentry/nextjs";
-import { prisma } from "@/lib/prisma";
-import { UserSelect } from "@/lib/types";
-import "server-only";
 import { getUserPermissions } from "@/lib/get-session";
+import * as Sentry from "@sentry/nextjs";
+import "server-only";
+import { getCachedUsers } from "../_utils/get-cached-users";
 
 export const getAllUsersAction = async () => {
   try {
@@ -12,17 +11,17 @@ export const getAllUsersAction = async () => {
       return { error: "Permission denied" };
     }
 
-    const users = await prisma.user.findMany({
-      select: UserSelect,
-      orderBy: {
-        username: "asc",
-      },
-    });
+    const users = await getCachedUsers();
 
     return { users: users || [] };
   } catch (e) {
     console.error("Could not fetch users", e);
     Sentry.captureException(e);
-    return { error: "Something went wrong while fetching users" };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? String(e)
+          : "Something went wrong while fetching users",
+    };
   }
 };

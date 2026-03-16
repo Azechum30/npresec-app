@@ -1,12 +1,12 @@
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
-import { CreateBoardMemberDialog } from "./_components/create-board-member-dialog";
-import { fetchBoardMembers } from "./_actions/fetch-board-members";
-import { RenderBoardMembersTable } from "./_components/render-board-table";
-import { EditBoardMember } from "./_components/edit-board-member";
-import { Suspense } from "react";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { Suspense } from "react";
+import { fetchBoardMembers } from "./_actions/fetch-board-members";
+import { CreateBoardMemberDialog } from "./_components/create-board-member-dialog";
+import { EditBoardMember } from "./_components/edit-board-member";
+import { RenderBoardMembersTable } from "./_components/render-board-table";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export default function AdminBoardOfGovernorsPage() {
   return (

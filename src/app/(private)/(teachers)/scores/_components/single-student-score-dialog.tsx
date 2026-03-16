@@ -1,4 +1,6 @@
 "use client";
+import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
+import LoadingState from "@/components/customComponents/Loading";
 import {
   Dialog,
   DialogContent,
@@ -6,14 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { SingleStudentScoreForm } from "../_forms/single-student-score-form";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { useFetchStudentScore } from "../_hooks/use-fetch-student-score";
-import LoadingState from "@/components/customComponents/Loading";
-import { useHandleStudentScoreUpdate } from "../_hooks/use-handle-student-score-update";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
+import { SingleStudentScoreForm } from "../_forms/single-student-score-form";
+import { useFetchStudentScore } from "../_hooks/use-fetch-student-score";
+import { useHandleStudentScoreUpdate } from "../_hooks/use-handle-student-score-update";
 
 export const SingleStudentScoreDialog = () => {
   const { id, dialogs, onClose } = useGenericDialog();
@@ -72,7 +72,7 @@ export const SingleStudentScoreDialog = () => {
       <Dialog
         open={dialogs["edit-student-score"] === true ? true : false}
         onOpenChange={() => onClose("edit-student-score")}>
-        <DialogContent className="w-full h-full md:max-h-[85vh] overflow-auto scrollbar-thin">
+        <DialogContent className="max-h-full">
           <DialogHeader>
             <DialogTitle>Update Student Score</DialogTitle>
             <DialogDescription>

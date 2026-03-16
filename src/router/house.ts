@@ -3,11 +3,12 @@ import { HouseSelect } from "@/lib/types";
 import { HouseSchema } from "@/lib/validation";
 import { authMiddleware } from "@/middlewares/auth";
 import { requirePermissions } from "@/middlewares/permissions";
-import { revalidatePath } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
 
 import { Prisma } from "@/generated/prisma/client";
 import { commonErrors } from "@/lib/commonErrors";
+import { getCachedHouses } from "@/utils/get-cached-houses";
 
 export const createHouse = authMiddleware
   .use(requirePermissions("create:houses"))
@@ -30,7 +31,7 @@ export const createHouse = authMiddleware
         },
       });
 
-      revalidatePath("/admin/houses");
+      revalidateTag("houses-list", "seconds");
       return {
         ...house,
         occupancy: HouseSchema.shape.occupancy.parse(house.occupancy),
@@ -67,20 +68,14 @@ export const getHouses = authMiddleware
             lastName: z.string(),
           })
           .nullable(),
-      }),
-    ),
+      })
+    )
   )
   .errors({
     ...commonErrors,
   })
-  .handler(async ({ context, errors }) => {
-    const houses = await prisma.house.findMany({
-      select: HouseSelect,
-    });
-
-    if (!houses.length) {
-      throw errors.NOT_FOUND();
-    }
+  .handler(async () => {
+    const houses = await getCachedHouses();
 
     return houses.map((house) => ({
       ...house,
@@ -102,12 +97,12 @@ export const getHouseById = authMiddleware
           lastName: z.string(),
         })
         .nullable(),
-    }),
+    })
   )
   .errors({
     ...commonErrors,
   })
-  .handler(async ({ context, input, errors }) => {
+  .handler(async ({ input, errors }) => {
     try {
       const house = await prisma.house.findUnique({
         where: { id: input.id },
@@ -138,21 +133,23 @@ export const deleteHouse = authMiddleware
   .errors({
     ...commonErrors,
   })
-  .handler(async ({ context, input, errors }) => {
+  .handler(async ({ input, errors }) => {
     try {
-      const house = await prisma.house.findUnique({
-        where: { id: input.id },
+      await prisma.$transaction(async (tsx) => {
+        const house = await tsx.house.findUnique({
+          where: { id: input.id },
+        });
+
+        if (!house) {
+          throw errors.NOT_FOUND();
+        }
+
+        await tsx.house.delete({
+          where: { id: input.id },
+        });
       });
 
-      if (!house) {
-        throw errors.NOT_FOUND();
-      }
-
-      await prisma.house.delete({
-        where: { id: input.id },
-      });
-
-      revalidatePath("/admin/houses");
+      revalidateTag("houses-list", "seconds");
 
       return { success: true };
     } catch (err: any) {
@@ -170,29 +167,34 @@ export const updateHouse = authMiddleware
   .errors({
     ...commonErrors,
   })
-  .handler(async ({ context, input, errors }) => {
+  .handler(async ({ input, errors }) => {
     try {
       const { id, ...data } = input;
-      const house = await prisma.house.findUnique({
-        where: { id },
+
+      const updatedHouse = await prisma.$transaction(async (tsx) => {
+        const house = await tsx.house.findUnique({
+          where: { id },
+        });
+
+        if (!house) {
+          throw errors.NOT_FOUND();
+        }
+
+        return await tsx.house.update({
+          where: { id },
+          data: {
+            name: data.name,
+            houseGender: data.houseGender,
+            residencyType: data.residencyType,
+            occupancy: data.occupancy,
+            houseMaster: data.houseMasterId
+              ? { connect: { id: data.houseMasterId } }
+              : { disconnect: true },
+          },
+        });
       });
 
-      if (!house) {
-        throw errors.NOT_FOUND();
-      }
-
-      const updatedHouse = await prisma.house.update({
-        where: { id },
-        data: {
-          name: data.name,
-          houseGender: data.houseGender,
-          residencyType: data.residencyType,
-          occupancy: data.occupancy,
-          houseMaster: data.houseMasterId
-            ? { connect: { id: data.houseMasterId } }
-            : { disconnect: true },
-        },
-      });
+      revalidateTag("houses-list", "seconds");
 
       return {
         ...updatedHouse,
@@ -224,37 +226,39 @@ export const bulkdeleteHouses = authMiddleware
   .errors({
     ...commonErrors,
   })
-  .handler(async ({ context, input, errors }) => {
+  .handler(async ({ input, errors }) => {
     try {
       const { ids } = input;
 
-      const existingHouses = await prisma.house.findMany({
-        where: { id: { in: ids } },
-      });
+      const deletedResults = await prisma.$transaction(async (tsx) => {
+        const existingHouses = await tsx.house.findMany({
+          where: { id: { in: ids } },
+        });
 
-      const ExistingIDsMap = new Map(ids.map((id) => [id, false]));
+        const ExistingIDsMap = new Map(ids.map((id) => [id, false]));
 
-      for (const record of existingHouses) {
-        if (ExistingIDsMap.has(record.id)) {
-          ExistingIDsMap.set(record.id, true);
+        for (const record of existingHouses) {
+          if (ExistingIDsMap.has(record.id)) {
+            ExistingIDsMap.set(record.id, true);
+          }
         }
-      }
 
-      const matchIds = Array.from(ExistingIDsMap.entries())
-        .filter(([id, found]) => found)
-        .map(([id, found]) => id);
+        const matchIds = Array.from(ExistingIDsMap.entries())
+          .filter(([id, found]) => found)
+          .map(([id, found]) => id);
 
-      if (!matchIds.length) {
-        throw errors.NOT_FOUND();
-      }
+        if (!matchIds.length) {
+          throw errors.NOT_FOUND();
+        }
 
-      const deleteResult = await prisma.house.deleteMany({
-        where: { id: { in: matchIds } },
+        return await tsx.house.deleteMany({
+          where: { id: { in: matchIds } },
+        });
       });
 
-      revalidatePath("/admin/houses");
+      revalidateTag("houses-list", "seconds");
 
-      return { success: true, count: deleteResult.count };
+      return { success: true, count: deletedResults.count };
     } catch (err: any) {
       if (err instanceof Prisma.PrismaClientValidationError) {
         throw errors.BAD_REQUEST();

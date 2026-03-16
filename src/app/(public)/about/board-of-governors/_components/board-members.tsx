@@ -1,21 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   ArrowRight,
-  User,
   Building2,
-  Star,
   Crown,
-  Users,
   Sparkles,
+  Star,
+  User,
+  Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 type BoardMembersProps = {
   id: string;
@@ -75,12 +75,13 @@ export const BoardMembers = ({
     roleGradients[role as keyof typeof roleGradients] ||
     "from-gray-500 to-slate-500";
 
+  const slug = id;
+
   return (
     <Card
       className="group relative overflow-hidden bg-background/60 backdrop-blur-xl border-border/50 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] cursor-default"
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+      onMouseLeave={() => setIsHovered(false)}>
       {/* Gradient background overlay */}
       <div
         className={`
@@ -95,8 +96,7 @@ export const BoardMembers = ({
         <div className="absolute top-4 right-4 z-10">
           <Badge
             variant="secondary"
-            className="bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30 backdrop-blur-sm"
-          >
+            className="bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30 backdrop-blur-sm">
             <div className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse" />
             Active
           </Badge>
@@ -124,8 +124,7 @@ export const BoardMembers = ({
                     ? `bg-gradient-to-br ${gradient} shadow-lg scale-110`
                     : "bg-gradient-to-br from-muted to-muted/60"
                 }
-              `}
-            >
+              `}>
               <div className="w-full h-full rounded-full overflow-hidden bg-background">
                 <Image
                   src={imageError ? "/no-avatar.jpg" : pictureUrl}
@@ -147,8 +146,7 @@ export const BoardMembers = ({
                     ? `bg-gradient-to-br ${gradient} text-white scale-110`
                     : "bg-background border-2 border-border text-muted-foreground"
                 }
-              `}
-            >
+              `}>
               <RoleIcon className="w-4 h-4" />
             </div>
           </div>
@@ -185,8 +183,7 @@ export const BoardMembers = ({
                 <Building2 className="w-4 h-4 text-primary" />
                 <span
                   className="text-sm text-foreground text-right max-w-[120px] truncate"
-                  title={affiliation}
-                >
+                  title={affiliation}>
                   {affiliation}
                 </span>
               </div>
@@ -209,8 +206,7 @@ export const BoardMembers = ({
         <Link href={`/about/board-of-governors/${id}`} className="block w-full">
           <Button
             variant="ghost"
-            className="w-full group/btn relative overflow-hidden bg-transparent hover:bg-primary/5 border border-border hover:border-primary/30 transition-all duration-300"
-          >
+            className="w-full group/btn relative overflow-hidden bg-transparent hover:bg-primary/5 border border-border hover:border-primary/30 transition-all duration-300">
             {/* Button gradient overlay */}
             <div
               className={`

@@ -1,4 +1,4 @@
-import { optional, z } from "zod";
+import { z } from "zod";
 
 const optionalField = <T extends z.ZodTypeAny>(schema: T) =>
   schema.optional().describe("isOptional:true");
@@ -477,7 +477,7 @@ export const GradeSchema = z
     maxScore: z.coerce
       .number()
       .min(0, "Max score must be greater than 0")
-      .max(100, "Max score must be less than 100"),
+      .max(100, "Max score must be less than or equal to 100"),
     weight: z.coerce
       .number()
       .min(0, "Weight must be greater than 0")
@@ -487,6 +487,10 @@ export const GradeSchema = z
       .number()
       .min(2000, "Academic year must be greater than 2000"),
     remarks: z.string().optional(),
+  })
+  .refine((data) => data.maxScore !== 0, {
+    path: ["maxScore"],
+    message: "Maximum score cannot be zero(0)",
   })
   .superRefine((data, ctx) => {
     data.scores.forEach((scoreOj, index) => {
@@ -556,7 +560,7 @@ export type GenerateTranscriptType = z.infer<typeof GenerateTranscriptSchema>;
 export const UserPermissionsFormSchema = z
   .object({
     userId: z.string().min(1, "User ID is required"),
-    username: z.string().min(1, "Username is required"),
+    roleId: z.array(z.string()).min(1, "Role ID is required"),
     permissions: z
       .array(z.string())
       .min(1, "At least one permission is required"),
@@ -570,7 +574,7 @@ export type UserPermissionsFormType = z.infer<typeof UserPermissionsFormSchema>;
 
 export const UpdateUserRoleSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
-  roleId: z.string().min(1, "Role ID is required"),
+  roleId: z.array(z.string()),
 });
 
 export type UserRoleUpdateType = z.infer<typeof UpdateUserRoleSchema>;
@@ -617,7 +621,6 @@ export const BioSchema = z.object({
   username: z.string().min(3),
   email: z.string().email(),
   fullName: z.string().min(1),
-  role: z.string().min(1),
   image: z.union([z.string(), z.instanceof(File)]).optional(),
   subscribeToNewsletter: z.boolean().optional(),
   bio: z
@@ -805,3 +808,83 @@ export const RoomSchema = z.object({
 });
 
 export type RoomType = z.infer<typeof RoomSchema>;
+
+export const ChangePasswordSchema = z
+  .object({
+    oldPassword: z.string({ required_error: "old password field is required" }),
+    newPassword: z
+      .string({ required_error: "new password field is required!" })
+      .min(8, "password must be at least 8 characters long")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@!#$%&*?])[A-Za-z\d@!#$%&*?]{8,}$/,
+        "password must contain at least 1 uppercase, lowercase, digit, and a special character",
+      ),
+    confirmNewPassword: z
+      .string({ required_error: "new password field is required!" })
+      .min(8, "password must be at least 8 characters long")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@!#$%&*?])[A-Za-z\d@!#$%&*?]{8,}$/,
+        "password must contain at least 1 uppercase, lowercase, digit, and a special character",
+      ),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    path: ["confirmNewPassword"],
+    message: "Passwords do not match",
+  });
+
+export type ChangePasswordType = z.infer<typeof ChangePasswordSchema>;
+
+export const StudentGradesFilterSchema = z.object({
+  classId: z.string().min(1, "Class ID is required"),
+  academicYear: z.coerce
+    .number()
+    .min(2000, "Academic year must be greater than 2000")
+    .max(2100, "Academic year must be less than 2100"),
+  semester: z.enum(Semester),
+});
+
+export type StudentGradesFilterType = z.infer<typeof StudentGradesFilterSchema>;
+
+export const AssessmentTypes = [
+  "Assignment",
+  "Midterm",
+  "Project",
+  "Examination",
+] as const;
+
+export const AssessmentTimelineSchema = z.object({
+  courseId: z.string().min(1, "A course Id is required"),
+  assessmentType: z.enum(AssessmentTypes, {
+    required_error:
+      "Assessment mode can only have either 'Assignment' or 'Midterm' or 'Project' or 'Examination' values.",
+  }),
+  academicYear: z.coerce
+    .number()
+    .positive()
+    .min(
+      new Date().getFullYear() - 5,
+      `Academic year can only be above ${new Date().getFullYear() - 5}`,
+    )
+    .max(
+      new Date().getFullYear(),
+      "Academic year cannot exceed the current year",
+    ),
+  semester: z.enum(Semester, {
+    required_error: "Semester can only have either 'First' or 'Second' values.",
+  }),
+
+  startDate: z.date(),
+  endDate: z.date(),
+});
+
+export type AssessmentTimeline = z.infer<typeof AssessmentTimelineSchema>;
+
+export const BulkAssessmentTimelinesSchema = AssessmentTimelineSchema.omit({
+  courseId: true,
+}).extend({
+  courseIds: z.array(z.string()).min(1, "At least one course Id is required!"),
+});
+
+export type BulkAssessmentTimelinesType = z.infer<
+  typeof BulkAssessmentTimelinesSchema
+>;

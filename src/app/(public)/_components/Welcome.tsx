@@ -1,30 +1,29 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { PublicMainContainer } from "./PublicMainContainer";
-import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
-import {
-  ArrowRight,
-  BookOpenText,
-  Expand,
-  Users2,
-  Award,
-  UserRoundCheckIcon,
-  Quote,
-  ExternalLink,
-  ChevronRight,
-  Sparkles,
-} from "lucide-react";
-import { CarouselComponent } from "./CarouselComponent";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Route } from "next";
 import CarouselImage1 from "@/../public/carousel-image1.jpg";
 import CarouselImage2 from "@/../public/carousel-image2.jpg";
+import { buttonVariants } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {
+  ArrowRight,
+  Award,
+  BookOpenText,
+  ChevronRight,
+  Expand,
+  ExternalLink,
+  Quote,
+  Sparkles,
+  UserRoundCheckIcon,
+  Users2,
+} from "lucide-react";
+import { Route } from "next";
+import Link from "next/link";
+import { useRef, useState } from "react";
+import { CarouselComponent } from "./CarouselComponent";
+import { PublicMainContainer } from "./PublicMainContainer";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -128,7 +127,7 @@ export const Welcome = () => {
             duration: 1,
             ease: "back.out(1.7)",
           },
-          "-=0.8",
+          "-=0.8"
         )
 
         // Title with skew correction
@@ -141,7 +140,7 @@ export const Welcome = () => {
             duration: 1.2,
             ease: "power2.out",
           },
-          "-=0.6",
+          "-=0.6"
         )
 
         // Content sections with stagger
@@ -155,7 +154,7 @@ export const Welcome = () => {
             stagger: 0.3,
             ease: "power2.out",
           },
-          "-=0.8",
+          "-=0.8"
         )
 
         // Carousel with 3D flip
@@ -168,7 +167,7 @@ export const Welcome = () => {
             duration: 1.5,
             ease: "back.out(1.3)",
           },
-          "-=1.2",
+          "-=1.2"
         )
 
         // Key links with wave effect
@@ -186,7 +185,7 @@ export const Welcome = () => {
             },
             ease: "back.out(1.2)",
           },
-          "-=1",
+          "-=1"
         )
 
         // Read more button
@@ -198,7 +197,7 @@ export const Welcome = () => {
             duration: 0.8,
             ease: "back.out(1.4)",
           },
-          "-=0.4",
+          "-=0.4"
         );
 
       // Floating animations
@@ -228,7 +227,7 @@ export const Welcome = () => {
         ScrollTrigger.getAll().forEach((st) => st.kill());
       };
     },
-    { scope: container },
+    { scope: container }
   );
 
   // Link hover animations
@@ -257,8 +256,7 @@ export const Welcome = () => {
   return (
     <section
       ref={container}
-      className="welcome-container relative bg-gradient-to-b from-background via-accent/30 to-background py-16 md:py-24 overflow-hidden"
-    >
+      className="welcome-container relative bg-gradient-to-b from-background via-accent/30 to-background py-8 md:py-24 overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
@@ -319,9 +317,8 @@ export const Welcome = () => {
                   size: "lg",
                   className:
                     "hover:bg-primary hover:text-primary-foreground transition-all duration-300",
-                },
-              )}`}
-            >
+                }
+              )}`}>
               <span className="group-hover:tracking-wider transition-all duration-300">
                 Read More
               </span>
@@ -361,18 +358,15 @@ export const Welcome = () => {
                 return (
                   <div
                     key={link.name}
-                    className={`key-link-item key-link-${index} group relative`}
-                  >
+                    className={`key-link-item key-link-${index} group relative`}>
                     <Link
                       href={link.href as Route}
                       className={`block p-4 rounded-xl ${link.bgColor} border border-border/30 hover:border-current transition-all duration-300`}
                       onMouseEnter={() => handleLinkHover(index, true)}
-                      onMouseLeave={() => handleLinkHover(index, false)}
-                    >
+                      onMouseLeave={() => handleLinkHover(index, false)}>
                       <div className="flex items-center gap-4">
                         <div
-                          className={`link-icon p-2 rounded-lg bg-gradient-to-br ${link.color} text-white transition-transform duration-300`}
-                        >
+                          className={`link-icon p-2 rounded-lg bg-gradient-to-br ${link.color} text-white transition-transform duration-300`}>
                           <Icon className="w-5 h-5" />
                         </div>
 
@@ -421,8 +415,7 @@ export const Welcome = () => {
                     size: "sm",
                     variant: "outline",
                     className: "text-xs",
-                  })}
-                >
+                  })}>
                   <ExternalLink className="w-3 h-3 mr-1" />
                   Contact
                 </Link>

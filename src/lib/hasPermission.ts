@@ -12,7 +12,7 @@ type PermissionCheckOptions = {
  */
 export async function hasPermissions(
   permissionNames: string | string[],
-  options: PermissionCheckOptions = { requireAll: false }
+  options: PermissionCheckOptions = { requireAll: false },
 ): Promise<boolean> {
   const user = await getAuthUser();
   if (!user) return false;
@@ -21,16 +21,14 @@ export async function hasPermissions(
     ? permissionNames
     : [permissionNames];
 
-  // Get all permission names the user has
-  const userPermissions = user.permissions?.map((p) => p.name);
-  const rolePermissions = user.role?.permissions?.map((p) => p.name) || [];
-  const allPermissions = [...(userPermissions as string[]), ...rolePermissions];
+  const rolePermissions =
+    user.roles?.flatMap((rs) => rs.role.permissions.flatMap((p) => p.name)) ||
+    [];
+  const allPermissions = [...rolePermissions];
 
   if (options.requireAll) {
-    // User must have ALL specified permissions
     return permissionsToCheck.every((perm) => allPermissions.includes(perm));
   }
 
-  // User needs at least ONE of the specified permissions
   return permissionsToCheck.some((perm) => allPermissions.includes(perm));
 }

@@ -1,15 +1,16 @@
 "use client";
 
+import CheckboxWithArrayValues from "@/components/customComponents/CheckboxWithValues";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import LoadingButton from "@/components/customComponents/LoadingButton";
-import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
 import { Form } from "@/components/ui/form";
+import { Skeleton } from "@/components/ui/skeleton";
 import { UserRoleUpdateType } from "@/lib/validation";
 import { Plus, SaveIcon } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { getRolesAction } from "../_actions/get-roles";
 import { toast } from "sonner";
+import { getRolesAction } from "../_actions/get-roles";
 
 type FormProps = {
   onSubmit: (data: UserRoleUpdateType) => void;
@@ -30,7 +31,7 @@ export const UpdateUserRoleForm = ({
       ? defaultValues
       : {
           userId: "",
-          roleId: "",
+          roleId: [],
         },
   });
 
@@ -65,17 +66,38 @@ export const UpdateUserRoleForm = ({
         </div>
 
         {isFetchingRolePending ? (
-          <div>Fetching Roles...</div>
+          <div className="flex flex-col space-y-2">
+            Fetching Roles...
+            <Skeleton className="w-full h-6 animate-pulse" />
+            <Skeleton className="w-md h-6 animate-pulse" />
+            <Skeleton className="w-sm h-6 animate-pulse" />
+          </div>
         ) : (
-          <SelectWithLabel
-            name="roleId"
-            fieldTitle={id ? "Update Role" : "Role"}
-            disabled={isPending}
-            data={roles ?? []}
-            valueKey="id"
-            selectedKey="name"
-            placeholder="Select Role"
-          />
+          <>
+            {/* <SelectWithLabel
+              name="roleId"
+              fieldTitle={id ? "Update Role" : "Role"}
+              disabled={isPending}
+              data={roles ?? []}
+              valueKey="id"
+              selectedKey="name"
+              placeholder="Select Role"
+            /> */}
+
+            <CheckboxWithArrayValues
+              name="roleId"
+              fieldTitle="Roles"
+              data={
+                roles?.flatMap((rs) => ({
+                  ...rs,
+                  name: rs.name.split("_").join(" "),
+                })) ?? []
+              }
+              labelKey="name"
+              valueKey="id"
+              className="space-y-2"
+            />
+          </>
         )}
 
         {!isFetchingRolePending && (

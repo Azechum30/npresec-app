@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   try {
@@ -14,17 +14,23 @@ export async function GET(request: Request) {
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { role: true },
+      include: {
+        roles: {
+          select: {
+            role: true,
+          },
+        },
+      },
     });
 
     return NextResponse.json({
       valid: true,
-      role: user?.role?.name,
+      role: user?.roles.flatMap((role) => role.role.name),
     });
   } catch (error) {
     return NextResponse.json(
       { error: "Authentication service unavailable" },
-      { status: 503 }
+      { status: 503 },
     );
   }
 }

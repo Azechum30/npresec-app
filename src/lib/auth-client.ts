@@ -1,5 +1,5 @@
-import { createAuthClient } from "better-auth/react";
 import { inferAdditionalFields } from "better-auth/client/plugins";
+import { createAuthClient } from "better-auth/react";
 import { auth } from "./auth";
 
 export const authClient = createAuthClient({
@@ -9,18 +9,21 @@ export const authClient = createAuthClient({
 
 export type ExtendedSession = typeof authClient.$Infer.Session & {
   user: {
-    role: {
-      id: string;
-      name: string;
-      permissions?: {
-        id: string;
-        name: string;
-      }[];
-    };
-    permissions?: {
-      id: string;
-      name: string;
-    }[];
+    roles?:
+      | {
+          id: string;
+          role?: {
+            id: string;
+            name: string;
+            permissions?:
+              | {
+                  id: string;
+                  name: string;
+                }[]
+              | null;
+          };
+        }[]
+      | null;
   };
 };
 

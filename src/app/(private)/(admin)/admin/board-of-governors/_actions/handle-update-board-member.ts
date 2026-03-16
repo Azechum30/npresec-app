@@ -1,12 +1,11 @@
 "use server";
 import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
-import { env } from "@/lib/server-only-actions/validate-env";
 import { BoardOfGovernorsSchema } from "@/lib/validation";
-import { client } from "@/utils/qstash";
+import { triggerImageUpload } from "@/utils/trigger-image-upload";
 import * as Sentry from "@sentry/nextjs";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
-import { revalidatePath } from "next/cache";
 
 const EditSchema = BoardOfGovernorsSchema.extend({
   id: z.string().min(1, "Please provide a valid ID"),
@@ -14,7 +13,7 @@ const EditSchema = BoardOfGovernorsSchema.extend({
 
 export const handleUpdateBoardMemberAction = async (values: unknown) => {
   try {
-    const { hasPermission } = await getUserPermissions("edit:teachers");
+    const { hasPermission } = await getUserPermissions("edit:staff");
     if (!hasPermission) {
       console.error("Permission denied");
       return { error: "Permission denied" };
@@ -30,11 +29,7 @@ export const handleUpdateBoardMemberAction = async (values: unknown) => {
 
     const boardMember = await prisma.boardMember.update({
       where: { id },
-      data: {
-        ...rest,
-        picture:
-          photo_url instanceof File ? "Upload Pending" : (photo_url as string),
-      },
+      data: rest,
     });
 
     if (!boardMember) {
@@ -43,31 +38,23 @@ export const handleUpdateBoardMemberAction = async (values: unknown) => {
     }
 
     if (photo_url instanceof File) {
-      const arrayBuffer = await (photo_url as File).arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-
-      const jobData = {
-        file: {
-          buffer: buffer.toString("base64"),
-          name: (photo_url as File).name,
-          type: (photo_url as File).type,
-        },
-        entityId: boardMember.id,
-        entityType: "boardMember" as const,
-        folder: "board-of-governors",
-      };
-
-      await client.publishJSON({
-        url: `${env.NEXT_PUBLIC_URL}/api/images/uploads`,
-        body: jobData,
-      });
+      void triggerImageUpload(
+        photo_url as File,
+        boardMember.id,
+        "board-members",
+        "boardMember" as const
+      );
     }
-
-    revalidatePath("/admin/board-of-governors");
+    void revalidateTag("board-members-list", "seconds");
     return { boardMember };
   } catch (e) {
     console.error("Could not update board member", e);
     Sentry.captureException(e);
-    return { error: "Something went wrong!" };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? String(e)
+          : "Something went wrong!",
+    };
   }
 };

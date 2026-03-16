@@ -114,3 +114,33 @@ export const RANKS = {
     "Assistant Librarian",
   ],
 };
+
+export const ASSESSMENT_WEIGHTS: Record<string, number> = {
+  Assignment: 0.1,
+  Midterm: 0.3,
+  Project: 0.2,
+  Examination: 0.4,
+};
+
+export const GRADING_SCALE = [
+  { min: 80, letter: "A1", point: 4.0 },
+  { min: 70, letter: "B2", point: 3.5 },
+  { min: 60, letter: "B3", point: 3.0 },
+  { min: 55, letter: "C4", point: 2.5 },
+  { min: 50, letter: "C5", point: 2.0 },
+  { min: 45, letter: "C6", point: 1.5 },
+  { min: 40, letter: "D7", point: 1.0 },
+  { min: 35, letter: "E8", point: 0.5 },
+  { min: 0, letter: "F9", point: 0.0 },
+];
+export const GRADING_SYSTEM = [
+  { range: "80 - 100", grade: "A1", remark: "Excellent" },
+  { range: "70 - 79", grade: "B2", remark: "Very Good" },
+  { range: "60 - 69", grade: "B3", remark: "Good" },
+  { range: "55 - 59", grade: "C4", remark: "Credit" },
+  { range: "50 - 54", grade: "C5", remark: "Credit" },
+  { range: "45 - 49", grade: "C6", remark: "Credit" },
+  { range: "40 - 44", grade: "D7", remark: "Pass" },
+  { range: "35 - 39", grade: "E8", remark: "Pass" },
+  { range: "00 - 34", grade: "F9", remark: "Fail" },
+];

@@ -1,7 +1,7 @@
-import { useTransition, useState, useEffect } from "react";
-import { getBoardMember } from "../_actions/handle-get-board-member-details";
-import { BoardOfGovernorsType } from "@/lib/validation";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
+import { BoardOfGovernorsType } from "@/lib/validation";
+import { useEffect, useState, useTransition } from "react";
+import { getBoardMember } from "../_actions/handle-get-board-member-details";
 
 export const usePrefetchBoardMember = () => {
   const [fetchError, setFetchError] = useState("");
@@ -35,9 +35,13 @@ export const usePrefetchBoardMember = () => {
 
         setFetchError("");
         setIsFetchSuccess(true);
+
         setValues({
           ...boardMember,
-          photo_url: boardMember.picture,
+          photo_url:
+            boardMember.picture && boardMember.picture.startsWith("https")
+              ? boardMember.picture
+              : null,
         });
       });
     };

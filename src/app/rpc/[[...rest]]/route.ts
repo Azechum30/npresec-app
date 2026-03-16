@@ -1,14 +1,29 @@
 import "server-only";
 
-import { RPCHandler } from "@orpc/server/fetch";
 import { router } from "@/router/router";
+import { onError } from "@orpc/client";
+import { RPCHandler } from "@orpc/server/fetch";
+import { CORSPlugin } from "@orpc/server/plugins";
+import { headers } from "next/headers";
 
-const handler = new RPCHandler(router);
+const handler = new RPCHandler(router, {
+  interceptors: [
+    onError((error) => {
+      console.error(error);
+    }),
+  ],
+  plugins: [
+    new CORSPlugin({
+      origin: (origin, options) => origin,
+      allowMethods: ["GET", "POST", "DELETE", "PATCH", "HEAD", "PUT"],
+    }),
+  ],
+});
 
 async function handleRequest(request: Request) {
   const { response } = await handler.handle(request, {
     prefix: "/rpc",
-    context: {},
+    context: { headers: await headers() },
   });
 
   return response ?? new Response("Not Found", { status: 404 });

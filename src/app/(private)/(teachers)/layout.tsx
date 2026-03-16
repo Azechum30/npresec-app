@@ -1,8 +1,7 @@
-import React, { ReactNode, Suspense } from "react";
-import { redirect } from "next/navigation";
-import { getAuthUser } from "@/lib/get-session";
-import { forbidden } from "next/navigation";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { hasRole } from "@/lib/get-session";
+import { redirect } from "next/navigation";
+import React, { ReactNode, Suspense } from "react";
 
 export default function TeachersLayout({
   children,
@@ -11,16 +10,15 @@ export default function TeachersLayout({
 }) {
   return (
     <Suspense fallback={<FallbackComponent />}>
-      <StaffAuthGuard>{children}</StaffAuthGuard>;
+      <StaffAuthGuard>{children}</StaffAuthGuard>
     </Suspense>
   );
 }
 
 const StaffAuthGuard = async ({ children }: { children: ReactNode }) => {
-  const user = await getAuthUser();
-  if (!user) {
-    redirect("/sign-in");
+  const userRole = await hasRole("teaching_staff");
+  if (!userRole) {
+    redirect("/403");
   }
-  if (user.role?.name !== "teaching_staff") forbidden();
   return <>{children}</>;
 };

@@ -1,9 +1,9 @@
 "use client";
 
-import { ReactNode, useEffect, useState, startTransition } from "react";
-import { useRouter } from "next/navigation";
-import SessionProvider from "./SessionProvider";
 import { getAuthUser } from "@/lib/get-session";
+import { useRouter } from "next/navigation";
+import { ReactNode, startTransition, useEffect, useState } from "react";
+import SessionProvider from "./SessionProvider";
 
 interface ClientAuthGuardProps {
   children: ReactNode;

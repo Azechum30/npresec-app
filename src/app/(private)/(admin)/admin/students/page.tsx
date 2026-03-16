@@ -1,18 +1,19 @@
+import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import Link from "next/link";
-import { Suspense } from "react";
-import { StudentDataTable } from "./components/render-student-datatable";
-import { getStudents } from "./actions/action";
-import StudentProvider from "./components/StudentProvider";
-import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { Metadata } from "next";
+import Link from "next/link";
+import { connection } from "next/server";
+import { Suspense } from "react";
+import { getStudents } from "./actions/action";
+import { StudentDataTable } from "./components/render-student-datatable";
+import StudentProvider from "./components/StudentProvider";
 
 export const metadata: Metadata = {
   title: "Admin - Students",
 };
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export default function StudentsPage() {
   return (
@@ -38,6 +39,7 @@ export default function StudentsPage() {
 }
 
 const RenderStudentsTable = async () => {
+  await connection();
   const students = await getStudents();
 
   return <StudentDataTable initialState={students} />;

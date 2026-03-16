@@ -1,18 +1,17 @@
 import {
-  ColumnDef,
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
-} from "@tanstack/react-table";
-import React from "react";
-import {
   Table,
-  TableHead,
-  TableRow,
   TableBody,
   TableCell,
+  TableHead,
   TableHeader,
+  TableRow,
 } from "@/components/ui/table";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 
 type BaseDatatableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
@@ -23,7 +22,6 @@ export const BaseDataTable = <TData, TValue>({
   columns,
   data,
 }: BaseDatatableProps<TData, TValue>) => {
-   
   const table = useReactTable({
     columns,
     data,
@@ -37,11 +35,9 @@ export const BaseDataTable = <TData, TValue>({
           {table.getHeaderGroups().map((headerGroups) => (
             <TableRow
               key={headerGroups.id}
-              className="bg-blue-50 dark:bg-blue-900/20">
+              className="bg-gradient-to-r from-secondary/15 to-primary/15">
               {headerGroups.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  className="text-blue-800 dark:text-blue-200">
+                <TableHead key={header.id}>
                   {flexRender(
                     header.column.columnDef.header,
                     header.getContext()

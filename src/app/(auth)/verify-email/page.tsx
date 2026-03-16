@@ -1,4 +1,3 @@
-import { getAuthUser } from "@/lib/get-session";
 import LoadingState from "@/components/customComponents/Loading";
 import { ResendVerificationEmailButton } from "@/components/customComponents/resend-verification-email";
 import {
@@ -8,13 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getAuthUser, getUserRole, isEmailVerified } from "@/lib/get-session";
 import { unauthorized } from "next/navigation";
 
+import { priorityRoles, UserRole } from "@/auth-types";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { auth } from "@/lib/auth";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export default function VerifyEmailPage() {
   return (
@@ -36,14 +36,21 @@ export default function VerifyEmailPage() {
 }
 
 const RenderResendVerificationButton = async () => {
-  const user = (await getAuthUser()) as typeof auth.$Infer.Session.user;
-  if (!user) return unauthorized();
+  const [userRole, hasEmailVerified, user] = await Promise.all([
+    getUserRole(),
+    isEmailVerified(),
+    getAuthUser(),
+  ]);
+  const priorityRole = priorityRoles.find((r) =>
+    userRole?.includes(r as UserRole)
+  );
+  if (!priorityRole || !user) return unauthorized();
 
-  if (user.emailVerified && user.role?.name === "admin")
+  if (hasEmailVerified && priorityRole === "admin")
     return redirect("/admin/dashboard");
-  if (user.emailVerified && user.role?.name === "teacher")
+  if (hasEmailVerified && priorityRole === "teacher")
     return redirect("/teachers");
-  if (user.emailVerified && user.role?.name === "student")
+  if (hasEmailVerified && priorityRole === "student")
     return redirect("/students");
 
   return <ResendVerificationEmailButton email={user.email} />;

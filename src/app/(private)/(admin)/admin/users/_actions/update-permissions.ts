@@ -1,10 +1,10 @@
 "use server";
-import "server-only";
-import * as Sentry from "@sentry/nextjs";
 import { getUserPermissions } from "@/lib/get-session";
-import { UserPermissionsFormSchema } from "@/lib/validation";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { UserPermissionsFormSchema } from "@/lib/validation";
+import * as Sentry from "@sentry/nextjs";
+import { revalidateTag } from "next/cache";
+import "server-only";
 
 export const UpdateUserPermissions = async (values: unknown) => {
   try {
@@ -23,23 +23,44 @@ export const UpdateUserPermissions = async (values: unknown) => {
       return { error: errorMessage };
     }
 
-    const { userId, username, permissions } = data;
+    const { userId, roleId, permissions } = data;
 
-    const updateUser = await prisma.user.update({
-      where: { id: userId },
-      data: { permissions: { set: permissions.map((p) => ({ id: p })) } },
-    });
+    const userPermissionsUpdateTransaction = await prisma.$transaction(
+      async (tsx) => {
+        const user = await tsx.userRole.findFirst({
+          where: { userId, roleId: { in: roleId } },
+        });
 
-    if (!updateUser) {
+        if (!user) {
+          throw new Error("User does not have the specified role");
+        }
+
+        return await tsx.role.update({
+          where: { id: user.roleId },
+          data: {
+            permissions: {
+              set: permissions.map((p) => ({ id: p })),
+            },
+          },
+        });
+      },
+    );
+
+    if (!userPermissionsUpdateTransaction) {
       console.error("Could not update user permissions");
       return { error: "Could not update user permissions" };
     }
 
-    revalidatePath("/admin/users");
+    revalidateTag("users-list", "seconds");
     return { success: true };
   } catch (e) {
     console.error("Could not update user permissions", e);
     Sentry.captureException(e);
-    return { error: "Something went wrong while updating user permissions" };
+    return {
+      error:
+        process.env.NODE_ENV === "development"
+          ? String(e)
+          : "Something went wrong!",
+    };
   }
 };

@@ -1,18 +1,18 @@
+import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { Metadata } from "next";
+import { connection } from "next/server";
+import { Suspense } from "react";
+import { getStaff } from "./actions/server";
+import CreateStaffDialog from "./components/CreateStaffDialog";
 import EditStaffDialog from "./components/EditStaffDialog";
 import RenderStaffData from "./components/Render-staff-data";
 import StaffBulkUploadProvider from "./components/StaffBulkUploadProvider";
-import CreateStaffDialog from "./components/CreateStaffDialog";
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
-import { Suspense } from "react";
-import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import StaffDataFetcher from "./components/StaffDataFetcher";
-import { getStaff } from "./actions/server";
-import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Admin - Staff",
 };
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export default function StaffPage() {
   return (
@@ -34,6 +34,7 @@ export default function StaffPage() {
 }
 
 const RenderStaffDataTable = async () => {
+  await connection();
   const data = await getStaff();
   return <RenderStaffData initialData={data} />;
 };

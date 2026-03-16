@@ -1,8 +1,11 @@
 import ThemeProvider from "@/components/customComponents/theme-provider";
 import RouteTrackingProvider from "@/components/providers/RouteTrackingProvider";
 import { Toaster } from "@/components/ui/sonner";
+import "@/lib/orpc.server";
+import { Loader } from "lucide-react";
 import type { Metadata } from "next";
 import { Poppins, Roboto } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -40,12 +43,18 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange={true}
-        >
-          <RouteTrackingProvider>
-            <Toaster richColors duration={5000} />
-            {children}
-          </RouteTrackingProvider>
+          disableTransitionOnChange={true}>
+          <Suspense
+            fallback={
+              <div className="w-full h-screen flex justify-center items-center ">
+                <Loader className="size-16 text-primary animate-spin" />
+              </div>
+            }>
+            <RouteTrackingProvider>
+              <Toaster richColors duration={5000} />
+              {children}
+            </RouteTrackingProvider>
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>

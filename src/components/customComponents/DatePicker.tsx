@@ -1,26 +1,25 @@
 "use client";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
-  PopoverTrigger,
   PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
-import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import {
   format,
-  getYear,
-  getMonth,
   getDate,
+  getMonth,
+  getYear,
+  isBefore,
+  isToday,
   isValid,
   setMonth,
   setYear,
-  isToday,
-  isAfter,
-  isBefore,
 } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { Dispatch, SetStateAction, useMemo, useState } from "react";
+import { Button } from "../ui/button";
 import {
   Select,
   SelectContent,
@@ -66,7 +65,7 @@ export default function DatePicker({
     if (restrictToCurrentDay) return [currentYear];
     return Array.from(
       { length: endYear - startYear + 1 },
-      (_, i) => startYear + i
+      (_, i) => startYear + i,
     );
   }, [startYear, endYear, restrictToCurrentDay, currentYear]);
 
@@ -82,7 +81,7 @@ export default function DatePicker({
     return Array.from({ length: fromMonth ? fromMonth : 12 }, (_, i) => ({
       label: new Date(0, fromMonth ? i + fromMonth : i).toLocaleString(
         "default",
-        { month: "long" }
+        { month: "long" },
       ),
       value: fromMonth ? String(i + fromMonth) : String(i),
     }));
@@ -136,7 +135,7 @@ export default function DatePicker({
           className={cn(
             "w-full max-w-3xl justify-start text-left",
             !date && "text-muted-foreground",
-            className
+            className,
           )}
           disabled={disable}>
           <CalendarIcon className="size-5" />
@@ -209,7 +208,7 @@ export default function DatePicker({
               }
               // Default behavior for other cases
               return (
-                isAfter(date, currentDate) ||
+                // isAfter(date, currentDate) ||
                 isBefore(date, new Date("1900-01-01"))
               );
             }}

@@ -1,6 +1,6 @@
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { UserResponseType } from "@/lib/types";
-import { useTransition, useState, useEffect } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { getUserPermisions } from "../_actions/get-user-with-permission";
 
 export const useGetUser = () => {
@@ -11,12 +11,9 @@ export const useGetUser = () => {
   const { id, dialogs } = useGenericDialog();
 
   useEffect(() => {
-    if (
-      !id ||
-      !dialogs["update-user-role"] ||
-      dialogs["update-user-permissions"]
-    )
-      return;
+    const shouldFetchUser =
+      id && (dialogs["update-user-role"] || dialogs["update-user-permissions"]);
+    if (!shouldFetchUser) return;
 
     startFetchingTransition(async () => {
       const { error, user } = await getUserPermisions(id as string);
@@ -33,6 +30,7 @@ export const useGetUser = () => {
         setUser(undefined);
         return;
       }
+
       setfetchError("");
       setSuccess(true);
       setUser(user);

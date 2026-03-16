@@ -1,6 +1,9 @@
+import CheckboxWithArrayValues from "@/components/customComponents/CheckboxWithValues";
 import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
+import LoadingButton from "@/components/customComponents/LoadingButton";
 import TextAreaWithLabel from "@/components/customComponents/TextareaWithLabel";
+import { useConfirmDelete } from "@/components/customComponents/useConfirmDelete";
 import { Form } from "@/components/ui/form";
 import {
   ClassesResponseType,
@@ -9,15 +12,12 @@ import {
 } from "@/lib/types";
 import { CoursesSchema, CoursesType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, Save } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { getClassesAction } from "../../classes/actions/server-actions";
 import { getServerSideProps } from "../../departments/actions/getServerSideProps";
 import { getStaff } from "../../staff/actions/server";
-import { getClassesAction } from "../../classes/actions/server-actions";
-import LoadingButton from "@/components/customComponents/LoadingButton";
-import { useConfirmDelete } from "@/components/customComponents/useConfirmDelete";
-import CheckboxWithArrayValues from "@/components/customComponents/CheckboxWithValues";
-import { Plus, Save } from "lucide-react";
 
 type CreateCoursProps = {
   onSubmit: (data: CoursesType) => Promise<void>;
@@ -176,6 +176,7 @@ const CreateCourseForm: React.FC<CreateCoursProps> = ({
               valueKey="id"
               labelKey="firstName"
               schema={CoursesSchema}
+              className="space-y-2"
             />
           )}
           <TextAreaWithLabel

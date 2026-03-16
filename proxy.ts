@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/get-session";
-import { createAuthRedirect } from "@/utils/auth-redirects";
 import { UserRole } from "@/auth-types";
 import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/get-session";
+import { createAuthRedirect } from "@/utils/auth-redirects";
+import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
   matcher: [
@@ -22,7 +22,7 @@ export default async function proxy(request: NextRequest) {
     "/forgot-password",
     "/reset-password",
     "/reset-password-notice",
-    "/unauthorized",
+    "/403",
   ]);
 
   const isPublicRoute =
@@ -31,113 +31,80 @@ export default async function proxy(request: NextRequest) {
       (route) => route !== "/" && pathname.startsWith(route),
     );
 
-  // Helper: clone request and set custom header
   const withPathHeader = (response: NextResponse) => {
     response.headers.set("x-pathname", pathname);
     return response;
   };
 
-  if (isPublicRoute) {
-    return withPathHeader(
-      NextResponse.next({
-        request: {
-          headers: new Headers(request.headers),
-        },
-      }),
-    );
-  }
+  if (isPublicRoute) return withPathHeader(NextResponse.next());
 
   try {
     const session = (await getSession()) as typeof auth.$Infer.Session;
 
     if (!session?.user) {
-      const signInPath = createAuthRedirect(pathname);
       return withPathHeader(
-        NextResponse.redirect(new URL(signInPath, request.url), {
-          headers: new Headers(request.headers),
-        }),
-      );
-    }
-
-    const needsRoleCheck = requiresRoleBasedAccess(pathname);
-
-    if (!needsRoleCheck) {
-      return withPathHeader(
-        NextResponse.next({
-          request: {
-            headers: new Headers(request.headers),
-          },
-        }),
+        NextResponse.redirect(
+          new URL(createAuthRedirect(pathname), request.url),
+        ),
       );
     }
 
     if (!session.user.emailVerified && needsEmailVerification(pathname)) {
       return withPathHeader(
-        NextResponse.redirect(new URL("/verify-email", request.url), {
-          headers: new Headers(request.headers),
-        }),
+        NextResponse.redirect(new URL("/verify-email", request.url)),
       );
     }
 
-    const userRole = session.user.role?.name as UserRole;
-    const validRoles: UserRole[] = [
-      "admin",
-      "teaching_staff",
-      "staff",
-      "student",
-      "parent",
-    ];
+    // 1. Extract all role names
+    const userRoleNames =
+      session.user?.roles?.map((rs) => rs.role.name as UserRole) ?? [];
 
-    if (!userRole || !validRoles.includes(userRole)) {
-      return withPathHeader(
-        NextResponse.redirect(new URL("/403", request.url), {
-          headers: new Headers(request.headers),
-        }),
-      );
-    }
+    if (!requiresRoleBasedAccess(pathname))
+      return withPathHeader(NextResponse.next());
 
-    if (!hasRoleAccess(userRole, pathname)) {
+    // 2. Multi-Role Access Check
+    // A user has access if ANY of their roles are allowed to view this path
+    const hasAccess = userRoleNames.some((role) =>
+      hasRoleAccess(role, pathname),
+    );
+
+    if (!hasAccess) {
       return withPathHeader(
-        NextResponse.redirect(new URL("/403", request.url), {
-          headers: new Headers(request.headers),
-        }),
+        NextResponse.redirect(new URL("/403", request.url)),
       );
     }
 
     if (pathname === "/dashboard" || pathname === "/home") {
-      const dashboardPath = getDashboardPath(userRole);
-      if (dashboardPath) {
+      const priorityOrder: UserRole[] = [
+        "admin",
+        "teaching_staff",
+        "staff",
+        "student",
+        "parent",
+      ];
+      const primaryRole = priorityOrder.find((r) => userRoleNames.includes(r));
+
+      if (primaryRole) {
+        const targetPath = getDashboardPath(primaryRole);
         return withPathHeader(
-          NextResponse.redirect(new URL(dashboardPath, request.url), {
-            headers: new Headers(request.headers),
-          }),
+          NextResponse.redirect(new URL(targetPath, request.url)),
         );
       }
     }
 
-    return withPathHeader(
-      NextResponse.next({
-        request: {
-          headers: new Headers(request.headers),
-        },
-      }),
-    );
+    return withPathHeader(NextResponse.next());
   } catch (error) {
-    console.error("Proxy middleware error:", error);
-    const signInPath = createAuthRedirect(pathname);
-    const signInUrl = new URL(signInPath, request.url);
-    signInUrl.searchParams.set("error", "authentication_failed");
+    console.error("Middleware Error:", error);
     return withPathHeader(
-      NextResponse.redirect(signInUrl, {
-        headers: new Headers(request.headers),
-      }),
+      NextResponse.redirect(
+        new URL("/sign-in?error=server_error", request.url),
+      ),
     );
   }
 }
 
-/** Helpers */
 function requiresRoleBasedAccess(pathname: string): boolean {
-  const roleProtectedPaths = [
+  const protectedPrefixes = [
     "/admin",
     "/teachers",
     "/students",
@@ -146,17 +113,12 @@ function requiresRoleBasedAccess(pathname: string): boolean {
     "/home",
     "/profile",
   ];
-  return roleProtectedPaths.some((path) => pathname.startsWith(path));
+  return protectedPrefixes.some((path) => pathname.startsWith(path));
 }
 
 function needsEmailVerification(pathname: string): boolean {
-  const verificationRequiredPaths = [
-    "/admin",
-    "/teachers",
-    "/students",
-    "/scores",
-  ];
-  return verificationRequiredPaths.some((path) => pathname.startsWith(path));
+  const securePrefixes = ["/admin", "/teachers", "/students", "/scores"];
+  return securePrefixes.some((path) => pathname.startsWith(path));
 }
 
 function hasRoleAccess(role: UserRole, pathname: string): boolean {
@@ -166,18 +128,17 @@ function hasRoleAccess(role: UserRole, pathname: string): boolean {
       "/teachers",
       "/scores",
       "/profile",
-      "/403",
+      "/unauthorized",
       "/email-verified",
     ],
     staff: ["/teachers", "/profile", "/403", "/email-verified"],
     student: ["/students", "/profile", "/403", "/email-verified"],
     parent: ["/parents", "/profile", "/403", "/email-verified"],
   };
-  const allowedPaths = roleAccessMap[role] || [];
-  return allowedPaths.some((path) => pathname.startsWith(path));
+  return (roleAccessMap[role] ?? []).some((path) => pathname.startsWith(path));
 }
 
-function getDashboardPath(role: UserRole): string | null {
+function getDashboardPath(role: UserRole): string {
   const dashboardMap: Record<UserRole, string> = {
     admin: "/admin/dashboard",
     teaching_staff: "/teachers",
@@ -185,5 +146,5 @@ function getDashboardPath(role: UserRole): string | null {
     student: "/students",
     parent: "/parents",
   };
-  return dashboardMap[role] || null;
+  return dashboardMap[role] || "/";
 }

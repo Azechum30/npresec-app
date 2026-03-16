@@ -1,25 +1,24 @@
 "use server";
-import "server-only";
-import { prisma } from "../prisma";
+import { auth } from "@/lib/auth";
+import { rateLimit } from "@/utils/rateLimit";
+import * as Sentry from "@sentry/nextjs";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
+import "server-only";
+import { prisma } from "../prisma";
 import {
-  SignUpType,
-  SignUpSchema,
-  SignInType,
-  SignInSchema,
-  ResetPasswordType,
   ResetPasswordSchema,
+  ResetPasswordType,
+  SignInSchema,
+  SignInType,
+  SignUpSchema,
+  SignUpType,
 } from "../validation";
-import * as Sentry from "@sentry/nextjs";
-import { rateLimit } from "@/utils/rateLimit";
-import { auth } from "@/lib/auth";
-import { env } from "./validate-env";
 // import { ExtendedUser, getUserRoleName, UserRole } from "@/types/auth";
+import { UserRole } from "@/auth-types";
 import { User } from "@/lib/auth";
 import { getAuthRedirectPathWithLogging } from "@/utils/auth-redirects";
-import { UserRole } from "@/auth-types";
 
 export const signUpAction = async (data: SignUpType) => {
   try {
@@ -50,7 +49,7 @@ export const signUpAction = async (data: SignUpType) => {
     if (!role) {
       return { success: false, error: "Role not found!" };
     }
-    await auth.api.signUpEmail({
+    const { user } = await auth.api.signUpEmail({
       body: {
         email: email.toLowerCase(),
         password,
@@ -65,21 +64,22 @@ export const signUpAction = async (data: SignUpType) => {
       headers: await import("next/headers").then((m) => m.headers()),
     });
 
-    // Get the created user to update with custom fields
-    const createdUser = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-    });
-
-    if (!createdUser) {
+    if (!user) {
       return { success: false, error: "Failed to create user" };
     }
 
     // Update user with custom fields (username, roleId, resetPasswordRequired)
     await prisma.user.update({
-      where: { id: createdUser.id },
+      where: { id: user.id },
       data: {
         username: username,
-        roleId: role.id,
+        roles: {
+          create: {
+            role: {
+              connect: { id: role.id },
+            },
+          },
+        },
       },
     });
 
@@ -119,7 +119,7 @@ export const signInAction = async (data: SignInType, callbackUrl?: string) => {
 
     if (!validateData.success) {
       const error = validateData.error.issues.flatMap(
-        (e) => `${e.path[0]}: ${e.message}`,
+        (e) => `${e.path[0]}: ${e.message}`
       )[0];
       return { error };
     }
@@ -139,8 +139,9 @@ export const signInAction = async (data: SignInType, callbackUrl?: string) => {
         email: validateData.data.email.toLowerCase(),
       },
       include: {
-        role: true,
-        permissions: true,
+        roles: {
+          include: { role: { include: { permissions: true } } },
+        },
       },
     });
 
@@ -151,19 +152,35 @@ export const signInAction = async (data: SignInType, callbackUrl?: string) => {
         userId: user.id,
         email: user.email,
         role: userRole,
-        permissions: user.permissions?.length || 0,
+        permissions:
+          user.roles?.flatMap((rs) =>
+            rs.role?.permissions?.map((p) => p.name).filter(Boolean)
+          )?.length || 0,
       });
+
+      const priorityRoles = [
+        "admin",
+        "teaching_staff",
+        "student",
+        "staff",
+        "admin_staff",
+        "parent",
+        "support_staff",
+      ];
+      const priorityRole = userRole.find((role) =>
+        priorityRoles.includes(role)
+      );
 
       // Use shared redirect logic
       const redirectPath = getAuthRedirectPathWithLogging({
         callbackUrl: callbackUrl,
-        userRole: userRole,
+        userRole: priorityRole,
         defaultFallback: "/profile",
       });
       return {
         success: true,
         user: user as User,
-        role: userRole,
+        role: priorityRole,
         redirectTo: redirectPath,
       };
     }
@@ -294,6 +311,6 @@ export const sendVerificationEmailAction = async (email: string) => {
   }
 };
 
-const getUserRole = (user: User): UserRole => {
-  return user?.role?.name as UserRole;
+const getUserRole = (user: User): UserRole[] => {
+  return user?.roles?.map((r) => r.role.name).filter(Boolean) as UserRole[];
 };

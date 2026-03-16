@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition, useCallback, useEffect } from "react";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { updateItemsPerPage } from "@/app/(private)/profile/_actions/update-items-per-page";
+import { useRouter } from "next/navigation";
+import { useCallback, useState, useTransition } from "react";
+import { toast } from "sonner";
 
 interface UseItemsPerPageSyncProps {
   initialPageSize?: number;
@@ -67,7 +67,7 @@ export const useItemsPerPageSync = ({
         }
       });
     },
-    [currentPageSize, onPageSizeChangeAction, router],
+    [currentPageSize, onPageSizeChangeAction, router]
   );
 
   return {
