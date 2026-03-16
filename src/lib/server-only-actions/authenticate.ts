@@ -198,10 +198,7 @@ export const signInAction = async (data: SignInType, callbackUrl?: string) => {
     console.error("Sign-in error:", error);
     Sentry.captureException(error);
     return {
-      error:
-        process.env.NODE_ENV === "development"
-          ? String(error.message)
-          : "Something went wrong!",
+      error: String(error),
     };
   }
 };

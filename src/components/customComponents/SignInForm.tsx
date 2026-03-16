@@ -1,39 +1,39 @@
 "use client";
 
-import { useRef, useState, useTransition, useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { Route } from "next";
-import { Form } from "../ui/form";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
-import ModernInputWithLabel from "./ModernInputWithLabel";
-import ModernPasswordInputWithLabel from "./ModernPasswordInputWithLabel";
-import LoadingButton from "./LoadingButton";
-import { ErrorComponent } from "./ErrorComponent";
 import { useRouteTracking } from "@/components/providers/RouteTrackingProvider";
 import {
-  signInAction,
   sendVerificationEmailAction,
+  signInAction,
 } from "@/lib/server-only-actions/authenticate";
-import { SignInType, SignInSchema } from "@/lib/validation";
-import { toast } from "sonner";
-import {
-  Loader,
-  Mail,
-  Lock,
-  Sparkles,
-  ArrowRight,
-  RefreshCw,
-  Shield,
-  Eye,
-} from "lucide-react";
+import { SignInSchema, SignInType } from "@/lib/validation";
 import { useGSAP } from "@gsap/react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {
+  ArrowRight,
+  Eye,
+  Loader,
+  Lock,
+  Mail,
+  RefreshCw,
+  Shield,
+  Sparkles,
+} from "lucide-react";
+import { Route } from "next";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useRef, useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Form } from "../ui/form";
+import { ErrorComponent } from "./ErrorComponent";
+import LoadingButton from "./LoadingButton";
+import ModernInputWithLabel from "./ModernInputWithLabel";
+import ModernPasswordInputWithLabel from "./ModernPasswordInputWithLabel";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -57,12 +57,9 @@ export default function SignInForm() {
   const searchParams = useSearchParams();
   const { getCallbackUrl } = useRouteTracking();
 
-  // Get callback URL from search params immediately
   const searchParamCallback = searchParams.get("callbackUrl");
 
-  // Get callback URL using useMemo to avoid effects
   const callbackUrl = useMemo(() => {
-    // First priority: explicit callback from URL params
     if (searchParamCallback) {
       return searchParamCallback;
     }
@@ -315,8 +312,7 @@ export default function SignInForm() {
           <div className="signin-badge flex justify-center mb-4">
             <Badge
               variant="secondary"
-              className="px-4 py-2 bg-gradient-to-r from-primary/15 to-secondary/15 backdrop-blur-sm border-primary/30 text-primary hover:from-primary/25 hover:to-secondary/25 transition-all duration-300"
-            >
+              className="px-4 py-2 bg-gradient-to-r from-primary/15 to-secondary/15 backdrop-blur-sm border-primary/30 text-primary hover:from-primary/25 hover:to-secondary/25 transition-all duration-300">
               <Shield className="w-4 h-4 mr-2" />
               Secure Login
             </Badge>
@@ -356,8 +352,7 @@ export default function SignInForm() {
                 className="w-full relative overflow-hidden bg-gradient-to-r from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100 border-orange-200 text-orange-700 hover:border-orange-300 transition-all duration-300"
                 onClick={sendVerificationMail}
                 onMouseEnter={() => setHoveredElement("verify-email")}
-                onMouseLeave={() => setHoveredElement(null)}
-              >
+                onMouseLeave={() => setHoveredElement(null)}>
                 {/* Shimmer effect */}
                 <div
                   className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-700 ${
@@ -416,12 +411,10 @@ export default function SignInForm() {
                 <div
                   className="relative"
                   onMouseEnter={() => setHoveredElement("login")}
-                  onMouseLeave={() => setHoveredElement(null)}
-                >
+                  onMouseLeave={() => setHoveredElement(null)}>
                   <LoadingButton
                     loading={isPending || isRedirecting}
-                    className="w-full relative overflow-hidden bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 h-12 font-semibold"
-                  >
+                    className="w-full relative overflow-hidden bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 h-12 font-semibold">
                     {/* Shimmer effect */}
                     <div
                       className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-700 ${
@@ -454,8 +447,7 @@ export default function SignInForm() {
                     href={"/forgot-password" as Route}
                     className="font-medium text-primary hover:text-primary/80 transition-colors duration-300 relative group"
                     onMouseEnter={() => setHoveredElement("forgot-password")}
-                    onMouseLeave={() => setHoveredElement(null)}
-                  >
+                    onMouseLeave={() => setHoveredElement(null)}>
                     Reset it here
                     <span
                       className={`absolute -bottom-1 left-0 h-px bg-gradient-to-r from-primary to-secondary transition-all duration-300 ${
