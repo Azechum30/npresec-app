@@ -57,7 +57,7 @@ export const useGetStudentsGradesColumns = () => {
       filterFn: fuzzyFilter,
     },
     {
-      accessorKey: "summary.gpa", // Nested access
+      accessorKey: "summary.gpa",
       header: "GPA (Sem)",
     },
 

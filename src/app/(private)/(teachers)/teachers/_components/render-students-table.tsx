@@ -1,14 +1,12 @@
 "use client";
 
-import { SendClassQueryForm } from "../_forms/send-class-query-form";
-import { useGetStudentColumns } from "./use-get-student-columns";
+import DataTable from "@/components/customComponents/data-table";
+import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
+import { StudentResponseType } from "@/lib/types";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import DataTable from "@/components/customComponents/data-table";
-import { StudentResponseType } from "@/lib/types";
-import StudentRowDetail from "@/app/(private)/(admin)/admin/students/components/StudentRowDetail";
+import { useGetStudentColumns } from "../_hooks/use-get-student-columns";
 import { StudentTransformer } from "../_utils/student-transformer";
-import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 
 type RenderStudentsTableProps = {
   students?: StudentResponseType[];
@@ -50,7 +48,6 @@ export const RenderStudentsTable = ({
           data={students ?? []}
           filename="Students-list"
           transformer={StudentTransformer}
-          renderSubComponent={(row) => <StudentRowDetail row={row} />}
         />
       )}
     </>

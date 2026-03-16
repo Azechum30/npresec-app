@@ -1,7 +1,6 @@
-import { GenericRowExpansion } from "@/components/customComponents/GenericRowExpansion";
+import { fuzzyFilter } from "@/lib/fuzzyFilter";
 import { StudentResponseType } from "@/lib/types";
 import { ColumnDef } from "@tanstack/react-table";
-import moment from "moment";
 import Image from "next/image";
 
 export const useGetStudentColumns = () => {
@@ -44,28 +43,15 @@ export const useGetStudentColumns = () => {
       accessorFn: (row) => row.lastName,
     },
     {
-      header: "BirthDate",
-      accessorFn: (row) => moment(row.birthDate).format("DD-MM-YY"),
-    },
-    {
       header: "Gender",
       accessorFn: (row) => row.gender,
     },
     {
+      id: "currentLevel",
       header: "CurrentLevel",
       accessorFn: (row) => row.currentLevel.split("_").join(" "),
-    },
-    {
-      id: "expansion",
-      header: ({ table }) => <GenericRowExpansion isHeader table={table} />,
-      cell: ({ row }) => <GenericRowExpansion isHeader={false} row={row} />,
-      enableHiding: false,
-      enablePinning: false,
-      enableSorting: false,
-      enableColumnFilter: false,
-      enableGlobalFilter: false,
-      enableResizing: false,
-      enableGrouping: false,
+      cell: (info) => info.getValue(),
+      filterFn: fuzzyFilter,
     },
   ] satisfies ColumnDef<StudentResponseType>[];
 };

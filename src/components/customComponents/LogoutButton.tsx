@@ -30,7 +30,7 @@ export default function LogoutButton() {
       } else {
         setIsRedirecting(true);
         toast.success("Logout successful");
-        setTimeout(() => router.push("/sign-in"), 300);
+        setTimeout(() => router.push("/sign-in"), 1000);
       }
     });
   };
