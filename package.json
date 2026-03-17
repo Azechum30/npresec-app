@@ -57,6 +57,7 @@
     "@upstash/qstash": "^2.8.3",
     "@upstash/ratelimit": "^2.0.5",
     "@upstash/redis": "^1.34.8",
+    "@vercel/functions": "^3.4.3",
     "better-auth": "^1.4.3",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.6.0",
