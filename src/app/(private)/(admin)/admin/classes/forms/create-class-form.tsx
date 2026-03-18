@@ -1,5 +1,8 @@
 import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
+import LoadingButton from "@/components/customComponents/LoadingButton";
+import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
+import { MultiSelectCombox } from "@/components/customComponents/mult-select-combox";
 import {
   Form,
   FormControl,
@@ -22,15 +25,11 @@ import {
 } from "@/lib/types";
 import { ClassesSchema, ClassesType, grades } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FC, useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { useState, useEffect } from "react";
-import { getServerSideProps } from "../../departments/actions/getServerSideProps";
-import TagsComponent from "@/components/customComponents/TagsComponent";
-import { getStaff } from "../../staff/actions/server";
-import LoadingButton from "@/components/customComponents/LoadingButton";
 import { PlusCircle, Save, Trash } from "lucide-react";
-import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
+import { FC, useEffect, useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { getServerSideProps } from "../../departments/actions/getServerSideProps";
+import { getStaff } from "../../staff/actions/server";
 
 type onSubmitFormResponse = ClassesResponseType | { errors?: {} } | undefined;
 
@@ -65,7 +64,9 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
   });
 
   const [departments, setDepartments] = useState<DepartmentResponseType[]>([]);
-  const [teachers, setTeachers] = useState<StaffResponseType[]>([]);
+  const [teachers, setTeachers] = useState<{ id: string; fullName: string }[]>(
+    [],
+  );
 
   const [isPending, startTransition] = useTransition();
 
@@ -85,7 +86,14 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
         return;
 
       setDepartments(departments?.departments);
-      setTeachers(staffs.staff);
+      setTeachers(
+        staffs.staff.map((st) => ({
+          id: st.id,
+          fullName: st.middleName
+            ? `${st.lastName} ${st.firstName} ${st.middleName}`
+            : `${st.lastName} ${st.firstName}`,
+        })),
+      );
     };
 
     fetchDepartments();
@@ -135,7 +143,7 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
   const handleTeacherChange = (selectedTeachers: StaffResponseType[]) => {
     form.setValue(
       "staff",
-      selectedTeachers.map((teacher) => teacher.id)
+      selectedTeachers.map((teacher) => teacher.id),
     );
   };
 
@@ -219,30 +227,13 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
         />
 
         {teachers && teachers.length > 0 && (
-          <FormField
-            control={form.control}
+          <MultiSelectCombox
             name="staff"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="teachers">Assigned Teachers</FormLabel>
-                <FormControl>
-                  <TagsComponent
-                    value={
-                      teachers.filter((teacher) =>
-                        field.value?.includes(teacher.id)
-                      ) || []
-                    }
-                    onChange={handleTeacherChange}
-                    placeHolder="Search for teachers by first name"
-                    name={field.name}
-                    onBlur={field.onBlur}
-                    ref={field.ref}
-                    suggestions={teachers}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            fieldTitle="Teachers"
+            data={teachers}
+            valueKey="id"
+            selectedKey="fullName"
+            placeholder="--- Select teachers ---"
           />
         )}
         <div className="flex flex-col gap-y-3">

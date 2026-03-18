@@ -7,11 +7,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import CreateDepartment from "../forms/create-department";
-import { createDepartment } from "../actions/create-department-action";
-import { toast } from "sonner";
-import { DepartmentType } from "@/lib/validation";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
+import { DepartmentType } from "@/lib/validation";
+import { toast } from "sonner";
+import { createDepartment } from "../actions/create-department-action";
+import CreateDepartment from "../forms/create-department";
 
 export default function CreateDepartmentDialog() {
   const { dialogs, onClose } = useGenericDialog();
@@ -33,7 +33,7 @@ export default function CreateDepartmentDialog() {
     <Dialog
       open={dialogs["createDepartment"] === true ? true : false}
       onOpenChange={() => onClose("createDepartment")}>
-      <DialogContent className="max-h-[85vh] overflow-auto w-full scrollbar-thin">
+      <DialogContent className="">
         <DialogHeader className="bg-background backdrop-blur-lg">
           <DialogTitle>Create A New Department</DialogTitle>
           <DialogDescription>

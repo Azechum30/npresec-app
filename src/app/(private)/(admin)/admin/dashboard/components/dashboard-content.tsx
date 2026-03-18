@@ -38,24 +38,25 @@ import {
   CartesianGrid,
   Cell,
   Label,
-  Legend,
   Line,
   LineChart,
   Pie,
   PieChart,
-  Tooltip,
   XAxis,
-  YAxis,
 } from "recharts";
 
 const chartOptions = {
-  desktop: {
-    label: "Desktop",
-    color: "hsl(var(--chart-1))",
+  students: {
+    label: "Students",
+    color: "var(--chart-1)",
   },
-  mobile: {
-    label: "Mobile",
-    color: "hsl(var(--chart-5))",
+  males: {
+    label: "Males",
+    color: "var(--chart-5)",
+  },
+  females: {
+    label: "Females",
+    color: "var(--chart-1)",
   },
 } satisfies ChartConfig;
 
@@ -64,7 +65,6 @@ export default function DashboardContent({
 }: {
   promise: DashboardData;
 }) {
-  // const promiseData = use(promise);
   const [data, setData] = useState<DashboardData>(() => promise);
   const genderTotals = useMemo(() => {
     return [
@@ -77,7 +77,6 @@ export default function DashboardContent({
     return <LoadingState />;
   }
 
-  // Prepare data for charts
   const departmentChartData = data.departmentDistribution.map((dept) => ({
     name: dept.name,
     students: dept.studentCount,
@@ -88,18 +87,26 @@ export default function DashboardContent({
     students: cls.studentCount,
   }));
 
-  const COLORS = ["#0D47A1", "#1976D2", "#2196F3", "#64B5F6", "#BBDEFB"];
+  const COLORS = [
+    "var(--chart-1)", // Primary Copper/Orange
+    "var(--chart-2)", // Vibrant Purple/Blue
+    "var(--chart-5)", // Secondary Copper
+    "var(--chart-4)", // Deep Muted Purple
+    "var(--chart-3)", // Accent Gray/Neutral
+  ];
 
   const genderData = [
     {
       name: "Males",
       value: data.counts.studentMales,
-      fill: "hsl(var(--chart-5))",
+      fill: "var(--chart-2)",
+      stroke: "var(--border)",
     },
     {
       name: "Females",
       value: data.counts.studentFemales,
-      fill: "hsl(var(--chart-1))",
+      fill: "var(--chart-1)",
+      stroke: "var(--primary)",
     },
   ];
 
@@ -121,89 +128,120 @@ export default function DashboardContent({
     },
   ];
 
+  const staffGender = [
+    {
+      name: "Male Staff",
+      value: data.counts.staffMales || 15,
+      fill: "var(--destructive)",
+    },
+    {
+      name: "Female Staff",
+      value: data.counts.staffFemales || 15,
+      fill: "var(--muted-foreground)",
+    },
+  ];
+
+  console.log(data.counts);
+
   return (
     <div className="space-y-6">
-      {/* Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 ">
         <MetricCard
           title="Students"
-          value={data?.counts.students}
-          description="Total enrolled students"
-          icon={<GraduationCap className="h-5 w-5 text-blue-500" />}
+          value={data.counts.students}
+          description="Total enrolled"
+          icon={<GraduationCap />}
           trend="up"
         />
         <MetricCard
           title="Teachers"
           value={data.counts.teachers}
-          description="Total active teachers"
-          icon={<UserPen className="h-5 w-5 text-blue-500" />}
+          description="Active staff"
+          icon={<UserPen />}
           trend="stable"
         />
         <MetricCard
           title="Departments"
           value={data.counts.departments}
-          description="Academic departments"
-          icon={<Home className="h-5 w-5 text-blue-500" />}
+          description="Academic units"
+          icon={<Home />}
           trend="up"
         />
         <MetricCard
           title="Classes"
           value={data.counts.classes}
-          description="Active classes"
-          icon={<LucideBuilding2 className="h-5 w-5 text-blue-500" />}
+          description="Active rooms"
+          icon={<LucideBuilding2 />}
           trend="down"
         />
         <MetricCard
           title="Courses"
           value={data.counts.courses}
-          description="Available courses"
-          icon={<BookOpen className="h-5 w-5 text-blue-500" />}
-          className="md:col-span-2 lg:col-span-1"
+          description="Catalog size"
+          icon={<BookOpen />}
           trend="up"
         />
       </div>
 
-      {/* Charts Row */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-7">
         {/* Department Distribution Chart */}
-        <Card>
+        <Card className="md:col-span-4 shadow-lg dark:bg-accent ">
           <CardHeader>
-            <CardTitle>Student Distribution by Department</CardTitle>
-            <CardDescription className="text-blue-500/80">
-              Visual breakdown of students across departments
+            <CardTitle className="text-lg">Departmental Enrollment</CardTitle>
+            <CardDescription className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+              Breakdown of students per academic department
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer
-              config={chartOptions}
-              className="min-h-[200px] w-full">
+            <ChartContainer config={chartOptions}>
               <BarChart data={departmentChartData}>
+                <defs>
+                  {/* Gradient for Chart 1 (Primary Copper) */}
+                  <linearGradient id="fillChart1" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor="var(--chart-1)"
+                      stopOpacity={0.8}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--chart-1)"
+                      stopOpacity={0.1}
+                    />
+                  </linearGradient>
+
+                  {/* Gradient for Chart 2 (Vibrant Purple) */}
+                  <linearGradient id="fillChart2" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor="var(--chart-2)"
+                      stopOpacity={0.8}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--chart-2)"
+                      stopOpacity={0.1}
+                    />
+                  </linearGradient>
+                </defs>
+
                 <CartesianGrid
                   vertical={false}
-                  strokeDasharray="3 3"
-                  className="opacity-30"
+                  stroke="var(--border)"
+                  opacity={0.5}
+                  strokeDasharray={6}
+                  strokeWidth={2}
                 />
-                <XAxis
-                  dataKey="name"
-                  tick={{ fill: "hsl(var(--muted-foreground))" }}
-                />
-                <YAxis tick={{ fill: "hsl(var(--muted-foreground))" }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--background))",
-                    borderColor: "hsl(var(--border))",
-                    borderRadius: "var(--radius)",
-                  }}
-                />
-                <Bar
-                  dataKey="students"
-                  name="Students"
-                  fill="hsl(var(--chart-5)"
-                  radius={[4, 4, 0, 0]}>
-                  {departmentChartData.map((entry, index) => (
+
+                <Bar dataKey="students" radius={[6, 6, 0, 0]} strokeWidth={2}>
+                  {departmentChartData.map((_, index) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
+                      // Cycles through the gradient IDs defined above
+                      fill={`url(#fillChart${(index % 2) + 1})`}
+                      stroke={
+                        index % 2 === 0 ? "var(--chart-1)" : "var(--chart-2)"
+                      }
                     />
                   ))}
                 </Bar>
@@ -213,74 +251,26 @@ export default function DashboardContent({
         </Card>
 
         {/* Class Distribution Chart */}
-        <Card>
+        <Card className="md:col-span-3 shadow-lg dark:bg-accent">
           <CardHeader>
-            <CardTitle>Student Distribution by Class</CardTitle>
-            <CardDescription className="text-blue-500/80">
-              Percentage of students in each class
+            <CardTitle className="text-lg">Gender Balance</CardTitle>
+            <CardDescription className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+              Current ratio of male to female students
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex flex-col items-center">
             <ChartContainer
               config={chartOptions}
-              className="min-h-[200px] w-full">
-              <PieChart>
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Pie
-                  data={classChartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#1976D2"
-                  dataKey="students"
-                  nameKey="name"
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(0)}%`
-                  }>
-                  {classChartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                  ,
-                </Pie>
-                <Legend />
-              </PieChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Student Distribution by Gender</CardTitle>
-            <CardDescription className="text-blue-500/80">
-              Percentage of students by gender
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer
-              config={{
-                desktop: { label: "Desktop", color: "hsl(var(--primary))" },
-              }}
-              className="min-h-[200px] w-full">
+              className="w-[250px] h-[250px]">
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Pie
                   data={genderData}
                   dataKey="value"
                   innerRadius={60}
-                  outerRadius={80}
-                  className="fill-primary"
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(0)}%`
-                  }>
+                  outerRadius={100}
+                  strokeWidth={1}
+                  paddingAngle={5}>
                   <Label
                     content={({ viewBox }) => {
                       if (viewBox && "cx" in viewBox && "cy" in viewBox) {
@@ -312,13 +302,68 @@ export default function DashboardContent({
               </PieChart>
             </ChartContainer>
           </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-7">
+        <Card className="md:col-span-3 shadow-lg dark:bg-accent">
+          <CardHeader>
+            <CardTitle className="text-lg">
+              Staff Distribution by Gender
+            </CardTitle>
+            <CardDescription className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+              Percentage of staff by gender
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center">
+            <ChartContainer
+              config={chartOptions}
+              className="h-[250px] w-[250px]">
+              <PieChart>
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Pie
+                  data={staffGender}
+                  dataKey="value"
+                  innerRadius={60}
+                  outerRadius={100}>
+                  <Label
+                    content={({ viewBox }) => {
+                      if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                        return (
+                          <text
+                            cx={viewBox.cx}
+                            cy={viewBox.cy}
+                            textAnchor="middle"
+                            dominantBaseline="middle">
+                            <tspan
+                              x={viewBox.cx}
+                              y={viewBox.cy}
+                              className="fill-foreground text-3xl font-bold">
+                              {data.counts.teachers.toString()}
+                            </tspan>
+                            <tspan
+                              x={viewBox.cx}
+                              y={(viewBox.cy || 0) + 24}
+                              className="fill-muted-foreground">
+                              Staff
+                            </tspan>
+                          </text>
+                        );
+                      }
+                    }}
+                  />
+                </Pie>
+                <ChartLegend />
+              </PieChart>
+            </ChartContainer>
+          </CardContent>
           <CardFooter>
             <div className="flex w-full items-start gap-2 text-sm">
               <div className="grid gap-2">
                 <div className="flex items-center gap-2 font-medium leading-none">
                   Trending Gender <TrendingUp className="h-4 w-4" />
                 </div>
-                <div className="flex items-center gap-2 leading-none text-muted-foreground">
+                <div className="flex items-center gap-2 bg-gradient-to-b from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
                   Showing total gender distribution metrics.
                 </div>
               </div>
@@ -327,14 +372,16 @@ export default function DashboardContent({
         </Card>
         {/* Year Group Distribution */}
 
-        <Card>
+        <Card className="md:col-span-4 shadow-lg dark:bg-accent">
           <CardHeader>
-            <CardTitle>Year Group Gender Distribution</CardTitle>
-            <CardDescription className="text-blue-800">
+            <CardTitle className="text-lg">
+              Year Group Gender Distribution
+            </CardTitle>
+            <CardDescription className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
               Student gender distribution by Year Groups.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex items-center">
             <ChartContainer
               config={chartOptions}
               className="min-h-[200px] w-full">
@@ -356,14 +403,14 @@ export default function DashboardContent({
                 <Line
                   dataKey="males"
                   type="monotone"
-                  stroke="hsl(var(--chart-5))"
+                  stroke="var(--chart-5)"
                   strokeWidth={2}
                   dot={true}
                 />
                 <Line
                   dataKey="females"
                   type="monotone"
-                  stroke="hsl(var(--chart-1)"
+                  stroke="var(--chart-1)"
                   strokeWidth={2}
                   dot={true}
                 />
@@ -377,7 +424,7 @@ export default function DashboardContent({
                   Trending Gender for each year group{" "}
                   <TrendingUp className="h-4 w-4" />
                 </div>
-                <div className="flex items-center gap-2 leading-none text-muted-foreground">
+                <div className="flex items-center gap-2 bg-gradient-to-b from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
                   Showing total gender metrics for all forms.
                 </div>
               </div>
@@ -387,25 +434,30 @@ export default function DashboardContent({
       </div>
 
       {/* Recent Students */}
-      <Card className="overflow-auto">
+      <Card className="overflow-auto shadow-lg dark:bg-accent">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
           <div>
-            <CardTitle>Recent Student Enrollments</CardTitle>
-            <CardDescription className="text-blue-500/80">
+            <CardTitle className="text-lg">
+              Recently Enrolled Students
+            </CardTitle>
+            <CardDescription className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
               Recently enrolled students in the system
             </CardDescription>
           </div>
           <Link href="/admin/students">
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-blue-300 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-400">
-              View All
+            <Button size="sm" variant="outline">
+              <span className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+                View All
+              </span>
             </Button>
           </Link>
         </CardHeader>
         <CardContent>
-          <BaseDataTable columns={columns} data={data.recentStudents} />
+          <BaseDataTable
+            columns={columns}
+            data={data.recentStudents}
+            className="dark:bg-accent"
+          />
         </CardContent>
       </Card>
     </div>
@@ -442,7 +494,8 @@ function MetricCard({
   };
 
   return (
-    <Card className={`hover:shadow-md transition-shadow ${className}`}>
+    <Card
+      className={`hover:shadow-md transition-shadow dark:bg-accent ${className}`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}

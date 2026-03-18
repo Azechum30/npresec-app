@@ -20,15 +20,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { buttonVariants } from "../ui/button";
 import LinkWithStyles from "./LinkWithStyles";
 import { useAuth } from "./SessionProvider";
+import SidebarOpenButton from "./SidebarOpenButton";
 import UserButton from "./UserButton";
 
 export const Links = {
   ADMIN: [
     {
-      section: "User Management",
+      section: "User Managment",
       Links: [
         {
-          title: "Overview",
+          title: "Dashboard",
           href: "/admin/dashboard",
           icon: <LayoutDashboard />,
         },
@@ -37,7 +38,7 @@ export const Links = {
       ],
     },
     {
-      section: "Class Management",
+      section: "Academics",
       Links: [
         { title: "Classes", href: "/admin/classes", icon: <LucideBuilding2 /> },
         { title: "Departments", href: "/admin/departments", icon: <Home /> },
@@ -50,7 +51,7 @@ export const Links = {
       ],
     },
     {
-      section: "Result Management",
+      section: "Results",
       Links: [
         { title: "Grades", href: "/admin/grades", icon: <Award /> },
         { title: "Timelines", href: "/admin/timelines", icon: <TimerIcon /> },
@@ -67,7 +68,7 @@ export const Links = {
       ],
     },
     {
-      section: "House & Beds Management",
+      section: "Accommodation",
       Links: [
         {
           title: "Houses",
@@ -84,7 +85,7 @@ export const Links = {
   ],
   TEACHING_STAFF: [
     {
-      section: "Class Management",
+      section: "Academics",
       Links: [
         {
           title: "Students",
@@ -134,15 +135,15 @@ export default function Sidebar() {
   return (
     <div
       className={cn(
-        "inset-[68px] bg-inherit sticky top-0 left-0 bottom-0 z-30 h-svh border-r aside backdrop-blur-sm overflow-x-hidden overflow-y-auto scrollbar-thin",
+        "inset-[68px] bg-background absolute md:sticky top-0 left-0 bottom-0 z-50 md:z-30 h-svh border-r aside overflow-x-hidden overflow-y-auto scrollbar-thin",
         open && "open",
       )}>
-      <div className="self-start w-fit md:w-full flex flex-col items-center md:items-start gap-y-4 relative h-full sidebar-content">
+      <div className="self-start w-full flex flex-col items-center md:items-start gap-y-4 relative h-full sidebar-content">
         <div
           className={cn(
             `${buttonVariants({
               variant: "default",
-            })} group bg-background hover:bg-background w-fit md:w-full px-4 py-2 text-left justify-center md:justify-start flex gap-x-3 rounded-none items-center h-14 sticky top-0 left-0 z-30 border-0 border-b`,
+            })} group bg-background hover:bg-background w-full px-4 py-2 text-left justify-start flex gap-x-3 rounded-none items-center h-14 sticky top-0 left-0 z-30 border-0 border-b`,
           )}>
           <div className="size-10 shrink-0 flex items-center justify-center border-2 dark:group-hover:border-gray-600  rounded-full p-1.5 ">
             <Avatar className="w-full h-full">
@@ -150,31 +151,35 @@ export default function Sidebar() {
               <AvatarFallback>NP</AvatarFallback>
             </Avatar>
           </div>
-          <h1 className="hidden md:block text-base font-semibold text-accent-foreground">
+          <h1 className="block text-base font-semibold text-accent-foreground">
             NPRESEC
           </h1>
+
+          <div className="md:hidden ml-auto">
+            <SidebarOpenButton className="text-primary" />
+          </div>
         </div>
         {links.map((link) => (
           <div
             key={link.section}
-            className=" w-fit md:w-full flex flex-col items-center md:items-start gap-y-3 px-4 sm:px-2 lg:px-4 ">
-            <span className=" md:w-full md:py-1.5 hidden md:block text-sm border-t">
+            className=" w-full flex flex-col items-center md:items-start gap-y-3 px-4 sm:px-2 lg:px-4 ">
+            <span className="w-full py-1.5 text-accent-foreground font-bold block uppercase text-sm border-t">
               {link.section}
             </span>
-            <div className="w-fit md:w-full">
+            <div className="w-full">
               {link.Links.map((innerLink) => (
                 <LinkWithStyles
                   key={innerLink.href}
                   title={innerLink.title}
                   href={innerLink.href}
                   icon={innerLink.icon}
-                  className="mt-1 p-4 md:px-4 lg:px-4 md:py-2 text-muted-foreground hover:text-inherit hover:bg-accent text-sm rounded-full md:rounded-md first:mt-0"
+                  className="mt-1 p-4 md:px-2 lg:px-4 md:py-2 hover:font-bold hover:bg-accent text-sm rounded-md first:mt-0"
                 />
               ))}
             </div>
           </div>
         ))}
-        <div className="sticky bottom-0 left-0 z-30 h-14 border-t w-fit md:w-full">
+        <div className="sticky bottom-0 left-0 md:z-30 h-14 border-t w-full">
           <UserButton />
         </div>
       </div>

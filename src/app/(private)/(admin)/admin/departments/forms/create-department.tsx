@@ -1,19 +1,19 @@
 "use client";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form } from "@/components/ui/form";
-import InputWithLabel from "@/components/customComponents/InputWithLabel";
-import TextAreaWithLabel from "@/components/customComponents/TextareaWithLabel";
-import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
-import { PlusCircle, Save, Trash2 } from "lucide-react";
-import { DepartmentType, DepartmentSchema } from "@/lib/validation";
-import LoadingButton from "@/components/customComponents/LoadingButton";
-import { useEffect, useState, useTransition } from "react";
-import { useConfirmDelete } from "@/components/customComponents/useConfirmDelete";
 import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
+import InputWithLabel from "@/components/customComponents/InputWithLabel";
+import LoadingButton from "@/components/customComponents/LoadingButton";
+import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
+import TextAreaWithLabel from "@/components/customComponents/TextareaWithLabel";
+import { useConfirmDelete } from "@/components/customComponents/useConfirmDelete";
+import { Form } from "@/components/ui/form";
 import { StaffResponseType } from "@/lib/types";
-import { getStaff } from "../../staff/actions/server";
+import { DepartmentSchema, DepartmentType } from "@/lib/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { PlusCircle, Save, Trash2 } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { getStaff } from "../../staff/actions/server";
 
 type onDeleteResponseType = Promise<
   | {
@@ -100,7 +100,7 @@ export default function CreateDepartment({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="space-y-4 h-full overflow-auto p-4">
+        className="space-y-4 border rounded-md max-h-[80dvh] overflow-auto p-4">
         <ConfirmDeleteComponent />
         <InputWithLabel
           name="name"
@@ -131,6 +131,9 @@ export default function CreateDepartment({
           name="createdAt"
           fieldTitle="CreatedAt"
           schema={DepartmentSchema}
+          startDate={new Date().getFullYear() - 14}
+          endDate={new Date().getFullYear()}
+          disableFutureDates={true}
         />
         <div className="flex flex-col gap-y-3">
           <LoadingButton loading={isPending}>

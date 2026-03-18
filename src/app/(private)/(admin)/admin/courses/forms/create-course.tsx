@@ -1,7 +1,7 @@
-import CheckboxWithArrayValues from "@/components/customComponents/CheckboxWithValues";
 import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import LoadingButton from "@/components/customComponents/LoadingButton";
+import { MultiSelectCombox } from "@/components/customComponents/mult-select-combox";
 import TextAreaWithLabel from "@/components/customComponents/TextareaWithLabel";
 import { useConfirmDelete } from "@/components/customComponents/useConfirmDelete";
 import { Form } from "@/components/ui/form";
@@ -146,37 +146,37 @@ const CreateCourseForm: React.FC<CreateCoursProps> = ({
           />
 
           {departments !== undefined && departments.length > 0 && (
-            <CheckboxWithArrayValues
+            <MultiSelectCombox
               name="departments"
               fieldTitle="Select the streams that run the Course"
               data={departments}
               valueKey="id"
-              labelKey="name"
+              selectedKey="name"
               schema={CoursesSchema}
-              className="space-y-2"
+              placeholder="--- Select departments ---"
             />
           )}
 
           {classes !== undefined && classes.length > 0 && (
-            <CheckboxWithArrayValues
+            <MultiSelectCombox
               name="classes"
               fieldTitle="Select the classes that offer this Course"
               data={classes}
               valueKey="id"
-              labelKey="name"
+              selectedKey="name"
               schema={CoursesSchema}
-              className="space-y-2"
+              placeholder="--- Select clasess ---"
             />
           )}
           {teachers !== undefined && teachers.length > 0 && (
-            <CheckboxWithArrayValues
+            <MultiSelectCombox
               name="staff"
               fieldTitle="Select the teachers who teach this Course"
               data={teachers}
               valueKey="id"
-              labelKey="firstName"
+              selectedKey="firstName"
               schema={CoursesSchema}
-              className="space-y-2"
+              placeholder="--- Select staff ---"
             />
           )}
           <TextAreaWithLabel

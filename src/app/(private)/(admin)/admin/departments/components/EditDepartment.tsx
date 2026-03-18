@@ -1,5 +1,6 @@
 "use client";
 
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import {
   Dialog,
   DialogContent,
@@ -7,15 +8,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import CreateDepartment from "../forms/create-department";
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
+import { DepartmentType } from "@/lib/validation";
 import { useEffect, useState } from "react";
-import { getDepartment } from "../actions/get-department";
 import { toast } from "sonner";
 import { updateDepartmentAction } from "../actions/create-department-action";
-import { DepartmentType } from "@/lib/validation";
 import { deleteDepartment } from "../actions/delete-departments-action";
-import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import LoadingState from "@/components/customComponents/Loading";
+import { getDepartment } from "../actions/get-department";
+import CreateDepartment from "../forms/create-department";
 
 export default function EditDepartment() {
   const { id, dialogs, onClose } = useGenericDialog();
@@ -76,8 +76,8 @@ export default function EditDepartment() {
     <Dialog
       open={dialogs["editDepartment"]}
       onOpenChange={() => onClose("editDepartment")}>
-      {defaultValues ? (
-        <DialogContent>
+      {!!id && dialogs["editDepartment"] && defaultValues ? (
+        <DialogContent className="max-h-full">
           <DialogHeader>
             <DialogTitle>Edit Department Data</DialogTitle>
             <DialogDescription>
@@ -92,12 +92,12 @@ export default function EditDepartment() {
           />
         </DialogContent>
       ) : (
-        <DialogContent className="w-auto">
+        <DialogContent>
           <DialogHeader className="sr-only">
             <DialogTitle>Loading Data</DialogTitle>
             <DialogDescription>Loading Data</DialogDescription>
           </DialogHeader>
-          <LoadingState />
+          <ShowLoadingState />
         </DialogContent>
       )}
     </Dialog>

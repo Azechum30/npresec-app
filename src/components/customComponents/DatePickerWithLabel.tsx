@@ -1,5 +1,8 @@
+import { isZodFieldRequired } from "@/lib/isZodFieldRequired";
+import { cn } from "@/lib/utils";
 import { InputHTMLAttributes } from "react";
 import { useFormContext } from "react-hook-form";
+import { z } from "zod";
 import {
   FormControl,
   FormField,
@@ -8,9 +11,6 @@ import {
   FormMessage,
 } from "../ui/form";
 import DatePicker from "./DatePicker";
-import { z } from "zod";
-import { isZodFieldRequired } from "@/lib/isZodFieldRequired";
-import { cn } from "@/lib/utils";
 
 type DatePickerWithLabelProps = {
   name: string;
@@ -21,17 +21,19 @@ type DatePickerWithLabelProps = {
   restrictToCurrentDay?: boolean;
   disable?: boolean;
   schema?: z.ZodSchema<any>;
+  disableFutureDates?: boolean;
 } & InputHTMLAttributes<HTMLButtonElement>;
 
 export default function DatePickerWithLabel({
   name,
   fieldTitle,
   schema,
-    startDate,
-    endDate,
+  startDate,
+  endDate,
   fromMonth,
   restrictToCurrentDay,
   disable,
+  disableFutureDates,
 }: DatePickerWithLabelProps) {
   const form = useFormContext();
 
@@ -54,7 +56,7 @@ export default function DatePickerWithLabel({
           <FormLabel
             className={cn(
               "text-sm font-semibold block",
-              isRequired && "flex items-center gap-1"
+              isRequired && "flex items-center gap-1",
             )}
             htmlFor={name}>
             {fieldTitle}
@@ -62,14 +64,15 @@ export default function DatePickerWithLabel({
           </FormLabel>
           <FormControl>
             <DatePicker
-                id={name}
-                date={field.value}
-                setDate={field.onChange}
-                startYear={startDate}
-                endYear={endDate}
-                fromMonth={fromMonth}
-                restrictToCurrentDay={restrictToCurrentDay}
-                disable={disable}
+              id={name}
+              date={field.value}
+              setDate={field.onChange}
+              startYear={startDate}
+              endYear={endDate}
+              fromMonth={fromMonth}
+              restrictToCurrentDay={restrictToCurrentDay}
+              disable={disable}
+              disableFutureDates={disableFutureDates}
             />
           </FormControl>
           <FormMessage />

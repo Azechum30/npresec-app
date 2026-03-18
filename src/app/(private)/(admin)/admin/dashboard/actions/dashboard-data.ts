@@ -14,6 +14,8 @@ export type DashboardData = {
     courses: number;
     studentMales: number;
     studentFemales: number;
+    staffMales: number;
+    staffFemales: number;
     yearGroupGender: {
       yearOneMales: number;
       yearTwoMales: number;
@@ -62,6 +64,8 @@ export async function getDashboardData() {
       classDistribution,
       studentMales,
       studentFemales,
+      staffMales,
+      staffFemales,
       yearOneMales,
       yearTwoMales,
       yearThreeMales,
@@ -129,6 +133,8 @@ export async function getDashboardData() {
       }),
       prisma.student.count({ where: { gender: "Male" } }),
       prisma.student.count({ where: { gender: "Female" } }),
+      prisma.staff.count({ where: { gender: "MALE" } }),
+      prisma.staff.count({ where: { gender: "FEMALE" } }),
       prisma.student.count({
         where: { currentLevel: "Year_One", gender: "Male" },
       }),
@@ -158,6 +164,8 @@ export async function getDashboardData() {
         courses: courseCount,
         studentMales,
         studentFemales,
+        staffMales,
+        staffFemales,
         yearGroupGender: {
           yearOneMales,
           yearOneFemales,

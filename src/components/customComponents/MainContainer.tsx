@@ -12,7 +12,7 @@ export default function MainContainer({ children }: { children: ReactNode }) {
     <div className={cn("content")}>
       <div
         className={cn(
-          "w-full sticky top-0 left-0 z-30 h-14 px-4 md:px-10 border-b bg-inherit backdrop-blur-md flex flex-row items-center md:justify-between gap-2",
+          "w-full sticky top-0 left-0 z-30 h-14 px-4 md:px-10 border-b bg-inherit backdrop-blur-md flex flex-row-reverse md:flex-row items-center justify-between gap-2",
         )}>
         <div className=" flex items-center gap-2">
           <SidebarOpenButton />

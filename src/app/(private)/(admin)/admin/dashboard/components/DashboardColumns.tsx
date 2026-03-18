@@ -1,5 +1,5 @@
-import { ColumnDef } from "@tanstack/react-table";
 import { DashboardData } from "@/app/(private)/(admin)/admin/dashboard/actions/dashboard-data";
+import { ColumnDef } from "@tanstack/react-table";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
 
@@ -51,10 +51,14 @@ export const columns = [
         new Date(row.original.dateEnrolled),
         {
           addSuffix: true,
-        }
+        },
       );
 
-      return <span className="text-blue-500">{formattedDate.toString()}</span>;
+      return (
+        <span className="bg-gradient-to-b from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+          {formattedDate.toString()}
+        </span>
+      );
     },
   },
   {

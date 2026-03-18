@@ -8,10 +8,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import CreateStaffForm from "./forms/create-staff-form";
-import { useHandleStaffCreation } from "../hooks/use-handle-staff-creation";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { useHandleStaffCreation } from "../hooks/use-handle-staff-creation";
+import CreateStaffForm from "./forms/create-staff-form";
 
 export default function CreateStaffDialog() {
   const { id, dialogs, onClose } = useGenericDialog();
@@ -43,17 +43,14 @@ export default function CreateStaffDialog() {
       onOpenChange={() => {
         onClose("createStaff");
       }}>
-      <DialogContent>
+      <DialogContent className="md:max-w-4xl">
         <DialogHeader>
           <DialogTitle>Add a new Staff</DialogTitle>
           <DialogDescription>
             Kindly fill the form to create a new staff profile
           </DialogDescription>
         </DialogHeader>
-        <CreateStaffForm
-          onSubmit={handleStaffCreation}
-          isPending={isPending}
-        />
+        <CreateStaffForm onSubmit={handleStaffCreation} isPending={isPending} />
       </DialogContent>
     </Dialog>
   );

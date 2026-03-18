@@ -77,7 +77,7 @@ export const MultiSelectCombox = ({
                       !field.value?.length && "text-muted-foreground",
                     )}>
                     {field.value?.length > 0
-                      ? `${field.value.length} courses selected`
+                      ? `${field.value.length} ${name} selected`
                       : `${placeholder}`}
                   </Button>
                 </FormControl>
@@ -88,6 +88,37 @@ export const MultiSelectCombox = ({
                   <CommandList>
                     <CommandEmpty>No course found.</CommandEmpty>
                     <CommandGroup>
+                      <CommandItem
+                        onSelect={() => {
+                          const currentValues = field.value || [];
+
+                          const allValues = data.map((item) => {
+                            if (typeof item === "object" && item !== null) {
+                              return String(
+                                item[valueKey as keyof typeof item],
+                              );
+                            }
+                            return item;
+                          });
+
+                          const isAllSelected =
+                            allValues.length > 0 &&
+                            allValues.every((val) =>
+                              currentValues.includes(val),
+                            );
+
+                          field.onChange(isAllSelected ? [] : allValues);
+                        }}
+                        className="hover:cursor-pointer font-medium border-b">
+                        <Checkbox
+                          checked={
+                            data.length > 0 &&
+                            field.value?.length === data.length
+                          }
+                          className="mr-2"
+                        />
+                        Select All
+                      </CommandItem>
                       {data?.map((item, index) => {
                         if (
                           typeof item === "string" ||
@@ -104,7 +135,8 @@ export const MultiSelectCombox = ({
                                     )
                                   : [...currentValues, item];
                                 field.onChange(newValue);
-                              }}>
+                              }}
+                              className="hover:cursor-pointer">
                               <Checkbox
                                 checked={field.value?.includes(item)}
                                 className="mr-2"

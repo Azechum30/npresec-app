@@ -1,24 +1,33 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+"use client";
 
-import { isZodFieldRequired } from "@/lib/isZodFieldRequired";
-import { cn } from "@/lib/utils";
-import React from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
+import * as React from "react";
 import { useFormContext } from "react-hook-form";
 import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form";
-import { Skeleton } from "../ui/skeleton";
+} from "@/components/ui/form";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { isZodFieldRequired } from "@/lib/isZodFieldRequired";
+import { cn } from "@/lib/utils";
 
 type SelectWithLabelProps<U = any> = {
   name: string;
@@ -29,114 +38,118 @@ type SelectWithLabelProps<U = any> = {
   data: U[];
   valueKey?: keyof U;
   selectedKey?: keyof U;
-} & React.ComponentPropsWithRef<typeof Select>;
+};
 
 export default function SelectWithLabel({
   name,
   fieldTitle,
   className,
-  placeholder,
+  placeholder = "Select item...",
   schema,
   data,
-  valueKey = "value",
-  selectedKey = "label",
-  ...props
+  valueKey = "value" as any,
+  selectedKey = "label" as any,
 }: SelectWithLabelProps) {
   const form = useFormContext();
+  const [open, setOpen] = React.useState(false);
 
-  const isRequired = (() => {
+  const isRequired = React.useMemo(() => {
     if (schema) {
       const fieldSchema =
         schema instanceof z.ZodObject ? schema.shape[name] : schema;
-
       return isZodFieldRequired(fieldSchema);
     }
-
     return false;
-  })();
+  }, [schema, name]);
 
   return (
     <FormField
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem>
+        <FormItem className="flex flex-col">
           <FormLabel
-            htmlFor={name}
             className={cn(
-              "text-sm font-semibold disabled:text-muted-foreground",
+              "text-sm font-semibold",
               isRequired && "flex items-center gap-1",
-              className
             )}>
             {fieldTitle}
             {isRequired && <span className="text-red-500">*</span>}
           </FormLabel>
-          <FormControl>
-            <Select
-              value={
-                field.value !== undefined && field.value !== null
-                  ? typeof field.value === "number"
-                    ? String(field.value)
-                    : String(field.value)
-                  : undefined
-              }
-              onValueChange={(value) => {
-                field.onChange(
-                  typeof data[0] === "number" && !isNaN(Number(value))
-                    ? Number(value)
-                    : value
-                );
-              }}>
-              <SelectTrigger
-                aria-invalid={form.formState.errors[0] ? true : false}
-                className={cn(
-                  "text-muted-foreground hover:cursor-pointer w-full max-w-2xl",
-                  field.value && "text-foreground",
-                  className
-                )}
-                {...props}>
-                <SelectValue
-                  placeholder={placeholder}
-                  className="line-clamp-1"
+
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <FormControl>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className={cn(
+                    "w-full justify-between font-normal",
+                    !field.value && "text-muted-foreground",
+                    className,
+                  )}>
+                  {field.value
+                    ? data.find((item) => {
+                        const val =
+                          typeof item === "object"
+                            ? String(item[valueKey])
+                            : String(item);
+                        return val === String(field.value);
+                      })?.[selectedKey as keyof any] || field.value
+                    : placeholder}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </FormControl>
+            </PopoverTrigger>
+            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+              <Command>
+                <CommandInput
+                  placeholder={`Search ${fieldTitle.toLowerCase()}...`}
                 />
-              </SelectTrigger>
-              <SelectContent>
-                {!data ? (
-                  <Skeleton className="w-full h-full" />
-                ) : (
-                  <>
-                    {data.map((val, index) => {
-                      if (typeof val === "string" || typeof val === "number") {
-                        return (
-                          <SelectItem key={index} value={String(val)}>
-                            {val.toString().includes("_")
-                              ? val.toString().split("_").join(" ")
-                              : val.toString().includes("-")
-                                ? val.toString().split("-").join(" ")
-                                : val}
-                          </SelectItem>
-                        );
-                      }
+                <CommandList>
+                  <CommandEmpty>No results found.</CommandEmpty>
+                  <CommandGroup>
+                    {data.map((item, index) => {
+                      const isObj = typeof item === "object" && item !== null;
+                      const value = isObj
+                        ? String(item[valueKey])
+                        : String(item);
+                      const label = isObj
+                        ? String(item[selectedKey])
+                        : String(item);
 
-                      if (typeof val === "object" && typeof val !== null) {
-                        const value = String(val[valueKey] as keyof typeof val);
-                        const label = String(
-                          val[selectedKey] as keyof typeof val
-                        );
-                        return (
-                          <SelectItem key={value} value={value}>
-                            {label}
-                          </SelectItem>
-                        );
-                      }
+                      // Formatting for strings (removing underscores/dashes)
+                      const displayLabel = !isObj
+                        ? label.replace(/[_-]/g, " ")
+                        : label;
 
-                      return null;
+                      return (
+                        <CommandItem
+                          key={value}
+                          value={label} // Search matches against label
+                          onSelect={() => {
+                            field.onChange(
+                              typeof item === "number" ? Number(value) : value,
+                            );
+                            setOpen(false);
+                          }}>
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              String(field.value) === value
+                                ? "opacity-100"
+                                : "opacity-0",
+                            )}
+                          />
+                          {displayLabel}
+                        </CommandItem>
+                      );
                     })}
-                  </>
-                )}
-              </SelectContent>
-            </Select>
-          </FormControl>
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
           <FormMessage />
         </FormItem>
       )}

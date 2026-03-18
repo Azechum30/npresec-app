@@ -4,7 +4,6 @@ import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-form
 import { calculateAge } from "@/lib/calculate-age";
 import { formatDate } from "@/lib/format-date";
 import { StaffResponseType } from "@/lib/types";
-import { DateFormatType } from "@/lib/validation";
 import { yearsAndMonthsUntilRetirement } from "@/lib/yearsUntilRetirement";
 import { Row } from "@tanstack/react-table";
 import { BadgeCent } from "lucide-react";
@@ -90,9 +89,11 @@ export default function StaffRowDetail({ row }: StaffRowDetailProp) {
                 <span className=" font-semibold">Staff ID:</span>{" "}
                 {row.original.employeeId}
               </div>
-              <div className="text-sm text-muted-foreground">
-                <span className=" font-semibold">Current Rank:</span>{" "}
-                {row.original.rank}
+              <div className="text-sm text-muted-foreground line-clamp-6">
+                <span className=" font-semibold line-clamp-1">
+                  Current Rank:
+                </span>{" "}
+                {row.original.rank?.split("/")[0]}...
               </div>
               <div className="text-sm text-muted-foreground">
                 <span className=" font-semibold">Years to Retirement:</span>{" "}
@@ -112,7 +113,7 @@ export default function StaffRowDetail({ row }: StaffRowDetailProp) {
                 </span>{" "}
                 {formatDate(
                   row.original.dateOfFirstAppointment as Date | string,
-                  preferredDateFormat
+                  preferredDateFormat,
                 )}
               </div>
               <div className="text-sm text-muted-foreground">

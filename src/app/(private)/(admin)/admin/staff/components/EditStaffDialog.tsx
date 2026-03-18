@@ -2,24 +2,20 @@
 
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import CreateStaffForm from "./forms/create-staff-form";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
+import CreateStaffForm from "./forms/create-staff-form";
 
-import { Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
+import { useFetchInitialStaffData } from "../hooks/use-fetch-initial-staff-data";
 import { useHandleStaffUpdate } from "../hooks/use-handle-staff-update";
 import { useHandleStaffDelete } from "../hooks/use-handle-staff.delete";
-import { useFetchInitialStaffData } from "../hooks/use-fetch-initial-staff-data";
-import { toast } from "sonner";
-import { useEffect, useRef } from "react";
 
 export default function EditStaffDialog() {
   const { id, dialogs, onClose } = useGenericDialog();
@@ -58,7 +54,6 @@ export default function EditStaffDialog() {
     prevDeletingRef.current = isDeleting;
   }, [isDeleting, error]);
 
-  // Close dialog on successful update
   useEffect(() => {
     if (updateSucess) {
       toast.success("Staff profile updated successfully");
@@ -68,7 +63,6 @@ export default function EditStaffDialog() {
     }
   }, [updateSucess, onClose]);
 
-  // Close dialog on successful delete
   useEffect(() => {
     if (success) {
       toast.success("Staff profile deleted successfully");
@@ -84,29 +78,33 @@ export default function EditStaffDialog() {
       onOpenChange={() => {
         onClose("editStaff");
       }}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit Staff Profile</DialogTitle>
-          <DialogDescription>
-            Update staff information and assignments
-          </DialogDescription>
-        </DialogHeader>
-        {values ? (
+      {!!id && dialogs["editStaff"] && values ? (
+        <DialogContent className="w-full md:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Edit Staff Profile</DialogTitle>
+            <DialogDescription>
+              Update staff information and assignments
+            </DialogDescription>
+          </DialogHeader>
+
           <CreateStaffForm
-            id={id as string}
+            id={id}
             defaultValues={values}
             onSubmit={handleStaffUpdate}
             onDelete={handleStaffDelete}
             isPending={isUpdating}
             isDeletePending={isDeleting}
           />
-        ) : (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-8 h-8 animate-spin" />
-            <span className="ml-2">Loading staff data...</span>
-          </div>
-        )}
-      </DialogContent>
+        </DialogContent>
+      ) : (
+        <DialogContent>
+          <DialogHeader className="sr-only">
+            <DialogTitle>Data is Loading</DialogTitle>
+            <DialogDescription>Kindly wait while data loads.</DialogDescription>
+          </DialogHeader>
+          <ShowLoadingState />
+        </DialogContent>
+      )}
     </Dialog>
   );
 }

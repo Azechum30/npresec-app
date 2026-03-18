@@ -1,4 +1,5 @@
 import ThemeProvider from "@/components/customComponents/theme-provider";
+import { ToggleOverflow } from "@/components/customComponents/toggle-overflow";
 import RouteTrackingProvider from "@/components/providers/RouteTrackingProvider";
 import { Toaster } from "@/components/ui/sonner";
 import "@/lib/orpc.server";
@@ -53,6 +54,7 @@ export default function RootLayout({
             <RouteTrackingProvider>
               <Toaster richColors duration={5000} />
               {children}
+              <ToggleOverflow />
             </RouteTrackingProvider>
           </Suspense>
         </ThemeProvider>

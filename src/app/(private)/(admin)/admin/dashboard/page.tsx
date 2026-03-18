@@ -16,10 +16,16 @@ export const metadata: Metadata = {
 export default async function DashboardOverviewPage() {
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-      <p className="text-muted-foreground">
-        Overview of Nakpanduri Presby SHTS School Management Information System
-      </p>
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-bold tracking-tight">School Overview</h1>
+        <p className="text-muted-foreground text-sm">
+          Real-time analytics for{" "}
+          <span className="bg-gradient-to-tr from-primary to-muted-foreground bg-clip-text text-transparent font-bold">
+            PRESBY SHTS, NAKPANDURI
+          </span>
+          .
+        </p>
+      </div>
 
       <Suspense fallback={<FallbackComponent />}>
         <RenderAdminDashboard />

@@ -7,13 +7,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { useEffect, useState, useTransition } from "react";
 import { ClassesType } from "@/lib/validation";
-import { deleteClass, getClass, updateClass } from "../actions/server-actions";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { deleteClass, getClass, updateClass } from "../actions/server-actions";
 import CreateClassForm from "../forms/create-class-form";
-import { Loader2 } from "lucide-react";
 
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import { useConfirmDelete } from "@/components/customComponents/useConfirmDelete";
 
 export default function EditClassDialog() {
@@ -50,7 +50,7 @@ export default function EditClassDialog() {
               staff: staffs ? staffs : undefined,
               maxCapacity: data.maxCapacity as number,
             }
-          : undefined
+          : undefined,
       );
     };
 
@@ -121,9 +121,7 @@ export default function EditClassDialog() {
                 Please wait whilst data is being loaded
               </DialogDescription>
             </DialogHeader>
-            <div className="w-full h-full flex justify-center items-center">
-              <Loader2 className="size-8 animate-spin" />
-            </div>
+            <ShowLoadingState />
           </DialogContent>
         )}
       </Dialog>

@@ -11,6 +11,7 @@ import {
   getDate,
   getMonth,
   getYear,
+  isAfter,
   isBefore,
   isToday,
   isValid,
@@ -40,6 +41,7 @@ type DatePickerProps = {
   endYear?: number;
   fromMonth?: number;
   disable?: boolean;
+  disableFutureDates?: boolean;
 };
 
 export default function DatePicker({
@@ -53,6 +55,7 @@ export default function DatePicker({
   endYear = getYear(new Date()),
   fromMonth,
   disable = false,
+  disableFutureDates,
 }: DatePickerProps) {
   const [open, setOpen] = useState(false);
   // const currentDate = new Date();
@@ -207,10 +210,9 @@ export default function DatePicker({
                 return !isToday(date);
               }
               // Default behavior for other cases
-              return (
-                // isAfter(date, currentDate) ||
-                isBefore(date, new Date("1900-01-01"))
-              );
+              return disableFutureDates
+                ? isAfter(date, currentDate)
+                : isBefore(date, new Date("1900-01-01"));
             }}
             components={{
               // Hide next/prev month navigation when restricted

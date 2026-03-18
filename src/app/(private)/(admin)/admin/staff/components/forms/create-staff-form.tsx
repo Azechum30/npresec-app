@@ -1,5 +1,21 @@
-import { useForm, useWatch } from "react-hook-form";
+import { getServerSideProps } from "@/app/(private)/(admin)/admin/departments/actions/getServerSideProps";
+import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
+import FileUploadInput from "@/components/customComponents/FileUploadInput";
+import InputWithLabel from "@/components/customComponents/InputWithLabel";
+import LoadingButton from "@/components/customComponents/LoadingButton";
+import { MultiSelectCombox } from "@/components/customComponents/mult-select-combox";
+import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
+import { useConfirmDelete } from "@/components/customComponents/useConfirmDelete";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormField } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
+import { RANKS } from "@/lib/constants";
+import {
+  ClassesResponseType,
+  CourseResponseType,
+  DepartmentResponseType,
+} from "@/lib/types";
+import { cn } from "@/lib/utils";
 import {
   STAFF_CATEGORY,
   STAFF_TYPE,
@@ -7,29 +23,11 @@ import {
   StaffType,
 } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import InputWithLabel from "@/components/customComponents/InputWithLabel";
-import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
-import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
 import { useEffect, useState } from "react";
-import { getServerSideProps } from "@/app/(private)/(admin)/admin/departments/actions/getServerSideProps";
-import {
-  ClassesResponseType,
-  CourseResponseType,
-  DepartmentResponseType,
-  StaffResponseType,
-} from "@/lib/types";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
-import LoadingButton from "@/components/customComponents/LoadingButton";
-import { PlusCircle, Save, Trash2 } from "lucide-react";
-import { useConfirmDelete } from "@/components/customComponents/useConfirmDelete";
-import { getCourses } from "../../../courses/actions/actions";
 import { getClassesAction } from "../../../classes/actions/server-actions";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import SearchableMultiSelect from "@/components/customComponents/SearchableMultiSelect";
-import FileUploadInput from "@/components/customComponents/FileUploadInput";
-import { RANKS } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { getCourses } from "../../../courses/actions/actions";
 
 type CreateStaffProps = {
   onSubmit: (data: StaffType) => Promise<void>;
@@ -135,7 +133,7 @@ export default function CreateStaffForm({
 
   const { confirmDelete, ConfirmDeleteComponent } = useConfirmDelete(
     "Delete Staff",
-    "Are you sure you want to delete this staff member?"
+    "Are you sure you want to delete this staff member?",
   );
 
   const staffType = useWatch({
@@ -147,7 +145,7 @@ export default function CreateStaffForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="space-y-4 max-h-[80vh] overflow-y-auto p-2">
+        className="space-y-4 w-full border rounded-md max-h-[80vh] overflow-y-auto p-2">
         {/* Personal Information */}
         <fieldset className="space-y-4 border p-4 rounded-md">
           <legend className="text-sm font-semibold -mb-1.5">
@@ -273,13 +271,14 @@ export default function CreateStaffForm({
             />
             <div
               className={cn(
-                (!staffType || staffType === "Non_Teaching") && "md:col-span-2"
+                (!staffType || staffType === "Non_Teaching") && "md:col-span-2",
               )}>
               <InputWithLabel
                 name="ghcardNumber"
                 fieldTitle="Ghana Card Number"
                 placeholder="Enter Ghana Card number"
                 schema={StaffSchema}
+                className="max-w-4xl"
               />
             </div>
             {staffType === "Teaching" && (
@@ -296,6 +295,7 @@ export default function CreateStaffForm({
                     fieldTitle="License Number"
                     placeholder="Enter license number"
                     schema={StaffSchema}
+                    className="max-w-4xl"
                   />
                 </div>
               </>
@@ -336,25 +336,29 @@ export default function CreateStaffForm({
               />
             </div>
 
-            <SearchableMultiSelect
+            <MultiSelectCombox
               name="courses"
               fieldTitle="Assigned Courses"
-              placeholder="Select courses"
+              placeholder="--- Select courses ---"
               data={courses.map((course) => ({
                 id: course.id,
                 name: `${course.code} - ${course.title}`,
               }))}
               schema={StaffSchema}
+              valueKey="id"
+              selectedKey="name"
             />
-            <SearchableMultiSelect
+            <MultiSelectCombox
               name="classes"
               fieldTitle="Assigned Classes"
-              placeholder="Select classes"
+              placeholder="--- Select classes ---"
               data={classes.map((cls) => ({
                 id: cls.id,
-                name: `${cls.name} (${cls.level})`,
+                name: `${cls.name} (${cls.level.split("_").join(" ")})`,
               }))}
               schema={StaffSchema}
+              valueKey="id"
+              selectedKey="name"
             />
           </fieldset>
         )}
@@ -393,12 +397,13 @@ export default function CreateStaffForm({
         </fieldset>
 
         {/* Action Buttons */}
-        <div className="flex justify-end space-x-4 pt-6 border-t">
+        <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-center space-x-4 pt-6 border-t">
           {id && onDelete && (
             <LoadingButton
               loading={isDeletePending as boolean}
               type="button"
               variant="destructive"
+              className="md:w-[25%]"
               onClick={async () => {
                 const ok = await confirmDelete();
                 ok && onDelete();
@@ -406,7 +411,10 @@ export default function CreateStaffForm({
               Delete Staff
             </LoadingButton>
           )}
-          <LoadingButton type="submit" loading={isPending as boolean}>
+          <LoadingButton
+            className="md:w-[25%]"
+            type="submit"
+            loading={isPending as boolean}>
             {id ? "Update Staff" : "Create Staff"}
           </LoadingButton>
         </div>

@@ -1,19 +1,19 @@
 "use client";
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import {
   Dialog,
+  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogContent,
 } from "@/components/ui/dialog";
-import { CourseResponseType } from "@/lib/types";
-import { useEffect, useState, useTransition } from "react";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { deleteCourse, getCourse, updateCourse } from "../actions/actions";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import CreateCourseForm from "../forms/create-course";
+import { CourseResponseType } from "@/lib/types";
 import { CoursesType } from "@/lib/validation";
+import { useEffect, useState, useTransition } from "react";
+import { toast } from "sonner";
+import { deleteCourse, getCourse, updateCourse } from "../actions/actions";
+import CreateCourseForm from "../forms/create-course";
 
 type CourseDetailType = Omit<
   CourseResponseType,
@@ -108,9 +108,7 @@ const EditCourseDialog = () => {
                 Please waiting data being fetched!
               </DialogDescription>
             </DialogHeader>
-            <div className="w-full h-full flex justify-center items-center">
-              <Loader2 className="animate-spin size-6" />
-            </div>
+            <ShowLoadingState />
           </DialogContent>
         )}
       </Dialog>

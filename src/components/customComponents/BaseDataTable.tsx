@@ -6,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import {
   ColumnDef,
   flexRender,
@@ -16,11 +17,13 @@ import {
 type BaseDatatableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  className?: string;
 };
 
 export const BaseDataTable = <TData, TValue>({
   columns,
   data,
+  className,
 }: BaseDatatableProps<TData, TValue>) => {
   const table = useReactTable({
     columns,
@@ -29,7 +32,7 @@ export const BaseDataTable = <TData, TValue>({
   });
 
   return (
-    <div className="rounded-md border">
+    <div className={cn("rounded-md border", className)}>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroups) => (
@@ -40,7 +43,7 @@ export const BaseDataTable = <TData, TValue>({
                 <TableHead key={header.id}>
                   {flexRender(
                     header.column.columnDef.header,
-                    header.getContext()
+                    header.getContext(),
                   )}
                 </TableHead>
               ))}

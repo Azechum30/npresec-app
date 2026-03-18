@@ -58,7 +58,7 @@ export default function UserButton() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="default"
-          className="w-fit bg-background hover:bg-accent md:w-full h-full flex justify-center md:justify-start text-left rounded-none py-2 items-center gap-x-3 border-0 hover:cursor-pointer">
+          className="bg-background hover:bg-accent w-full h-full flex justify-start text-left rounded-none py-2 items-center gap-x-3 border-0 hover:cursor-pointer">
           <Avatar className="border p-1.5">
             <AvatarImage src={user?.image!} />
             <AvatarFallback>CN</AvatarFallback>
@@ -66,11 +66,11 @@ export default function UserButton() {
           {!user ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
-            <span className=" hidden md:flex flex-col">
+            <span className=" flex flex-col">
               <span className="font-semibold text-accent-foreground">
                 {user.username}
               </span>
-              <span className="sm:hidden lg:inline-block text-xs text-muted-foreground">
+              <span className="inline-block text-xs text-muted-foreground">
                 {user.email}
               </span>
             </span>
