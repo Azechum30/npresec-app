@@ -1,21 +1,21 @@
 "use client";
-import { useForm, useWatch } from "react-hook-form";
+import { getClassesAction } from "@/app/(private)/(admin)/admin/classes/actions/server-actions";
+import { Form } from "@/components/ui/form";
 import {
   SingleStudentAttendance,
   SingleStudentAttendanceSchema,
   attendanceStatus,
 } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form } from "@/components/ui/form";
-import { useEffect, useState, useMemo } from "react";
-import { getClassesAction } from "@/app/(private)/(admin)/admin/classes/actions/server-actions";
+import { useEffect, useMemo, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
-import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
-import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
 import { getStudents } from "@/app/(private)/(admin)/admin/students/actions/action";
-import { StudentResponseType, ClassesResponseType } from "@/lib/types";
+import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
 import LoadingButton from "@/components/customComponents/LoadingButton";
+import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
+import { ClassesResponseType, StudentResponseType } from "@/lib/types";
 
 type MarkSingleStudentAttendanceFormProps = {
   onSubmitAction: (data: SingleStudentAttendance) => Promise<void>;
@@ -70,16 +70,16 @@ export const MarkSingleStudentAttendanceForm = ({
           setClasses(
             id
               ? classesPromise.data.filter(
-                  (cls) => cls.id === defaultValues?.classId
+                  (cls) => cls.id === defaultValues?.classId,
                 )
-              : classesPromise.data
+              : classesPromise.data,
           );
         }
 
         if (studentsPromise.students) {
           const students = id
             ? studentsPromise.students.filter(
-                (student) => student.id === defaultValues?.studentId
+                (student) => student.id === defaultValues?.studentId,
               )
             : studentsPromise.students;
 
@@ -103,9 +103,7 @@ export const MarkSingleStudentAttendanceForm = ({
       form.setValue("studentId", "");
       return students;
     } else if (id && defaultValues?.studentId) {
-      const student = allStudents.find(
-        (s) => s.id === defaultValues.studentId
-      );
+      const student = allStudents.find((s) => s.id === defaultValues.studentId);
       if (student) {
         return [
           {
@@ -161,7 +159,7 @@ export const MarkSingleStudentAttendanceForm = ({
           valueKey="id"
           selectedKey="fullName"
           placeholder="--Select Student--"
-          disabled={!classId}
+          disabled={!!classId}
         />
 
         <SelectWithLabel

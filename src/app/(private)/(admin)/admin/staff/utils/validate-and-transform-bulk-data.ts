@@ -1,4 +1,4 @@
-import { BulkCreateStaffType, StaffEditType } from "@/lib/validation";
+import { BulkCreateStaffType } from "@/lib/validation";
 
 export const validateAndTransformBulkData = ({ data }: BulkCreateStaffType) => {
   const transformedData = data.map((item) => ({
@@ -11,6 +11,7 @@ export const validateAndTransformBulkData = ({ data }: BulkCreateStaffType) => {
     licencedNumber: item.licencedNumber?.trim() || null,
     ssnitNumber: item.ssnitNumber?.trim() || null,
     birthDate: new Date(item.birthDate),
+    gender: item.gender.toLowerCase(),
     dateOfFirstAppointment: item.dateOfFirstAppointment
       ? new Date(item.dateOfFirstAppointment)
       : undefined,

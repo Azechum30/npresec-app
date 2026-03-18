@@ -9,7 +9,7 @@ export const transformStaffData = (
   data: BulkCreateStaffType["data"],
   departments: Department[],
   classes: Class[],
-  courses: Course[]
+  courses: Course[],
 ) => {
   const departmentMap = new Map(departments.map((d) => [d.name, d.id]));
   const classMap = new Map(classes.map((cl) => [cl.name, cl.id]));
@@ -49,6 +49,7 @@ export const transformAndValidateStaffData = (data: StaffType) => {
     ghcardNumber: data.ghcardNumber?.trim() || null,
     licencedNumber: data.licencedNumber?.trim() || null,
     ssnitNumber: data.ssnitNumber?.trim() || null,
+    gender: data.gender.toLowerCase(),
     dateOfFirstAppointment: data.dateOfFirstAppointment
       ? new Date(data.dateOfFirstAppointment)
       : undefined,

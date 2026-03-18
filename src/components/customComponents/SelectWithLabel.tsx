@@ -38,6 +38,7 @@ type SelectWithLabelProps<U = any> = {
   data: U[];
   valueKey?: keyof U;
   selectedKey?: keyof U;
+  disabled?: boolean;
 };
 
 export default function SelectWithLabel({
@@ -49,6 +50,7 @@ export default function SelectWithLabel({
   data,
   valueKey = "value" as any,
   selectedKey = "label" as any,
+  disabled,
 }: SelectWithLabelProps) {
   const form = useFormContext();
   const [open, setOpen] = React.useState(false);
@@ -82,6 +84,7 @@ export default function SelectWithLabel({
               <FormControl>
                 <Button
                   variant="outline"
+                  disabled={disabled}
                   role="combobox"
                   className={cn(
                     "w-full justify-between font-normal",

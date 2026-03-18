@@ -133,8 +133,8 @@ export async function getDashboardData() {
       }),
       prisma.student.count({ where: { gender: "Male" } }),
       prisma.student.count({ where: { gender: "Female" } }),
-      prisma.staff.count({ where: { gender: "MALE" } }),
-      prisma.staff.count({ where: { gender: "FEMALE" } }),
+      prisma.staff.count({ where: { gender: "male" } }),
+      prisma.staff.count({ where: { gender: "male" } }),
       prisma.student.count({
         where: { currentLevel: "Year_One", gender: "Male" },
       }),

@@ -10,7 +10,7 @@ import { StaffSchema, StaffType } from "@/lib/validation";
 import { createUserCredentials } from "@/utils/create-user-credentials";
 import { transformAndValidateStaffData } from "@/utils/staff-data-transformer";
 import { triggerImageUpload } from "@/utils/trigger-image-upload";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, updateTag } from "next/cache";
 import "server-only";
 import { checkExistingRelatedRecords } from "../utils/check-existing-related-records";
 import { getCachedStaff } from "../utils/get-cached-staff";
@@ -104,7 +104,7 @@ export const createStaff = async (values: unknown) => {
       void triggerSendEmail(emailData);
     }
 
-    void revalidateTag("staff", "seconds");
+    updateTag("staff");
 
     return { staff };
   } catch (error) {
