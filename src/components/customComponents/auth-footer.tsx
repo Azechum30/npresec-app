@@ -9,7 +9,7 @@ export const AuthFooter = () => {
     <div className="flex gap-4 justify-between items-center w-full">
       <div className="text-sm text-muted-foreground font-mono">
         Copyright &copy; <Suspense>{new Date().getFullYear()}</Suspense> |
-        NPRESEC
+        <span className="hidden md:inline-flex">NPRESEC</span>
       </div>
 
       <Suspense
@@ -29,7 +29,7 @@ const RenderFooterData = async () => {
   return (
     <div className="ml-auto flex items-center space-x-2 bg-gradient-to-br from-primary to-muted-foreground bg-clip-text text-transparent text-sm font-mono">
       <span className="flex items-center gap-1.5 text-muted-foreground">
-        Location
+        Location:
       </span>
       <span className="flex items-center gap-1.5">
         <Circle className="text-primary size-2 fill-primary" /> {result.city}

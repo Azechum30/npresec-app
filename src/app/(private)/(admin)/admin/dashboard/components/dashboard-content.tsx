@@ -131,17 +131,58 @@ export default function DashboardContent({
   const staffGender = [
     {
       name: "Male Staff",
-      value: data.counts.staffMales || 15,
+      value: data.counts.staffMales,
       fill: "var(--destructive)",
     },
     {
       name: "Female Staff",
-      value: data.counts.staffFemales || 15,
+      value: data.counts.staffFemales,
       fill: "var(--muted-foreground)",
     },
   ];
 
-  console.log(data.counts);
+  const staffDistributionPerDept = [
+    {
+      name: "General Arts",
+      value: data.counts.staffCount4GArt,
+      fill: "var(--ring)",
+    },
+    {
+      name: "Home Economics",
+      value: data.counts.staffCount4Home,
+      fill: "var(--destructive)",
+    },
+    {
+      name: "Technical",
+      value: data.counts.staffCount4Tech,
+      fill: "var(--foreground)",
+    },
+    {
+      name: "Visual Arts",
+      value: data.counts.staffCount4VArt,
+      fill: "var(--muted-foreground)",
+    },
+    {
+      name: "ICT",
+      value: data.counts.staffCount4Ict,
+      fill: "var(--chart-4)",
+    },
+    {
+      name: "Mathematics",
+      value: data.counts.staffCount4Math,
+      fill: "var(--chart-2)",
+    },
+    {
+      name: "Languages",
+      value: data.counts.staffCount4Math,
+      fill: "var(--sidebar-ring)",
+    },
+    {
+      name: "Agriculture",
+      value: data.counts.staffCount4Agric,
+      fill: "var(--card-foreground)",
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -194,57 +235,31 @@ export default function DashboardContent({
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartOptions}>
-              <BarChart data={departmentChartData}>
-                <defs>
-                  {/* Gradient for Chart 1 (Primary Copper) */}
-                  <linearGradient id="fillChart1" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--chart-1)"
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--chart-1)"
-                      stopOpacity={0.1}
-                    />
-                  </linearGradient>
-
-                  {/* Gradient for Chart 2 (Vibrant Purple) */}
-                  <linearGradient id="fillChart2" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--chart-2)"
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--chart-2)"
-                      stopOpacity={0.1}
-                    />
-                  </linearGradient>
-                </defs>
-
+              <BarChart
+                data={departmentChartData}
+                margin={{ top: 20, right: 0, left: -20, bottom: 0 }}>
                 <CartesianGrid
                   vertical={false}
-                  stroke="var(--border)"
-                  opacity={0.5}
-                  strokeDasharray={6}
-                  strokeWidth={2}
+                  strokeDasharray="3 3"
+                  className="bg-muted-foreground"
                 />
-
-                <Bar dataKey="students" radius={[6, 6, 0, 0]} strokeWidth={2}>
-                  {departmentChartData.map((_, index) => (
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12 }}
+                />
+                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                <Bar dataKey="students" radius={[6, 6, 0, 0]} barSize={40}>
+                  {departmentChartData.map((_, i) => (
                     <Cell
-                      key={`cell-${index}`}
-                      // Cycles through the gradient IDs defined above
-                      fill={`url(#fillChart${(index % 2) + 1})`}
-                      stroke={
-                        index % 2 === 0 ? "var(--chart-1)" : "var(--chart-2)"
-                      }
+                      key={`cell-${i}`}
+                      fill={COLORS[i % COLORS.length]}
+                      fillOpacity={0.8}
                     />
                   ))}
                 </Bar>
+                <ChartLegend />
               </BarChart>
             </ChartContainer>
           </CardContent>
@@ -381,10 +396,10 @@ export default function DashboardContent({
               Student gender distribution by Year Groups.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex items-center">
+          <CardContent className="flex flex-col items-center">
             <ChartContainer
               config={chartOptions}
-              className="min-h-[200px] w-full">
+              className="min-w-[250px] min-h-[250px]">
               <LineChart
                 data={yearGroupDistributionData}
                 margin={{ left: 12, right: 12 }}>
@@ -430,6 +445,108 @@ export default function DashboardContent({
               </div>
             </div>
           </CardFooter>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-7">
+        {/* Department Distribution Chart */}
+        <Card className="md:col-span-4 shadow-lg dark:bg-accent ">
+          <CardHeader>
+            <CardTitle className="text-lg">Class Enrollment</CardTitle>
+            <CardDescription className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+              Breakdown of students per class grouping
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartOptions}>
+              <BarChart
+                data={classChartData}
+                margin={{ top: 20, right: 0, left: -20, bottom: 0 }}>
+                <CartesianGrid
+                  vertical={false}
+                  strokeDasharray="3 3"
+                  className="bg-muted-foreground"
+                />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12 }}
+                />
+                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                <Bar dataKey="students" radius={[6, 6, 0, 0]} barSize={40}>
+                  {departmentChartData.map((_, i) => (
+                    <Cell
+                      key={`cell-${i}`}
+                      fill={COLORS[i % COLORS.length]}
+                      fillOpacity={0.8}
+                    />
+                  ))}
+                </Bar>
+                <ChartLegend />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        {/* Class Distribution Chart */}
+        <Card className="md:col-span-3 shadow-lg dark:bg-accent">
+          <CardHeader>
+            <CardTitle className="text-lg">
+              Teaching Staff Distribution
+            </CardTitle>
+            <CardDescription className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+              Teaching staff distribution per each acadmic department
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-4">
+            <ChartContainer
+              config={chartOptions}
+              className="min-w-full md:w-[250px] min-h-[250px]">
+              <PieChart className="flex flex-col gap-4">
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Pie
+                  data={staffDistributionPerDept}
+                  dataKey="value"
+                  innerRadius={60}
+                  outerRadius={80}
+                  strokeWidth={1}>
+                  <Label
+                    content={({ viewBox }) => {
+                      if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                        return (
+                          <text
+                            cx={viewBox.cx}
+                            cy={viewBox.cy}
+                            textAnchor="middle"
+                            dominantBaseline="middle">
+                            <tspan
+                              x={viewBox.cx}
+                              y={viewBox.cy}
+                              className="fill-foreground text-3xl font-bold">
+                              {data.counts.teachingStaffCount.toString()}
+                            </tspan>
+                            <tspan
+                              x={viewBox.cx}
+                              y={(viewBox.cy || 0) + 24}
+                              className="fill-muted-foreground">
+                              Teaching Staff
+                            </tspan>
+                          </text>
+                        );
+                      }
+                    }}
+                  />
+                </Pie>
+                <ChartLegend
+                  wrapperStyle={{
+                    lineHeight: "20px",
+                    gap: 4,
+                  }}
+                />
+              </PieChart>
+            </ChartContainer>
+          </CardContent>
         </Card>
       </div>
 

@@ -32,7 +32,11 @@ export const PublishResultsButton = () => {
       <input type="hidden" name="academicYear" value={academicYear ?? ""} />
       <input type="hidden" name="semester" value={semester ?? ""} />
 
-      <Button type="submit" disabled={!isMatch || isPending} size="lg">
+      <Button
+        className="w-full"
+        type="submit"
+        disabled={!isMatch || isPending}
+        size="lg">
         <Send className="size-5" />
         {isPending ? "Publishing..." : "Publish Class Grades"}
       </Button>

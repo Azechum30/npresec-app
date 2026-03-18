@@ -54,14 +54,19 @@ export default function EditStaffDialog() {
     prevDeletingRef.current = isDeleting;
   }, [isDeleting, error]);
 
+  const wpRef = useRef<boolean | null>(false);
+
   useEffect(() => {
-    if (updateSucess) {
+    const wasUpateSucess = wpRef.current;
+
+    if (wasUpateSucess && !isUpdating && updateSucess) {
       toast.success("Staff profile updated successfully");
       setTimeout(() => {
         onClose("editStaff");
       }, 100);
     }
-  }, [updateSucess, onClose]);
+    wpRef.current = isUpdating;
+  }, [updateSucess, isUpdating]);
 
   useEffect(() => {
     if (success) {

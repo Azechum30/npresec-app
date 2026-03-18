@@ -244,7 +244,7 @@ export const updateStaff = async (id: string, data: StaffType) => {
       ));
     }
 
-    void revalidateTag("staff", "seconds");
+    updateTag("staff");
 
     return { data: updatedRecord };
   } catch (error) {

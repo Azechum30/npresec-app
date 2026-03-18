@@ -16,6 +16,15 @@ export type DashboardData = {
     studentFemales: number;
     staffMales: number;
     staffFemales: number;
+    staffCount4GArt: number;
+    staffCount4Home: number;
+    staffCount4Tech: number;
+    staffCount4VArt: number;
+    staffCount4Ict: number;
+    staffCount4Agric: number;
+    staffCount4Math: number;
+    staffCount4Lang: number;
+    teachingStaffCount: number;
     yearGroupGender: {
       yearOneMales: number;
       yearTwoMales: number;
@@ -66,6 +75,15 @@ export async function getDashboardData() {
       studentFemales,
       staffMales,
       staffFemales,
+      staffCount4GArt,
+      staffCount4Home,
+      staffCount4Tech,
+      staffCount4VArt,
+      staffCount4Ict,
+      staffCount4Agric,
+      staffCount4Math,
+      staffCount4Lang,
+      teachingStaffCount,
       yearOneMales,
       yearTwoMales,
       yearThreeMales,
@@ -134,7 +152,16 @@ export async function getDashboardData() {
       prisma.student.count({ where: { gender: "Male" } }),
       prisma.student.count({ where: { gender: "Female" } }),
       prisma.staff.count({ where: { gender: "male" } }),
-      prisma.staff.count({ where: { gender: "male" } }),
+      prisma.staff.count({ where: { gender: "female" } }),
+      prisma.staff.count({ where: { department: { name: "General Arts" } } }),
+      prisma.staff.count({ where: { department: { name: "Home Economics" } } }),
+      prisma.staff.count({ where: { department: { name: "Technical" } } }),
+      prisma.staff.count({ where: { department: { name: "Visual Arts" } } }),
+      prisma.staff.count({ where: { department: { name: "ICT" } } }),
+      prisma.staff.count({ where: { department: { name: "Agriculture" } } }),
+      prisma.staff.count({ where: { department: { name: "Mathematics" } } }),
+      prisma.staff.count({ where: { department: { name: "Languages" } } }),
+      prisma.staff.count({ where: { staffType: "Teaching" } }),
       prisma.student.count({
         where: { currentLevel: "Year_One", gender: "Male" },
       }),
@@ -166,6 +193,15 @@ export async function getDashboardData() {
         studentFemales,
         staffMales,
         staffFemales,
+        staffCount4GArt,
+        staffCount4Home,
+        staffCount4Tech,
+        staffCount4VArt,
+        staffCount4Ict,
+        staffCount4Agric,
+        staffCount4Math,
+        staffCount4Lang,
+        teachingStaffCount,
         yearGroupGender: {
           yearOneMales,
           yearOneFemales,

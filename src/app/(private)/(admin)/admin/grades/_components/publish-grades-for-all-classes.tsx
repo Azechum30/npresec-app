@@ -35,6 +35,7 @@ export const PublishGradesForAllClassess = () => {
 
       <Button
         variant="outline"
+        className="w-full"
         type="submit"
         disabled={!isMatch || isPending}
         size="lg">

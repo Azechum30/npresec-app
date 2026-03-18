@@ -1,7 +1,7 @@
 "use client";
 import DataTable from "@/components/customComponents/data-table";
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
-import { NoDataFound } from "@/components/customComponents/no-data-found";
+import { Notification } from "@/components/customComponents/notification";
 import { getStudentGrades } from "../_actions/get-student-grades";
 import { useGetStudentsGradesColumns } from "../_hooks/use-get-students-grades-columns";
 import { StudentGradesSummaryDetail } from "./StudentGradesSummaryDetail";
@@ -24,7 +24,7 @@ export const RenderStudentsGradesTable = (props: Props) => {
         />
       ) : (
         <div className="mt-10">
-          <NoDataFound />
+          <Notification description="Kindly select the required filters and get data returned to you base on your." />
         </div>
       )}
     </>
