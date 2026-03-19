@@ -19,14 +19,29 @@ export default function PersonalInfoForm() {
 
   const form = useForm<PersonalInfoType>({
     resolver: zodResolver(PersonalInfoSchema),
-    defaultValues: {
-      ...personalInfo,
-      address: personalInfo.address || "",
-      middleName: personalInfo.middleName || "",
-      phone: personalInfo.phone || "",
-      nationality: personalInfo.nationality || "",
-      religion: personalInfo.religion || "",
-    },
+    defaultValues: personalInfo
+      ? {
+          ...personalInfo,
+          address: personalInfo.address || "",
+          middleName: personalInfo.middleName || "",
+          phone: personalInfo.phone || "",
+          nationality: personalInfo.nationality || "",
+          religion: personalInfo.religion || "",
+        }
+      : {
+          birthDate: "",
+          address: "",
+          email: "",
+          firstName: "",
+          gender: "",
+          imageFile: undefined,
+          lastName: "",
+          middleName: "",
+          nationality: "",
+          phone: "",
+          photoURL: "",
+          religion: "",
+        },
     mode: "onBlur",
   });
 

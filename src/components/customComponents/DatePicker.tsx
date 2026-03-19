@@ -51,7 +51,7 @@ export default function DatePicker({
   placeholder,
   className,
   restrictToCurrentDay = false,
-  startYear = getYear(new Date()) - 100,
+  startYear = getYear(new Date()) - 60,
   endYear = getYear(new Date()),
   fromMonth,
   disable = false,
@@ -175,25 +175,30 @@ export default function DatePicker({
             </SelectContent>
           </Select>
           <Select
+            key={date ? String(getYear(date)) : `initial-${endYear}`}
             value={
               restrictToCurrentDay
                 ? String(currentYear)
-                : date
+                : date && isValid(date)
                   ? String(getYear(date))
-                  : ""
+                  : undefined
             }
             onValueChange={(value) => handleYearChange(parseInt(value, 10))}
             disabled={restrictToCurrentDay}>
             <SelectTrigger>
-              <SelectValue placeholder="Year" />
+              <SelectValue>
+                {date && isValid(date) ? getYear(date) : placeholder || endYear}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent position="popper" align="center">
               <SelectGroup>
-                {years.map((year) => (
-                  <SelectItem key={year} value={String(year)}>
-                    {year}
-                  </SelectItem>
-                ))}
+                {years
+                  .sort((a, b) => b - a)
+                  .map((year) => (
+                    <SelectItem key={year} value={String(year)}>
+                      {year}
+                    </SelectItem>
+                  ))}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -203,7 +208,17 @@ export default function DatePicker({
             mode="single"
             selected={date}
             onSelect={handleDateSelect}
-            month={restrictToCurrentDay ? currentDate : date}
+            hidden={{
+              before: new Date(startYear, 0, 0),
+              after: new Date(endYear, 12, 31),
+            }}
+            month={
+              restrictToCurrentDay
+                ? currentDate
+                : date && isValid(date)
+                  ? date
+                  : new Date(endYear, 0)
+            }
             disabled={(date) => {
               if (restrictToCurrentDay) {
                 // Only allow today's date
@@ -212,7 +227,7 @@ export default function DatePicker({
               // Default behavior for other cases
               return disableFutureDates
                 ? isAfter(date, currentDate)
-                : isBefore(date, new Date("1900-01-01"));
+                : isBefore(date, new Date(startYear));
             }}
             components={{
               // Hide next/prev month navigation when restricted
