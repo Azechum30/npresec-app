@@ -2,9 +2,8 @@
 
 import DataTable from "@/components/customComponents/data-table";
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
+import { Notification } from "@/components/customComponents/notification";
 import { StudentResponseType } from "@/lib/types";
-import { useEffect } from "react";
-import { toast } from "sonner";
 import { useGetStudentColumns } from "../_hooks/use-get-student-columns";
 import { StudentTransformer } from "../_utils/student-transformer";
 
@@ -19,29 +18,14 @@ export const RenderStudentsTable = ({
 }: RenderStudentsTableProps) => {
   const columns = useGetStudentColumns();
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-    }
-  }, [error]);
-
   return (
     <>
-      {/* Show different states based on data availability */}
       {students === undefined && error === undefined ? (
-        <div className="flex items-center justify-center py-8 w-full  h-full max-h-svh">
-          <p className="text-muted-foreground">
-            Please select a class to view students
-          </p>
-        </div>
+        <Notification description="Kindly select a class to filter students based on the selected class. " />
       ) : error ? (
         <ErrorComponent error={error} />
       ) : students && students.length === 0 ? (
-        <div className="flex items-center justify-center py-8">
-          <p className="text-muted-foreground">
-            No students found in the selected class
-          </p>
-        </div>
+        <Notification description="No student was found for the selected class." />
       ) : (
         <DataTable
           columns={columns}

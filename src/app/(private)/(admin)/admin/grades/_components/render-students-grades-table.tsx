@@ -24,7 +24,7 @@ export const RenderStudentsGradesTable = (props: Props) => {
         />
       ) : (
         <div className="mt-10">
-          <Notification description="Kindly select the required filters and get data returned to you base on your." />
+          <Notification description="Kindly select the required filters and get data returned to you base on the filter input values. Kindly remember that, if there are no published grades base on the filters selected, no data shall be returned to you." />
         </div>
       )}
     </>

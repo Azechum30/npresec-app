@@ -1,14 +1,14 @@
 "use client";
 
 import DataTable from "@/components/customComponents/data-table";
-import { FC, useEffect, useRef, useState } from "react";
-import { useGetPermissionsColumns } from "../hooks/use-get-permission-columns";
-import { getPermissions } from "../actions/queries";
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
-import { NoDataFound } from "@/components/customComponents/no-data-found";
-import { useHandleBulkPermissionDelete } from "../hooks/use-handle-bulk-permission-delete";
-import { toast } from "sonner";
 import { NotFoundIds } from "@/components/customComponents/not-found-Ids";
+import { Notification } from "@/components/customComponents/notification";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
+import { getPermissions } from "../actions/queries";
+import { useGetPermissionsColumns } from "../hooks/use-get-permission-columns";
+import { useHandleBulkPermissionDelete } from "../hooks/use-handle-bulk-permission-delete";
 
 type RenderPermissionTableProps = {
   permissions?: Awaited<ReturnType<typeof getPermissions>>["permissions"];
@@ -61,7 +61,7 @@ export const RenderPermissionsTable = ({
       {error ? (
         <ErrorComponent error={error} />
       ) : permissions === undefined ? (
-        <NoDataFound />
+        <Notification description="Kindly wait while the data is retrieved." />
       ) : (
         <DataTable
           columns={columns}

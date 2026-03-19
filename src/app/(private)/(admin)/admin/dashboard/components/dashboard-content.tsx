@@ -155,7 +155,7 @@ export default function DashboardContent({
     {
       name: "Technical",
       value: data.counts.staffCount4Tech,
-      fill: "var(--foreground)",
+      fill: "#FF7F50",
     },
     {
       name: "Visual Arts",
@@ -165,7 +165,7 @@ export default function DashboardContent({
     {
       name: "ICT",
       value: data.counts.staffCount4Ict,
-      fill: "var(--chart-4)",
+      fill: "#DAA06D",
     },
     {
       name: "Mathematics",
@@ -175,12 +175,17 @@ export default function DashboardContent({
     {
       name: "Languages",
       value: data.counts.staffCount4Math,
-      fill: "var(--sidebar-ring)",
+      fill: "#FF5F1F",
     },
     {
       name: "Agriculture",
       value: data.counts.staffCount4Agric,
-      fill: "var(--card-foreground)",
+      fill: "#F88379",
+    },
+    {
+      name: "Science",
+      value: data.counts.staffCount4Science,
+      fill: "var(--chart-5)",
     },
   ];
 
@@ -276,14 +281,14 @@ export default function DashboardContent({
           <CardContent className="flex flex-col items-center">
             <ChartContainer
               config={chartOptions}
-              className="w-[250px] h-[250px]">
+              className="mx-auto aspect-square min-h-[250px] max-w-[300px]">
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Pie
                   data={genderData}
                   dataKey="value"
-                  innerRadius={60}
-                  outerRadius={100}
+                  innerRadius="60%"
+                  outerRadius="90%"
                   strokeWidth={1}
                   paddingAngle={5}>
                   <Label
@@ -333,14 +338,14 @@ export default function DashboardContent({
           <CardContent className="flex flex-col items-center">
             <ChartContainer
               config={chartOptions}
-              className="h-[250px] w-[250px]">
+              className="mx-auto aspect-square min-h-[250px] max-w-[300px]">
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Pie
                   data={staffGender}
                   dataKey="value"
-                  innerRadius={60}
-                  outerRadius={100}>
+                  innerRadius="60%"
+                  outerRadius="90%">
                   <Label
                     content={({ viewBox }) => {
                       if (viewBox && "cx" in viewBox && "cy" in viewBox) {
@@ -502,14 +507,14 @@ export default function DashboardContent({
           <CardContent className="flex flex-col items-center gap-4">
             <ChartContainer
               config={chartOptions}
-              className="min-w-full md:w-[250px] min-h-[250px]">
-              <PieChart className="flex flex-col gap-4">
+              className="mx-auto aspect-square min-h-[250px] max-w-[300px]">
+              <PieChart>
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Pie
                   data={staffDistributionPerDept}
                   dataKey="value"
-                  innerRadius={60}
-                  outerRadius={80}
+                  innerRadius="60%"
+                  outerRadius="100%"
                   strokeWidth={1}>
                   <Label
                     content={({ viewBox }) => {
@@ -541,8 +546,11 @@ export default function DashboardContent({
                 <ChartLegend
                   wrapperStyle={{
                     lineHeight: "20px",
-                    gap: 4,
+                    bottom: "-5%",
+                    left: "-20%",
+                    right: "20%",
                   }}
+                  width={350}
                 />
               </PieChart>
             </ChartContainer>

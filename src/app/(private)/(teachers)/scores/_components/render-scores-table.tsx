@@ -1,14 +1,15 @@
 "use client";
 
 import DataTable from "@/components/customComponents/data-table";
+import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
+import { Notification } from "@/components/customComponents/notification";
 import { GradeResponseType } from "@/lib/types";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useGetScoresColumns } from "../_hooks/use-get-scores-columns";
-import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
-import { StudentScoreDetail } from "./StudentScoreDetail";
 import { useHandleBulkStudentScoresDelete } from "../_hooks/use-handle-bulk-student-scores-delete";
-import { useEffect, useRef } from "react";
 import { studentScoresTransformer } from "../_utils/student-scores-transformer";
+import { StudentScoreDetail } from "./StudentScoreDetail";
 type RenderScoresTableProps = {
   scores?: GradeResponseType[];
   error?: string;
@@ -45,19 +46,11 @@ export const RenderScoresTable = ({
   return (
     <>
       {scores === undefined && error === undefined ? (
-        <div className="flex items-center justify-center py-8 w-full  h-full max-h-svh">
-          <p className="text-muted-foreground">
-            Please select a class to view students scores
-          </p>
-        </div>
+        <Notification description="Kindly select the class you wish to view their scores to filter and get the data returned to you in real-time. Data is cached for performance and so you may be served with stale data. No worries, the server revalidates from time-to-time and if there is an on-demand need to purge the cache." />
       ) : error ? (
         <ErrorComponent error={error} />
       ) : scores && scores.length === 0 ? (
-        <div className="flex items-center justify-center py-8">
-          <p className="text-muted-foreground">
-            No students found in the selected class
-          </p>
-        </div>
+        <Notification description="No grades were found for the selected class. It is possible, the scores are yet to be captured for the said class and you need to wait patiently." />
       ) : (
         <DataTable
           columns={columns}

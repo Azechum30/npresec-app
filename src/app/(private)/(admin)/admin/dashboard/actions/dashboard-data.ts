@@ -24,6 +24,7 @@ export type DashboardData = {
     staffCount4Agric: number;
     staffCount4Math: number;
     staffCount4Lang: number;
+    staffCount4Science: number;
     teachingStaffCount: number;
     yearGroupGender: {
       yearOneMales: number;
@@ -83,6 +84,7 @@ export async function getDashboardData() {
       staffCount4Agric,
       staffCount4Math,
       staffCount4Lang,
+      staffCount4Science,
       teachingStaffCount,
       yearOneMales,
       yearTwoMales,
@@ -161,6 +163,7 @@ export async function getDashboardData() {
       prisma.staff.count({ where: { department: { name: "Agriculture" } } }),
       prisma.staff.count({ where: { department: { name: "Mathematics" } } }),
       prisma.staff.count({ where: { department: { name: "Languages" } } }),
+      prisma.staff.count({ where: { department: { name: "science" } } }),
       prisma.staff.count({ where: { staffType: "Teaching" } }),
       prisma.student.count({
         where: { currentLevel: "Year_One", gender: "Male" },
@@ -201,6 +204,7 @@ export async function getDashboardData() {
         staffCount4Agric,
         staffCount4Math,
         staffCount4Lang,
+        staffCount4Science,
         teachingStaffCount,
         yearGroupGender: {
           yearOneMales,
