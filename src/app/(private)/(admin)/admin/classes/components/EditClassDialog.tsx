@@ -15,6 +15,7 @@ import CreateClassForm from "../forms/create-class-form";
 
 import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import { useConfirmDelete } from "@/components/customComponents/useConfirmDelete";
+import { ClassesResponseType } from "@/lib/types";
 
 export default function EditClassDialog() {
   const { id, dialogs, onClose } = useGenericDialog();
@@ -28,44 +29,46 @@ export default function EditClassDialog() {
 
     const fetchClass = async () => {
       setDefaultValues(undefined);
-      const { error, data } = await getClass(id as string);
+      const result = await getClass(id as string);
 
-      if (error) {
-        return toast.error(error);
+      if (result.error) {
+        toast.error(result.error);
+        result.error = "";
+        return;
       }
-
-      const staffs = data?.staff.map((teacher) => teacher.id);
-
-      console.log(data);
-
-      setDefaultValues(
-        data
-          ? {
-              ...data,
-              code: data.code as string,
-              createdAt: data.createdAt,
-              departmentId: data.departmentId,
-              name: data.name,
-              level: data.level,
-              staff: staffs ? staffs : undefined,
-              maxCapacity: data.maxCapacity as number,
-            }
-          : undefined,
-      );
+      if (result.data) {
+        const { data } = result;
+        const staffs = data?.staff.map((teacher) => teacher.id);
+        setDefaultValues(
+          data
+            ? {
+                ...data,
+                code: data.code as string,
+                createdAt: data.createdAt,
+                departmentId: data.departmentId,
+                name: data.name,
+                level: data.level,
+                staff: staffs ? staffs : undefined,
+                maxCapacity: data.maxCapacity as number,
+              }
+            : undefined,
+        );
+      }
     };
 
     fetchClass();
   }, [id, dialogs]);
 
   const handleSubmit = async (values: ClassesType) => {
-    const { error, errors } = await updateClass({
+    const result = await updateClass({
       ...values,
       id: id as string,
     });
-    if (error) {
-      toast.error(error);
-    } else if (errors) {
-      return { errors };
+    if (result.error) {
+      toast.error(result.error);
+      result.error = "";
+    } else if (result.errors) {
+      return { errors: result.errors };
     } else {
       toast.success("Class record has been updated!");
       setTimeout(() => onClose("editClass"), 300);
@@ -74,25 +77,26 @@ export default function EditClassDialog() {
 
   const handleDelete = async () => {
     startDeleteTransition(async () => {
-      const { error } = await deleteClass({ id: id as string });
+      const result = await deleteClass({ id: id as string });
 
-      if (error) {
-        toast.error(error);
-      } else {
+      if (result.error) {
+        toast.error(result.error);
+        result.error = "";
+      } else if (result.class) {
         toast.success("class record has been deleted!");
         setTimeout(() => onClose("editClass"), 300);
+        result.class = {} as ClassesResponseType;
       }
     });
   };
 
-  console.log(defaultValues);
   return (
     <>
       <ConfirmDeleteComponent />
       <Dialog
         open={dialogs["editClass"]}
         onOpenChange={() => onClose("editClass")}>
-        {defaultValues !== undefined ? (
+        {defaultValues !== undefined && dialogs["editClass"] ? (
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Class</DialogTitle>

@@ -24,8 +24,14 @@ export const PublishGradesForAllClassess = () => {
   );
 
   useEffect(() => {
-    if (state.error) toast.error(state.error);
-    if (state.success) toast.success("Grades are published successfully");
+    if (state.error) {
+      toast.error(state.error);
+      state.error = "";
+    }
+    if (state.success) {
+      toast.success("Grades are published successfully");
+      state.success = false;
+    }
   }, [state]);
 
   return (

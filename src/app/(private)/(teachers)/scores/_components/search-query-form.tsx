@@ -1,15 +1,15 @@
 "use client";
 import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
 import { Form } from "@/components/ui/form";
+import { AssesessmentSchema, Semester } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Route } from "next";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import { useDebouncedCallback } from "use-debounce";
 import { z } from "zod";
 import { useFetchRequiredData } from "../_hooks/use-fetch-required-data";
-import { AssesessmentSchema, Semester } from "@/lib/validation";
-import { useEffect, useMemo } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useDebouncedCallback } from "use-debounce";
-import { Route } from "next";
 
 const formSchema = z.object({
   classId: z.string().min(1, "Class ID is required"),
@@ -61,6 +61,21 @@ export const SearchQueryForm = () => {
   const debouncedNavigate = useDebouncedCallback((params) => {
     router.push(`${pathname}?${params.toString()}` as Route);
   }, 300);
+
+  useEffect(() => {
+    if (
+      pathname !==
+      `/scores?classId=${selectedClass}&courseId=${selectedCourse}&semester=${selectedSemester}&academicYear=${selectedAcademicYear}&assessmentType=${selectedAssessmentType}`
+    ) {
+      form.reset({
+        academicYear: undefined,
+        assessmentType: "" as (typeof AssesessmentSchema)[number],
+        semester: "" as (typeof Semester)[number],
+        classId: "",
+        courseId: "",
+      });
+    }
+  }, [pathname, form]);
 
   useEffect(() => {
     const allParamsPresent =

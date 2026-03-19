@@ -404,7 +404,7 @@ export default function DashboardContent({
           <CardContent className="flex flex-col items-center">
             <ChartContainer
               config={chartOptions}
-              className="min-w-[250px] min-h-[250px]">
+              className="mx-auto aspect-video min-h-[250px] max-w-[300px] md:max-w-full">
               <LineChart
                 data={yearGroupDistributionData}
                 margin={{ left: 12, right: 12 }}>

@@ -7,26 +7,30 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import CreateClassForm from "../forms/create-class-form";
-import { useGenericDialog } from "../../../../../../hooks/use-open-create-teacher-dialog";
 import { ClassesType } from "@/lib/validation";
+import { useGenericDialog } from "../../../../../../hooks/use-open-create-teacher-dialog";
 import { createClassAction } from "../actions/server-actions";
+import CreateClassForm from "../forms/create-class-form";
 
+import { ClassesResponseType } from "@/lib/types";
 import { toast } from "sonner";
 
 export default function CreateClassDialog() {
   const { dialogs, onClose } = useGenericDialog();
   const handleSubmit = async (values: ClassesType) => {
-    const { error, errors, prismaErrors } = await createClassAction(values);
-    if (errors) {
-      return { errors };
-    } else if (prismaErrors) {
-      toast.error(prismaErrors?.join("\n"));
-    } else if (error) {
-      toast.error(error);
-    } else {
+    const result = await createClassAction(values);
+    if (result.errors) {
+      return { errors: result.errors };
+    } else if (result.prismaErrors) {
+      toast.error(result.prismaErrors?.join("\n"));
+      result.prismaErrors = [];
+    } else if (result.error) {
+      toast.error(result.error);
+      result.error = "";
+    } else if (result.class) {
       toast.success("class created successfully!");
       setTimeout(() => onClose("createClass"), 300);
+      result.class = {} as ClassesResponseType;
     }
   };
 
@@ -34,15 +38,17 @@ export default function CreateClassDialog() {
     <Dialog
       open={dialogs["createClass"]}
       onOpenChange={() => onClose("createClass")}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create a New Class</DialogTitle>
-          <DialogDescription>
-            Fill the form to create a new class group
-          </DialogDescription>
-        </DialogHeader>
-        <CreateClassForm onSubmit={handleSubmit} />
-      </DialogContent>
+      {dialogs["createClass"] && (
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create a New Class</DialogTitle>
+            <DialogDescription>
+              Fill the form to create a new class group
+            </DialogDescription>
+          </DialogHeader>
+          <CreateClassForm onSubmit={handleSubmit} />
+        </DialogContent>
+      )}
     </Dialog>
   );
 }

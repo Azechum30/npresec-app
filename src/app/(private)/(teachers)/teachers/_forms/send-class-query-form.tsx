@@ -1,10 +1,5 @@
 "use client";
-import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { useFetchClassess } from "../_hooks/use-fetch-classess";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import {
   Select,
   SelectContent,
@@ -12,7 +7,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Route } from "next";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
+import { useFetchClassess } from "../_hooks/use-fetch-classess";
 
 const formSchema = z.object({
   classId: z.string().min(1, "Class is required"),
@@ -28,6 +29,17 @@ export const SendClassQueryForm = () => {
   const searchParam = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+
+  const classId = useWatch({
+    name: "classId",
+    control: form.control,
+  });
+
+  useEffect(() => {
+    if (pathname !== `/teachers?${classId}`) {
+      form.reset({ classId: "" });
+    }
+  }, [pathname, form]);
 
   const handleSubmit = (value: string) => {
     const params = new URLSearchParams(searchParam);
@@ -49,8 +61,7 @@ export const SendClassQueryForm = () => {
                   onValueChange={(value) => {
                     handleSubmit(value);
                     field.onChange(value);
-                  }}
-                >
+                  }}>
                   <SelectTrigger className="w-full max-w-xs hover:cursor-pointer">
                     <SelectValue placeholder="--Select class--" />
                   </SelectTrigger>

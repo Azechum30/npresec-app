@@ -56,8 +56,25 @@ export const FilterStudentGradesForm = () => {
     name: "semester",
   });
 
+  useEffect(() => {
+    if (
+      pathname !==
+      `/admin/grades?classId=${classId}&academicYear=${academicYear}&semester=${semester}`
+    ) {
+      form.reset({
+        classId: "",
+        semester: "" as (typeof Semester)[number],
+        academicYear: new Date().getFullYear(),
+      });
+    }
+  }, [pathname, form]);
+
   const debouncedNavigate = useDebouncedCallback((params) => {
-    router.push(`${pathname}?${params.toString()}` as Route);
+    const allPresent = classId && academicYear && semester;
+
+    if (allPresent) {
+      router.push(`${pathname}?${params.toString()}` as Route);
+    }
   }, 300);
 
   useEffect(() => {
@@ -79,7 +96,7 @@ export const FilterStudentGradesForm = () => {
 
     if (!allParamsPresent) return;
 
-    const currentParams = new URLSearchParams(window.location.search);
+    const currentParams = new URLSearchParams();
 
     const isMatch =
       currentParams.get("classId") === classId &&
