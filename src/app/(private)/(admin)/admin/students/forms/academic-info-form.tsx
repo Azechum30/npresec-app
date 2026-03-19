@@ -1,18 +1,18 @@
+import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
+import InputWithLabel from "@/components/customComponents/InputWithLabel";
+import LoadingButton from "@/components/customComponents/LoadingButton";
+import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
 import { Form, FormDescription } from "@/components/ui/form";
 import { ClassesResponseType, DepartmentResponseType } from "@/lib/types";
 import { AcademicInfoSchema, AcademicInfoType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { getServerSideProps } from "../../departments/actions/getServerSideProps";
 import { getClassesAction } from "../../classes/actions/server-actions";
-import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
-import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
-import InputWithLabel from "@/components/customComponents/InputWithLabel";
-import LoadingButton from "@/components/customComponents/LoadingButton";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useStudentStore } from "../store";
+import { getServerSideProps } from "../../departments/actions/getServerSideProps";
 import { useCancelEditStudent } from "../hooks/use-cancel-edit-student";
+import { useStudentStore } from "../store";
 
 export default function AcademicInfoForm() {
   const { isEditing, academicInfo } = useStudentStore();
@@ -72,7 +72,7 @@ export default function AcademicInfoForm() {
         departmentPromise.departments.map((dept) => ({
           id: dept.id,
           name: dept.name,
-        }))
+        })),
       );
     };
 
@@ -173,6 +173,9 @@ export default function AcademicInfoForm() {
               fieldTitle="Date Enrolled"
               schema={AcademicInfoSchema}
               className="max-w-3xl"
+              startDate={new Date().getFullYear() - 6}
+              endDate={new Date().getFullYear()}
+              disableFutureDates={true}
             />
           </div>
           <div className="w-full">
@@ -181,6 +184,7 @@ export default function AcademicInfoForm() {
               fieldTitle="Graduation Date"
               schema={AcademicInfoSchema}
               className="max-w-3xl"
+              disable={true}
             />
           </div>
         </div>

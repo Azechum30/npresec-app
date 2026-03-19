@@ -13,7 +13,7 @@ export default function UsersPage() {
     <div>
       <div className="flex flex-col gap-3 md:flex-row md:justify-between md:items-center">
         <h1 className="text-base font-medium line-clamp-1">All Users</h1>
-        <OpenDialogs dialogKey="create-auth-user" />
+        <OpenDialogs dialogKey="create-auth-user" title="Add a new User" />
       </div>
       <Suspense fallback={<FallbackComponent />}>
         <RenderUserTable />

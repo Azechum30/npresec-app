@@ -1,14 +1,15 @@
-import InputWithLabel from "@/components/customComponents/InputWithLabel";
+import LoadingButton from "@/components/customComponents/LoadingButton";
+import ModernInputWithLabel from "@/components/customComponents/ModernInputWithLabel";
+import ModernPasswordInputWithLabel from "@/components/customComponents/ModernPasswordInputWithLabel";
+import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
 import { Form } from "@/components/ui/form";
 import { UserSchema, UserType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, SaveIcon } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { getRolesAction } from "../_actions/get-roles";
 import { toast } from "sonner";
-import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
-import LoadingButton from "@/components/customComponents/LoadingButton";
-import { Plus, SaveIcon } from "lucide-react";
+import { getRolesAction } from "../_actions/get-roles";
 
 type CreateUserFormProps = {
   onSubmit: (data: UserType) => void;
@@ -58,7 +59,7 @@ export const CreateUserForm = ({
             name: role.name.includes("_")
               ? role.name.split("_").join(" ")
               : role.name,
-          }))
+          })),
         );
         return;
       }
@@ -75,16 +76,22 @@ export const CreateUserForm = ({
         <form
           onSubmit={form.handleSubmit(handleFormSubmit)}
           className="space-y-4 p-4 border max-h-[80vh] rounded-md overflow-auto">
-          <InputWithLabel
+          <ModernInputWithLabel
             name="username"
             fieldTitle="Username"
             placeholder="JohnDoe"
+            showFocusRing={true}
+            schema={UserSchema}
+            className="h-10"
           />
-          <InputWithLabel
+          <ModernInputWithLabel
             name="email"
             fieldTitle="Email"
             placeholder="johndoe@example.com"
             type="email"
+            showFocusRing={true}
+            schema={UserSchema}
+            className="h-10"
           />
 
           {isFetchingRoles ? (
@@ -99,17 +106,21 @@ export const CreateUserForm = ({
               placeholder="Select user role"
             />
           )}
-          <InputWithLabel
+          <ModernPasswordInputWithLabel
             name="password"
             fieldTitle="Password"
             placeholder="Enter at least 6 letters"
-            type="password"
+            showToggleButton={true}
+            schema={UserSchema}
+            className="h-10"
           />
-          <InputWithLabel
+          <ModernPasswordInputWithLabel
             name="confirmPassword"
             fieldTitle="Confirm Password"
             placeholder="Enter at least 6 letters"
-            type="password"
+            showToggleButton={true}
+            schema={UserSchema}
+            className="h-10"
           />
 
           <LoadingButton loading={isPending as boolean}>

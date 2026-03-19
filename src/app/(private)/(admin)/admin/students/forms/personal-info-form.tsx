@@ -100,6 +100,9 @@ export default function PersonalInfoForm() {
               fieldTitle="Date of Birth"
               schema={PersonalInfoSchema}
               className="max-w-4xl"
+              disableFutureDates={true}
+              startDate={new Date().getFullYear() - 26}
+              endDate={new Date().getFullYear() - 12}
             />
           </div>
           <div className="w-full">

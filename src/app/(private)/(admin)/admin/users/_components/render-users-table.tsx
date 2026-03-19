@@ -2,7 +2,7 @@
 
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import DataTable from "@/components/customComponents/data-table";
-import { NoDataFound } from "@/components/customComponents/no-data-found";
+import { Notification } from "@/components/customComponents/notification";
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
 import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
@@ -21,35 +21,36 @@ type RenderUsersTableProps = {
 
 export const RenderUsersTable = ({ users, error }: RenderUsersTableProps) => {
   const columns = useGetUsersColumns();
-  const { handleUsersDelete, isDeleteSuccess, isError, userDeleteCount } =
+  const { handleUsersDelete, isDeleteSuccess, userDeleteCount, ...rest } =
     useHandleUsersDelete();
   const { preferredDateFormat } = useUserPreferredDateFormat();
 
   const userDataTransformer = useMemo(
     () => exportUsersDataTransformer(preferredDateFormat),
-    [preferredDateFormat]
+    [preferredDateFormat],
   );
 
   useEffect(() => {
-    if (isError) {
-      toast.error(isError);
+    if (rest.isError) {
+      toast.error(rest.isError);
+      rest.isError = "";
       return;
     }
 
     if (isDeleteSuccess) {
       toast.success(
-        `${userDeleteCount} ${userDeleteCount > 1 || userDeleteCount === 0 ? "users" : "user"} deleted successfully`
+        `${userDeleteCount} ${userDeleteCount > 1 || userDeleteCount === 0 ? "users" : "user"} deleted successfully`,
       );
     }
-  }, [isError, isDeleteSuccess, userDeleteCount]);
+  }, [rest, isDeleteSuccess, userDeleteCount]);
 
   return (
     <>
       {error ? (
         <ErrorComponent error={error} />
       ) : users === undefined ? (
-        <NoDataFound />
-      ) : (
+        <Notification />
+      ) : users.length > 0 ? (
         <DataTable
           columns={columns}
           data={users}
@@ -60,6 +61,8 @@ export const RenderUsersTable = ({ users, error }: RenderUsersTableProps) => {
           transformer={userDataTransformer}
           filename="users-list"
         />
+      ) : (
+        <Notification description="No data found from the database server." />
       )}
       <UpdateUserPermissionsDialog />
       <UpdateUserRoleModal />
