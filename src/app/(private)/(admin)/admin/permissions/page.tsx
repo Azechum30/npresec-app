@@ -17,7 +17,10 @@ export default function PermissionsPage() {
         <h1 className="text-base font-semibold line-clamp-1">
           All Permissions
         </h1>
-        <OpenDialogs dialogKey="create-permission" />
+        <OpenDialogs
+          dialogKey="create-permission"
+          title="Add a new Permission"
+        />
       </div>
       <Suspense fallback={<FallbackComponent />}>
         <RenderPermissionsDataTable />

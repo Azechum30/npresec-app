@@ -2,6 +2,7 @@ import CheckboxWithArrayValues from "@/components/customComponents/CheckboxWithV
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import LoadingButton from "@/components/customComponents/LoadingButton";
+import { MultiSelectCombox } from "@/components/customComponents/mult-select-combox";
 import { Form } from "@/components/ui/form";
 import {
   UserPermissionsFormSchema,
@@ -77,7 +78,7 @@ export const UpdateUserPermissionsForm = ({
           />
         </div>
 
-        {roles && roles.length > 0 && (
+        {roles && roles.length > 0 && permissions && permissions.length > 0 && (
           <fieldset className="border rounded-md p-3">
             <legend className="px-1.5 text-sm">User Assigned Roles</legend>
             <CheckboxWithArrayValues
@@ -96,36 +97,38 @@ export const UpdateUserPermissionsForm = ({
         {fetchError ? (
           <ErrorComponent error={fetchError} />
         ) : isFetching ? (
-          <span>Loading Permissions...</span>
+          <span className="block animate-pulse bg-gradient-to-r from-primary/10 to-muted-foreground/10 rounded-md border p-1.5">
+            Loading Permissions...
+          </span>
         ) : (
-          <div className="w-full ">
-            {permissions && permissions.length > 0 && (
-              <CheckboxWithArrayValues
-                name="permissions"
-                fieldTitle="Permissions"
-                schema={UserPermissionsFormSchema}
-                data={permissions}
-                valueKey="id"
-                labelKey="name"
-                className="grid grid-cols-2 gap-3 w-full"
-              />
-            )}
-          </div>
+          <>
+            <div className="w-full ">
+              {permissions && permissions.length > 0 && (
+                <MultiSelectCombox
+                  name="permissions"
+                  fieldTitle="Permissions"
+                  schema={UserPermissionsFormSchema}
+                  data={permissions}
+                  valueKey="id"
+                  selectedKey="name"
+                />
+              )}
+            </div>
+            <LoadingButton loading={isPending as boolean}>
+              {id ? (
+                <>
+                  <Save />
+                  {isPending ? "Saving Persissions..." : "Save Permissions"}
+                </>
+              ) : (
+                <>
+                  <Plus />
+                  {isPending ? "Creating Permissions" : "Create Permissions"}
+                </>
+              )}
+            </LoadingButton>
+          </>
         )}
-
-        <LoadingButton loading={isPending as boolean}>
-          {id ? (
-            <>
-              <Save />
-              {isPending ? "Saving Persissions..." : "Save Permissions"}
-            </>
-          ) : (
-            <>
-              <Plus />
-              {isPending ? "Creating Permissions" : "Create Permissions"}
-            </>
-          )}
-        </LoadingButton>
       </form>
     </Form>
   );

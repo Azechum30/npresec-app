@@ -61,8 +61,8 @@ export const RenderPermissionsTable = ({
       {error ? (
         <ErrorComponent error={error} />
       ) : permissions === undefined ? (
-        <Notification description="Kindly wait while the data is retrieved." />
-      ) : (
+        <Notification />
+      ) : permissions.length > 0 ? (
         <DataTable
           columns={columns}
           data={permissions}
@@ -71,6 +71,8 @@ export const RenderPermissionsTable = ({
             handleBulkPermissionDelete(rowIds);
           }}
         />
+      ) : (
+        <Notification description="No permissions were found from the database server." />
       )}
       {notFoundIds && <NotFoundIds missingIds={notFoundIds} />}
     </>

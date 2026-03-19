@@ -1,4 +1,5 @@
 "use client";
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +8,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { UpdateUserPermissionsForm } from "../_forms/update-user-permissions-form";
@@ -21,6 +21,7 @@ export const UpdateUserPermissionsDialog = () => {
     useUpdateUserPermissions();
 
   const prevUpdateSuccessRef = useRef(false);
+  const wasUpdateErrorRef = useRef(false);
   useEffect(() => {
     const wasUpdateSuccess = prevUpdateSuccessRef.current;
     if (wasUpdateSuccess && !isPending && updateSuccess) {
@@ -32,13 +33,25 @@ export const UpdateUserPermissionsDialog = () => {
     prevUpdateSuccessRef.current = isPending;
   }, [updateSuccess, isPending, onClose]);
 
-  if (!isFetchingUser && fetchError) {
-    return toast.error(fetchError);
-  }
+  useEffect(() => {
+    const wasError = wasUpdateErrorRef.current;
 
-  if (updateError && !isPending) {
-    return toast.error(updateError);
-  }
+    if (wasError && !isPending && updateError) {
+      toast.error(updateError);
+    }
+    wasUpdateErrorRef.current = isPending;
+  }, [isPending, updateError]);
+
+  const wasFetchErrorRef = useRef(false);
+
+  useEffect(() => {
+    const wasFetchError = wasFetchErrorRef.current;
+
+    if (wasFetchError && !isFetchingUser && fetchError) {
+      toast.error(fetchError);
+    }
+    wasFetchErrorRef.current = isFetchingUser;
+  }, [isFetchingUser, fetchError]);
 
   const defaultValues = user
     ? {
@@ -54,13 +67,14 @@ export const UpdateUserPermissionsDialog = () => {
     <Dialog
       open={dialogs["update-user-permissions"]}
       onOpenChange={() => onClose("update-user-permissions")}>
-      {defaultValues ? (
+      {defaultValues && dialogs["update-user-permissions"] && id ? (
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Update User Permissions</DialogTitle>
             <DialogDescription>
-              Update the permissions for the user by selecting the permissions
-              from the list below.
+              Update the permissions for the selected user. Kindly be informed
+              that the permissions you assign to this user will be propagated
+              across all users with the same role as the selected user.
             </DialogDescription>
           </DialogHeader>
           <UpdateUserPermissionsForm
@@ -78,9 +92,7 @@ export const UpdateUserPermissionsDialog = () => {
               Please wait while we load the user details.
             </DialogDescription>
           </DialogHeader>
-          <div className="w-full h-full flex justify-center items-center">
-            <Loader2 className="size-6 animate-spin" />
-          </div>
+          <ShowLoadingState />
         </DialogContent>
       )}
     </Dialog>

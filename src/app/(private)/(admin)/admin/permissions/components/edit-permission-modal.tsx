@@ -1,10 +1,6 @@
 "use client";
 
-import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { useEffect, useState, useTransition } from "react";
-import { getPermission } from "../actions/queries";
-import { PermissionResponseType } from "@/lib/types";
-import { toast } from "sonner";
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import {
   Dialog,
   DialogContent,
@@ -12,10 +8,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CreatePermissionForm } from "../forms/create-permission-form";
-import { Loader2 } from "lucide-react";
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
+import { PermissionResponseType } from "@/lib/types";
 import { PermissionType } from "@/lib/validation";
+import { useEffect, useState, useTransition } from "react";
+import { toast } from "sonner";
 import { UpdatePermission } from "../actions/mutations";
+import { getPermission } from "../actions/queries";
+import { CreatePermissionForm } from "../forms/create-permission-form";
 
 export const EditPermissionModal = () => {
   const { dialogs, id, onClose } = useGenericDialog();
@@ -67,35 +67,30 @@ export const EditPermissionModal = () => {
           if (!open) setDefaultValues(undefined);
           onClose("edit-permission");
         }}>
-        {dialogs["edit-permission"] && !!id && (
+        {dialogs["edit-permission"] && !!id && defaultValues ? (
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>
-                {!isPending && defaultValues
-                  ? "Edit Permission"
-                  : "Loading Data"}
-              </DialogTitle>
+              <DialogTitle>Update Permission</DialogTitle>
               <DialogDescription>
-                {!isPending && defaultValues
-                  ? "Make changes to permission and save in realtime!"
-                  : ""}
+                Kindly make changes to the selected permission and save it in
+                real-time
               </DialogDescription>
             </DialogHeader>
-            {dialogs["edit-permission"] &&
-              !!id &&
-              (!isPending && defaultValues ? (
-                <CreatePermissionForm
-                  onSubmit={handleUpdate}
-                  defaultValues={{ permissions: [defaultValues] }}
-                  id={id}
-                  isPending={isUpdatingPermission}
-                />
-              ) : (
-                <div className="flex gap-2 justify-center items-center h-full">
-                  <Loader2 className="size-8 animate-spin" />
-                  <span>Loading permission data</span>
-                </div>
-              ))}
+
+            <CreatePermissionForm
+              onSubmit={handleUpdate}
+              defaultValues={{ permissions: [defaultValues] }}
+              id={id}
+              isPending={isUpdatingPermission}
+            />
+          </DialogContent>
+        ) : (
+          <DialogContent>
+            <DialogHeader className="sr-only">
+              <DialogTitle>Loading Data</DialogTitle>
+              <DialogDescription>Data is loading</DialogDescription>
+            </DialogHeader>
+            <ShowLoadingState />
           </DialogContent>
         )}
       </Dialog>

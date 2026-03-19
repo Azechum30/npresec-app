@@ -1,6 +1,6 @@
 "use client";
 
-import LoadingState from "@/components/customComponents/Loading";
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { cn } from "@/lib/utils";
 import { UserRoleUpdateType } from "@/lib/validation";
 import { useTransition } from "react";
 import { toast } from "sonner";
@@ -51,14 +50,16 @@ export const UpdateUserRoleModal = () => {
       <Dialog
         open={dialogs["update-user-role"] === true ? true : false}
         onOpenChange={() => onClose("update-user-role")}>
-        <DialogContent className={cn(!defaultValues && "w-fit")}>
-          {defaultValues ? (
+        <DialogContent>
+          {defaultValues && dialogs["update-user-role"] && id ? (
             <>
               <DialogHeader>
                 <DialogTitle>Update User Role</DialogTitle>
                 <DialogDescription>
-                  Kindly update the selected user&apos;s role and save it in
-                  real-time
+                  This allows you to update the role of the selected user.
+                  Kindly be informed that a user can have more than one role
+                  depending on what the user does in the organization. Think
+                  critically before changing the user&apos;s role.
                 </DialogDescription>
               </DialogHeader>
 
@@ -75,7 +76,7 @@ export const UpdateUserRoleModal = () => {
                 <DialogTitle>Loading User data</DialogTitle>,
                 <DialogDescription></DialogDescription>
               </DialogHeader>
-              <LoadingState />
+              <ShowLoadingState />
             </>
           )}
         </DialogContent>

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { revalidatePath, updateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 type EntityTpe = "user" | "boardMember";
 export const updateDbTable = async (
@@ -12,9 +12,9 @@ export const updateDbTable = async (
       where: { id: entityId },
       data: { image: pictureUrl },
     });
-    updateTag("students-list");
-    updateTag("users-list");
-    updateTag("staff-list");
+    revalidateTag("students-list", "seconds");
+    revalidateTag("users-list", "seconds");
+    revalidateTag("staff-list", "seconds");
     return { success: true };
   }
 
@@ -22,6 +22,6 @@ export const updateDbTable = async (
     where: { id: entityId },
     data: { picture: pictureUrl },
   });
-  revalidatePath("/admin/board-of-governors");
+  revalidateTag("boardMembers-list", "seconds");
   return { success: true };
 };

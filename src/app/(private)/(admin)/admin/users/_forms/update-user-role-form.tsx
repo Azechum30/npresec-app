@@ -1,8 +1,8 @@
 "use client";
 
-import CheckboxWithArrayValues from "@/components/customComponents/CheckboxWithValues";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import LoadingButton from "@/components/customComponents/LoadingButton";
+import { MultiSelectCombox } from "@/components/customComponents/mult-select-combox";
 import { Form } from "@/components/ui/form";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserRoleUpdateType } from "@/lib/validation";
@@ -66,25 +66,15 @@ export const UpdateUserRoleForm = ({
         </div>
 
         {isFetchingRolePending ? (
-          <div className="flex flex-col space-y-2">
-            Fetching Roles...
-            <Skeleton className="w-full h-6 animate-pulse" />
-            <Skeleton className="w-md h-6 animate-pulse" />
-            <Skeleton className="w-sm h-6 animate-pulse" />
+          <div className="flex flex-col space-y-1 max-w-lg h-full mx-auto p-1.5">
+            <span className="mb-2 block">Fetching Roles...</span>
+            <Skeleton className="w-full max-w-md h-4 animate-pulse" />
+            <Skeleton className="w-full max-w-sm h-4 animate-pulse" />
+            <Skeleton className="w-full max-w-md h-4 animate-pulse" />
           </div>
         ) : (
           <>
-            {/* <SelectWithLabel
-              name="roleId"
-              fieldTitle={id ? "Update Role" : "Role"}
-              disabled={isPending}
-              data={roles ?? []}
-              valueKey="id"
-              selectedKey="name"
-              placeholder="Select Role"
-            /> */}
-
-            <CheckboxWithArrayValues
+            <MultiSelectCombox
               name="roleId"
               fieldTitle="Roles"
               data={
@@ -93,7 +83,7 @@ export const UpdateUserRoleForm = ({
                   name: rs.name.split("_").join(" "),
                 })) ?? []
               }
-              labelKey="name"
+              selectedKey="name"
               valueKey="id"
               className="space-y-2"
             />

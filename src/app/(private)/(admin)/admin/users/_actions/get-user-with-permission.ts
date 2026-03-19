@@ -21,8 +21,6 @@ export const getUserPermisions = async (
 
     if (!user) return { error: "No user found" };
 
-    console.log("Fetched user data in getUserPermisions:", user);
-
     return { user };
   } catch (e) {
     console.error("Could not fetch user", e);

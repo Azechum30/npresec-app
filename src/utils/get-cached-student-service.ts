@@ -7,10 +7,8 @@ export const getCachedStudentService = async () => {
   cacheTag("students-list");
   cacheLife("max");
 
-  const students = await prisma.student.findMany({
+  return await prisma.student.findMany({
     select: StudentSelect,
     orderBy: { createdAt: "desc" },
   });
-
-  return students;
 };

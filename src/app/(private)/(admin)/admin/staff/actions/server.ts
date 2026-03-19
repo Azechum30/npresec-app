@@ -10,7 +10,7 @@ import { StaffSchema, StaffType } from "@/lib/validation";
 import { createUserCredentials } from "@/utils/create-user-credentials";
 import { transformAndValidateStaffData } from "@/utils/staff-data-transformer";
 import { triggerImageUpload } from "@/utils/trigger-image-upload";
-import { revalidateTag, updateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import "server-only";
 import { checkExistingRelatedRecords } from "../utils/check-existing-related-records";
 import { getCachedStaff } from "../utils/get-cached-staff";
@@ -104,7 +104,7 @@ export const createStaff = async (values: unknown) => {
       void triggerSendEmail(emailData);
     }
 
-    updateTag("staff");
+    updateTag("staff-list");
 
     return { staff };
   } catch (error) {
@@ -244,7 +244,7 @@ export const updateStaff = async (id: string, data: StaffType) => {
       ));
     }
 
-    updateTag("staff");
+    updateTag("staff-list");
 
     return { data: updatedRecord };
   } catch (error) {
@@ -303,7 +303,7 @@ export const deleteStaffRequest = async (id: string) => {
       return { error: `No staff with ID ${id} found!` };
     }
 
-    void revalidateTag("staff", "seconds");
+    updateTag("staff-list");
 
     return { success: true };
   } catch (error) {
@@ -343,7 +343,7 @@ export const bulkDeleteStaff = async (rows: string[], user?: any) => {
 
     if (!count) return { error: "Could not delete records!" };
 
-    void revalidateTag("staff", "seconds");
+    updateTag("staff-list");
 
     return { count };
   } catch (error) {

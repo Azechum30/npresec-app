@@ -6,8 +6,7 @@ import "server-only";
 
 export const fetchAllPermissions = async () => {
   try {
-    const { user, hasPermission } =
-      await getUserPermissions("view:permissions");
+    const { hasPermission } = await getUserPermissions("view:permissions");
     if (!hasPermission) return { error: "Permission denied!" };
 
     const permissions = await getCachedPermissions();

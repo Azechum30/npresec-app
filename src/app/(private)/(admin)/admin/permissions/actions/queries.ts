@@ -19,8 +19,6 @@ export const getPermissions = async () => {
 
     const permissions = await getCachedPermissions();
 
-    console.log("Available Permissions", permissions);
-
     return { permissions: permissions ?? [] };
   } catch (e) {
     Sentry.captureException(e);
@@ -32,7 +30,7 @@ export const getPermissions = async () => {
 };
 
 export const getPermission = async (
-  id: string | Prisma.PermissionWhereUniqueInput
+  id: string | Prisma.PermissionWhereUniqueInput,
 ) => {
   try {
     const { hasPermission } = await getUserPermissions("view:permissions");

@@ -1,3 +1,4 @@
+import { ApproveOrDisapproveButton } from "@/components/customComponents/apporve-or-disapprove-button";
 import { GenericActions } from "@/components/customComponents/GenericActions";
 import { RowSelections } from "@/components/customComponents/RowSelections";
 import { Badge } from "@/components/ui/badge";
@@ -76,10 +77,7 @@ export const useGetUsersColumns = () => {
       header: "Email",
       accessorFn: (row) => row.email,
     },
-    {
-      header: "Username",
-      accessorFn: (row) => row.username,
-    },
+
     {
       header: "Role",
       cell: ({ row }) => {
@@ -121,6 +119,11 @@ export const useGetUsersColumns = () => {
           </Button>
         );
       },
+    },
+
+    {
+      header: "Approve",
+      cell: ({ row }) => <ApproveOrDisapproveButton row={row} />,
     },
     {
       header: "Actions",

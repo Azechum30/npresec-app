@@ -2,7 +2,7 @@ import { updateDbTable } from "@/utils/update-db-table";
 import { uploadToCloudinary } from "@/utils/upload-to-cloudinary";
 import { verifySignatureAppRouter } from "@upstash/qstash/dist/nextjs";
 import { v2 as cloudinary } from "cloudinary";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 async function handler(req: NextRequest) {
   try {
@@ -22,10 +22,8 @@ async function handler(req: NextRequest) {
       folder,
     );
 
-    let updatedSecureUrl: string = "";
-
     if (secure_url) {
-      updatedSecureUrl = cloudinary.url(public_id, {
+      const updatedSecureUrl = cloudinary.url(public_id, {
         transformation: [
           {
             width: 1200,
@@ -35,18 +33,19 @@ async function handler(req: NextRequest) {
           },
         ],
       });
+      await updateDbTable(entityType, entityId, updatedSecureUrl);
+
+      return NextResponse.json({ success: true });
     }
 
-    console.log("Updated secure URL:", updatedSecureUrl);
-
-    await updateDbTable(entityType, entityId, updatedSecureUrl);
-
-    console.log("Database updated successfully");
-    return Response.json({ success: true });
+    return NextResponse.json(
+      { error: "Failed to upload image" },
+      { status: 400 },
+    );
   } catch (e) {
     console.error("Error in API route:", e);
     const errorMessage = e instanceof Error ? e.message : "Unknown error";
-    return Response.json(
+    return NextResponse.json(
       { error: "Failed to process image", details: errorMessage },
       { status: 500 },
     );
