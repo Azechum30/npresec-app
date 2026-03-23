@@ -1,6 +1,6 @@
 import { updateDbTable } from "@/utils/update-db-table";
 import { uploadToCloudinary } from "@/utils/upload-to-cloudinary";
-import { verifySignatureAppRouter } from "@upstash/qstash/dist/nextjs";
+import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 import { v2 as cloudinary } from "cloudinary";
 import { NextRequest, NextResponse } from "next/server";
 

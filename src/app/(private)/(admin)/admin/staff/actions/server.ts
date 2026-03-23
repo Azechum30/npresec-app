@@ -1,26 +1,27 @@
 "use server";
 import { Prisma } from "@/generated/prisma/client";
+import { arcjetEmailProtection } from "@/lib/arcjet";
 import { getUserPermissions } from "@/lib/get-session";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
 import { resolveRole } from "@/lib/resolve-staff-role";
-import { triggerSendEmail } from "@/lib/trigger-send-email";
+import { env } from "@/lib/server-only-actions/validate-env";
+import { workflowClient } from "@/lib/server-only-actions/workflow";
 import { StaffSelect } from "@/lib/types";
 import { StaffSchema, StaffType } from "@/lib/validation";
-import { createUserCredentials } from "@/utils/create-user-credentials";
 import { transformAndValidateStaffData } from "@/utils/staff-data-transformer";
 import { triggerImageUpload } from "@/utils/trigger-image-upload";
 import { updateTag } from "next/cache";
 import "server-only";
 import { checkExistingRelatedRecords } from "../utils/check-existing-related-records";
 import { getCachedStaff } from "../utils/get-cached-staff";
-import { triggerStaffCreation } from "../utils/trigger-staff-creation";
 
 export const createStaff = async (values: unknown) => {
   try {
-    const { hasPermission } = await getUserPermissions("create:staff");
+    const { user: authUser, hasPermission } =
+      await getUserPermissions("create:staff");
 
-    if (!hasPermission) return { error: "Permission denied" };
+    if (!authUser || !hasPermission) return { error: "Permission denied" };
 
     const { data, error, success } = StaffSchema.safeParse(values);
 
@@ -33,6 +34,15 @@ export const createStaff = async (values: unknown) => {
       return {
         error: zodError.map((e) => `${e.field}: ${e.message}`).join("\n"),
       };
+    }
+
+    const { error: emailCheckError } = await arcjetEmailProtection(
+      data.email,
+      authUser.id,
+    );
+
+    if (emailCheckError) {
+      return { error: emailCheckError };
     }
 
     const normalizedStaff = transformAndValidateStaffData(data);
@@ -61,52 +71,18 @@ export const createStaff = async (values: unknown) => {
       return { error: duplicates };
     }
 
-    const { password, imageURL, imageFile, email, username, ...rest } =
-      normalizedStaff;
+    if (!staffRole) return { error: "No teaching role found!" };
 
-    const { user } = await createUserCredentials({
-      email: email,
-      username: username,
-      lastName: rest.lastName,
-      password,
-      roleId: staffRole?.id as string,
+    await workflowClient.trigger({
+      url: `${env.UPSTASH_WORKFLOW_URL}/api/single/onboard-staff/singleStaffCreationWorkflow`,
+      body: {
+        rawData: data,
+        userId: authUser.id,
+        source: "staff",
+        roleId: staffRole.id,
+      },
     });
-
-    const { staff, error: staffCreationError } = await triggerStaffCreation(
-      user.id,
-      rest,
-    );
-
-    if (staffCreationError) {
-      return { error: staffCreationError };
-    }
-
-    if (normalizedStaff.imageFile && staff) {
-      void (await triggerImageUpload(
-        imageFile as File,
-        staff.userId as string,
-        "staff",
-        "user" as const,
-      ));
-    }
-
-    if (staff) {
-      const emailData = {
-        to: [email as string],
-        username: staff.firstName,
-        data: {
-          lastName: staff.lastName,
-          email: email as string,
-          password: normalizedStaff.password,
-        },
-      };
-
-      void triggerSendEmail(emailData);
-    }
-
-    updateTag("staff-list");
-
-    return { staff };
+    return { success: true };
   } catch (error) {
     console.error("Could not create staff:", error);
 

@@ -1,12 +1,19 @@
-import { prisma } from "@/lib/prisma";
-import { validateAndTransformBulkData } from "./validate-and-transform-bulk-data";
-import { filterBools } from "./check-existing-related-records";
-import { resolveRole } from "@/lib/resolve-staff-role";
 import { generatePassword } from "@/lib/generatePassword";
+import { prisma } from "@/lib/prisma";
+import { resolveRole } from "@/lib/resolve-staff-role";
+import { filterBools } from "./check-existing-related-records";
+import { validateAndTransformBulkData } from "./validate-and-transform-bulk-data";
 
 export const checkEntityExistencePossibleDuplicates = async (
-  data: ReturnType<typeof validateAndTransformBulkData>
+  data: ReturnType<typeof validateAndTransformBulkData>,
 ) => {
+  // const { user, hasPermission } = await getUserPermissions("create:staff");
+
+  // if (!user || !hasPermission)
+  //   throw new Error(
+  //     "You do not have sufficient permissions to perform this task.",
+  //   );
+
   const emails = [...new Set(data.map((st) => st.email).filter(Boolean))];
   const usernames = [...new Set(data.map((st) => st.username).filter(Boolean))];
 
@@ -90,22 +97,22 @@ export const checkEntityExistencePossibleDuplicates = async (
   const existingRgNumbers = new Set(
     existingStaff
       .map((s) => s.rgNumber)
-      .filter((num): num is string => typeof num === "string")
+      .filter((num): num is string => typeof num === "string"),
   );
   const existingGhcardNumbers = new Set(
     existingStaff
       .map((s) => s.ghcardNumber)
-      .filter((num): num is string => typeof num === "string")
+      .filter((num): num is string => typeof num === "string"),
   );
   const existingLicencedNumbers = new Set(
     existingStaff
       .map((s) => s.licencedNumber)
-      .filter((num): num is string => typeof num === "string")
+      .filter((num): num is string => typeof num === "string"),
   );
   const existingSsnitNumbers = new Set(
     existingStaff
       .map((s) => s.ssnitNumber)
-      .filter((num): num is string => typeof num === "string")
+      .filter((num): num is string => typeof num === "string"),
   );
 
   const filteredData = data.filter((item) => {

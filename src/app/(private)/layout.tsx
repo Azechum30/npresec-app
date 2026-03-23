@@ -8,6 +8,7 @@ import { Loader } from "lucide-react";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { ReactNode, Suspense } from "react";
+import { RegisterClientSideBackgroundNotifications } from "./(admin)/admin/users/_hooks/register-client-side-background-notifications";
 
 export default function PrivateRoutesLayout({
   children,
@@ -38,7 +39,25 @@ const RenderSessionProvider = async ({ children }: { children: ReactNode }) => {
   }
   return (
     <SessionProvider value={user as ExtendedSession["user"]}>
-      {children}
+      <>
+        {children}
+        <RegisterClientSideBackgroundNotifications
+          userId={user.id}
+          eventNames={[
+            "Error-sending-staff-emails",
+            "bulk-rate-limit-exceeded",
+            "staff-progress",
+            "staff-emails-partial-complete",
+            "staff-bulk-creation-success",
+            "staff-onboarding-progress",
+            "staff-emails-sent-completed",
+            "staff-emails-sending-progress",
+            "staff-onboarding-email-sent",
+            "staff-onboarding-success",
+            "workflow-failed",
+          ]}
+        />
+      </>
     </SessionProvider>
   );
 };
@@ -46,7 +65,10 @@ const RenderSessionProvider = async ({ children }: { children: ReactNode }) => {
 const LayoutFallback = () => {
   return (
     <div className="w-full h-screen flex justify-center items-center">
-      <Loader className="size-20 text-primary animate-spin" />
+      <Loader className="size-16 text-primary animate-spin" />
+      <span className="font-mono text-base bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent animate-pulse">
+        Loading Data...
+      </span>
     </div>
   );
 };

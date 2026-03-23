@@ -1,17 +1,15 @@
 import "server-only";
 
 import arcjet, {
-  type ArcjetDecision,
   type BotOptions,
   type EmailOptions,
-  type ProtectSignupOptions,
-  type SlidingWindowRateLimitOptions,
-  detectBot,
-  protectSignup,
+  fixedWindow,
+  FixedWindowRateLimitOptions,
+  request,
   shield,
   slidingWindow,
+  validateEmail,
 } from "@arcjet/next";
-import ip from "@arcjet/ip";
 import { env } from "./server-only-actions/validate-env";
 
 export const aj = arcjet({
@@ -24,24 +22,80 @@ export const aj = arcjet({
   ],
 });
 
-const emailOptions = {
-  mode: process.env.NODE_ENV === "development" ? "DRY_RUN" : "LIVE",
+export const emailOptions = {
+  mode: "LIVE",
   block: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
 } satisfies EmailOptions;
 
-const botOptions = {
+export const botOptions = {
   mode: process.env.NODE_ENV === "development" ? "DRY_RUN" : "LIVE",
   allow: ["CATEGORY:SEARCH_ENGINE", "UPTIME_MONITOR"],
 } satisfies BotOptions;
 
-const rateLimitOptions = {
-  mode: process.env.NODE_ENV === "development" ? "DRY_RUN" : "LIVE",
-  interval: 60,
-  max: 100,
-} satisfies SlidingWindowRateLimitOptions<[]>;
+export const rateLimitOptions = {
+  mode: "LIVE",
+  max: 5,
+  window: 10,
+} satisfies FixedWindowRateLimitOptions<[]>;
 
-const signupOptions = {
-  email: emailOptions,
-  bots: botOptions,
-  rateLimit: rateLimitOptions,
-} satisfies ProtectSignupOptions<[]>;
+export const arcjetEmailProtection = async (
+  email: string,
+  userId: string,
+): Promise<{ success?: boolean; error?: string }> => {
+  const arj = aj.withRule(validateEmail(emailOptions));
+
+  const req = await request();
+
+  const decisions = await arj.protect(req, {
+    email,
+    userId,
+  });
+
+  if (decisions.isDenied()) {
+    return { error: "The provided email is not valid" };
+  }
+
+  return { success: true };
+};
+
+export const arcjetRatelimit = async (
+  userId: string,
+): Promise<{ success?: boolean; error?: string }> => {
+  const ajet = aj.withRule(fixedWindow(rateLimitOptions));
+  const req = await request();
+
+  const decisions = await ajet.protect(req, {
+    userId,
+  });
+
+  if (decisions.isDenied()) {
+    if (decisions.reason.isRateLimit()) {
+      return { error: "Too many requests. Please try again later!" };
+    }
+  }
+
+  return { success: true };
+};
+
+export const bulkRequestRateLimit = async (userId: string) => {
+  const ajet = aj.withRule(
+    slidingWindow({
+      mode: "LIVE",
+      interval: 10,
+      max: 30,
+    }),
+  );
+
+  const req = await request();
+  const decisions = await ajet.protect(req, {
+    userId,
+  });
+
+  if (decisions.isDenied()) {
+    if (decisions.reason.isRateLimit()) {
+      return { error: "Too many upload requests. Please try again later" };
+    }
+  }
+
+  return { success: true };
+};

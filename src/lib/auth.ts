@@ -2,7 +2,7 @@ import { sendEmail } from "@/utils/send-email";
 import { betterAuth, BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { customSession } from "better-auth/plugins";
+import { customSession, twoFactor } from "better-auth/plugins";
 import { prisma } from "./prisma";
 
 const authOptions = {
@@ -21,7 +21,7 @@ const authOptions = {
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
-    sendResetPassword: async ({ user, url }, request) => {
+    sendResetPassword: async ({ user, url }) => {
       void sendEmail({
         to: user.email,
         url: url,
@@ -30,13 +30,14 @@ const authOptions = {
     },
   },
   session: {
-    expiresIn: 60 * 60 * 24, // 1 day
-    updateAge: 60 * 60 * 7, // 1 day
+    expiresIn: 60 * 60 * 8, // 8 hours
+    updateAge: 60 * 60, // 1 hour
     cookieCache: {
       enabled: true,
       maxAge: 60 * 5, // 5 minutes,
       strategy: "compact",
     },
+    freshAge: 60 * 5,
   },
 
   user: {
@@ -172,10 +173,10 @@ export const auth = betterAuth({
         },
       } as const;
     }),
+    twoFactor(),
     nextCookies(),
   ],
 });
 
-// Export the inferred types from better-auth
 export type Session = typeof auth.$Infer.Session;
 export type User = typeof auth.$Infer.Session.user;

@@ -1,12 +1,14 @@
 "use client";
 
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
+import { useAuth } from "@/components/customComponents/SessionProvider";
 import DataTable from "@/components/customComponents/data-table";
 import { Notification } from "@/components/customComponents/notification";
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
 import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { getAllUsersAction } from "../_actions/get-all-users-action";
+import { RegisterClientSideBackgroundNotifications } from "../_hooks/register-client-side-background-notifications";
 import { useHandleUsersDelete } from "../_hooks/use-delete-users";
 import { useGetUsersColumns } from "../_hooks/use-get-users-columns";
 import { exportUsersDataTransformer } from "../_utils/export-users-data-transform";
@@ -24,6 +26,8 @@ export const RenderUsersTable = ({ users, error }: RenderUsersTableProps) => {
   const { handleUsersDelete, isDeleteSuccess, userDeleteCount, ...rest } =
     useHandleUsersDelete();
   const { preferredDateFormat } = useUserPreferredDateFormat();
+
+  const user = useAuth();
 
   const userDataTransformer = useMemo(
     () => exportUsersDataTransformer(preferredDateFormat),
@@ -67,6 +71,17 @@ export const RenderUsersTable = ({ users, error }: RenderUsersTableProps) => {
       <UpdateUserPermissionsDialog />
       <UpdateUserRoleModal />
       <CreateNewUserModal />
+      <RegisterClientSideBackgroundNotifications
+        userId={user?.id as string}
+        eventNames={[
+          "Onboarding-email-queue-error",
+          "user-onboarding-email-queued",
+          "User-email-sending-complete",
+          "Error-sending-user-email",
+          "rate-limit-exceeded",
+          "single-email-server-error",
+        ]}
+      />
     </>
   );
 };

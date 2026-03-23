@@ -12,7 +12,7 @@ import {
   gradelevels,
 } from "@/utils/generateStudentIndex";
 import { triggerRollback } from "@/utils/trigger-better-auth-user-delete";
-import { verifySignatureAppRouter } from "@upstash/qstash/dist/nextjs";
+import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -26,7 +26,7 @@ const handler = async (req: NextRequest) => {
     console.error("[BULK_STUDENT_UPLOAD] Error: No data received.");
     return NextResponse.json(
       { error: "Students data was not received!" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -62,23 +62,23 @@ const handler = async (req: NextRequest) => {
   if (!existingRole) {
     return NextResponse.json(
       { error: "Student role not configured." },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
   // 2. Filter Existing Records (Uniqueness Check)
   const existingEmailSet = new Set(
-    existingUsers.map((u) => u.email.toLowerCase())
+    existingUsers.map((u) => u.email.toLowerCase()),
   );
   const initialCount = data.data.length;
 
   const filteredData = data.data.filter((student) => {
     const isDuplicate = existingEmailSet.has(
-      student.email.trim().toLowerCase()
+      student.email.trim().toLowerCase(),
     );
     if (isDuplicate) {
       console.warn(
-        `[BULK_STUDENT_UPLOAD] Skipping existing user: ${student.email}`
+        `[BULK_STUDENT_UPLOAD] Skipping existing user: ${student.email}`,
       );
     }
     return !isDuplicate;
@@ -86,7 +86,7 @@ const handler = async (req: NextRequest) => {
 
   const skippedCount = initialCount - filteredData.length;
   console.info(
-    `[BULK_STUDENT_UPLOAD] Total: ${initialCount}, To Process: ${filteredData.length}, Skipped: ${skippedCount}`
+    `[BULK_STUDENT_UPLOAD] Total: ${initialCount}, To Process: ${filteredData.length}, Skipped: ${skippedCount}`,
   );
 
   // Maps for O(1) lookups
@@ -190,7 +190,7 @@ const handler = async (req: NextRequest) => {
         } catch (e) {
           if (createUserId) {
             console.warn(
-              `[BULK_STUDENT_UPLOAD] Rollback user ID: ${createUserId}`
+              `[BULK_STUDENT_UPLOAD] Rollback user ID: ${createUserId}`,
             );
             await triggerRollback(createUserId).catch(console.error);
           }
@@ -200,7 +200,7 @@ const handler = async (req: NextRequest) => {
               : "Unknown Error";
           results.errors.push(`Failed row ${student.email}: ${errorMsg}`);
         }
-      })
+      }),
     );
   }
 
@@ -214,7 +214,7 @@ const handler = async (req: NextRequest) => {
       failed: results.errors.length,
       errors: results.errors,
     },
-    { status: 200 }
+    { status: 200 },
   );
 };
 

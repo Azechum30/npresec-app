@@ -2,6 +2,8 @@ import { client } from "@/utils/qstash";
 import { env } from "./server-only-actions/validate-env";
 
 type EmailServiceData = {
+  userId: string;
+  source: string;
   to: string[];
   username: string;
   data: {

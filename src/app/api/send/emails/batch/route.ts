@@ -1,122 +1,73 @@
-import { NextRequest } from "next/server";
-import * as Sentry from "@sentry/nextjs";
-import { sendMail } from "@/lib/resend-config"; // your wrapper around Resend
+import { triggerServerNotification } from "@/lib/pusher";
+import { sendMail } from "@/lib/resend-config";
+import { BulkEmailType } from "@/lib/types";
 import { getEmailBatchConfig } from "@/utils/email-batch-config";
-import { verifySignatureAppRouter } from "@upstash/qstash/dist/nextjs";
+import { serve } from "@upstash/workflow/nextjs";
 
-async function handler(req: NextRequest) {
-  try {
-    const { emails } = (await req.json()) as {
-      emails: {
-        to: string[];
-        username: string;
-        data: { lastName: string; email: string; password: string };
-      }[];
-    };
+export const { POST } = serve<BulkEmailType>(async (context) => {
+  const { emails, userId, source } = context.requestPayload;
+  const channelName = `userId-${userId}`;
+  const config = getEmailBatchConfig();
 
-    if (!emails || !Array.isArray(emails) || emails.length === 0) {
-      console.error("Missing or invalid emails array");
-      return Response.json(
-        { error: "Missing or invalid emails array" },
-        { status: 400 }
-      );
-    }
+  let totalSuccessful = 0;
 
-    console.log(`Processing batch of ${emails.length} emails`);
+  for (let i = 0; i < emails.length; i += config.batchSize) {
+    const batch = emails.slice(i, i + config.batchSize);
 
-    // Get batch configuration (size + delay)
-    const config = getEmailBatchConfig();
-    const results: {
-      success: boolean;
-      email: string[];
-      error?: string;
-    }[] = [];
+    const batchResult = await context.run(
+      `send-batch-${source}-${i}`,
+      async () => {
+        try {
+          const response = await sendMail(batch);
+          if (response.error) throw new Error(response.error);
 
-    for (let i = 0; i < emails.length; i += config.batchSize) {
-      const batch = emails.slice(i, i + config.batchSize);
+          return { successCount: batch.length };
+        } catch (err) {
+          console.error("Batch failed, falling back to individual sends", err);
 
-      console.log(
-        `Processing batch ${Math.floor(i / config.batchSize) + 1}/${Math.ceil(
-          emails.length / config.batchSize
-        )}`
-      );
-
-      try {
-        // Try batch send first
-        const batchResponse = await sendMail(batch); // sendMail detects array → batch send
-
-        if (batchResponse.error) {
-          throw new Error(batchResponse.error);
-        }
-
-        results.push(...batch.map((e) => ({ success: true, email: e.to })));
-      } catch (err) {
-        console.error("Batch send failed, falling back to single sends:", err);
-
-        // Fallback: send individually
-        const batchResults = await Promise.all(
-          batch.map(async (emailData) => {
-            try {
-              const emailResponse = await sendMail(emailData); // single send
-              if (emailResponse.error) {
-                throw new Error(emailResponse.error);
+          const individualResults = await Promise.all(
+            batch.map(async (emailData) => {
+              try {
+                const res = await sendMail(emailData);
+                return !res.error;
+              } catch {
+                return false;
               }
-              return { success: true, email: emailData.to };
-            } catch (error) {
-              const errorMessage =
-                error instanceof Error ? error.message : "Unknown error";
-              console.error(
-                `Error sending email to ${emailData.to}:`,
-                errorMessage
-              );
-              return {
-                success: false,
-                email: emailData.to,
-                error: errorMessage,
-              };
-            }
-          })
-        );
-
-        results.push(...batchResults);
-      }
-
-      // Add delay between batches to avoid overwhelming the email service
-      if (i + config.batchSize < emails.length) {
-        await new Promise((resolve) => setTimeout(resolve, config.batchDelay));
-      }
-    }
-
-    const successful = results.filter((r) => r.success).length;
-    const failed = results.filter((r) => !r.success);
-
-    console.log(
-      `Batch email processing completed: ${successful} successful, ${failed.length} failed`
-    );
-
-    if (failed.length > 0) {
-      console.error("Failed emails:", failed);
-    }
-
-    return Response.json(
-      {
-        success: true,
-        total: emails.length,
-        successful,
-        failed: failed.length,
-        errors: failed.map((f) => ({ email: f.email, error: f.error })),
+            }),
+          );
+          return { successCount: individualResults.filter(Boolean).length };
+        }
       },
-      { status: 200 }
     );
-  } catch (e) {
-    console.error("Error in batch email processing:", e);
-    Sentry.captureException(e);
-    const errorMessage = e instanceof Error ? e.message : "Unknown error";
-    return Response.json(
-      { error: `Batch email processing failed: ${errorMessage}` },
-      { status: 500 }
-    );
-  }
-}
 
-export const POST = verifySignatureAppRouter(handler);
+    totalSuccessful += batchResult.successCount;
+
+    await context.run(`notify-progress-${source}-${i}`, async () => {
+      await triggerServerNotification(
+        channelName,
+        `${source}-emails-sending-progress`,
+        {
+          sent: totalSuccessful,
+          total: emails.length,
+          message: `Processed ${Math.min(i + config.batchSize, emails.length)} of ${emails.length} emails.`,
+          type: "info",
+        },
+      );
+    });
+
+    if (i + config.batchSize < emails.length) {
+      await context.sleep(`wait-after-batch-${i}`, config.batchDelay / 1000);
+    }
+  }
+
+  await context.run("final-completion-notification", async () => {
+    await triggerServerNotification(
+      channelName,
+      `${source}-emails-sent-completed`,
+      {
+        message: `${source} email processing completed: ${totalSuccessful} successful.`,
+        type: "success",
+      },
+    );
+  });
+});

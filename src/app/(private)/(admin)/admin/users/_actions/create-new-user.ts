@@ -1,17 +1,22 @@
 "use server";
+import { arcjetEmailProtection } from "@/lib/arcjet";
 import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
+import { triggerServerNotification } from "@/lib/pusher";
 import { triggerSendEmail } from "@/lib/trigger-send-email";
 import { UserSchema } from "@/lib/validation";
 import { createUserCredentials } from "@/utils/create-user-credentials";
 import * as Sentry from "@sentry/nextjs";
 import { revalidateTag } from "next/cache";
+import { after } from "next/server";
 import "server-only";
 
 export const createNewUserAction = async (values: unknown) => {
   try {
-    const { hasPermission } = await getUserPermissions("create:users");
-    if (!hasPermission) return { error: "Permission denied" };
+    const { user: authUser, hasPermission } =
+      await getUserPermissions("create:users");
+
+    if (!authUser || !hasPermission) return { error: "Permission denied" };
 
     const { error, success, data } = UserSchema.safeParse(values);
 
@@ -20,6 +25,15 @@ export const createNewUserAction = async (values: unknown) => {
         .flatMap((e) => `${e.path[0]}: ${e.message}`)
         .join(",");
       return { error: errMessage };
+    }
+
+    const result = await arcjetEmailProtection(
+      data.email.trim().toLowerCase(),
+      authUser.id,
+    );
+
+    if (result.error) {
+      return { error: result.error };
     }
 
     const existingUser = await prisma.user.findFirst({
@@ -57,21 +71,47 @@ export const createNewUserAction = async (values: unknown) => {
       });
     }
 
-    if (user) {
-      const emailConfig = {
-        to: [user.email],
-        username: user.username,
-        data: {
-          lastName: user.username,
-          email: user.email,
-          password: data.password,
-        },
-      };
+    after(async () => {
+      try {
+        if (user) {
+          const emailConfig = {
+            userId: authUser.id,
+            source: "users",
+            to: [user.email],
+            username: user.username,
+            data: {
+              lastName: user.username,
+              email: user.email,
+              password: data.password,
+            },
+          };
 
-      void triggerSendEmail(emailConfig);
-    }
+          await triggerSendEmail(emailConfig);
+        }
+        await triggerServerNotification(
+          `userId-${authUser.id}`,
+          "user-onboarding-email-queued",
+          {
+            message: `Onboarding email message to ${user.email} was successfully queued.`,
+            type: "success",
+          },
+        );
 
-    void revalidateTag("users-list", "seconds");
+        revalidateTag("users-list", "seconds");
+      } catch (bgError) {
+        console.error("Failed to queue user onboarding email.", bgError);
+        Sentry.captureException(bgError);
+        await triggerServerNotification(
+          `userId-${authUser.id}`,
+          "Onboarding-email-queue-error",
+          {
+            message:
+              "Failed to queue onboarding email message to " + user.email,
+            type: "error",
+          },
+        );
+      }
+    });
 
     return { success: true };
   } catch (e) {

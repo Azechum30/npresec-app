@@ -30,7 +30,9 @@ export default function CreateStaffDialog() {
 
   useEffect(() => {
     if (createSuccess) {
-      toast.success("Staff profile created successfully");
+      toast.success(
+        "Staff onboarding is been processed in the background. You would be notified when the processing is done.",
+      );
       setTimeout(() => {
         onClose("createStaff");
       }, 100);

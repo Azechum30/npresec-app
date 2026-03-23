@@ -1,43 +1,30 @@
 "use client";
 
-import { BulkUploadDepartmentType, DepartmentType } from "@/lib/validation";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { useUpload } from "@/hooks/use-open-upload";
-import { Button } from "@/components/ui/button";
+import { SheetIcon, UploadCloud, UploadCloudIcon, X } from "lucide-react";
 import { useCSVReader } from "react-papaparse";
-import { File, SheetIcon, UploadCloud, UploadCloudIcon, X } from "lucide-react";
 
-import { useState, useTransition } from "react";
-import BaseTable from "../../app/(private)/(admin)/admin/departments/components/BaseTable";
-import { cn } from "@/lib/utils";
 import LoadingButton from "@/components/customComponents/LoadingButton";
-import { toast } from "sonner";
-import { useGenericDialog } from "../../hooks/use-open-create-teacher-dialog";
+import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import BaseTable from "../../app/(private)/(admin)/admin/departments/components/BaseTable";
+import { useGenericDialog } from "../../hooks/use-open-create-teacher-dialog";
 
-type onUpload = Promise<
-  | {
-      errors: string[];
-      count?: undefined;
-      error?: undefined;
-    }
-  | {
-      count: number;
-      errors?: undefined;
-      error?: undefined;
-    }
-  | {
-      error: string;
-      errors?: undefined;
-      count?: undefined;
-    }
->;
+type onUpload = Promise<{
+  errors?: string[];
+  count?: number;
+  error?: string;
+  success?: boolean;
+}>;
 type UploadProps<T> = {
   handleUploadAction: (data: T) => onUpload;
   filepath?: string;
@@ -97,7 +84,7 @@ export default function UploadComponent<T>({
         toast.error(response?.error);
       } else {
         toast.success(
-          `${response?.count} were succussfully queued for upload!`,
+          `${response?.count} were succussfully queued for processing!`,
         );
 
         setTimeout(() => {
@@ -119,16 +106,13 @@ export default function UploadComponent<T>({
     <Dialog
       open={dialogs[dialogId] === true ? true : false}
       onOpenChange={() => onClose(dialogId)}
-      modal={true}
-    >
+      modal={true}>
       {dialogId && (
         <DialogContent
           className={cn(
-            "overflow-y-auto",
             data?.data?.length! > 0 &&
-              "md:max-w-full mx-auto transition-transform delay-300 ease-linear",
-          )}
-        >
+              "md:max-w-full md:max-h-full mx-auto transition-transform delay-300 ease-linear",
+          )}>
           <DialogHeader>
             <DialogTitle>Select a CSV File of {formatPath}</DialogTitle>
             <DialogDescription className="italic underline">
@@ -138,7 +122,7 @@ export default function UploadComponent<T>({
           <ul className="list-disc ml-4 text-sm text-muted-foreground ">
             <li className="leading-6">
               The file format should be an excel file formatted and saved as a
-              Comma Separated Version (CSV) file.
+              Comma Separated Values (CSV) file.
             </li>
             <li className="leading-6">
               Ensure the column headers are properly named with the casing the
@@ -157,84 +141,81 @@ export default function UploadComponent<T>({
               to download the sample file.
             </li>
           </ul>
-          <CSVReader onUploadAccepted={onFileUploadAccepted}>
-            {({
-              getRootProps,
-              acceptedFile,
-              ProgressBar,
-              getRemoveFileProps,
-            }: any) => (
+          <div className="border border-dashed rounded-md p-1.5 max-h-[65vh] w-full overflow-y-auto scrollbar-thin">
+            <CSVReader onUploadAccepted={onFileUploadAccepted}>
+              {({
+                getRootProps,
+                acceptedFile,
+                ProgressBar,
+                getRemoveFileProps,
+              }: any) => (
+                <>
+                  <div
+                    className={cn(
+                      "w-full max-w-md mx-auto rounded-2xl h-[200px] border-2 border-dashed flex flex-col justify-center items-center gap-2 hover:cursor-pointer relative p-6",
+                      data?.data.length! > 0 && "max-w-full h-auto",
+                    )}>
+                    <Button
+                      {...getRootProps()}
+                      variant="ghost"
+                      className={cn(
+                        "text-muted-foreground w-full h-full",
+                        acceptedFile && "w-1/2  mx-auto h-auto",
+                      )}>
+                      <UploadCloudIcon />
+                      Browse
+                    </Button>
+                    {acceptedFile && (
+                      <div className="flex items-center gap-x-1 text-sm text-muted-foreground">
+                        <SheetIcon />
+                        <span className="text-base">{acceptedFile.name}</span>
+                      </div>
+                    )}
+                    {acceptedFile && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-5 right-5"
+                        {...getRemoveFileProps()}>
+                        <X className="text-red-400" />
+                      </Button>
+                    )}
+                    <ProgressBar
+                      style={{
+                        backgroundColor: "#f87171",
+                        height: "3px",
+                      }}
+                    />
+                  </div>
+                </>
+              )}
+            </CSVReader>
+            {data && data.data.length !== 0 ? (
               <>
                 <div
                   className={cn(
-                    "w-full max-w-md mx-auto rounded-2xl h-[200px] border-2 border-dashed flex flex-col justify-center items-center gap-2 hover:cursor-pointer relative p-6",
-                    data?.data.length! > 0 && "max-w-full h-full",
-                  )}
-                >
-                  <Button
-                    {...getRootProps()}
-                    variant="ghost"
-                    className={cn(
-                      "text-muted-foreground w-full h-full",
-                      acceptedFile && "w-1/2  mx-auto h-auto",
-                    )}
-                  >
-                    <UploadCloudIcon />
-                    Browse
+                    "mt-4 rounded-md border w-full ",
+                    data.data.length > 0 && "max-w-full  ",
+                  )}>
+                  <BaseTable columns={columns} data={data.data} />
+                </div>
+
+                <div className="mt-4 flex flex-col md:flex-row md:justify-end md:items-center md:space-x-4 space-y-4 md:space-y-0">
+                  <LoadingButton
+                    className="w-auto"
+                    loading={isPending}
+                    onClick={SaveToDatabase}>
+                    <UploadCloud className="size-5" />
+                    Push to Database
+                  </LoadingButton>
+
+                  <Button variant="secondary" onClick={handleCancel}>
+                    Cancel
                   </Button>
-                  {acceptedFile && (
-                    <div className="flex items-center gap-x-1 text-sm text-muted-foreground">
-                      <SheetIcon />
-                      <span className="text-base">{acceptedFile.name}</span>
-                    </div>
-                  )}
-                  {acceptedFile && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute top-5 right-5"
-                      {...getRemoveFileProps()}
-                    >
-                      <X className="text-red-400" />
-                    </Button>
-                  )}
-                  <ProgressBar
-                    style={{
-                      backgroundColor: "#f87171",
-                      height: "3px",
-                    }}
-                  />
                 </div>
               </>
-            )}
-          </CSVReader>
-          {data && data.data.length !== 0 ? (
-            <>
-              <div
-                className={cn(
-                  "mt-4 rounded-md border w-full overflow-auto",
-                  data.data.length > 0 && "max-w-full max-h-[38vh] ",
-                )}
-              >
-                <BaseTable columns={columns} data={data.data} />
-              </div>
-
-              <div className="mt-4 flex flex-col md:flex-row md:justify-end md:items-center md:space-x-4 space-y-4 md:space-y-0">
-                <LoadingButton
-                  className="w-auto"
-                  loading={isPending}
-                  onClick={SaveToDatabase}
-                >
-                  <UploadCloud className="size-5" />
-                  Push to Database
-                </LoadingButton>
-
-                <Button variant="secondary" onClick={handleCancel}>
-                  Cancel
-                </Button>
-              </div>
-            </>
-          ) : null}
+            ) : null}
+          </div>
         </DialogContent>
       )}
     </Dialog>

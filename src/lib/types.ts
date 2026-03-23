@@ -1,4 +1,5 @@
 import { Course, Grade, Prisma } from "@/generated/prisma/client";
+import { StaffType } from "./validation";
 
 export const DepartmentInclude = {
   head: {
@@ -519,3 +520,72 @@ export const priorityRoles = [
   "admin_staff",
   "support_staff",
 ];
+
+export type UserT = Pick<UserResponseType, "email" | "id" | "username">;
+
+export type UserWithIndexT = {
+  user: UserT;
+  originalIndex: number;
+};
+
+export type RequestBodyType = {
+  rawData: {
+    data: {
+      email: string;
+      username: string;
+      employeeId: string;
+      rgNumber: string | null;
+      ghcardNumber: string | null;
+      licencedNumber: string | null;
+      ssnitNumber: string | null;
+      birthDate: Date;
+      gender: string;
+      dateOfFirstAppointment: Date | undefined;
+      classes: string[] | undefined;
+      courses: string[] | undefined;
+      firstName: string;
+      lastName: string;
+      phone: string;
+      maritalStatus: string;
+      staffType: "Teaching" | "Non_Teaching";
+      staffCategory: "Professional" | "Non_Professional";
+      middleName?: string | null | undefined;
+      departmentId?: string | null | undefined;
+      rank?: string | null | undefined;
+      academicQual?: string | null | undefined;
+      imageURL?: string | null | undefined;
+      password: string;
+      roleId: string;
+    }[];
+  };
+  userId: string;
+  source: string;
+};
+
+export type BulkEmailType = {
+  emails: {
+    to: string[];
+    username: string;
+    data: { lastName: string; email: string; password: string };
+  }[];
+
+  userId: string;
+  source: string;
+};
+
+export type SingleEmailType = {
+  emailData: {
+    to: string[];
+    username: string;
+    data: { lastName: string; email: string; password: string };
+  };
+  userId: string;
+  source: string;
+};
+
+export type SingleStaffCreationType = {
+  rawData: StaffType;
+  userId: string;
+  source: string;
+  roleId: string;
+};

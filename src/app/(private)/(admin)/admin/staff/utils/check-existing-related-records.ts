@@ -1,17 +1,16 @@
-import { resolveRole } from "@/lib/resolve-staff-role";
-import { StaffType } from "@/lib/validation";
 import { prisma } from "@/lib/prisma";
+import { resolveRole } from "@/lib/resolve-staff-role";
 import { transformAndValidateStaffData } from "@/utils/staff-data-transformer";
 
 export const filterBools = <T>(
-  arr: (T | "" | false | null | undefined)[]
+  arr: (T | "" | false | null | undefined)[],
 ): T[] => {
   return arr.filter((item): item is T => Boolean(item));
 };
 
 export const checkExistingRelatedRecords = async (
   data: ReturnType<typeof transformAndValidateStaffData>,
-  roleName: ReturnType<typeof resolveRole>
+  roleName: ReturnType<typeof resolveRole>,
 ) => {
   const uniquesFields = [
     data.employeeId && { employeeId: data.employeeId },
@@ -44,8 +43,6 @@ export const checkExistingRelatedRecords = async (
       },
     }),
   ]);
-
-  console.log("Existing Staff:", existingStaff);
 
   if (!staffRole) {
     return { error: `Role "${roleName}" not found in the database.` };

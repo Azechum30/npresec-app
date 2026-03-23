@@ -1,61 +1,65 @@
 "use server";
 
-import { BulkCreateStaffSchema, BulkCreateStaffType } from "@/lib/validation";
-import { getErrorMessage } from "@/lib/getErrorMessage";
+import { bulkRequestRateLimit } from "@/lib/arcjet";
 import { getUserPermissions } from "@/lib/get-session";
-
-import { client } from "@/utils/qstash";
+import { getErrorMessage } from "@/lib/getErrorMessage";
 import { env } from "@/lib/server-only-actions/validate-env";
-
+import { BulkCreateStaffSchema, BulkCreateStaffType } from "@/lib/validation";
 import * as Sentry from "@sentry/nextjs";
-import { validateAndTransformBulkData } from "../utils/validate-and-transform-bulk-data";
-import { checkEntityExistencePossibleDuplicates } from "../utils/check-enity-existence-possible-duplicates";
+import { Client } from "@upstash/workflow";
 
-export const bulkCreateStaff = async (values: BulkCreateStaffType) => {
+const client = new Client({
+  token: env.QSTASH_TOKEN,
+});
+
+export const bulkCreateStaff = async (
+  values: BulkCreateStaffType,
+): Promise<{
+  count?: number;
+  error?: string;
+  success?: boolean;
+}> => {
   try {
-    const { hasPermission } = await getUserPermissions("create:staff");
-    if (!hasPermission) return { error: "Unauthorized access" };
+    const { user, hasPermission } = await getUserPermissions("create:staff");
+    if (!user || !hasPermission) return { error: "Unauthorized access" };
 
-    if (!values.data?.length) return { error: "No staff data provided" };
-    if (values.data.length > 100)
-      return { error: "Batch size too large (max 100)" };
+    const { error } = await bulkRequestRateLimit(user.id);
+
+    if (error) {
+      return { error };
+    }
 
     const validationResult = BulkCreateStaffSchema.safeParse(values);
     if (!validationResult.success) {
-      const validationErrors = validationResult.error.issues.map(
-        (issue) =>
-          `Row ${issue.path[1] ? (issue.path[1] as number) + 1 : "unknown"}: ${issue.message}`,
-      );
-      return { error: validationErrors.join("; ") };
+      return {
+        error: validationResult.error.issues
+          .map((i) => `Row ${Number(i.path[1]) + 1}: ${i.message}`)
+          .join("; "),
+      };
     }
 
-    const validAndTransformedData = validateAndTransformBulkData(
-      validationResult.data,
-    );
+    const workflowUrl = `${env.UPSTASH_WORKFLOW_URL}/api/batch/onboard-staff/staffCreationWorkflow`;
 
-    const { transformedData } = await checkEntityExistencePossibleDuplicates(
-      validAndTransformedData,
-    );
-
-    void client.batchJSON([
-      {
-        url: `${env.NEXT_PUBLIC_URL}/api/batch/onboard-staff`,
-        body: { transformedData },
+    await client.trigger({
+      url: workflowUrl,
+      body: {
+        rawData: validationResult.data,
+        userId: user.id,
+        source: "staff",
       },
-    ]);
+    });
 
     return {
       success: true,
-      count: transformedData.length,
+      count: validationResult.data.data.length,
     };
   } catch (error) {
-    console.error("Bulk staff creation failed:", error);
     Sentry.captureException(error);
     return {
       error:
         process.env.NODE_ENV === "development"
           ? getErrorMessage(error)
-          : "Something went wrong! Kindly check your data",
+          : "Failed to initiate bulk data processing",
     };
   }
 };
