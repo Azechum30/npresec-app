@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import { AlertTriangle, Home, RefreshCw } from "lucide-react";
 import Link from "next/link";
+import { useEffect } from "react";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -13,8 +13,7 @@ interface ErrorProps {
 
 export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
-    // Log error to console
-    console.error("Global error caught:", error);
+    console.error("Global error caught:", error.message);
   }, [error]);
 
   const isDevelopment = process.env.NODE_ENV === "development";
@@ -85,8 +84,7 @@ export default function Error({ error, reset }: ErrorProps) {
               onClick={reset}
               variant="default"
               size="default"
-              className="flex items-center gap-2"
-            >
+              className="flex items-center gap-2">
               <RefreshCw className="h-4 w-4" />
               Try Again
             </Button>
@@ -95,8 +93,7 @@ export default function Error({ error, reset }: ErrorProps) {
               <Button
                 variant="outline"
                 size="default"
-                className="flex items-center gap-2 w-full sm:w-auto"
-              >
+                className="flex items-center gap-2 w-full sm:w-auto">
                 <Home className="h-4 w-4" />
                 Go to Homepage
               </Button>

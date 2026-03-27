@@ -63,7 +63,7 @@ export const createClassAction = async (values: ClassesType) => {
     ]);
 
     const results = await Promise.all(
-      checks.map((check) => Promise.all([check.codeCheck, check.nameCheck]))
+      checks.map((check) => Promise.all([check.codeCheck, check.nameCheck])),
     );
 
     results.forEach((classResult) => {
@@ -71,7 +71,7 @@ export const createClassAction = async (values: ClassesType) => {
 
       if (codeCheck) {
         prismaErrors.push(
-          `Class code "${result.data?.code}" is already taken!`
+          `Class code "${result.data?.code}" is already taken!`,
         );
       }
 
@@ -92,7 +92,7 @@ export const createClassAction = async (values: ClassesType) => {
     };
 
     const createdDate = new Date(
-      normalizedClass.createdAt as Date
+      normalizedClass.createdAt as Date,
     ).getFullYear();
 
     const lastClass = await prisma.class.findFirst({
@@ -124,7 +124,7 @@ export const createClassAction = async (values: ClassesType) => {
               lastClass?.department?.name
                 ? lastClass.department.name
                 : normalizedClass.name,
-              sequenceNumber
+              sequenceNumber,
             ),
         name: normalizedClass.name,
         createdAt: normalizedClass.createdAt,
@@ -251,7 +251,7 @@ export const updateClass = async (values: UpdateClassType) => {
 };
 
 export const deleteClass = async (
-  id: string | Prisma.ClassWhereUniqueInput
+  id: string | Prisma.ClassWhereUniqueInput,
 ) => {
   try {
     const hasPermission = await getUserPermissions("delete:classes");
@@ -294,12 +294,12 @@ export const bulkDeleteClasses = async (ids: BulkDeleteClassesType) => {
     const { error, success, data } = BulkDeleteClassesSchema.safeParse(ids);
 
     if (!success) {
-      const zodError = error.errors.reduce(
+      const zodError = error.issues.reduce(
         (acc, issue) => {
-          acc[issue.path[0]] = issue.message;
+          acc[issue.path[0] as any] = issue.message;
           return acc;
         },
-        {} as Record<string, string>
+        {} as Record<string, string>,
       );
 
       return { error: zodError };
@@ -325,7 +325,7 @@ export const bulkDeleteClasses = async (ids: BulkDeleteClassesType) => {
 
 export const updateClassEnrollment = async (
   classId: string,
-  currentEnrollment: number
+  currentEnrollment: number,
 ) => {
   try {
     const hasPermission = await getUserPermissions("edit:classes");
@@ -392,7 +392,7 @@ export const bulkUploadClasses = async (values: BulkClassesType) => {
     }));
 
     const result = await Promise.all(
-      checks.map((check) => Promise.all([check.codeCheck, check.nameCheck]))
+      checks.map((check) => Promise.all([check.codeCheck, check.nameCheck])),
     );
 
     result.forEach((result) => {
@@ -459,7 +459,7 @@ export const bulkUploadClasses = async (values: BulkClassesType) => {
             generatedCode = generateUniqueClassCode(
               rest.createdAt.getFullYear(),
               deptName ? deptName : rest.name,
-              sequenceNumber
+              sequenceNumber,
             );
             sequenceNumber++;
           } while (
@@ -476,7 +476,7 @@ export const bulkUploadClasses = async (values: BulkClassesType) => {
           code: finalCode,
           staff: klass.staff,
         };
-      })
+      }),
     );
 
     const createPromises = classesWithCodes.map((klass) =>
@@ -488,7 +488,7 @@ export const bulkUploadClasses = async (values: BulkClassesType) => {
           },
         },
         select: ClassesSelect,
-      })
+      }),
     );
 
     const bulkcreateResponse = (await prisma.$transaction(createPromises))

@@ -1,10 +1,10 @@
 "use server";
-import "server-only";
-import { getErrorMessage } from "@/lib/getErrorMessage";
 import { getUserPermissions } from "@/lib/get-session";
+import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
 import { RolesSelect } from "@/lib/types";
 import * as Sentry from "@sentry/nextjs";
+import "server-only";
 import { z } from "zod";
 import { getCachedRoles } from "./get-cached-roles";
 
@@ -38,8 +38,8 @@ export const getRole = async (id: string) => {
     const result = z.string().safeParse(id);
     if (!result.success) {
       return {
-        error: result.error.errors
-          .map((e) => `${e.path[0]}: ${e.message}`)
+        error: result.error.issues
+          .map((e) => `${e.path[0] as any}: ${e.message}`)
           .join("\n"),
       };
     }

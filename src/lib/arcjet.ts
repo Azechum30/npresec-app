@@ -24,7 +24,7 @@ export const aj = arcjet({
 
 export const emailOptions = {
   mode: "LIVE",
-  block: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
+  deny: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
 } satisfies EmailOptions;
 
 export const botOptions = {

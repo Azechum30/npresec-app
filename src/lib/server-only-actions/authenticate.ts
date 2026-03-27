@@ -119,21 +119,26 @@ export const signInAction = async (data: SignInType, callbackUrl?: string) => {
     const validateData = SignInSchema.safeParse(data);
 
     if (!validateData.success) {
-      const error = validateData.error.issues.flatMap(
-        (e) => `${e.path[0]}: ${e.message}`,
-      )[0];
+      const error = validateData.error.issues
+        .flatMap((e) => e.message)
+        .join(", ");
       return { error };
     }
 
     const requestHeaders = await headers();
 
-    await auth.api.signInEmail({
+    const { response } = await auth.api.signInEmail({
+      returnHeaders: true,
       body: {
         email: validateData.data.email,
         password: validateData.data.password,
       },
       headers: requestHeaders,
     });
+
+    if ("twoFactorRedirect" in response) {
+      redirect("/verify-2fa");
+    }
 
     const user = await prisma.user.findUnique({
       where: {
@@ -149,6 +154,14 @@ export const signInAction = async (data: SignInType, callbackUrl?: string) => {
     if (user) {
       const userRole = getUserRole(user as User);
 
+      if (!user.twoFactorEnabled) {
+        return {
+          success: true,
+          user: user as User,
+          redirectTo: "/setup-2fa",
+        };
+      }
+
       const priorityRole = userRole.find((role) =>
         priorityRoles.includes(role),
       );
@@ -158,6 +171,7 @@ export const signInAction = async (data: SignInType, callbackUrl?: string) => {
         userRole: priorityRole,
         defaultFallback: "/profile",
       });
+
       return {
         success: true,
         user: user as User,

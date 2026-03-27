@@ -7,37 +7,34 @@ import { getUserPermissions } from "@/lib/get-session";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/server-only-actions/validate-env";
-import { triggerSendEmail } from "@/lib/trigger-send-email";
+import { workflowClient } from "@/lib/server-only-actions/workflow";
 import { StudentSelect } from "@/lib/types";
 import {
   BulkCreateStudentsType,
   EditStudentSchema,
   EditStudentType,
-  status,
   StudentSchema,
   StudentType,
 } from "@/lib/validation";
-import { createUserCredentials } from "@/utils/create-user-credentials";
 import {
-  CONSTANTS,
   Department,
   generateStudentIndex,
   gradelevels,
 } from "@/utils/generateStudentIndex";
 import { getCachedStudentService } from "@/utils/get-cached-student-service";
 import { getError } from "@/utils/get-error";
-import { client } from "@/utils/qstash";
 import { triggerRollback } from "@/utils/trigger-better-auth-user-delete";
 import { triggerImageUpload } from "@/utils/trigger-image-upload";
 import * as Sentry from "@sentry/nextjs";
 import { updateTag } from "next/cache";
+import { filterBools } from "../../staff/utils/check-existing-related-records";
 import { validateAndTransformStudentsData } from "../utils/validate-and-transform-students-data";
 
 export const createStudent = async (values: StudentType) => {
   let createdUserId: string | null = null;
 
   try {
-    const [{ hasPermission }, role, existingUser] = await Promise.all([
+    const [{ user, hasPermission }, role, existingUser] = await Promise.all([
       getUserPermissions("create:students"),
       prisma.role.findFirst({ where: { name: "student" } }),
       prisma.user.findUnique({
@@ -46,7 +43,7 @@ export const createStudent = async (values: StudentType) => {
       }),
     ]);
 
-    if (!hasPermission) return { error: "Permission denied!" };
+    if (!hasPermission || !user) return { error: "Permission denied!" };
     if (existingUser) return { error: `${values.email} is already taken!` };
     if (!role) return { error: "Student role not found in system." };
 
@@ -54,101 +51,28 @@ export const createStudent = async (values: StudentType) => {
     const result = StudentSchema.safeParse(values);
     if (!result.success) {
       return {
-        error: result.error.errors
-          .map((e) => `${e.path[0]}: ${e.message}`)
-          .join(", "),
+        error: result.error.message,
       };
     }
 
     const { email, imageFile, classId, departmentId, photoURL, ...rest } =
       result.data;
-    const password = generatePassword();
-    const admissionYear = new Date(rest.dateEnrolled).getFullYear();
 
-    const authResponse = await createUserCredentials({
-      email,
-      username: `${rest.firstName} ${rest.lastName}`,
-      lastName: rest.lastName,
-      roleId: role.id,
-      password,
-    });
-
-    if (!authResponse?.user)
-      return { error: "Failed to create authentication credentials" };
-    createdUserId = authResponse.user.id;
-
-    const transactionResult = await prisma.$transaction(async (tx) => {
-      const latestStudent = await tx.student.findFirst({
-        where: {
-          departmentId,
-          dateEnrolled: {
-            gte: new Date(admissionYear, 0, 1),
-            lt: new Date(admissionYear + 1, 0, 1),
-          },
-        },
-        orderBy: { studentNumber: "desc" },
-        select: { studentNumber: true },
-      });
-
-      const sequence = latestStudent
-        ? (parseInt(
-            latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
-          ) || 0) + 1
-        : 1;
-
-      const studentID = generateStudentIndex({
-        department: (
-          await tx.department.findUnique({
-            where: { id: departmentId as string },
-            select: { name: true },
-          })
-        )?.name as Department,
-        admissionYear,
-        sequenceNumber: sequence,
-      });
-
-      // Create Student and Connect User
-      const createdStudent = await tx.student.create({
+    await workflowClient.trigger({
+      url: `${env.UPSTASH_WORKFLOW_URL}/api/onboard/single-student/singleStudentCreationWorkflow`,
+      body: {
         data: {
           ...rest,
-          studentNumber: studentID,
-          currentLevel: rest.currentLevel as (typeof gradelevels)[number],
-          status: rest.status as (typeof status)[number],
-          graduationDate: computeGraduationDate(rest.dateEnrolled),
-          currentClass: { connect: { id: classId as string } },
-          department: { connect: { id: departmentId as string } },
-          user: { connect: { id: authResponse.user.id } },
+          email,
+          classId,
+          departmentId,
+          userId: user.id,
+          roleId: role.id,
         },
-      });
-
-      classId &&
-        (await tx.class.update({
-          where: { id: classId },
-          data: { currentEnrollment: { increment: 1 } },
-        }));
-
-      return createdStudent;
+      },
     });
 
-    if (imageFile instanceof File) {
-      void triggerImageUpload(
-        imageFile,
-        transactionResult.id,
-        "students",
-        "user",
-      );
-    }
-
-    void triggerSendEmail({
-      to: [email],
-      username: rest.lastName,
-      data: { email, lastName: rest.firstName, password },
-    });
-
-    updateTag("students-list");
-    updateTag("users-list");
-
-    return { createdStudent: transactionResult };
+    return { success: true };
   } catch (error) {
     if (createdUserId) {
       console.error(`Transaction failed. Rolling back user: ${createdUserId}`);
@@ -308,9 +232,7 @@ export const updateStudent = async (values: EditStudentType) => {
     const result = EditStudentSchema.safeParse(values);
     if (!result.success) {
       return {
-        error: result.error.errors
-          .map((e) => `${e.path[0]}: ${e.message}`)
-          .join(", "),
+        error: result.error.issues.flatMap((e) => e.message).join("\n"),
       };
     }
 
@@ -433,8 +355,8 @@ export const updateStudent = async (values: EditStudentType) => {
 
 export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
   try {
-    const { hasPermission } = await getUserPermissions("create:students");
-    if (!hasPermission) return { error: "Permission denied" };
+    const { user, hasPermission } = await getUserPermissions("create:students");
+    if (!hasPermission || !user) return { error: "Permission denied" };
 
     const result = validateAndTransformStudentsData(values);
     if (result.errors) {
@@ -442,13 +364,109 @@ export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
         errors: result.errors.flatMap((e) => `Row ${e.row}: ${e.message}`),
       };
     }
+    if (!result.data) return { error: "No data provided" };
 
-    void client.batchJSON([
-      {
-        url: `${env.NEXT_PUBLIC_URL}/api/batch/students/create`,
-        body: { data: result.data },
+    const classNames = [
+      ...new Set(filterBools(result.data.data.map((item) => item.classId))),
+    ];
+    const deptNames = [
+      ...new Set(
+        filterBools(result.data.data.map((item) => item.departmentId)),
+      ),
+    ];
+
+    const emails = result.data.data.map((s) => s.email.trim().toLowerCase());
+
+    const [existingClasses, existingDepartments, existingRole, existingUsers] =
+      await Promise.all([
+        prisma.class.findMany({
+          where: { name: { in: classNames } },
+          select: { id: true, name: true },
+        }),
+        prisma.department.findMany({
+          where: { name: { in: deptNames } },
+          select: { id: true, name: true },
+        }),
+        prisma.role.findFirst({
+          where: { name: "student" },
+          select: { id: true },
+        }),
+        prisma.user.findMany({
+          where: { email: { in: emails } },
+          select: { email: true },
+        }),
+      ]);
+
+    if (!existingRole) {
+      return { error: "Student role not configured." };
+    }
+
+    // 2. Filter Existing Records (Uniqueness Check)
+    const existingEmailSet = new Set(
+      existingUsers.map((u) => u.email.toLowerCase()),
+    );
+    let existingUserEmails: { firstName: string; email: string }[] = [];
+
+    const filteredData = result.data?.data.filter((student) => {
+      const isDuplicate = existingEmailSet.has(
+        student.email.trim().toLowerCase(),
+      );
+      if (isDuplicate) {
+        existingUserEmails.push(student);
+        console.warn(
+          `[BULK_STUDENT_UPLOAD] Skipping existing user: ${student.email}`,
+        );
+      }
+      return !isDuplicate;
+    });
+
+    if (existingUserEmails.length > 0) {
+      return {
+        error: existingUserEmails
+          .map(
+            (student) =>
+              `$${student.firstName} with email ${student.email} is already taken`,
+          )
+          .join("\n"),
+      };
+    }
+
+    console.log("Existing classes ", existingClasses);
+    const classMap = new Map(existingClasses.map((c) => [c.name, c]));
+    const departmentMap = new Map(existingDepartments.map((d) => [d.name, d]));
+
+    const transformedData = filteredData.map((student) => {
+      const targetClass = classMap.get(student.classId as string);
+      const targetDepartment = departmentMap.get(
+        student.departmentId as string,
+      );
+
+      if (!targetClass || !targetDepartment) return null;
+
+      return {
+        ...student,
+        roleId: existingRole.id,
+        classId: targetClass,
+        departmentId: targetDepartment,
+        password: generatePassword(),
+      };
+    });
+
+    console.log("Transformed Data: " + transformedData);
+
+    const filteredStudentData = filterBools(transformedData);
+
+    if (filteredStudentData.length === 0) {
+      return { error: "All classes assigned to the students do not exist" };
+    }
+
+    await workflowClient.trigger({
+      url: `${env.UPSTASH_WORKFLOW_URL}/api/onboard/bulk-students/studentsOnboardingWorkflow`,
+      body: {
+        data: filteredStudentData,
+        userId: user.id,
       },
-    ]);
+    });
 
     return {
       success: true,

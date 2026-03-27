@@ -18,7 +18,7 @@ export const RegisterClientSideBackgroundNotifications = ({
     if (!userId) return;
 
     const channelName = `userId-${userId}`;
-    const channel = pusherClient.subscribe(channelName);
+    const channel = pusherClient?.subscribe(channelName);
 
     eventNames.forEach((eventName) => {
       channel.bind(

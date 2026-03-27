@@ -3,18 +3,19 @@ import { ToggleOverflow } from "@/components/customComponents/toggle-overflow";
 import RouteTrackingProvider from "@/components/providers/RouteTrackingProvider";
 import { Toaster } from "@/components/ui/sonner";
 import "@/lib/orpc.server";
+import { cn } from "@/lib/utils";
 import { Loader } from "lucide-react";
 import type { Metadata } from "next";
-import { Poppins, Roboto, Geist } from "next/font/google";
+import { Geist, Poppins, Roboto } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
-import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "600", "700", "900"],
+  variable: "--font-poppins",
 });
 
 const roboto = Roboto({
@@ -41,7 +42,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={cn("font-sans", poppins.variable)}>
       <body className={`${roboto.className} ${poppins.className} antialiased`}>
         <ThemeProvider
           attribute="class"

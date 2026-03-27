@@ -27,7 +27,7 @@ const aj = arcjet({
 
 const emailOptions = {
   mode: process.env.NODE_ENV === "development" ? "DRY_RUN" : "LIVE",
-  block: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
+  deny: ["DISPOSABLE", "INVALID", "NO_MX_RECORDS"],
 } satisfies EmailOptions;
 
 const botOptions = {

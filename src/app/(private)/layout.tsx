@@ -41,22 +41,31 @@ const RenderSessionProvider = async ({ children }: { children: ReactNode }) => {
     <SessionProvider value={user as ExtendedSession["user"]}>
       <>
         {children}
-        <RegisterClientSideBackgroundNotifications
-          userId={user.id}
-          eventNames={[
-            "Error-sending-staff-emails",
-            "bulk-rate-limit-exceeded",
-            "staff-progress",
-            "staff-emails-partial-complete",
-            "staff-bulk-creation-success",
-            "staff-onboarding-progress",
-            "staff-emails-sent-completed",
-            "staff-emails-sending-progress",
-            "staff-onboarding-email-sent",
-            "staff-onboarding-success",
-            "workflow-failed",
-          ]}
-        />
+        <Suspense>
+          <RegisterClientSideBackgroundNotifications
+            userId={user.id}
+            eventNames={[
+              "Error-sending-staff-emails",
+              "bulk-rate-limit-exceeded",
+              "staff-progress",
+              "staff-emails-partial-complete",
+              "staff-bulk-creation-success",
+              "staff-onboarding-progress",
+              "staff-emails-sent-completed",
+              "staff-emails-sending-progress",
+              "staff-onboarding-email-sent",
+              "staff-onboarding-success",
+              "workflow-failed",
+              "single-student-email-success",
+              "single-student-email-error",
+              "single-student-onboard-success",
+              "single-student-workflow-failed",
+              "student-bulk-creation-success",
+              "bulk-student-workflow-failed",
+              "students-emails-sent-completed",
+            ]}
+          />
+        </Suspense>
       </>
     </SessionProvider>
   );
@@ -66,7 +75,7 @@ const LayoutFallback = () => {
   return (
     <div className="w-full h-screen flex justify-center items-center">
       <Loader className="size-16 text-primary animate-spin" />
-      <span className="font-mono text-base bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent animate-pulse">
+      <span className="font-mono text-base bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent animate-pulse">
         Loading Data...
       </span>
     </div>

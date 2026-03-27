@@ -16,7 +16,7 @@ export const getBoardMember = async (id: string) => {
       .min(1, "Please provide a valid ID")
       .safeParse(id);
     if (!success || error) {
-      const errorMessage = error.errors.flatMap((e) => e.message).join(",");
+      const errorMessage = error.issues.flatMap((e) => e.message).join(",");
       console.error(errorMessage);
       return { error: errorMessage };
     }

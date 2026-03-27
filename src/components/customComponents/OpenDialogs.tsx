@@ -26,7 +26,7 @@ const OpenDialogs: FC<{
   return (
     <Button
       variant={variant ? variant : "default"}
-      size={size ? size : "default"}
+      size={size ? size : "lg"}
       className="w-full md:w-auto hover:cursor-pointer"
       onClick={() => onOpen(dialogKey, dialogKey)}>
       <PlusCircle className="size-5 mr-1" />

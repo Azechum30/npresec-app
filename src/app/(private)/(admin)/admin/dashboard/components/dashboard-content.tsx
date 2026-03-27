@@ -234,7 +234,7 @@ export default function DashboardContent({
         <Card className="md:col-span-4 shadow-lg dark:bg-accent ">
           <CardHeader>
             <CardTitle className="text-lg">Departmental Enrollment</CardTitle>
-            <CardDescription className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+            <CardDescription className="bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
               Breakdown of students per academic department
             </CardDescription>
           </CardHeader>
@@ -274,14 +274,14 @@ export default function DashboardContent({
         <Card className="md:col-span-3 shadow-lg dark:bg-accent">
           <CardHeader>
             <CardTitle className="text-lg">Gender Balance</CardTitle>
-            <CardDescription className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+            <CardDescription className="bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
               Current ratio of male to female students
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center">
             <ChartContainer
               config={chartOptions}
-              className="mx-auto aspect-square min-h-[250px] max-w-[300px]">
+              className="mx-auto aspect-square min-h-62.5 max-w-75">
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Pie
@@ -331,14 +331,14 @@ export default function DashboardContent({
             <CardTitle className="text-lg">
               Staff Distribution by Gender
             </CardTitle>
-            <CardDescription className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+            <CardDescription className="bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
               Percentage of staff by gender
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center">
             <ChartContainer
               config={chartOptions}
-              className="mx-auto aspect-square min-h-[250px] max-w-[300px]">
+              className="mx-auto aspect-square min-h-62.5 max-w-75">
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Pie
@@ -383,7 +383,7 @@ export default function DashboardContent({
                 <div className="flex items-center gap-2 font-medium leading-none">
                   Trending Gender <TrendingUp className="h-4 w-4" />
                 </div>
-                <div className="flex items-center gap-2 bg-gradient-to-b from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+                <div className="flex items-center gap-2 bg-linear-to-b from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
                   Showing total gender distribution metrics.
                 </div>
               </div>
@@ -397,14 +397,14 @@ export default function DashboardContent({
             <CardTitle className="text-lg">
               Year Group Gender Distribution
             </CardTitle>
-            <CardDescription className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+            <CardDescription className="bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
               Student gender distribution by Year Groups.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center">
             <ChartContainer
               config={chartOptions}
-              className="mx-auto aspect-video min-h-[250px] max-w-[300px] md:max-w-full">
+              className="mx-auto aspect-video min-h-62.5 max-w-75 md:max-w-full">
               <LineChart
                 data={yearGroupDistributionData}
                 margin={{ left: 12, right: 12 }}>
@@ -444,7 +444,7 @@ export default function DashboardContent({
                   Trending Gender for each year group{" "}
                   <TrendingUp className="h-4 w-4" />
                 </div>
-                <div className="flex items-center gap-2 bg-gradient-to-b from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+                <div className="flex items-center gap-2 bg-linear-to-b from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
                   Showing total gender metrics for all forms.
                 </div>
               </div>
@@ -458,7 +458,7 @@ export default function DashboardContent({
         <Card className="md:col-span-4 shadow-lg dark:bg-accent ">
           <CardHeader>
             <CardTitle className="text-lg">Class Enrollment</CardTitle>
-            <CardDescription className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+            <CardDescription className="bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
               Breakdown of students per class grouping
             </CardDescription>
           </CardHeader>
@@ -500,21 +500,21 @@ export default function DashboardContent({
             <CardTitle className="text-lg">
               Teaching Staff Distribution
             </CardTitle>
-            <CardDescription className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+            <CardDescription className="bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
               Teaching staff distribution per each acadmic department
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
             <ChartContainer
               config={chartOptions}
-              className="mx-auto aspect-square min-h-[250px] max-w-[300px]">
+              className="mx-auto aspect-square min-h-62.5 max-w-75">
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Pie
                   data={staffDistributionPerDept}
                   dataKey="value"
-                  innerRadius="60%"
-                  outerRadius="100%"
+                  innerRadius="55%"
+                  outerRadius="90%"
                   strokeWidth={1}>
                   <Label
                     content={({ viewBox }) => {
@@ -527,13 +527,13 @@ export default function DashboardContent({
                             dominantBaseline="middle">
                             <tspan
                               x={viewBox.cx}
-                              y={viewBox.cy}
+                              y={viewBox.cy - 28}
                               className="fill-foreground text-3xl font-bold">
                               {data.counts.teachingStaffCount.toString()}
                             </tspan>
                             <tspan
                               x={viewBox.cx}
-                              y={(viewBox.cy || 0) + 24}
+                              y={(viewBox.cy || 0) - 8}
                               className="fill-muted-foreground">
                               Teaching Staff
                             </tspan>
@@ -565,13 +565,13 @@ export default function DashboardContent({
             <CardTitle className="text-lg">
               Recently Enrolled Students
             </CardTitle>
-            <CardDescription className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+            <CardDescription className="bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
               Recently enrolled students in the system
             </CardDescription>
           </div>
           <Link href="/admin/students">
             <Button size="sm" variant="outline">
-              <span className="bg-gradient-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
+              <span className="bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
                 View All
               </span>
             </Button>

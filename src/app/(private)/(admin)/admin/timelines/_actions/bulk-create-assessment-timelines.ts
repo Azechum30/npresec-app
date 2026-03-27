@@ -20,8 +20,8 @@ export const bulkAssessmentTimelinesAction = async (
     const unverifiedData = BulkAssessmentTimelinesSchema.safeParse(values);
 
     if (!unverifiedData.success) {
-      const errMessage = unverifiedData.error.errors
-        .flatMap((e) => `${e.path[0]}: ${e.message}`)
+      const errMessage = unverifiedData.error.issues
+        .flatMap((e) => `${e.path[0] as any}: ${e.message}`)
         .join("\n");
       return { error: errMessage };
     }

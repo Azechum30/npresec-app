@@ -49,6 +49,45 @@ export default async function proxy(request: NextRequest) {
       );
     }
 
+    const isSetupPage = pathname === "/setup-2fa";
+
+    if (!("twoFactorEnabled" in session.user) && !isSetupPage) {
+      return withPathHeader(
+        NextResponse.redirect(new URL("/setup-2fa", request.url)),
+      );
+    }
+
+    if ("twoFactorEnabled" in session.user) {
+      if (session.user.twoFactorEnabled && isSetupPage) {
+        const userRoleNames =
+          session.user?.roles?.map((rs) => rs.role.name as UserRole) ?? [];
+        const priorityOrder: UserRole[] = [
+          "admin",
+          "teaching_staff",
+          "staff",
+          "student",
+          "parent",
+        ];
+        const primaryRole = priorityOrder.find((r) =>
+          userRoleNames.includes(r),
+        );
+
+        if (primaryRole) {
+          const targetPath = getDashboardPath(primaryRole);
+          return withPathHeader(
+            NextResponse.redirect(new URL(targetPath, request.url)),
+          );
+        }
+        return withPathHeader(
+          NextResponse.redirect(new URL("/profile", request.url)),
+        );
+      }
+    }
+
+    if (isSetupPage) {
+      return withPathHeader(NextResponse.next());
+    }
+
     if (!session.user.emailVerified && needsEmailVerification(pathname)) {
       return withPathHeader(
         NextResponse.redirect(new URL("/verify-email", request.url)),
@@ -62,8 +101,6 @@ export default async function proxy(request: NextRequest) {
     if (!requiresRoleBasedAccess(pathname))
       return withPathHeader(NextResponse.next());
 
-    // 2. Multi-Role Access Check
-    // A user has access if ANY of their roles are allowed to view this path
     const hasAccess = userRoleNames.some((role) =>
       hasRoleAccess(role, pathname),
     );

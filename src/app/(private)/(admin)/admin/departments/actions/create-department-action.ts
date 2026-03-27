@@ -1,11 +1,11 @@
 "use server";
-import "server-only";
-import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
-import { DepartmentType, DepartmentSchema } from "@/lib/validation";
-import { DepartmentSelect } from "@/lib/types";
 import { getUserPermissions } from "@/lib/get-session";
+import { prisma } from "@/lib/prisma";
+import { DepartmentSelect } from "@/lib/types";
+import { DepartmentSchema, DepartmentType } from "@/lib/validation";
 import { revalidatePath } from "next/cache";
+import "server-only";
 
 export const createDepartment = async (values: DepartmentType) => {
   try {
@@ -77,7 +77,7 @@ export const updateDepartmentAction = async (
 
     if (!success) {
       const zodError = error.issues.map((issue) => ({
-        field: issue.path[0],
+        field: issue.path[0] as any,
         message: issue.message,
       }));
 

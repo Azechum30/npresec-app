@@ -58,7 +58,7 @@ export default function LogoutButton() {
       </Dialog>
 
       <form onSubmit={handleLogout}>
-        <DropdownMenuItem asChild>
+        <DropdownMenuItem>
           <LoadingButton
             loading={showModal}
             className="text-sm w-full text-left flex items-center justify-start hover:cursor-pointer"

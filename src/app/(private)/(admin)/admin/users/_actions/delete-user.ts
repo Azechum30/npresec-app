@@ -18,7 +18,7 @@ export const deleteUserAction = async (id: unknown) => {
       .safeParse(id);
 
     if (!success || error) {
-      const errorMessage = error.errors.flatMap((e) => e.message).join(",");
+      const errorMessage = error.issues.flatMap((e) => e.message).join(",");
       return { error: errorMessage };
     }
 

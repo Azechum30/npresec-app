@@ -37,12 +37,12 @@ export const getPermission = async (
     if (!hasPermission) return { error: "Permission denied" };
 
     const { error, success, data } = z
-      .string({ required_error: "A valid ID is required!" })
+      .string({ error: "A valid ID is required!" })
       .cuid()
       .safeParse(id);
     if (!success) {
-      const message = error.errors
-        .flatMap((e) => `${e.path[0]}: ${e.message}`)
+      const message = error.issues
+        .flatMap((e) => `${e.path[0] as any}: ${e.message}`)
         .join(",");
       return { error: message };
     }
@@ -56,8 +56,8 @@ export const getPermission = async (
 
     return { permission };
   } catch (err: any) {
-    console.error("Could not fetch Permission:", err),
-      Sentry.captureException(err);
+    (console.error("Could not fetch Permission:", err),
+      Sentry.captureException(err));
     return {
       error: getError(err),
     };

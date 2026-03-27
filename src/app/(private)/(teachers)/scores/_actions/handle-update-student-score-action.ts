@@ -16,7 +16,7 @@ export const handleUpdateStudentScoreAction = async (values: unknown) => {
 
     if (!success || error) {
       console.error(error);
-      const errorMessage = error.errors.flatMap((e) => e.message).join("\n");
+      const errorMessage = error.issues.flatMap((e) => e.message).join("\n");
       return { error: errorMessage };
     }
 

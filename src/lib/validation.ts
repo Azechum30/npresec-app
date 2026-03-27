@@ -34,7 +34,7 @@ export type SignInType = z.infer<typeof SignInSchema>;
 
 export const DepartmentSchema = z.object({
   name: z
-    .string({ required_error: "department name is required!" })
+    .string({ error: "department name is required!" })
     .regex(/^[a-zA-Z\s]+$/, "Only letters, and white spaces are allowed!")
     .max(20, "department name must have a maximum character length of 20!"),
   code: z
@@ -69,13 +69,13 @@ export type BulkUploadDepartmentType = z.infer<
 
 /* --------------------------- Teacher Schema and Types ------------------------ */
 const requiredString = z
-  .string({ required_error: "This field is required!" })
+  .string({ error: "This field is required!" })
   .regex(/^[a-zA-Z\s]+$/, "This field can only accept alpahbets!");
 const optionalString = optionalField(z.string().nullish());
 const requiredDate = z.union([z.date(), z.string()]);
 const optionalDate = optionalField(z.union([z.date(), z.string()]).nullish());
 const requiredEmail = z
-  .string({ required_error: "This field is required!" })
+  .string({ error: "This field is required!" })
   .email("You must enter a valid email address");
 const optionalEmail = z
   .string()
@@ -88,13 +88,13 @@ const optionalEmail = z
     message: "Invalid email address",
   });
 const requiredUserName = z
-  .string({ required_error: "This field is required!" })
+  .string({ error: "This field is required!" })
   .regex(
     /^[a-zA-Z0-9]+$/,
     "Username field accepts only letters! Spaces are not allowed!",
   );
 const requiredPhoneNumber = z
-  .string({ required_error: "phone number is required!" })
+  .string({ error: "phone number is required!" })
   .regex(/^[0-9]+$/, "Must be a valid number");
 const registerNumberType = z
   .string()
@@ -118,8 +118,8 @@ export const StaffSchema = z.object({
   departmentId: optionalString,
   birthDate: requiredDate,
   dateOfFirstAppointment: optionalDate,
-  staffType: z.enum(STAFF_TYPE).optional().default("Teaching"),
-  staffCategory: z.enum(STAFF_CATEGORY).optional().default("Professional"),
+  staffType: z.enum(STAFF_TYPE).optional(),
+  staffCategory: z.enum(STAFF_CATEGORY).optional(),
   gender: requiredString,
   maritalStatus: requiredString,
   rgNumber: registerNumberType,
@@ -174,14 +174,14 @@ export type gradesType = (typeof grades)[number];
 
 export const ClassesSchema = z.object({
   name: z
-    .string({ required_error: "name is required!" })
+    .string({ error: "name is required!" })
     .regex(
       /^[a-zA-Z0-9\s]/,
       "name can only contain letters, numbers and whitespaces",
     ),
   code: z.string().nullish(),
   level: z.enum(grades),
-  maxCapacity: z.coerce.number().optional(),
+  maxCapacity: z.number().optional(),
   createdAt: z.date().nullish(),
   departmentId: z.string().nullish(),
   staff: z.array(z.string()).optional(),
@@ -247,7 +247,7 @@ export const CoursesSchema = z.object({
     .min(5, "Course title must be at least 5 characters long!")
     .max(50, "Course name must be at most 50 characters long!"),
   description: z.string().nullish(),
-  credits: z.coerce.number().int().nullish(),
+  credits: z.number().int().nullish(),
   departments: z.array(z.string()).optional(),
   staff: z.array(z.string()).optional(),
   classes: z.array(z.string()).optional(),
@@ -355,13 +355,8 @@ export const attendanceStatus = [
   "Late",
   "Excused",
 ] as const;
-const corcedDate = z.coerce.date({
-  errorMap: (issue, ctx) => {
-    if (issue.code === z.ZodIssueCode.invalid_date) {
-      return { message: "Invalid date format provided" };
-    }
-    return { message: ctx.defaultError };
-  },
+const corcedDate = z.date({
+  error: "Invalid date format provided",
 });
 export const AttendanceSchema = z.object({
   studentId: z.string().min(1, "Student ID cannot be empty"),
@@ -403,12 +398,9 @@ export type SingleStudentAttendance = z.infer<
 
 export const RoleSchema = z.object({
   name: z.string().min(1, "Role name cannot be empty"),
-  permissions: z
-    .array(z.string())
-    .default([])
-    .refine((val) => val.length > 0, {
-      message: "At least one permission is required!",
-    }),
+  permissions: z.array(z.string()).refine((val) => val.length > 0, {
+    message: "At least one permission is required!",
+  }),
 });
 
 export type RoleType = z.infer<typeof RoleSchema>;
@@ -435,15 +427,11 @@ export type PermissionType = z.infer<typeof PermissionSchema>;
 
 export const BoardOfGovernorsSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  role: z.enum(["ChairPerson", "ViceChairPerson", "Member", "Secretary"], {
-    errorMap: () => ({
-      message: "Role must be Chairperson, Member, or Secretary",
-    }),
-  }),
+  role: z.enum(["ChairPerson", "ViceChairPerson", "Member", "Secretary"]),
   affiliation: z.string().nullish(),
   bio: z.string().nullish(),
   photo_url: z.union([z.string().url(), z.instanceof(File)]).nullish(),
-  is_active: z.boolean().default(false),
+  is_active: z.boolean().optional(),
 });
 
 export type BoardOfGovernorsType = z.infer<typeof BoardOfGovernorsSchema>;
@@ -460,7 +448,7 @@ export const Semester = ["First", "Second"] as const;
 
 const studentScores = z.object({
   studentId: z.string().min(1, "Student ID is required"),
-  score: z.coerce
+  score: z
     .number()
     .min(0, "Score must be greater than 0")
     .max(100, "Score must be less than 100"),
@@ -474,16 +462,16 @@ export const GradeSchema = z
     scores: z
       .array(studentScores)
       .nonempty("At least one student score is required"),
-    maxScore: z.coerce
+    maxScore: z
       .number()
       .min(0, "Max score must be greater than 0")
       .max(100, "Max score must be less than or equal to 100"),
-    weight: z.coerce
+    weight: z
       .number()
       .min(0, "Weight must be greater than 0")
       .max(1, "Weight must be less than 1"),
     semester: z.enum(Semester),
-    academicYear: z.coerce
+    academicYear: z
       .number()
       .min(2000, "Academic year must be greater than 2000"),
     remarks: z.string().optional(),
@@ -511,22 +499,22 @@ export const SingleStudentScoreSchema = z
     classId: z.string().min(1, "Class ID is required"),
     courseId: z.string().min(1, "Course ID is required"),
     assessmentType: z.enum(AssesessmentSchema),
-    score: z.coerce
+    score: z
       .number()
       .min(0, "Score must be greater than 0")
       .max(100, "Score must be less than 100"),
     studentId: z.string().min(1, "Student ID is required"),
     studentName: z.string().min(1, "Student name is required"),
-    maxScore: z.coerce
+    maxScore: z
       .number()
       .min(0, "Max score must be greater than 0")
       .max(100, "Max score must be less than 100"),
-    weight: z.coerce
+    weight: z
       .number()
       .min(0, "Weight must be greater than 0")
       .max(1, "Weight must be less than 1"),
     semester: z.enum(Semester),
-    academicYear: z.coerce
+    academicYear: z
       .number()
       .min(2000, "Academic year must be greater than 2000"),
     remarks: z.string().optional(),
@@ -552,7 +540,7 @@ export const GenerateTranscriptSchema = z.object({
     .min(2000, "Academic year must be greater than 2000")
     .max(2100, "Academic year must be less than 2100"),
   semester: z.enum(Semester).optional(),
-  isOfficial: z.boolean().optional().default(false),
+  isOfficial: z.boolean().optional(),
 });
 
 export type GenerateTranscriptType = z.infer<typeof GenerateTranscriptSchema>;
@@ -590,7 +578,7 @@ export const UserSchema = z
       )
       .min(1),
     email: z
-      .string({ required_error: "Email must be a string" })
+      .string({ error: "Email must be a string" })
       .min(1, "Email is required")
       .email(),
     role: z.string().min(1, "Role is required"),
@@ -730,15 +718,14 @@ export type TimezoneOption = (typeof timezoneOptions)[number];
 export type TimezoneValue = TimezoneOption["value"];
 
 export const SettingsSchema = z.object({
-  subscribeToNewsletter: z.boolean().optional().default(false),
+  subscribeToNewsletter: z.boolean().optional(),
 
   // Display Preferences
-  theme: z.enum(themeOptions).optional().default("system"),
+  theme: z.enum(themeOptions).optional(),
   itemsPerPage: z
     .union([z.literal(10), z.literal(25), z.literal(50), z.literal(100)])
-    .optional()
-    .default(10),
-  dateFormat: z.enum(dateFormatOptions).optional().default("DD/MM/YYYY"),
+    .optional(),
+  dateFormat: z.enum(dateFormatOptions).optional(),
   timezone: z
     .enum(
       timezoneOptions.map((tz) => tz.value) as [
@@ -746,33 +733,21 @@ export const SettingsSchema = z.object({
         ...TimezoneValue[],
       ],
     )
-    .optional()
-    .default("Africa/Accra"),
+    .optional(),
 
   // Notification Preferences
-  emailNotifications: z
-    .object({
-      grades: z.boolean().optional().default(true),
-      attendance: z.boolean().optional().default(true),
-      assignments: z.boolean().optional().default(true),
-      announcements: z.boolean().optional().default(true),
-      systemUpdates: z.boolean().optional().default(true),
-    })
-    .default({
-      grades: true,
-      attendance: true,
-      assignments: true,
-      announcements: true,
-      systemUpdates: true,
-    }),
-  notificationFrequency: z
-    .enum(notificationFrequencyOptions)
-    .optional()
-    .default("realtime"),
+  emailNotifications: z.object({
+    grades: z.boolean().optional(),
+    attendance: z.boolean().optional(),
+    assignments: z.boolean().optional(),
+    announcements: z.boolean().optional(),
+    systemUpdates: z.boolean().optional(),
+  }),
+  notificationFrequency: z.enum(notificationFrequencyOptions).optional(),
 
   // Application Preferences
-  compactMode: z.boolean().optional().default(false),
-  showTips: z.boolean().optional().default(true),
+  compactMode: z.boolean().optional(),
+  showTips: z.boolean().optional(),
 });
 
 export type SettingsType = z.infer<typeof SettingsSchema>;
@@ -785,15 +760,15 @@ export const HouseSchema = z.object({
   occupancy: z.object({
     maleOccupancy: z
       .object({
-        roomCount: z.coerce.number().min(0),
-        roomCapacity: z.coerce.number().min(0),
+        roomCount: z.number().min(0),
+        roomCapacity: z.number().min(0),
       })
       .optional(),
 
     femaleOccupancy: z
       .object({
-        roomCount: z.coerce.number().min(0),
-        roomCapacity: z.coerce.number().min(0),
+        roomCount: z.number().min(0),
+        roomCapacity: z.number().min(0),
       })
       .optional(),
   }),
@@ -803,7 +778,7 @@ export type HouseType = z.infer<typeof HouseSchema>;
 
 export const RoomSchema = z.object({
   houseId: z.string().cuid().min(1),
-  capacity: z.coerce.number().min(1),
+  capacity: z.number().min(1),
   rmGender: z.enum(["MALE", "FEMALE", "BOTH"]).optional(),
 });
 
@@ -811,16 +786,16 @@ export type RoomType = z.infer<typeof RoomSchema>;
 
 export const ChangePasswordSchema = z
   .object({
-    oldPassword: z.string({ required_error: "old password field is required" }),
+    oldPassword: z.string({ error: "old password field is required" }),
     newPassword: z
-      .string({ required_error: "new password field is required!" })
+      .string({ error: "new password field is required!" })
       .min(8, "password must be at least 8 characters long")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@!#$%&*?])[A-Za-z\d@!#$%&*?]{8,}$/,
         "password must contain at least 1 uppercase, lowercase, digit, and a special character",
       ),
     confirmNewPassword: z
-      .string({ required_error: "new password field is required!" })
+      .string({ error: "new password field is required!" })
       .min(8, "password must be at least 8 characters long")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@!#$%&*?])[A-Za-z\d@!#$%&*?]{8,}$/,
@@ -836,10 +811,13 @@ export type ChangePasswordType = z.infer<typeof ChangePasswordSchema>;
 
 export const StudentGradesFilterSchema = z.object({
   classId: z.string().min(1, "Class ID is required"),
-  academicYear: z.coerce
+  academicYear: z
     .number()
-    .min(2000, "Academic year must be greater than 2000")
-    .max(2100, "Academic year must be less than 2100"),
+    .min(
+      new Date().getFullYear() - 6,
+      "Academic year must be greater than 2000",
+    )
+    .max(new Date().getFullYear(), "Academic year must be less than 2100"),
   semester: z.enum(Semester),
 });
 
@@ -855,12 +833,12 @@ export const AssessmentTypes = [
 export const AssessmentTimelineSchema = z.object({
   courseId: z.string().min(1, "A course Id is required"),
   assessmentType: z.enum(AssessmentTypes, {
-    required_error:
+    error:
       "Assessment mode can only have either 'Assignment' or 'Midterm' or 'Project' or 'Examination' values.",
   }),
-  academicYear: z.coerce
+  academicYear: z
     .number()
-    .positive()
+    .int()
     .min(
       new Date().getFullYear() - 5,
       `Academic year can only be above ${new Date().getFullYear() - 5}`,
@@ -870,7 +848,7 @@ export const AssessmentTimelineSchema = z.object({
       "Academic year cannot exceed the current year",
     ),
   semester: z.enum(Semester, {
-    required_error: "Semester can only have either 'First' or 'Second' values.",
+    error: "Semester can only have either 'First' or 'Second' values.",
   }),
 
   startDate: z.date(),

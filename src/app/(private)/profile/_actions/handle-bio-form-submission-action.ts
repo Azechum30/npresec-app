@@ -20,7 +20,7 @@ export const BioFormAction = async (values: unknown) => {
     const { error, success, data } = BioSchema.safeParse(values);
 
     if (!success || error) {
-      const errMessage = error.errors.flatMap((e) => e.message).join(",");
+      const errMessage = error.issues.flatMap((e) => e.message).join(",");
       return { error: errMessage };
     }
 

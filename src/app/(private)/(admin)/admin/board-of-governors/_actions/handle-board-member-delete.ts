@@ -17,7 +17,7 @@ export const handleBoardMemberDelete = async (id: string) => {
       .safeParse(id);
 
     if (!success || error) {
-      const errMessage = error.errors.map((er) => er.message).join(",");
+      const errMessage = error.issues.map((er) => er.message).join(",");
       return { error: errMessage };
     }
 

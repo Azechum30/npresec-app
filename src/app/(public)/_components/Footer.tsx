@@ -1,37 +1,35 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { PublicMainContainer } from "./PublicMainContainer";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import Logo from "@/../public/logo.png";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import {
-  Facebook,
-  Instagram,
-  Linkedin,
-  Mail,
-  Twitter,
-  Youtube,
-  MapPin,
-  Phone,
-  Clock,
-  Send,
-  Heart,
-  Star,
-  Sparkles,
-  ExternalLink,
-  ArrowUp,
-  Globe,
-} from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Logo from "@/../public/logo.png";
+import {
+  ArrowUp,
+  Clock,
+  ExternalLink,
+  Globe,
+  Heart,
+  // Facebook,
+  // Instagram,
+  // Linkedin,
+  Mail,
+  MapPin,
+  Phone,
+  Send,
+  Sparkles,
+  Star,
+} from "lucide-react";
 import { Route } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { useRef, useState } from "react";
+import { PublicMainContainer } from "./PublicMainContainer";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -76,41 +74,41 @@ const quickLinks: FooterLink[] = [
 ];
 
 const socialLinks: SocialLink[] = [
-  {
-    platform: "Facebook",
-    icon: Facebook,
-    href: "https://www.facebook.com/nakpanduripresec",
-    color: "text-blue-600",
-    bgColor: "bg-blue-50 dark:bg-blue-950/30",
-  },
-  {
-    platform: "Instagram",
-    icon: Instagram,
-    href: "https://www.instagram.com/npresec/",
-    color: "text-pink-600",
-    bgColor: "bg-pink-50 dark:bg-pink-950/30",
-  },
-  {
-    platform: "YouTube",
-    icon: Youtube,
-    href: "https://www.youtube.com/@nakpanduripresec",
-    color: "text-red-600",
-    bgColor: "bg-red-50 dark:bg-red-950/30",
-  },
-  {
-    platform: "Twitter",
-    icon: Twitter,
-    href: "https://twitter.com/NPresec40215",
-    color: "text-blue-400",
-    bgColor: "bg-blue-50 dark:bg-blue-950/30",
-  },
-  {
-    platform: "LinkedIn",
-    icon: Linkedin,
-    href: "https://www.linkedin.com/company/nakpanduri-presbyterian-senior-high-technical-school/",
-    color: "text-blue-700",
-    bgColor: "bg-blue-50 dark:bg-blue-950/30",
-  },
+  // {
+  //   platform: "Facebook",
+  //   icon: Facebook,
+  //   href: "https://www.facebook.com/nakpanduripresec",
+  //   color: "text-blue-600",
+  //   bgColor: "bg-blue-50 dark:bg-blue-950/30",
+  // },
+  // {
+  //   platform: "Instagram",
+  //   icon: Instagram,
+  //   href: "https://www.instagram.com/npresec/",
+  //   color: "text-pink-600",
+  //   bgColor: "bg-pink-50 dark:bg-pink-950/30",
+  // },
+  // {
+  //   platform: "YouTube",
+  //   icon: Youtube,
+  //   href: "https://www.youtube.com/@nakpanduripresec",
+  //   color: "text-red-600",
+  //   bgColor: "bg-red-50 dark:bg-red-950/30",
+  // },
+  // {
+  //   platform: "Twitter",
+  //   icon: Twitter,
+  //   href: "https://twitter.com/NPresec40215",
+  //   color: "text-blue-400",
+  //   bgColor: "bg-blue-50 dark:bg-blue-950/30",
+  // },
+  // {
+  //   platform: "LinkedIn",
+  //   icon: Linkedin,
+  //   href: "https://www.linkedin.com/company/nakpanduri-presbyterian-senior-high-technical-school/",
+  //   color: "text-blue-700",
+  //   bgColor: "bg-blue-50 dark:bg-blue-950/30",
+  // },
   {
     platform: "Email",
     icon: Mail,
@@ -232,13 +230,12 @@ export const Footer = () => {
   return (
     <footer
       ref={container}
-      className="relative bg-gradient-to-b from-background via-accent/30 to-background overflow-hidden"
-    >
+      className="relative bg-linear-to-b from-background via-accent/30 to-background overflow-hidden">
       {/* Background Elements */}
       <div className="footer-background absolute inset-0">
         {/* Gradient Mesh Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-orange-500/5 to-pink-500/10" />
-        <div className="absolute inset-0 bg-gradient-to-tl from-blue-500/5 via-transparent to-purple-500/5" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-orange-500/5 to-pink-500/10" />
+        <div className="absolute inset-0 bg-linear-to-tl from-blue-500/5 via-transparent to-purple-500/5" />
 
         {/* Logo Watermark */}
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-5">
@@ -273,7 +270,7 @@ export const Footer = () => {
         <PublicMainContainer className="py-16 md:py-24">
           {/* Header Section */}
           <div className="text-center mb-16">
-            <div className="footer-badge inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-primary/15 to-orange-500/15 backdrop-blur-sm rounded-full border border-primary/30 mb-8 shadow-lg">
+            <div className="footer-badge inline-flex items-center gap-3 px-6 py-3 bg-linear-to-r from-primary/15 to-orange-500/15 backdrop-blur-sm rounded-full border border-primary/30 mb-8 shadow-lg">
               <Globe className="w-5 h-5 text-primary" />
               <span className="text-sm font-bold text-primary tracking-wider">
                 CONNECT WITH US
@@ -291,7 +288,7 @@ export const Footer = () => {
                 />
               </div>
               <div className="text-center md:text-left">
-                <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary via-orange-500 to-pink-500 bg-clip-text text-transparent mb-2">
+                <h2 className="text-2xl md:text-3xl font-bold bg-linear-to-r from-primary via-orange-500 to-pink-500 bg-clip-text text-transparent mb-2">
                   Presbyterian SHTS Nakpanduri
                 </h2>
                 <p className="text-muted-foreground">
@@ -308,7 +305,7 @@ export const Footer = () => {
               <Card className="h-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-6">
-                    <div className="p-2 bg-gradient-to-br from-primary to-orange-500 rounded-lg">
+                    <div className="p-2 bg-linear-to-br from-primary to-orange-500 rounded-lg">
                       <MapPin className="w-5 h-5 text-white" />
                     </div>
                     <h3 className="text-lg font-bold text-foreground">
@@ -318,7 +315,7 @@ export const Footer = () => {
 
                   <div className="space-y-4 text-sm">
                     <div className="flex items-start gap-3">
-                      <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                      <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                       <div>
                         <p className="font-medium text-foreground">Address</p>
                         <p className="text-muted-foreground">
@@ -332,33 +329,31 @@ export const Footer = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <Phone className="w-4 h-4 text-primary flex-shrink-0" />
+                      <Phone className="w-4 h-4 text-primary shrink-0" />
                       <div>
                         <p className="font-medium text-foreground">Phone</p>
                         <a
                           href="tel:+233540649355"
-                          className="text-muted-foreground hover:text-primary transition-colors"
-                        >
+                          className="text-muted-foreground hover:text-primary transition-colors">
                           +233 (0) 540 649 355
                         </a>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <Mail className="w-4 h-4 text-primary flex-shrink-0" />
+                      <Mail className="w-4 h-4 text-primary shrink-0" />
                       <div>
                         <p className="font-medium text-foreground">Email</p>
                         <a
                           href="mailto:admissions@nakpanduripresec.org"
-                          className="text-muted-foreground hover:text-primary transition-colors break-all"
-                        >
+                          className="text-muted-foreground hover:text-primary transition-colors break-all">
                           admissions@nakpanduripresec.org
                         </a>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-3">
-                      <Clock className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                      <Clock className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                       <div>
                         <p className="font-medium text-foreground">
                           Office Hours
@@ -380,7 +375,7 @@ export const Footer = () => {
               <Card className="h-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-bold mb-6 text-foreground flex items-center gap-2">
-                    <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg">
+                    <div className="p-2 bg-linear-to-br from-blue-500 to-purple-500 rounded-lg">
                       <Heart className="w-5 h-5 text-white" />
                     </div>
                     About Us
@@ -390,8 +385,7 @@ export const Footer = () => {
                       <Link
                         key={link.href}
                         href={link.href as Route}
-                        className="footer-link-item block py-2 px-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-300 group"
-                      >
+                        className="footer-link-item block py-2 px-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-300 group">
                         <span className="flex items-center justify-between">
                           {link.title}
                           <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -408,7 +402,7 @@ export const Footer = () => {
               <Card className="h-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-bold mb-6 text-foreground flex items-center gap-2">
-                    <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg">
+                    <div className="p-2 bg-linear-to-br from-green-500 to-emerald-500 rounded-lg">
                       <Globe className="w-5 h-5 text-white" />
                     </div>
                     Admissions
@@ -418,8 +412,7 @@ export const Footer = () => {
                       <Link
                         key={link.href}
                         href={link.href as Route}
-                        className="footer-link-item block py-2 px-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-300 group"
-                      >
+                        className="footer-link-item block py-2 px-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-300 group">
                         <span className="flex items-center justify-between">
                           {link.title}
                           <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -438,7 +431,7 @@ export const Footer = () => {
                 <Card className="bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg">
                   <CardContent className="p-6">
                     <h3 className="text-lg font-bold mb-6 text-foreground flex items-center gap-2">
-                      <div className="p-2 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg">
+                      <div className="p-2 bg-linear-to-br from-orange-500 to-red-500 rounded-lg">
                         <Star className="w-5 h-5 text-white" />
                       </div>
                       Quick Links
@@ -448,8 +441,7 @@ export const Footer = () => {
                         <Link
                           key={link.href}
                           href={link.href as Route}
-                          className="footer-link-item block py-2 px-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-300 text-sm group"
-                        >
+                          className="footer-link-item block py-2 px-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-300 text-sm group">
                           <span className="flex items-center justify-between">
                             {link.title}
                             <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -461,7 +453,7 @@ export const Footer = () => {
                 </Card>
 
                 {/* Newsletter */}
-                <Card className="newsletter-section bg-gradient-to-br from-primary/10 to-orange-500/10 backdrop-blur-sm border border-primary/20 shadow-lg">
+                <Card className="newsletter-section bg-linear-to-br from-primary/10 to-orange-500/10 backdrop-blur-sm border border-primary/20 shadow-lg">
                   <CardContent className="p-6">
                     <h3 className="text-lg font-bold mb-3 text-foreground">
                       Stay Updated
@@ -471,8 +463,7 @@ export const Footer = () => {
                     </p>
                     <form
                       onSubmit={handleNewsletterSubmit}
-                      className="space-y-3"
-                    >
+                      className="space-y-3">
                       <Input
                         type="email"
                         placeholder="Enter your email"
@@ -485,8 +476,7 @@ export const Footer = () => {
                         type="submit"
                         size="sm"
                         disabled={isSubmitting}
-                        className="w-full group"
-                      >
+                        className="w-full group">
                         {isSubmitting ? (
                           "Subscribing..."
                         ) : (
@@ -521,8 +511,7 @@ export const Footer = () => {
                       rel="noopener noreferrer"
                       className={`social-icon-${index} group relative p-4 rounded-2xl ${social.bgColor} border border-border/30 hover:border-current transition-all duration-300 block`}
                       onMouseEnter={() => handleSocialHover(index, true)}
-                      onMouseLeave={() => handleSocialHover(index, false)}
-                    >
+                      onMouseLeave={() => handleSocialHover(index, false)}>
                       <Icon
                         className={`w-6 h-6 ${social.color} transition-colors duration-300`}
                       />
@@ -538,7 +527,7 @@ export const Footer = () => {
         </PublicMainContainer>
 
         {/* Bottom Footer */}
-        <div className="footer-bottom bg-gradient-to-r from-background/95 via-accent/20 to-background/95 backdrop-blur-sm border-t border-border/30">
+        <div className="footer-bottom bg-linear-to-r from-background/95 via-accent/20 to-background/95 backdrop-blur-sm border-t border-border/30">
           <PublicMainContainer className="py-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -564,8 +553,7 @@ export const Footer = () => {
                   variant="outline"
                   size="sm"
                   onClick={scrollToTop}
-                  className="group"
-                >
+                  className="group">
                   <ArrowUp className="w-4 h-4 group-hover:-translate-y-1 transition-transform duration-300" />
                   <span className="sr-only">Back to top</span>
                 </Button>

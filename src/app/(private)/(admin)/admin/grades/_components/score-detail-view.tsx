@@ -11,9 +11,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { ASSESSMENT_WEIGHTS } from "@/lib/constants";
+import { ASSESSMENT_WEIGHTS, getGradeInfo } from "@/lib/constants";
+
 import { GradeResponseType } from "@/lib/types";
-import { cn, getGradeInfo } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import { startTransition, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";

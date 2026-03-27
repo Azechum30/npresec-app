@@ -1,5 +1,5 @@
 import { useAuth } from "@/components/customComponents/SessionProvider";
-import { CourseResponseType, ClassesResponseType } from "@/lib/types";
+import { ClassesResponseType, CourseResponseType } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { fetchClasses, fetchCourse } from "../_actions/fetch-classes";
 
@@ -45,7 +45,7 @@ export const useFetchRequiredData = () => {
     };
 
     fetchData();
-  }, [user]);
+  }, [user?.id]);
 
   return { classes, courses, fetchError };
 };

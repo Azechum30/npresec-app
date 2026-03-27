@@ -148,11 +148,11 @@ export const updateStaff = async (id: string, data: StaffType) => {
     const unvalidData = StaffSchema.safeParse(data);
 
     if (!unvalidData.success) {
-      const zodErrors = unvalidData.error.errors
-        .map((err) => `${err.path[0]}: ${err.message}`)
+      const zodissues = unvalidData.error.issues
+        .map((err) => `${err.path[0] as any}: ${err.message}`)
         .join("\n");
       return {
-        error: zodErrors,
+        error: zodissues,
       };
     }
 

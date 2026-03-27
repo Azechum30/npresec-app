@@ -30,7 +30,7 @@ export const getBoardOfGovernorsById = async (id: string) => {
       .min(1, "You must provide a valid ID")
       .safeParse(id);
     if (!validId.success) {
-      return { error: validId.error.errors.map((e) => e.message).join("\n") };
+      return { error: validId.error.issues.map((e) => e.message).join("\n") };
     }
     const { data } = validId;
     const boardMember = await prisma.boardMember.findUnique({

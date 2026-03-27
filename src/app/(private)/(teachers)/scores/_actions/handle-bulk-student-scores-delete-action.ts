@@ -1,9 +1,9 @@
 "use server";
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { getUserWithPermissions } from "@/utils/get-user-with-permission";
 import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
-import { Prisma } from "@/generated/prisma/client";
-import { getUserWithPermissions } from "@/utils/get-user-with-permission";
 import { z } from "zod";
 
 export const handleBulkStudentScoreDeleteAction = async (
@@ -14,7 +14,7 @@ export const handleBulkStudentScoreDeleteAction = async (
     semester?: string;
     academicYear?: string;
     assessmentType?: string;
-  }
+  },
 ) => {
   try {
     const { hasPermission, user } =
@@ -27,7 +27,7 @@ export const handleBulkStudentScoreDeleteAction = async (
     const { error, success, data } = z.array(z.string()).safeParse(ids);
 
     if (!success || error) {
-      const errMessage = error.errors.flatMap((e) => e.message).join(",");
+      const errMessage = error.issues.flatMap((e) => e.message).join(",");
       console.error(errMessage);
       return { error: errMessage };
     }
@@ -48,7 +48,7 @@ export const handleBulkStudentScoreDeleteAction = async (
 
     if (searchParams) {
       revalidatePath(
-        `/scores?classID=${searchParams.classID}&courseID=${searchParams.courseID}&semester=${searchParams.semester}&academicYear=${searchParams.academicYear}&assessmentType=${searchParams.assessmentType}`
+        `/scores?classID=${searchParams.classID}&courseID=${searchParams.courseID}&semester=${searchParams.semester}&academicYear=${searchParams.academicYear}&assessmentType=${searchParams.assessmentType}`,
       );
     } else {
       revalidatePath("/scores");

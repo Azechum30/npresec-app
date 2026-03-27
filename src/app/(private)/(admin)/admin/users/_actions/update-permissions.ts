@@ -18,7 +18,7 @@ export const UpdateUserPermissions = async (values: unknown) => {
       UserPermissionsFormSchema.safeParse(values);
 
     if (!success || error) {
-      const errorMessage = error.errors.flatMap((e) => e.message).join(",");
+      const errorMessage = error.issues.flatMap((e) => e.message).join(",");
       console.error(errorMessage);
       return { error: errorMessage };
     }

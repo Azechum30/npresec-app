@@ -4,7 +4,6 @@ import { Prisma } from "@/generated/prisma/client";
 import { computeGraduationDate } from "@/lib/compute-graduation-date";
 import { generatePassword } from "@/lib/generatePassword";
 import { prisma } from "@/lib/prisma";
-import { triggerSendEmail } from "@/lib/trigger-send-email";
 import { createUserCredentials } from "@/utils/create-user-credentials";
 import {
   Department,
@@ -174,16 +173,6 @@ const handler = async (req: NextRequest) => {
               where: { id: targetClass.id },
               data: { currentEnrollment: { increment: 1 } },
             });
-          });
-
-          void triggerSendEmail({
-            to: [student.email],
-            username: authUser.user.name ?? student.lastName,
-            data: {
-              email: student.email,
-              lastName: student.lastName,
-              password,
-            },
           });
 
           results.successCount++;

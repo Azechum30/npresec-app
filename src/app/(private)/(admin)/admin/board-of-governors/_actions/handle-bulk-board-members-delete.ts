@@ -17,7 +17,7 @@ export const handleBulkBoardMembersDeleteAction = async (ids: string[]) => {
       .safeParse(ids);
 
     if (!success || error) {
-      const errMessage = error.errors.flatMap((e) => e.message).join(",");
+      const errMessage = error.issues.flatMap((e) => e.message).join(",");
       console.error(errMessage);
       return { error: errMessage };
     }

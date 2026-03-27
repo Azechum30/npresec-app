@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 export const useFormValidityChecker = <T extends z.ZodTypeAny>(
-  form: UseFormReturn<z.infer<T>>,
-  schema: T
+  form: UseFormReturn<T>,
+  schema: T,
 ) => {
   const [isValid, setIsValid] = useState(false);
 

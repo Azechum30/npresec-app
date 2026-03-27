@@ -4,6 +4,7 @@ import { getAuthRedirectPathWithLogging } from "@/utils/auth-redirects";
 import { Metadata, Route } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function AuthenticatePage({ searchParams }: Props) {
 }
 
 const RenderSignInPage = async ({ searchParams }: Props) => {
+  await connection();
   const queryParams = await searchParams;
   const headerList = await headers();
   const referer = headerList.get("referer");
@@ -44,7 +46,7 @@ const RenderSignInPage = async ({ searchParams }: Props) => {
       "parent",
     ];
     const primaryRole = priorityOrder.find((role) =>
-      userRoleNames.includes(role)
+      userRoleNames.includes(role),
     );
 
     const redirectPath = getAuthRedirectPathWithLogging({

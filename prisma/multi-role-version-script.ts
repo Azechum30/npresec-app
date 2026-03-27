@@ -6,7 +6,7 @@ import "dotenv/config";
 import { Pool } from "pg";
 
 const pool = new Pool({ connectionString: env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
+const adapter = new PrismaPg(pool as any);
 const prisma = new PrismaClient({ adapter });
 
 const resources = [
@@ -177,7 +177,7 @@ async function main() {
   const shouldHavePermission = (
     roleName: string,
     resource: string,
-    action: string
+    action: string,
   ): boolean => {
     const config = rolePermissions[roleName];
     if (!config) return false;
@@ -219,10 +219,10 @@ async function main() {
     select: { name: true },
   });
   const existingPermissionNames = new Set(
-    existingPermissions.map((p) => p.name)
+    existingPermissions.map((p) => p.name),
   );
   const permissionsToCreate = expectedPermissions.filter(
-    (p) => !existingPermissionNames.has(p.name)
+    (p) => !existingPermissionNames.has(p.name),
   );
 
   for (const perm of permissionsToCreate) {

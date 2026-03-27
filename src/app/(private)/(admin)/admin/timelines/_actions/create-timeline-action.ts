@@ -17,8 +17,8 @@ export const createAssessmentTimeline = async (values: unknown) => {
     const validData = AssessmentTimelineSchema.safeParse(values);
 
     if (!validData.success) {
-      const errorMessage = validData.error.errors
-        .flatMap((error) => `${error.path[0]}: ${error.message}`)
+      const errorMessage = validData.error.issues
+        .flatMap((error) => `${error.path[0] as any}: ${error.message}`)
         .join("\n");
 
       return { error: errorMessage };

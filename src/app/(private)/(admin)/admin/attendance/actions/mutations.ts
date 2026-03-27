@@ -1,17 +1,17 @@
 "use server";
-import "server-only";
-import * as Sentry from "@sentry/nextjs";
-import { getErrorMessage } from "@/lib/getErrorMessage";
+import { generateAcademicYear } from "@/app/(private)/(admin)/admin/attendance/utils/generateAcademicYear";
+import { Prisma } from "@/generated/prisma/client";
 import { getUserPermissions } from "@/lib/get-session";
+import { getErrorMessage } from "@/lib/getErrorMessage";
+import { prisma } from "@/lib/prisma";
 import {
   BulkAttendanceSchema,
   EditSingleStudentAttendanceSchema,
   SingleStudentAttendanceSchema,
 } from "@/lib/validation";
-import { prisma } from "@/lib/prisma";
-import { Prisma } from "@/generated/prisma/client";
+import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
-import { generateAcademicYear } from "@/app/(private)/(admin)/admin/attendance/utils/generateAcademicYear";
+import "server-only";
 
 const semesterType = ["First", "Second"] as const;
 
@@ -26,8 +26,8 @@ export const createAttendance = async (values: unknown) => {
     const unValidData = BulkAttendanceSchema.safeParse(values);
 
     if (!unValidData.success) {
-      const zodError = unValidData.error.errors
-        .map((err) => `${err.path[0]}, ${err.message}`)
+      const zodError = unValidData.error.issues
+        .map((err) => `${err.path[0] as any}, ${err.message}`)
         .join(" \n");
 
       return { error: zodError };
@@ -85,8 +85,8 @@ export const createSingleAttendance = async (values: unknown) => {
 
     const unValidData = SingleStudentAttendanceSchema.safeParse(values);
     if (!unValidData.success) {
-      const zodError = unValidData.error.errors
-        .map((err) => `${err.path[0]}, ${err.message}`)
+      const zodError = unValidData.error.issues
+        .map((err) => `${err.path[0] as any}, ${err.message}`)
         .join(" \n");
       return { error: zodError };
     }
@@ -140,8 +140,8 @@ export const updateAttendance = async (values: unknown) => {
     }
     const unValidData = EditSingleStudentAttendanceSchema.safeParse(values);
     if (!unValidData.success) {
-      const zodError = unValidData.error.errors
-        .map((err) => `${err.path[0]}, ${err.message}`)
+      const zodError = unValidData.error.issues
+        .map((err) => `${err.path[0] as any}, ${err.message}`)
         .join(" \n");
       return { error: zodError };
     }

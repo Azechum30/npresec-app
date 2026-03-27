@@ -78,10 +78,10 @@ export default function UserButton() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" alignOffset={-150}>
-        <DropdownMenuItem asChild>
-          <Link
-            href={`/profile`}
-            className="w-full flex items-center space-x-2 flex-nowrap">
+        <Link
+          href={`/profile`}
+          className="w-full flex items-center space-x-2 flex-nowrap">
+          <DropdownMenuItem className="w-full hover:cursor-pointer">
             <Avatar>
               <AvatarImage src={user?.image ? user.image : ""} />
               <AvatarFallback>CN</AvatarFallback>
@@ -92,8 +92,8 @@ export default function UserButton() {
                 {user?.email}
               </span>
             </span>
-          </Link>
-        </DropdownMenuItem>
+          </DropdownMenuItem>
+        </Link>
         <DropdownMenuSeparator />
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>

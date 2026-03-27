@@ -589,3 +589,68 @@ export type SingleStaffCreationType = {
   source: string;
   roleId: string;
 };
+
+export type singleStudentType = {
+  data: {
+    guardianName: string;
+    guardianPhone: string;
+    guardianRelation: string;
+    dateEnrolled: string | Date;
+    currentLevel: string;
+    status: "Active" | "Inactive" | "Suspended" | "Graduated" | "Withdrawn";
+    firstName: string;
+    lastName: string;
+    birthDate: string | Date;
+    gender: string;
+    guardianEmail?: string | null | undefined;
+    guardianAddress?: string | null | undefined;
+    graduationDate?: string | Date | null | undefined;
+    previousSchool?: string | null | undefined;
+    middleName?: string | null | undefined;
+    phone?: string | null | undefined;
+    address?: string | null | undefined;
+    nationality?: string | null | undefined;
+    religion?: string | null | undefined;
+    email: string;
+    roleId: string;
+    classId: string | null | undefined;
+    departmentId?: string | null;
+    userId: string;
+  };
+};
+
+export type BulkStudentOnboardingType = {
+  userId: string;
+  data: {
+    guardianName: string;
+    guardianPhone: string;
+    guardianRelation: string;
+    dateEnrolled: string | Date;
+    currentLevel: string;
+    status: "Active" | "Inactive" | "Withdrawn" | "Suspended" | "Graduated";
+    firstName: string;
+    lastName: string;
+    birthDate: string | Date;
+    gender: string;
+    email: string;
+    middleName?: string;
+    phone?: string;
+    religion?: string;
+    nationality?: string;
+    address?: string;
+    password: string;
+    guardianEmail?: string | null | undefined;
+    guardianAddress?: string | null | undefined;
+    classId?: {
+      id: string;
+      name: string;
+    };
+    graduationDate?: string | Date | null | undefined;
+    departmentId?: {
+      id: string;
+      name: string;
+    };
+    previousSchool?: string | null | undefined;
+    roleId: string;
+  }[];
+};

@@ -59,7 +59,7 @@ export const createPermissions = async (values: unknown) => {
 };
 
 export const UpdatePermission = async (
-  values: z.infer<typeof PermissionEditSchema>
+  values: z.infer<typeof PermissionEditSchema>,
 ) => {
   try {
     const { hasPermission } = await getUserPermissions("edit:permissions");
@@ -68,8 +68,8 @@ export const UpdatePermission = async (
     const { error, success, data } = PermissionEditSchema.safeParse(values);
 
     if (!success || error) {
-      const message = error.errors
-        .flatMap((e) => `${e.path[0]}: ${e.message}`)
+      const message = error.issues
+        .flatMap((e) => `${e.path[0] as any as any}: ${e.message}`)
         .join(",");
       return { error: message };
     }
@@ -120,8 +120,8 @@ export const deletePermission = async (id: string) => {
     } = z.string().cuid().safeParse(id);
 
     if (!success) {
-      const message = error.errors
-        .flatMap((e) => `${e.path[0]}: ${e.message}`)
+      const message = error.issues
+        .flatMap((e) => `${e.path[0] as any}: ${e.message}`)
         .join(",");
       return { error: message };
     }
@@ -154,8 +154,10 @@ export const bulkDeletePermissions = async (ids: string[]) => {
     const parsed = z.array(z.string().cuid()).safeParse(ids);
 
     if (!parsed.success) {
-      const message = parsed.error.errors
-        .flatMap((e) => `Error with ID at index ${e.path[0]}: ${e.message}`)
+      const message = parsed.error.issues
+        .flatMap(
+          (e) => `Error with ID at index ${e.path[0] as any}: ${e.message}`,
+        )
         .join(",");
       return { error: message };
     }

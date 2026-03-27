@@ -42,7 +42,7 @@ export const validateAndTransformStudentsData = (
 
     if (!structureValidation.success) {
       // Handle top-level structure errors
-      structureValidation.error.errors.forEach((error) => {
+      structureValidation.error.issues.forEach((error) => {
         errors.push({
           row: 0,
           field: error.path.join(".") || "data",
@@ -73,9 +73,9 @@ export const validateAndTransformStudentsData = (
 
       if (!validation.success) {
         // Process each validation error
-        validation.error.errors.forEach((error) => {
+        validation.error.issues.forEach((error) => {
           const fieldPath = error.path.join(".");
-          const fieldValue = getNestedValue(student, error.path);
+          const fieldValue = getNestedValue(student, error.path as any);
 
           errors.push({
             row: rowNumber,

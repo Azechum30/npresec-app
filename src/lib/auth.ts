@@ -140,7 +140,9 @@ const authOptions = {
 
 export const auth = betterAuth({
   ...authOptions,
+  appName: "npresec-app",
   plugins: [
+    twoFactor({}),
     customSession(async ({ user, session }) => {
       const userWithRole = await prisma.user.findUnique({
         where: { id: session.userId },
@@ -173,7 +175,7 @@ export const auth = betterAuth({
         },
       } as const;
     }),
-    twoFactor(),
+
     nextCookies(),
   ],
 });

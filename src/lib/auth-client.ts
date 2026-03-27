@@ -7,7 +7,7 @@ import { auth } from "./auth";
 
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL,
-  plugins: [inferAdditionalFields<typeof auth>(), twoFactorClient()],
+  plugins: [inferAdditionalFields<typeof auth>(), twoFactorClient({})],
 });
 
 export type ExtendedSession = typeof authClient.$Infer.Session & {

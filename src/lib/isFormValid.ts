@@ -4,7 +4,7 @@ import { z } from "zod";
 
 export function isFormValid<T extends z.ZodObject<any>>(
   form: UseFormReturn<z.infer<T>>,
-  schema: T
+  schema: T,
 ): boolean {
   const values = form.getValues();
   const result = schema.safeParse(values);
@@ -15,9 +15,7 @@ export function isFormValid<T extends z.ZodObject<any>>(
   const requiredFields = Object.entries(schema.shape)
     .filter(
       ([_, fieldSchema]) =>
-        !(fieldSchema as z.ZodTypeAny)._def.description?.includes(
-          "isOptional:true"
-        )
+        !(fieldSchema as z.ZodTypeAny).description?.includes("isOptional:true"),
     )
     .map(([key]) => key);
 

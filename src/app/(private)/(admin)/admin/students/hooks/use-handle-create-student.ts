@@ -1,8 +1,8 @@
-import { useTransition } from "react";
-import { useStudentStore } from "../store";
-import { createStudent } from "../actions/action";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { toast } from "sonner";
+import { createStudent } from "../actions/action";
+import { useStudentStore } from "../store";
 
 export const useHandleCreateStudent = () => {
   const { actions } = useStudentStore();
@@ -17,10 +17,12 @@ export const useHandleCreateStudent = () => {
       if (error) {
         toast.error(
           error.toString() ||
-            "An error occurred while trying to create the student!"
+            "An error occurred while trying to create the student!",
         );
       } else {
-        toast.success("Student has been successfully created");
+        toast.success(
+          "Student data has been successfully queued. You will be notified when onboarding is complete",
+        );
         actions.resetForm();
         return router.push("/admin/students");
       }

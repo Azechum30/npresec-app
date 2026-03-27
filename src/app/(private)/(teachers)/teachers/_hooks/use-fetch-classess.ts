@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { fetchClassessAction } from "../_actions/fetch-classess-action";
 import { useAuth } from "@/components/customComponents/SessionProvider";
 import { ClassesResponseType } from "@/lib/types";
+import { useEffect, useState } from "react";
+import { fetchClassessAction } from "../_actions/fetch-classess-action";
 
 export const useFetchClassess = () => {
   const [classes, setClasses] = useState<ClassesResponseType[] | null>(null);
@@ -11,7 +11,7 @@ export const useFetchClassess = () => {
   const user = useAuth();
 
   useEffect(() => {
-    if (!user || !user.id) return;
+    if (!user) return;
 
     const fetchClasses = async () => {
       setClasses(null);
@@ -38,7 +38,7 @@ export const useFetchClassess = () => {
     };
 
     fetchClasses();
-  }, [user]);
+  }, [user?.id]);
 
   return { classes, fetchError, fetchSuccess };
 };

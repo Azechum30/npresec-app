@@ -248,19 +248,16 @@ export default function SignInForm() {
         toast.success("Login successful!");
         setEmail(null);
 
-        // Check if user has emailVerified - if not, redirect to verification page
         if (result.user && !result.user.emailVerified) {
           router.push("/verify-email");
           return;
         }
 
-        // Server action now handles redirect logic, just use the returned path
         setIsRedirecting(true);
         router.push(result.redirectTo as Route);
       } else if (result.success) {
         toast.success("Login successful!");
         setEmail(null);
-        // Fallback redirect if no redirectTo provided
         router.push("/profile");
       } else {
         setSignInError("Something went wrong during sign in");
@@ -288,9 +285,9 @@ export default function SignInForm() {
   return (
     <div ref={container} className="relative">
       {/* Floating decorations */}
-      <div className="floating-decoration floating-element absolute -top-8 -right-8 w-16 h-16 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full blur-lg pointer-events-none" />
-      <div className="floating-decoration floating-element absolute -bottom-4 -left-4 w-12 h-12 bg-gradient-to-br from-accent/30 to-primary/30 rounded-full blur-md pointer-events-none" />
-      <div className="floating-decoration floating-element absolute top-1/2 -right-6 w-8 h-8 bg-gradient-to-br from-secondary/25 to-accent/25 rounded-full blur-sm pointer-events-none" />
+      <div className="floating-decoration floating-element absolute -top-8 -right-8 w-16 h-16 bg-linear-to-br from-primary/20 to-secondary/20 rounded-full blur-lg pointer-events-none" />
+      <div className="floating-decoration floating-element absolute -bottom-4 -left-4 w-12 h-12 bg-linear-to-br from-accent/30 to-primary/30 rounded-full blur-md pointer-events-none" />
+      <div className="floating-decoration floating-element absolute top-1/2 -right-6 w-8 h-8 bg-linear-to-br from-secondary/25 to-accent/25 rounded-full blur-sm pointer-events-none" />
 
       {/* Sparkle decorations */}
       <div className="floating-decoration absolute top-4 right-4 opacity-30">
@@ -302,23 +299,23 @@ export default function SignInForm() {
 
       <Card className="signin-container relative overflow-hidden bg-background/80 backdrop-blur-xl border-border/50 shadow-2xl">
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
 
         {/* Top gradient line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/50 to-transparent" />
 
         <CardHeader className="text-center relative pb-4">
           {/* Badge */}
           <div className="signin-badge flex justify-center mb-4">
             <Badge
               variant="secondary"
-              className="px-4 py-2 bg-gradient-to-r from-primary/15 to-secondary/15 backdrop-blur-sm border-primary/30 text-primary hover:from-primary/25 hover:to-secondary/25 transition-all duration-300">
+              className="px-4 py-2 bg-linear-to-r from-primary/15 to-secondary/15 backdrop-blur-sm border-primary/30 text-primary hover:from-primary/25 hover:to-secondary/25 transition-all duration-300">
               <Shield className="w-4 h-4 mr-2" />
               Secure Login
             </Badge>
           </div>
 
-          <CardTitle className="signin-title text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent mb-2">
+          <CardTitle className="signin-title text-2xl md:text-3xl font-bold bg-linear-to-r from-primary via-primary to-secondary bg-clip-text text-transparent mb-2">
             Welcome Back!
           </CardTitle>
 
@@ -349,13 +346,13 @@ export default function SignInForm() {
               <Button
                 disabled={isSendingEmail}
                 variant="outline"
-                className="w-full relative overflow-hidden bg-gradient-to-r from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100 border-orange-200 text-orange-700 hover:border-orange-300 transition-all duration-300"
+                className="w-full relative overflow-hidden bg-linear-to-r from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100 border-orange-200 text-orange-700 hover:border-orange-300 transition-all duration-300"
                 onClick={sendVerificationMail}
                 onMouseEnter={() => setHoveredElement("verify-email")}
                 onMouseLeave={() => setHoveredElement(null)}>
                 {/* Shimmer effect */}
                 <div
-                  className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-700 ${
+                  className={`absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-700 ${
                     hoveredElement === "verify-email" ? "translate-x-full" : ""
                   }`}
                 />
@@ -414,10 +411,10 @@ export default function SignInForm() {
                   onMouseLeave={() => setHoveredElement(null)}>
                   <LoadingButton
                     loading={isPending || isRedirecting}
-                    className="w-full relative overflow-hidden bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 h-12 font-semibold">
+                    className="w-full relative overflow-hidden bg-linear-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 h-12 font-semibold">
                     {/* Shimmer effect */}
                     <div
-                      className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-700 ${
+                      className={`absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-700 ${
                         hoveredElement === "login" ? "translate-x-full" : ""
                       }`}
                     />
@@ -450,7 +447,7 @@ export default function SignInForm() {
                     onMouseLeave={() => setHoveredElement(null)}>
                     Reset it here
                     <span
-                      className={`absolute -bottom-1 left-0 h-px bg-gradient-to-r from-primary to-secondary transition-all duration-300 ${
+                      className={`absolute -bottom-1 left-0 h-px bg-linear-to-r from-primary to-secondary transition-all duration-300 ${
                         hoveredElement === "forgot-password" ? "w-full" : "w-0"
                       }`}
                     />
@@ -462,7 +459,7 @@ export default function SignInForm() {
         </CardContent>
 
         {/* Bottom gradient line */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/30 to-transparent" />
       </Card>
     </div>
   );

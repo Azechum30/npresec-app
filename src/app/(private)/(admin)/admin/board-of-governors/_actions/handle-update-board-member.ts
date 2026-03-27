@@ -20,7 +20,7 @@ export const handleUpdateBoardMemberAction = async (values: unknown) => {
     }
     const { error, success, data } = EditSchema.safeParse(values);
     if (!success || error) {
-      const errorMessage = error.errors.flatMap((e) => e.message).join(",");
+      const errorMessage = error.issues.flatMap((e) => e.message).join(",");
       console.error(errorMessage);
       return { error: errorMessage };
     }
@@ -42,7 +42,7 @@ export const handleUpdateBoardMemberAction = async (values: unknown) => {
         photo_url as File,
         boardMember.id,
         "board-members",
-        "boardMember" as const
+        "boardMember" as const,
       );
     }
     void revalidateTag("board-members-list", "seconds");

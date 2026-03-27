@@ -22,7 +22,7 @@ export const createScoresAction = async (values: unknown) => {
     const { error, success, data } = GradeSchema.safeParse(values);
 
     if (!success || error) {
-      const errorMessage = error.errors.map((e) => e.message).join("\n");
+      const errorMessage = error.issues.map((e) => e.message).join("\n");
       return { error: errorMessage };
     }
 

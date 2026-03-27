@@ -19,11 +19,7 @@ export const getSession = cache(async () => {
     return session;
   } catch (error) {
     console.error("Session fetch error:", error);
-    try {
-    } catch (error) {
-      console.error("Fallback session fetch error:", error);
-      return null;
-    }
+    return null;
   }
 });
 

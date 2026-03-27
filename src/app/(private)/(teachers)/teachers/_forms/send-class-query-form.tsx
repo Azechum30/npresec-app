@@ -25,18 +25,17 @@ export const SendClassQueryForm = () => {
     defaultValues: { classId: "" },
   });
 
+  const classId = useWatch({
+    name: "classId",
+    control: form.control,
+  });
   const { classes } = useFetchClassess();
   const searchParam = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
-  const classId = useWatch({
-    name: "classId",
-    control: form.control,
-  });
-
   useEffect(() => {
-    if (pathname !== `/teachers?${classId}`) {
+    if (pathname !== `/teachers?classId=${classId}`) {
       form.reset({ classId: "" });
     }
   }, [pathname, form]);

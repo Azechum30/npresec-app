@@ -6,7 +6,7 @@ import { env } from "./server-only-actions/validate-env";
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 const pool = new Pool({ connectionString: env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
+const adapter = new PrismaPg(pool as any);
 
 const prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
 

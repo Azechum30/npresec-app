@@ -1,11 +1,11 @@
 "use server";
-import "server-only";
-import { getErrorMessage } from "@/lib/getErrorMessage";
 import { getUserPermissions } from "@/lib/get-session";
+import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
 import { RoleSchema, UpdateRoleSchema } from "@/lib/validation";
 import * as Sentry from "@sentry/nextjs";
 import { revalidateTag } from "next/cache";
+import "server-only";
 import { z } from "zod";
 
 export const createRole = async (values: unknown) => {
@@ -18,8 +18,8 @@ export const createRole = async (values: unknown) => {
     const unvalidatedData = RoleSchema.safeParse(values);
 
     if (!unvalidatedData.success) {
-      const zodError = unvalidatedData.error.errors.map(
-        (e) => `${e.path[0]}: ${e.message}`,
+      const zodError = unvalidatedData.error.issues.map(
+        (e) => `${e.path[0] as any}: ${e.message}`,
       );
       return { error: zodError.join("\n") };
     }
@@ -63,8 +63,8 @@ export const updateRole = async (values: unknown) => {
 
     const result = UpdateRoleSchema.safeParse(values);
     if (!result.success) {
-      const zodError = result.error.errors.map(
-        (e) => `${e.path[0]}: ${e.message}`,
+      const zodError = result.error.issues.map(
+        (e) => `${e.path[0] as any}: ${e.message}`,
       );
       return { error: zodError.join("\n") };
     }

@@ -87,7 +87,7 @@ export default function SelectWithLabel({
                   disabled={disabled}
                   role="combobox"
                   className={cn(
-                    "w-full justify-between font-normal",
+                    "w-full justify-between font-normal hover:cursor-pointer",
                     !field.value && "text-muted-foreground",
                     className,
                   )}>
@@ -128,6 +128,7 @@ export default function SelectWithLabel({
 
                       return (
                         <CommandItem
+                          className="hover:bg-secondary hover:cursor-pointer"
                           key={value}
                           value={label} // Search matches against label
                           onSelect={() => {

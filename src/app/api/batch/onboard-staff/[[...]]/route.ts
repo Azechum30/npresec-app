@@ -12,7 +12,7 @@ import { getEmailBatchConfig } from "@/utils/email-batch-config";
 import { createWorkflow, serveMany } from "@upstash/workflow/nextjs";
 import { revalidateTag } from "next/cache";
 
-const emailBatchWorkflow = createWorkflow<BulkEmailType, unknown>(
+export const emailBatchWorkflow = createWorkflow<BulkEmailType, unknown>(
   async (context) => {
     const { emails, userId, source } = context.requestPayload;
     const channelName = `userId-${userId}`;

@@ -17,7 +17,7 @@ export const handleBoardMemberCreationAction = async (values: unknown) => {
     const { error, data, success } = BoardOfGovernorsSchema.safeParse(values);
 
     if (!success || error) {
-      const errorMessage = error.errors.map((err) => err.message).join(",");
+      const errorMessage = error.issues.map((err) => err.message).join(",");
       return { error: errorMessage };
     }
 
@@ -37,7 +37,7 @@ export const handleBoardMemberCreationAction = async (values: unknown) => {
         data.photo_url as File,
         boardMemberData.id,
         "board-members",
-        "boardMember" as const
+        "boardMember" as const,
       );
     }
 

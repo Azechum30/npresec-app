@@ -144,3 +144,7 @@ export const GRADING_SYSTEM = [
   { range: "35 - 39", grade: "E8", remark: "Pass" },
   { range: "00 - 34", grade: "F9", remark: "Fail" },
 ];
+
+export const getGradeInfo = (score: number) =>
+  GRADING_SCALE.find((grade) => score >= grade.min) ||
+  GRADING_SCALE[GRADING_SCALE.length - 1];

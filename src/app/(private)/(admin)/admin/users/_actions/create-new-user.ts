@@ -21,8 +21,8 @@ export const createNewUserAction = async (values: unknown) => {
     const { error, success, data } = UserSchema.safeParse(values);
 
     if (!success || error) {
-      const errMessage = error.errors
-        .flatMap((e) => `${e.path[0]}: ${e.message}`)
+      const errMessage = error.issues
+        .flatMap((e) => `${e.path[0] as any}: ${e.message}`)
         .join(",");
       return { error: errMessage };
     }
