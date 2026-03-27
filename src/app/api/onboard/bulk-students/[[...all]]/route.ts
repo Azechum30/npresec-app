@@ -1,4 +1,4 @@
-import { emailBatchWorkflow } from "@/app/api/batch/onboard-staff/[[...]]/route";
+import { emailBatchWorkflow } from "@/app/api/batch/onboard-staff/[[...all]]/route";
 import { computeGraduationDate } from "@/lib/compute-graduation-date";
 import { prisma } from "@/lib/prisma";
 import { triggerServerNotification } from "@/lib/pusher";
