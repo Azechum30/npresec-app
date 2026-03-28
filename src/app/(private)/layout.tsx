@@ -63,6 +63,7 @@ const RenderSessionProvider = async ({ children }: { children: ReactNode }) => {
               "student-bulk-creation-success",
               "bulk-student-workflow-failed",
               "students-emails-sent-completed",
+              "students-grades-upload-success",
             ]}
           />
         </Suspense>

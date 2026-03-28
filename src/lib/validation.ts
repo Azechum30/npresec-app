@@ -484,7 +484,7 @@ export const GradeSchema = z
     data.scores.forEach((scoreOj, index) => {
       if (scoreOj.score > data.maxScore) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: "Score must be less than or equal to max score",
           path: ["scores", index, "score"],
         });
@@ -866,3 +866,32 @@ export const BulkAssessmentTimelinesSchema = AssessmentTimelineSchema.omit({
 export type BulkAssessmentTimelinesType = z.infer<
   typeof BulkAssessmentTimelinesSchema
 >;
+
+export const BulkStudentsScoresSchema = z
+  .object({
+    data: z.array(
+      z.object({
+        classId: z.string({ error: "classId is required" }).min(1),
+        courseId: z.string({ error: "courseId is required!" }),
+        studentId: z.string({ error: "studentId is required!" }),
+        maxScore: z.number().int().min(1).max(100),
+        score: z.number().int().max(100),
+        assessmentType: z.enum(AssesessmentSchema),
+        semester: z.enum(Semester),
+        academicYear: z.number().max(new Date().getFullYear()),
+      }),
+    ),
+  })
+  .superRefine((data, ctx) => {
+    data.data.forEach((scoreObj, index) => {
+      if (scoreObj.score > scoreObj.maxScore) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["data", index, "score"],
+          message: "Score cannot exceed the maximum score",
+        });
+      }
+    });
+  });
+
+export type BulkStudentsScoresType = z.infer<typeof BulkStudentsScoresSchema>;

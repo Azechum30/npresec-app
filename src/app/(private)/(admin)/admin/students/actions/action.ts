@@ -425,13 +425,12 @@ export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
         error: existingUserEmails
           .map(
             (student) =>
-              `$${student.firstName} with email ${student.email} is already taken`,
+              `${student.firstName} with email ${student.email} is already taken`,
           )
           .join("\n"),
       };
     }
 
-    console.log("Existing classes ", existingClasses);
     const classMap = new Map(existingClasses.map((c) => [c.name, c]));
     const departmentMap = new Map(existingDepartments.map((d) => [d.name, d]));
 
@@ -451,8 +450,6 @@ export const bulkCreateStudents = async (values: BulkCreateStudentsType) => {
         password: generatePassword(),
       };
     });
-
-    console.log("Transformed Data: " + transformedData);
 
     const filteredStudentData = filterBools(transformedData);
 

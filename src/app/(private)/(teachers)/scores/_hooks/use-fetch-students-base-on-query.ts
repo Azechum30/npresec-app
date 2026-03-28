@@ -26,7 +26,6 @@ export const useFetchStudentsBaseOnQuery = () => {
       queryParams;
     const allParamsPresent =
       classId && courseId && semester && academicYear && assessmentType;
-
     if (!allParamsPresent) return;
 
     startTransition(async () => {
@@ -58,7 +57,13 @@ export const useFetchStudentsBaseOnQuery = () => {
       setFetchSuccess(true);
       setStudents(res.students);
     });
-  }, [queryParams]);
+  }, [
+    queryParams.academicYear,
+    queryParams.assessmentType,
+    queryParams.classId,
+    queryParams.courseId,
+    queryParams.semester,
+  ]);
 
   return { students, fetchError, fetchSuccess, isPending, setStudents };
 };

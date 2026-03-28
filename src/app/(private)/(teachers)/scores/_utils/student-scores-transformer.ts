@@ -5,8 +5,9 @@ import moment from "moment";
 export const studentScoresTransformer = (scores: GradeResponseType) => {
   return {
     "Student Number": scores.student.studentNumber,
-    "First Name": scores.student.firstName,
     "Last Name": scores.student.lastName,
+    "First Name": scores.student.firstName,
+    "Middle Name": scores.student.middleName ?? "",
     Gender: scores.student.gender,
     Class: scores.student.currentClass?.name || "N/A",
     Department: scores.student.currentClass?.department?.name || "N/A",

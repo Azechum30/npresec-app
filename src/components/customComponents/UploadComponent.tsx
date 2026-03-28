@@ -49,16 +49,21 @@ export default function UploadComponent<T>({
 
   function onFileUploadAccepted(results: any) {
     const headers = results.data[0].map((header: string) => ({
-      header,
+      header: header.trim(),
       accessorKey: header,
     }));
 
     const rows = results.data
-      .slice(1, results.data.length - 1)
-      .map((row: any) =>
+      .slice(1)
+      .filter((row: any[]) =>
+        row.some((cell) => cell?.toString().trim() !== ""),
+      )
+      .map((row: any[]) =>
         row.reduce((acc: any, curr: any, index: number) => {
-          acc[headers[index].accessorKey] = curr;
-
+          const key = headers[index]?.accessorKey;
+          if (key) {
+            acc[key] = curr?.toString().trim() || "";
+          }
           return acc;
         }, {}),
       );

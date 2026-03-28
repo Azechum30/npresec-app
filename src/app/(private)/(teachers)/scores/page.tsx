@@ -6,6 +6,7 @@ import { unauthorized } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { getScoresAction } from "./_actions/get-scores-action";
+import { BulkStudentsScoresProvider } from "./_components/bulk-students-scores-provider";
 import { RenderScoresTable } from "./_components/render-scores-table";
 import { SearchQueryForm } from "./_components/search-query-form";
 import { SingleStudentScoreDialog } from "./_components/single-student-score-dialog";
@@ -33,6 +34,7 @@ export default function ScoresPage({ searchParams }: Props) {
 
       <CreateStudentsScoresDialog />
       <SingleStudentScoreDialog />
+      <BulkStudentsScoresProvider />
     </div>
   );
 }

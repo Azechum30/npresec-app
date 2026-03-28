@@ -326,6 +326,7 @@ export const GradeSelect = {
       studentNumber: true,
       firstName: true,
       lastName: true,
+      middleName: true,
       gender: true,
       user: {
         select: {
@@ -653,4 +654,28 @@ export type BulkStudentOnboardingType = {
     previousSchool?: string | null | undefined;
     roleId: string;
   }[];
+};
+
+export type BulkStudentsScoresUploadType = {
+  data: {
+    classId: {
+      id: string;
+      name: string;
+    };
+    courseId: {
+      id: string;
+      title: string;
+    };
+    studentId: {
+      id: string;
+      studentNumber: string;
+    };
+    maxScore: number;
+    score: number;
+    assessmentType: "Assignment" | "Midterm" | "Project" | "Examination";
+    semester: "First" | "Second";
+    academicYear: number;
+  }[];
+  userId: string;
+  staffId: string;
 };

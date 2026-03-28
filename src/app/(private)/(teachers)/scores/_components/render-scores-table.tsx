@@ -57,6 +57,7 @@ export const RenderScoresTable = ({
           data={scores ?? []}
           filename="Student-Scores-List"
           transformer={studentScoresTransformer}
+          showImportButton={true}
           renderSubComponent={(row) => <StudentScoreDetail row={row} />}
           onDelete={async (rows) => {
             const ids = rows.map((r) => r.original.id);

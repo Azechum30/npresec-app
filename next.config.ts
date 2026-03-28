@@ -118,6 +118,10 @@ export default withSentryConfig(nextConfig, {
 
   tunnelRoute: "/monitoring",
 
-  disableLogger: process.env.NODE_ENV === "production",
-  automaticVercelMonitors: process.env.NODE_ENV === "production",
+  webpack: {
+    treeshake: {
+      removeDebugLogging: process.env.NODE_ENV === "production",
+    },
+    automaticVercelMonitors: process.env.NODE_ENV === "production",
+  },
 });

@@ -2,17 +2,17 @@ import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-form
 import { StudentResponseType } from "@/lib/types";
 import { Row } from "@tanstack/react-table";
 import {
-  Mail,
-  Phone,
-  User,
-  GraduationCap,
-  School,
   BadgeCheck,
-  Calendar,
-  MapPin,
-  UserCircle2,
-  Landmark,
   BookOpen,
+  Calendar,
+  GraduationCap,
+  Landmark,
+  Mail,
+  MapPin,
+  Phone,
+  School,
+  User,
+  UserCircle2,
 } from "lucide-react";
 
 type StudentRowDetailProps = {
@@ -24,10 +24,10 @@ export default function StudentRowDetail({ row }: StudentRowDetailProps) {
   const { formatDate } = useUserPreferredDateFormat();
 
   return (
-    <div className="p-6 md:p-8 bg-linear-to-br from-white via-orange-50 to-orange-100 dark:from-neutral-900 dark:via-neutral-900 dark:to-orange-950 rounded-2xl shadow-xl border border-gray-200 dark:border-neutral-800 w-full">
+    <div className="p-6 md:p-8 bg-linear-to-br from-muted-foreground/20 via-primary/15 to-primary/10 dark:from-primary/5 dark:via-secondary/10 dark:to-secondary/20 rounded-2xl shadow-xl border border-gray-200 dark:border-neutral-800 w-full">
       {/* Header */}
       <div className="flex items-center gap-6 mb-8">
-        <div className="shrink-0 bg-linear-to-br from-accent to-destructive rounded-full w-20 h-20 flex items-center justify-center text-white text-4xl font-extrabold shadow-lg border-4 border-white dark:border-neutral-900">
+        <div className="shrink-0 bg-linear-to-br from-accent to-secondary rounded-full w-20 h-20 flex items-center justify-center text-white text-4xl font-extrabold shadow-lg border-4 border-white dark:border-primary/30">
           {original.firstName[0]}
           {original.lastName[0]}
         </div>
@@ -60,7 +60,7 @@ export default function StudentRowDetail({ row }: StudentRowDetailProps) {
 
       {/* Info Cards */}
       <div className="flex flex-col md:flex-row gap-3 w-full ">
-        <div className="flex-1 bg-white dark:bg-neutral-900 rounded-xl shadow-md border border-blue-100 dark:border-neutral-800 p-6 mb-4 md:mb-0">
+        <div className="flex-1 bg-card rounded-xl shadow-md border border-card  p-6 mb-4 md:mb-0">
           <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2 text-lg">
             <GraduationCap className="w-6 h-6 text-indigo-500" /> Academic Info
           </h3>
@@ -97,7 +97,7 @@ export default function StudentRowDetail({ row }: StudentRowDetailProps) {
           </ul>
         </div>
 
-        <div className="flex-1  bg-white dark:bg-neutral-900 rounded-xl shadow-md border border-blue-100 dark:border-neutral-800 p-6 mb-4 md:mb-0">
+        <div className="flex-1  bg-card rounded-xl shadow-md border border-card p-6 mb-4 md:mb-0">
           <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2 text-lg">
             <UserCircle2 className="w-6 h-6 text-blue-500" /> Personal Info
           </h3>
@@ -137,7 +137,7 @@ export default function StudentRowDetail({ row }: StudentRowDetailProps) {
             </li>
           </ul>
         </div>
-        <div className="flex-1  bg-white dark:bg-neutral-900 rounded-xl shadow-md border border-blue-100 dark:border-neutral-800 p-6">
+        <div className="flex-1  bg-card  rounded-xl shadow-md border border-card  p-6">
           <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2 text-lg">
             <User className="w-6 h-6 text-indigo-500" /> Guardian Info
           </h3>

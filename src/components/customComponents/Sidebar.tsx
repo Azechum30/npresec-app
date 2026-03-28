@@ -135,7 +135,7 @@ export default function Sidebar() {
   return (
     <div
       className={cn(
-        "inset-[68px] bg-background absolute md:sticky top-0 left-0 bottom-0 z-50 md:z-30 h-svh border-r aside overflow-x-hidden overflow-y-auto scrollbar-thin",
+        "inset-17 bg-background absolute md:sticky top-0 left-0 bottom-0 z-50 md:z-30 h-svh border-r aside overflow-x-hidden overflow-y-auto scrollbar-thin",
         open && "open",
       )}>
       <div className="self-start w-full flex flex-col items-center md:items-start gap-y-4 relative h-full sidebar-content">
@@ -143,7 +143,7 @@ export default function Sidebar() {
           className={cn(
             `${buttonVariants({
               variant: "default",
-            })} group bg-background hover:bg-background w-full px-4 py-2 text-left justify-start flex gap-x-3 rounded-none items-center h-14 sticky top-0 left-0 z-30 border-0 border-b`,
+            })} group bg-background hover:bg-background w-full px-4 py-2 text-left justify-start flex gap-x-3 rounded-none items-center h-14 sticky top-0 left-0 z-30 border-b border-card`,
           )}>
           <div className="size-10 shrink-0 flex items-center justify-center border-2 dark:group-hover:border-gray-600  rounded-full p-1.5 ">
             <Avatar className="w-full h-full">

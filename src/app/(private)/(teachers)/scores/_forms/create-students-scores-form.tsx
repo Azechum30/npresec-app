@@ -223,7 +223,7 @@ export const CreateStudentScoresForm = ({
     selectedAssessmentType,
     searchParams,
     debouncedNavigate,
-    dialogs,
+    dialogs["create-students-scores"],
   ]);
 
   const { classes, courses, fetchError } = useFetchRequiredData();

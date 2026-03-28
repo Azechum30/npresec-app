@@ -1,6 +1,6 @@
 "use server";
 import { ASSESSMENT_WEIGHTS } from "@/lib/constants";
-import { getAuthUser, getUserPermissions } from "@/lib/get-session";
+import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { GradeSchema } from "@/lib/validation";
 import * as Sentry from "@sentry/nextjs";
@@ -8,15 +8,9 @@ import { revalidatePath } from "next/cache";
 
 export const createScoresAction = async (values: unknown) => {
   try {
-    const { hasPermission } = await getUserPermissions("create:grades");
-    if (!hasPermission) {
+    const { user, hasPermission } = await getUserPermissions("create:grades");
+    if (!hasPermission || !user) {
       return { error: "Permission denied!" };
-    }
-
-    const user = await getAuthUser();
-
-    if (!user) {
-      return { error: "Unauthenticated" };
     }
 
     const { error, success, data } = GradeSchema.safeParse(values);
