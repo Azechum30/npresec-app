@@ -74,14 +74,7 @@ const staffCreationWorkflow = createWorkflow<RequestBodyType, unknown>(
       "transform-data",
       async () => {
         const validData = validateAndTransformBulkData(rawData);
-        const checkedData =
-          await checkEntityExistencePossibleDuplicates(validData);
-
-        return {
-          transformedData: checkedData.transformedData.map(
-            ({ password, ...rest }) => rest,
-          ),
-        };
+        return checkEntityExistencePossibleDuplicates(validData);
       },
     );
 
@@ -115,6 +108,7 @@ const staffCreationWorkflow = createWorkflow<RequestBodyType, unknown>(
 
           for (let idx = 0; idx < chunk.length; idx++) {
             const staffData = chunk[idx];
+            const password = staffData.password;
             const originalRecord = rawData.data.find(
               (d) => d.email === staffData.email,
             );
@@ -124,7 +118,7 @@ const staffCreationWorkflow = createWorkflow<RequestBodyType, unknown>(
               const { user } = await createUserCredentials({
                 email: staffData.email,
                 username: staffData.username,
-                password: originalRecord.password,
+                password,
                 roleId: staffData.roleId,
                 lastName: staffData.lastName,
               });
@@ -158,7 +152,8 @@ const staffCreationWorkflow = createWorkflow<RequestBodyType, unknown>(
                 user: {
                   id: user.id,
                   email: user.email,
-                  username: user.username,
+                  username: staffData.lastName,
+                  password: password,
                 },
                 originalIndex: rawData.data.indexOf(originalRecord),
               });
@@ -178,13 +173,13 @@ const staffCreationWorkflow = createWorkflow<RequestBodyType, unknown>(
         body: {
           userId,
           source,
-          emails: createdUsers.map(({ user, originalIndex }) => ({
+          emails: createdUsers.map(({ user }) => ({
             to: [user.email],
             username: user.username,
             data: {
-              lastName: rawData.data[originalIndex].lastName,
+              lastName: user.username,
               email: user.email,
-              password: rawData.data[originalIndex].password,
+              password: user.password as string,
             },
           })),
         },

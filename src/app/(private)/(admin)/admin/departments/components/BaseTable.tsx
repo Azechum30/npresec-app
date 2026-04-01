@@ -1,17 +1,17 @@
 import {
-  useReactTable,
+  ColumnDef,
   flexRender,
   getCoreRowModel,
-  ColumnDef,
+  useReactTable,
 } from "@tanstack/react-table";
 
 import {
   Table,
   TableBody,
-  TableRow,
   TableCell,
-  TableHeader,
   TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { useMemo } from "react";
 
@@ -35,11 +35,11 @@ export default function BaseTable<TData, TValue>({
 
   return (
     <Table className="table-auto whitespace-nowrap">
-      <TableHeader>
+      <TableHeader className="bg-secondary">
         {table.getHeaderGroups().map((headerGroups) => (
-          <TableRow key={headerGroups.id} className="">
+          <TableRow key={headerGroups.id} className="bg-secondary">
             {headerGroups.headers.map((header) => (
-              <TableHead key={header.id}>
+              <TableHead key={header.id} className="bg-secondary">
                 {flexRender(
                   header.column.columnDef.header,
                   header.getContext(),

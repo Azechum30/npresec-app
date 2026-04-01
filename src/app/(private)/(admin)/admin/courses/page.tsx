@@ -15,7 +15,7 @@ export default function CoursesPage() {
     <div className="">
       <div className="flex flex-col md:flex-row md:justify-between gap-4">
         <h1 className="text-base font-semibold line-clamp-1">All Courses</h1>
-        <OpenDialogs dialogKey="createCourse" />
+        <OpenDialogs dialogKey="createCourse" title="Add a new Course" />
       </div>
 
       <Suspense fallback={<FallbackComponent />}>

@@ -16,12 +16,12 @@ import {
   TrendingUp,
   UserPen,
 } from "lucide-react";
-import * as React from "react";
 import { DashboardData } from "../actions/dashboard-data";
 
 import { columns } from "@/app/(private)/(admin)/admin/dashboard/components/DashboardColumns";
 import { BaseDataTable } from "@/components/customComponents/BaseDataTable";
 import LoadingState from "@/components/customComponents/Loading";
+import { MetricCard } from "@/components/customComponents/metrics-component";
 import { Button } from "@/components/ui/button";
 import {
   ChartConfig,
@@ -586,61 +586,5 @@ export default function DashboardContent({
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-type MetricCardProps = {
-  title: string;
-  value: number;
-  description: string;
-  icon: React.ReactNode;
-  className?: string;
-  trend?: "up" | "down" | "stable";
-};
-
-function MetricCard({
-  title,
-  value,
-  description,
-  icon,
-  className,
-  trend = "stable",
-}: MetricCardProps) {
-  const trendColors = {
-    up: "text-green-500",
-    down: "text-red-500",
-    stable: "text-blue-500",
-  };
-
-  const trendIcons = {
-    up: "↑",
-    down: "↓",
-    stable: "→",
-  };
-
-  return (
-    <Card
-      className={`hover:shadow-md transition-shadow dark:bg-accent ${className}`}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
-          {icon}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-end justify-between">
-          <div className="text-3xl font-bold">{value}</div>
-          {trend && (
-            <span
-              className={`text-sm font-medium ${trendColors[trend]} flex items-center`}>
-              {trendIcons[trend]} 5%
-            </span>
-          )}
-        </div>
-        <p className="text-xs text-muted-foreground mt-2">{description}</p>
-      </CardContent>
-    </Card>
   );
 }

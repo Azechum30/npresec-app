@@ -15,7 +15,10 @@ export default function DepartmentPage() {
     <>
       <div className="flex flex-col gap-y-2 sm:flex-row sm:justify-between sm:items-center sm:gap-y-0">
         <h1 className="font-semibold line-clamp-1">All Departments</h1>
-        <OpenDialogs dialogKey="createDepartment" />
+        <OpenDialogs
+          dialogKey="createDepartment"
+          title="Add a new Department"
+        />
       </div>
       <Suspense fallback={<FallbackComponent />}>
         <RenderDepartments />

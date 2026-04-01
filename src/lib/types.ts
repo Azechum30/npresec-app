@@ -522,7 +522,9 @@ export const priorityRoles = [
   "support_staff",
 ];
 
-export type UserT = Pick<UserResponseType, "email" | "id" | "username">;
+export type UserT = Pick<UserResponseType, "email" | "id" | "username"> & {
+  password?: string;
+};
 
 export type UserWithIndexT = {
   user: UserT;
@@ -678,4 +680,33 @@ export type BulkStudentsScoresUploadType = {
   }[];
   userId: string;
   staffId: string;
+};
+
+export type StaffDashboardDataType = {
+  studentCount: number;
+  classCount: number;
+  courseCount: number;
+  classes: ClassesResponseType[];
+  courses: CourseResponseType[];
+  recentlyAddedStudents: StudentResponseType[];
+  progressOfAssessmentCapture: {
+    assignment: number;
+    midterm: number;
+    project: number;
+    examination: number;
+  };
+};
+
+export type AtRiskStudentsType = {
+  studentId: string;
+  firstName: string;
+  lastName: string;
+  middleName: string;
+  gender: string;
+  courseId: string;
+  courseName: string;
+  className: string;
+  semester: string;
+  academicYear: number;
+  totalScore: number;
 };

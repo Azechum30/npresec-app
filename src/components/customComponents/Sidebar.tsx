@@ -88,6 +88,11 @@ export const Links = {
       section: "Academics",
       Links: [
         {
+          title: "Dashboard",
+          href: "/dashboard",
+          icon: <LayoutDashboard />,
+        },
+        {
           title: "Students",
           href: "/teachers",
           icon: <UserPlus />,

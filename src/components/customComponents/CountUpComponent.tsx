@@ -7,5 +7,5 @@ type Props = {
 };
 
 export const CountUpComponent = ({ countTo }: Props) => {
-  return <CountUp end={countTo} enableScrollSpy separator="" />;
+  return <CountUp end={countTo} className="text-4xl font-bold" separator="" />;
 };

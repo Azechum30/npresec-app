@@ -148,3 +148,4 @@ export const GRADING_SYSTEM = [
 export const getGradeInfo = (score: number) =>
   GRADING_SCALE.find((grade) => score >= grade.min) ||
   GRADING_SCALE[GRADING_SCALE.length - 1];
+export const ALL_TYPES = ["Assignment", "Midterm", "Project", "Examination"];

@@ -36,6 +36,7 @@ const studentsOnboardingWorkflow = createWorkflow<
 
         for (let idx = 0; idx < chunk.length; idx++) {
           const studentData = chunk[idx];
+          const password = studentData.password;
           const originalRecord = data.find(
             (d) => d.email === studentData.email,
           );
@@ -107,7 +108,8 @@ const studentsOnboardingWorkflow = createWorkflow<
               user: {
                 id: user.id,
                 email: user.email,
-                username: user.username,
+                username: studentData.lastName,
+                password,
               },
               originalIndex: data.indexOf(originalRecord),
             });
@@ -126,13 +128,13 @@ const studentsOnboardingWorkflow = createWorkflow<
       body: {
         userId,
         source: "students",
-        emails: createdUsers.map(({ user, originalIndex }) => ({
+        emails: createdUsers.map(({ user }) => ({
           to: [user.email],
           username: user.username,
           data: {
-            lastName: data[originalIndex].lastName,
+            lastName: user.username,
             email: user.email,
-            password: data[originalIndex].password,
+            password: user.password as string,
           },
         })),
       },

@@ -78,15 +78,13 @@ export const ScoreDetailView = () => {
     });
   }, [grades]);
 
+  const params = new URLSearchParams(searchParams);
+  const queryParams = {
+    semester: params.get("semester"),
+    academicYear: params.get("academicYear"),
+  };
   useEffect(() => {
     if (!id || !dialogs["view-score-details"]) return;
-
-    const params = new URLSearchParams(searchParams);
-
-    const queryParams = {
-      semester: params.get("semester"),
-      academicYear: params.get("academicYear"),
-    };
 
     if (!queryParams.semester || !queryParams.academicYear) return;
 
@@ -104,7 +102,7 @@ export const ScoreDetailView = () => {
 
       setGrades(result.scores);
     });
-  }, [id, dialogs, searchParams]);
+  }, [id, dialogs, queryParams.academicYear, queryParams.semester]);
 
   console.log("Memoized Grades", memoizedGrades);
   return (

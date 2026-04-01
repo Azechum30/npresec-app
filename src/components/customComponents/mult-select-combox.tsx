@@ -82,7 +82,7 @@ export const MultiSelectCombox = ({
                   </Button>
                 </FormControl>
               </PopoverTrigger>
-              <PopoverContent className={cn("w-[400px] p-0", className)}>
+              <PopoverContent className={cn("w-100 p-0", className)}>
                 <Command>
                   <CommandInput placeholder="Search..." />
                   <CommandList>
