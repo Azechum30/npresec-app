@@ -13,7 +13,8 @@ const nextConfig: NextConfig = {
       },
     },
   },
-  output: process.env.VERCEL === undefined ? "standalone" : "export",
+
+  output: process.env.VERCEL === undefined ? "standalone" : undefined,
   ...(process.env.NODE_ENV === "development" && {
     webpack: (config, { dev, isServer }) => {
       if (dev) {
@@ -50,7 +51,7 @@ const nextConfig: NextConfig = {
     // Disable turbopack source maps in development
     ...(process.env.NODE_ENV === "development" && {}),
   },
-  serverExternalPackages: ["require-in-the-middle"],
+  serverExternalPackages: ["require-in-the-middle", "@prisma/client", "pg"],
   logging: {
     fetches: {
       fullUrl: true,
