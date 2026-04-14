@@ -47,7 +47,7 @@ const RenderForbiddenPage = async () => {
       url = "/admin/dashboard";
       break;
     case "teaching_staff":
-      url = "/teachers";
+      url = "/staff/dashboard";
       break;
     case "student":
       url = "/students";
