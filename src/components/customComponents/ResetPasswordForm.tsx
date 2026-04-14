@@ -1,27 +1,26 @@
 "use client";
 
-import { Form } from "@/components/ui/form";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { useRef, useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { ResetPasswordSchema, ResetPasswordType } from "@/lib/validation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import InputWithLabel from "./InputWithLabel";
-import LoadingButton from "./LoadingButton";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Form } from "@/components/ui/form";
 import { resetPasswordAction } from "@/lib/server-only-actions/authenticate";
-import { toast } from "sonner";
+import { ResetPasswordSchema, ResetPasswordType } from "@/lib/validation";
 import { useGSAP } from "@gsap/react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Eye, Loader, Lock, Shield, Sparkles, Unlock } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useRef, useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { Badge } from "../ui/badge";
+import LoadingButton from "./LoadingButton";
 import ModernPasswordInputWithLabel from "./ModernPasswordInputWithLabel";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -206,9 +205,9 @@ const ResetPasswordForm = () => {
 
   return (
     <div ref={container} className="relative">
-      <div className="floating-decoration floating-element absolute -top-8 -right-8 size-16 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full blur-lg pointer-events-none" />
-      <div className="floating-decoration floating-elemnt absolute -bottom-4 -left-4 size-12 bg-gradient-to-br from-accent/30 to-primary/30 rounded-full blur-md pointer-events-none" />
-      <div className="floating-decoration floating-element absolute top-1/2 right-6 size-8 bg-gradient-to-br from-secondary/25 to-accent/25 rounded-full blur-sm pointer-events-none" />
+      <div className="floating-decoration floating-element absolute -top-8 -right-8 size-16 bg-linear-to-br from-primary/20 to-secondary/20 rounded-full blur-lg pointer-events-none" />
+      <div className="floating-decoration floating-elemnt absolute -bottom-4 -left-4 size-12 bg-linear-to-br from-accent/30 to-primary/30 rounded-full blur-md pointer-events-none" />
+      <div className="floating-decoration floating-element absolute top-1/2 right-6 size-8 bg-linear-to-br from-secondary/25 to-accent/25 rounded-full blur-sm pointer-events-none" />
 
       {/*{Sparkles design}*/}
       <div className="floating-decoartation asbolute top-4 right-4 opacity-30">
@@ -219,19 +218,18 @@ const ResetPasswordForm = () => {
       </div>
 
       <Card className="reset-password-container container-wrapper relative overflow-hidden bg-background/80 backdrop-blur-xl border-border/50 shadow-2xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
-        <div className="absolute top-0 right-0 left-0 h-px bg-gradient-to-r from-transparent via-primary/5 to-secondary/5 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+        <div className="absolute top-0 right-0 left-0 h-px bg-linear-to-r from-transparent via-primary/5 to-secondary/5 pointer-events-none" />
         <CardHeader className="text-center relative pb-4">
           <div className="reset-password-badge flex justify-center mb-4">
             <Badge
               variant="secondary"
-              className="px-4 py-2 bg-gradient-to-r from-primary/15 to-secondary/15 backdrop-blur-sm border-primary/30 text-primary hover:from-primary/25 hover:secondary/25 transition-all duration-300"
-            >
+              className="px-4 py-2 bg-linear-to-r from-primary/15 to-secondary/15 backdrop-blur-sm border-primary/30 text-primary hover:from-primary/25 hover:secondary/25 transition-all duration-300">
               <Shield className="size-6" />
               Secure Password Reset
             </Badge>
           </div>
-          <CardTitle className="reset-password-title text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent mb-4">
+          <CardTitle className="reset-password-title text-2xl md:text-3xl font-bold bg-linear-to-r from-primary via-primary to-secondary bg-clip-text text-transparent mb-4">
             Update Your Password!
           </CardTitle>
           <CardDescription>
@@ -241,7 +239,7 @@ const ResetPasswordForm = () => {
         </CardHeader>
         <CardContent className="space-y-6 relative">
           <div className="reset-password-divider relative text-center text-sm">
-            <div className="absolute inset-0 top-1/2 border-t border-gradient-to-b from-transparcnt via-border to-transparent" />
+            <div className="absolute inset-0 top-1/2 border-t border-linear-to-b from-transparcnt via-border to-transparent" />
             <span className="relative bg-background/80 backdrop-blur-sm px-4 py-1 text-muted-foreground border border-border/30 rounded-full">
               Enter and confirm your new password.
             </span>
@@ -250,8 +248,7 @@ const ResetPasswordForm = () => {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handlePasswordReset)}
-              className="space-y-6"
-            >
+              className="space-y-6">
               <div className="reset-password-field">
                 <ModernPasswordInputWithLabel
                   name="password"
@@ -278,14 +275,12 @@ const ResetPasswordForm = () => {
                 <div
                   className="relative"
                   onMouseOver={() => setHoveredElement("reset")}
-                  onMouseLeave={() => setHoveredElement(null)}
-                >
+                  onMouseLeave={() => setHoveredElement(null)}>
                   <LoadingButton
                     loading={false}
-                    className="relative w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 h-12 font-semibold overflow-hidden"
-                  >
+                    className="relative w-full bg-linear-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 h-12 font-semibold overflow-hidden">
                     <div
-                      className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-700 ${
+                      className={`absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-700 ${
                         hoveredElement === "reset" ? "translate-x-full" : ""
                       }`}
                     />

@@ -1,11 +1,11 @@
 "use client";
 
-import { Form } from "../ui/form";
+import LoadingButton from "@/components/customComponents/LoadingButton";
+import { authClient } from "@/lib/auth-client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import LoadingButton from "@/components/customComponents/LoadingButton";
-import { useRef, useState, useTransition } from "react";
 import {
   Card,
   CardContent,
@@ -13,15 +13,15 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { authClient } from "@/lib/auth-client";
+import { Form } from "../ui/form";
 import { ErrorComponent } from "./ErrorComponent";
 
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ForgotPasswordSchema } from "@/lib/validation";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   CircleCheckBigIcon,
-  Eye,
   Loader,
   Mail,
   MailCheck,
@@ -30,8 +30,6 @@ import {
 } from "lucide-react";
 import { Badge } from "../ui/badge";
 import ModernInputWithLabel from "./ModernInputWithLabel";
-import { ForgotPasswordSchema } from "@/lib/validation";
-import { Scope } from "@sentry/nextjs";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -223,9 +221,9 @@ export default function ForgotPassword() {
   };
   return (
     <div ref={forgotPasswordRef} className="relative">
-      <div className="floating-decoration floating-element absolute -top-8 -right-8 size-16 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full blur-lg pointer-events-none" />
-      <div className="floating-decoration floating-element absolute -bottom-4 -left-4 size-12 rounded-full blur-md bg-gradient-to-br from-accent/30 to-primary/25 pointer-events-none" />
-      <div className="floating-decoration floating-element absolute top-1/2 right-6 size-8 rounded-full blur-sm bg-gradient-to-br from-secondary/25 to-accent/25 pointer-events-none" />
+      <div className="floating-decoration floating-element absolute -top-8 -right-8 size-16 bg-linear-to-br from-primary/20 to-secondary/20 rounded-full blur-lg pointer-events-none" />
+      <div className="floating-decoration floating-element absolute -bottom-4 -left-4 size-12 rounded-full blur-md bg-linear-to-br from-accent/30 to-primary/25 pointer-events-none" />
+      <div className="floating-decoration floating-element absolute top-1/2 right-6 size-8 rounded-full blur-sm bg-linear-to-br from-secondary/25 to-accent/25 pointer-events-none" />
       <div className="floating-decoration absolute top-4 right-4 opacity-30 ">
         <Sparkle className="size-4 text-primary" />
       </div>
@@ -233,14 +231,13 @@ export default function ForgotPassword() {
         <Eye className="size-4 text-primary" />
       </div>*/}
       <Card className="forgot-password-container container-wrapper relative mb-4">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
-        <div className="absolute top-0 right-0 left-0 h-px bg-gradient-to-r from-transparent via-primary/5 to-secondary/5 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+        <div className="absolute top-0 right-0 left-0 h-px bg-linear-to-r from-transparent via-primary/5 to-secondary/5 pointer-events-none" />
         {success ? (
           <div className="sending-email-error p-4">
             <div
               role="banner"
-              className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent flex gap-2 items-start rounded-md text-sm"
-            >
+              className="bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent flex gap-2 items-start rounded-md text-sm">
               <CircleCheckBigIcon className="size-6 text-primary" />
               We have sent you an email with instructions on how to reset your
               password.
@@ -252,13 +249,12 @@ export default function ForgotPassword() {
               <div className="forgot-password-badge flex justify-center mb-4">
                 <Badge
                   variant="secondary"
-                  className="px-4 py-2 bg-gradient-to-r from-primary/15 to-secondary/15 backdrop-blur-sm border-primary/30 text-primary hover:from-primary/25 hover:secondary/25 transition-all duration-300"
-                >
+                  className="px-4 py-2 bg-linear-to-r from-primary/15 to-secondary/15 backdrop-blur-sm border-primary/30 text-primary hover:from-primary/25 hover:secondary/25 transition-all duration-300">
                   <Shield className="size-6" />
                   Secure Password Reset
                 </Badge>
               </div>
-              <CardTitle className="forgot-password-title text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent mb-4">
+              <CardTitle className="forgot-password-title text-2xl md:text-3xl font-bold bg-linear-to-r from-primary via-primary to-secondary bg-clip-text text-transparent mb-4">
                 Let&apos;s Get You Back In!
               </CardTitle>
               <CardDescription>
@@ -268,7 +264,7 @@ export default function ForgotPassword() {
             </CardHeader>
             <CardContent className="space-y-6 relative">
               <div className="forgot-password-divider relative text-center text-sm">
-                <div className="absolute inset-0 top-1/2 border-t border-gradient-to-b from-transparcnt via-border to-transparent" />
+                <div className="absolute inset-0 top-1/2 border-t border-linear-to-b from-transparcnt via-border to-transparent" />
                 <span className="relative bg-background/80 backdrop-blur-sm px-4 py-1 text-muted-foreground border border-border/30 rounded-full">
                   Enter your email to receive a secure reset link.
                 </span>
@@ -283,8 +279,7 @@ export default function ForgotPassword() {
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(handleSubmit)}
-                  className="space-y-6"
-                >
+                  className="space-y-6">
                   <div className="forgot-password-field">
                     <ModernInputWithLabel
                       name="email"
@@ -299,14 +294,12 @@ export default function ForgotPassword() {
                     <div
                       className="relative"
                       onMouseOver={() => setHoveredElement("send-email")}
-                      onMouseLeave={() => setHoveredElement(null)}
-                    >
+                      onMouseLeave={() => setHoveredElement(null)}>
                       <LoadingButton
                         loading={false}
-                        className="relative w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 h-12 font-semibold overflow-hidden"
-                      >
+                        className="relative w-full bg-linear-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 h-12 font-semibold overflow-hidden">
                         <div
-                          className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-700 ${
+                          className={`absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-700 ${
                             hoveredElement === "reset" ? "translate-x-full" : ""
                           }`}
                         />

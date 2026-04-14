@@ -95,7 +95,7 @@ export const RecoveryComponent = () => {
           if (role === "admin") {
             router.push("/admin/dashboard");
           } else if (role === "teaching_staff") {
-            router.push("/teachers");
+            router.push("/staff/dashboard");
           } else if (role === "student") {
             router.push("/students");
           }
