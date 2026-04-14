@@ -710,3 +710,31 @@ export type AtRiskStudentsType = {
   academicYear: number;
   totalScore: number;
 };
+
+export const PlacementListSelect = {
+  id: true,
+  lastName: true,
+  otherNames: true,
+  birthDate: true,
+  gender: true,
+  programme: true,
+  jhsIndexNumber: true,
+  isAcceptancePaid: true,
+  guardianPhoneNumber: true,
+  admissionStatus: true,
+  enrollmentCode: true,
+  aggregateScore: true,
+  district: true,
+  guardianName: true,
+  guardianRelation: true,
+  hometown: true,
+  jhsAttended: true,
+  primaryAddress: true,
+  residentialStatus: true,
+  schoolLocation: true,
+  schoolRegion: true,
+} satisfies Prisma.AdmissionSelect;
+
+export type PlacementListType = Prisma.AdmissionGetPayload<{
+  select: typeof PlacementListSelect;
+}>;

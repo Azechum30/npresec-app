@@ -1,0 +1,419 @@
+{
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NjI4OTkyOCwic3NvTG9naW4iOmZhbHNlLCJqdGkiOiI2OWQxYjU4OGNkMDUxZTYyMGNmYjc5NWIiLCJpYXQiOjE3NzUzNTExNzYsIm5iZiI6MTc3NTM1MTE3NiwiZXhwIjoxNzc1NDM3NTc2fQ.SKWLisEkOK54iSvXs-5HyIM8HpKftmNttGTs1KMj7ow",
+  "user": {
+    "integrations": [
+      {
+        "business_name": "PE-iT Solutions",
+        "business_type": "starter",
+        "short_name": null,
+        "id": 1788259,
+        "logged_in_user_role": {
+          "id": 34,
+          "name": "admin",
+          "description": "This role grants users the permissions to manage everything on the dashboard"
+        },
+        "country_code": "GH",
+        "country": 2,
+        "sso_enabled": false,
+        "mfa": {
+          "is_required": false,
+          "enforcement_deadline": null
+        }
+      }
+    ],
+    "email": "admin@nakpanduripresec.org",
+    "first_name": "Mohammed",
+    "last_name": "Michael",
+    "phone": "0540649355",
+    "area_code": "0",
+    "calling_code": "+233",
+    "registration_complete": true,
+    "last_login": "2026-04-05T01:05:49.000Z",
+    "wt_access": "none",
+    "is_developer": true,
+    "job_title": "",
+    "truecaller_verified": false,
+    "drip_tag": "merchant - ghana",
+    "created_from": null,
+    "mfa_enabled": true,
+    "email_verified": true,
+    "id": 6289928,
+    "invited_by": null,
+    "current_integration": 1788259,
+    "passwordLastResetAt": null,
+    "createdAt": "2026-04-02T11:17:41.000Z",
+    "updatedAt": "2026-04-05T01:05:49.000Z",
+    "ssoLogin": false,
+    "dashboard_preferences": {
+      "pagination": {
+        "use_cursor": true
+      },
+      "timezone": "UTC"
+    },
+    "display_state": "live",
+    "role": {
+      "value": 1829587348619263,
+      "name": "admin",
+      "description": "This role grants users the permissions to manage everything on the dashboard",
+      "integration": 0,
+      "service": "dashboard",
+      "id": 34,
+      "organization": 1,
+      "createdAt": "2018-05-10T23:40:26.000Z",
+      "updatedAt": "2018-09-12T17:28:31.000Z",
+      "is_custom": false
+    },
+    "permissions": [
+      "api-key-*",
+      "api-key-view",
+      "user-view",
+      "user-*",
+      "metrics-*",
+      "settings-*",
+      "settings-view",
+      "transaction-view",
+      "transaction-export",
+      "transaction-dispute",
+      "customer-view",
+      "customer-add",
+      "customer-*",
+      "transfer-view",
+      "transfer-*",
+      "transfer-export",
+      "balance-view",
+      "balance-export",
+      "page-view",
+      "page-*",
+      "plan-view",
+      "plan-*",
+      "settlement-view",
+      "settlement-export",
+      "paymentrequest-view",
+      "paymentrequest-*",
+      "subaccount-*",
+      "subaccount-view",
+      "user-add",
+      "customer-insights",
+      "accounts-*",
+      "accounts-view",
+      "directdebit-*",
+      "charge-*",
+      "request-payout",
+      "product-view",
+      "product-*",
+      "pos-terminal-*",
+      "applepay-*",
+      "refund-pwt",
+      "corporate-cards-*",
+      "corporate-cards-view",
+      "issuing-*",
+      "issuing-view",
+      "connect-*",
+      "directdebit-view"
+    ],
+    "show_mfa_feature": true
+  },
+  "selected_integration": {
+    "business_name": "PE-iT Solutions",
+    "description": "Presbyterian SHTS, is a Ghana Government Assisted senior high school that trains\nyoung minds with aim to prepare them for higher education and the world of work.",
+    "rc_number": null,
+    "phone": "540649355",
+    "email": "admin@nakpanduripresec.org",
+    "address": null,
+    "product_name": null,
+    "registration_document_number": null,
+    "registration_document_type": null,
+    "primary_contact_name": null,
+    "primary_contact_email": null,
+    "primary_contact_phone": null,
+    "support_email": "admin@nakpanduripresec.org",
+    "chargeback_email": "admin@nakpanduripresec.org",
+    "logo_path": "https://public-files-paystack-prod.s3.eu-west-1.amazonaws.com/integration-logos/paystack.jpg",
+    "integration_agreement_path": null,
+    "settlement_bank": null,
+    "account_number": null,
+    "registration_document_path": null,
+    "risk_level": "high",
+    "isw_category": 3,
+    "mcc_category": "7399",
+    "flat_rate": 0,
+    "charge_percentage": 1.95,
+    "international_flat_rate": 100,
+    "international_charge_percentage": 3.9,
+    "flat_threshhold": 2500,
+    "transfer_charge": 5000,
+    "settlement_schedule": "T1",
+    "test_redirect_url": null,
+    "test_webhook_endpoint": null,
+    "live_redirect_url": null,
+    "live_webhook_endpoint": null,
+    "test_integration_url": null,
+    "test_integration_instruction": null,
+    "email_notification": "instant",
+    "pwc_id": 102501,
+    "is_live": true,
+    "go_live_requested": false,
+    "go_live_requested_at": null,
+    "live_keys_requested": false,
+    "live_keys_requested_at": null,
+    "reviewed_at": null,
+    "setup_complete": false,
+    "receipts": true,
+    "display_state": "live",
+    "active": true,
+    "short_name": null,
+    "international_toggle_disabled": false,
+    "allow_international_cards": true,
+    "active_channels": [
+      "apple_pay",
+      "bank_transfer",
+      "card",
+      "mobile_money"
+    ],
+    "allowed_currencies": [
+      "GHS"
+    ],
+    "allow_whitelist": false,
+    "charge_from_dashboard": false,
+    "can_transfer": false,
+    "transfer_using_otp": true,
+    "payouts_on_hold": false,
+    "go_live_date": "2026-04-02T12:20:22.000Z",
+    "payments_session_timeout": 0,
+    "metadata": {
+      "new_checkout_enabled": true
+    },
+    "transfer_notification": "instant",
+    "business_category": null,
+    "business_size": "small",
+    "business_type": "starter",
+    "website_url": "https://nakpanduripresec.org",
+    "social_urls": {
+      "twitter": null,
+      "facebook": null,
+      "instagram": null
+    },
+    "is_under_investigation": false,
+    "is_disabled": false,
+    "disable_reason": null,
+    "disable_at": null,
+    "identity_evidence_path": null,
+    "director_identity_evidence_path": null,
+    "bvn": null,
+    "bvn_date_of_birth": null,
+    "go_live_status": "confirmed",
+    "registration_packet_path": null,
+    "default_currency": "GHS",
+    "transfer_notification_to_recipient": "instant",
+    "send_transfer_email_otp": true,
+    "fast_checkout_enabled": false,
+    "id": 1788259,
+    "primary_user": 6289928,
+    "organization": 1,
+    "createdAt": "2026-04-02T11:17:41.000Z",
+    "updatedAt": "2026-04-02T12:23:54.000Z",
+    "transfer_fees": [
+      {
+        "fee": 100,
+        "currency": "GHS"
+      }
+    ],
+    "consent_received": true,
+    "consent_data": {
+      "given_by": "admin@nakpanduripresec.org",
+      "given_at": "2026-04-02T11:17:41.000Z"
+    },
+    "attributes": {
+      "id": 1687760,
+      "integration": 1788259,
+      "country": {
+        "id": 2,
+        "active_for_dashboard_onboarding": true,
+        "name": "Ghana",
+        "iso_code": "GH",
+        "default_currency_code": "GHS",
+        "integration_defaults": {},
+        "calling_code": "+233",
+        "pilot_mode": false,
+        "relationships": {
+          "currency": {
+            "type": "currency",
+            "data": [
+              "GHS"
+            ],
+            "supported_currencies": {
+              "GHS": {
+                "bank": {
+                  "bank_type": "ghipss",
+                  "account_verification_required": true,
+                  "account_number_label": "accountNumber",
+                  "branch_code": true,
+                  "branch_code_type": "dropdown",
+                  "account_name": false,
+                  "account_number_pattern": {
+                    "exact_match": true,
+                    "pattern": "[0-9]{7,16}"
+                  },
+                  "documents": [],
+                  "show_account_number_tooltip": false
+                },
+                "mobile_money": {
+                  "bank_type": "mobile_money",
+                  "phone_number_label": "phoneNumber",
+                  "placeholder": "050 123 456",
+                  "account_number_pattern": {
+                    "exact_match": false,
+                    "pattern": "^[0-9]{10}$"
+                  }
+                }
+              },
+              "USD": {
+                "bank": {
+                  "bank_type": "ghipss",
+                  "account_verification_required": false,
+                  "account_number_label": "accountNumber",
+                  "branch_code": true,
+                  "branch_code_type": "dropdown",
+                  "account_name": false,
+                  "account_number_pattern": {
+                    "exact_match": false,
+                    "pattern": "[0-9]{7,16}"
+                  },
+                  "show_account_number_tooltip": false
+                }
+              }
+            }
+          },
+          "integration_feature": {
+            "type": "integration_feature",
+            "data": []
+          },
+          "integration_type": {
+            "type": "integration_type",
+            "data": [
+              "ITYPE_004",
+              "ITYPE_005"
+            ]
+          },
+          "payment_method": {
+            "type": "payment_method",
+            "data": [
+              "PAYM_001"
+            ]
+          }
+        }
+      },
+      "industry": null,
+      "integration_type": {
+        "id": 5,
+        "code": "ITYPE_005",
+        "label": "starter",
+        "display_name": "Starter Business",
+        "description": "Choose this if your business is not registered yet",
+        "is_active": true,
+        "relationships": {
+          "kyc_requirement": {
+            "type": "kyc_requirement",
+            "data": [
+              "KYCREQ_010",
+              "KYCREQ_026"
+            ]
+          }
+        },
+        "upgradable_to": [
+          "ITYPE_004"
+        ]
+      },
+      "legal_business_name": "Presbyterian SHTS, Nakpanduri",
+      "duplicated_from_integration": null,
+      "compliance_status": "SUBMITTED",
+      "compliance_due_date": "2026-05-02T00:00:00.000Z",
+      "incorporation_date": null,
+      "country_code": "GH",
+      "industry_code": "SERVICES-DIGITAL",
+      "registration_number": null,
+      "registration_type": "GH-UNL",
+      "ownership_type": "GH-UNL-GT",
+      "industry_categories": "DIGITAL-SERVICE",
+      "area_code": "0",
+      "calling_code": "+233",
+      "form_three_evidence_path": null,
+      "settlement_account_type": "bank_account",
+      "international_requested": false,
+      "email_rules": null,
+      "compliance_documents_submitted": true,
+      "incorporated_before_2017": 0,
+      "has_refreshed_incorporation_documents": true,
+      "process_amex_cards": true,
+      "is_terminal_integration": false,
+      "mfa_is_required": false,
+      "mfa_enforcement_deadline": null,
+      "legal_agreements": null,
+      "has_saved_cards": true,
+      "saved_cards_enabled": true,
+      "passes_fees": false,
+      "direct_debit_enabled": true,
+      "settlement_days": null,
+      "createdAt": "2026-04-02T11:17:41.000Z",
+      "updatedAt": "2026-04-02T12:23:54.000Z"
+    },
+    "terminal_integration_attribute": null,
+    "is_terminal_active": false,
+    "is_dormant": false,
+    "is_registration_type_supported_for_terminal": false,
+    "office_address": {
+      "id": 1005200,
+      "street_line_one": "Npresec, near scarp",
+      "street_line_two": "",
+      "post_code": "",
+      "model": "integration",
+      "model_row": 1788259,
+      "locality": null,
+      "city": "Nakpanduri",
+      "state": "North East Region",
+      "country": "Ghana",
+      "country_iso_code": "GH",
+      "type": "office",
+      "lga": null
+    },
+    "registered_address": {
+      "id": 1005202,
+      "street_line_one": "Npresec, near scarp",
+      "street_line_two": "",
+      "post_code": "",
+      "model": "integration",
+      "model_row": 1788259,
+      "locality": null,
+      "city": "Nakpanduri",
+      "state": "North East Region",
+      "country": "Ghana",
+      "country_iso_code": "GH",
+      "type": "registered",
+      "lga": null
+    },
+    "available_channels": [
+      "card",
+      "mobile_money",
+      "apple_pay",
+      "bank_transfer"
+    ],
+    "blacklisted_channels": [],
+    "agreements": {
+      "settlement_managed_account": {
+        "agreements": [],
+        "visible": false
+      }
+    },
+    "payouts_on_hold_reason": null,
+    "chargeback_emails": [
+      "admin@nakpanduripresec.org",
+      "azechum21@gmail.com"
+    ],
+    "logged_in_user_role": {
+      "id": 34,
+      "name": "admin",
+      "description": "This role grants users the permissions to manage everything on the dashboard"
+    }
+  },
+  "token_expiry": 1775437576
+}

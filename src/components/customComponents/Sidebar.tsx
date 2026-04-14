@@ -10,6 +10,7 @@ import {
   GraduationCap,
   Home,
   LayoutDashboard,
+  List,
   LucideBuilding2,
   Shield,
   TimerIcon,
@@ -48,6 +49,13 @@ export const Links = {
           href: "/admin/attendance",
           icon: <ClipboardList />,
         },
+      ],
+    },
+
+    {
+      section: "Admissions",
+      Links: [
+        { title: "CSSPS List", href: "/admin/admissions", icon: <List /> },
       ],
     },
     {
@@ -89,15 +97,15 @@ export const Links = {
       Links: [
         {
           title: "Dashboard",
-          href: "/dashboard",
+          href: "/staff/dashboard",
           icon: <LayoutDashboard />,
         },
         {
           title: "Students",
-          href: "/teachers",
+          href: "/staff/students",
           icon: <UserPlus />,
         },
-        { title: "Capture Scores", href: "/scores", icon: <Award /> },
+        { title: "Capture Scores", href: "/staff/scores", icon: <Award /> },
       ],
     },
   ],

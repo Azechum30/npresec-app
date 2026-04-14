@@ -149,3 +149,88 @@ export const getGradeInfo = (score: number) =>
   GRADING_SCALE.find((grade) => score >= grade.min) ||
   GRADING_SCALE[GRADING_SCALE.length - 1];
 export const ALL_TYPES = ["Assignment", "Midterm", "Project", "Examination"];
+
+export const CUSTOM_ERRORS = {
+  UNIQUE_CONSTRAINTS: {
+    message: "This record already exists",
+    status: 400,
+    code: "CONFLICT",
+  },
+
+  FOREIGN_KEY_VIOLATION: {
+    message:
+      "This operation couldn't be completed because a related record is missing or still in use.",
+    status: 400,
+    code: "RELATION_ERROR",
+  },
+  AUTHORIZATION: {
+    message: "Insufficient permissions",
+    status: 403,
+    code: "MISSING_PERMISSIONS",
+  },
+  AUTHENTICATION: {
+    message: "You are not signed in",
+    status: 401,
+    code: "UNAUTHENTICATED",
+  },
+
+  NOTFOUND: {
+    message: "The requested resource is not found",
+    status: 404,
+    code: "NOT_FOUND",
+  },
+
+  VALIDATION: {
+    message: "Invalid form data",
+    status: 400,
+    code: "VALIDATION_ERROR",
+  },
+
+  UNKNOWN: {
+    message: "An expected error has occurred",
+    status: 500,
+    code: "INTERNAL_SERVER_ERROR",
+  },
+};
+export const Programmes = [
+  "General Arts",
+  "Home Economics",
+  "Technical",
+  "Visual Arts",
+  "Agriculture",
+] as const;
+
+export class ActionError extends Error {
+  /**
+   *
+   */
+  constructor(
+    message: string,
+    public statusCode: number = 400,
+    public errorCode?: string,
+  ) {
+    super(message);
+    this.name = "ActionError";
+    this.statusCode = statusCode;
+    this.errorCode = errorCode;
+  }
+}
+
+export const REGIONS = [
+  "Ahafo Region",
+  "Ashanti Region",
+  "Bono Ahafo Region",
+  "Bono East Region",
+  "Central Region",
+  "Eastern Region",
+  "Greater Accra Region",
+  "Northern Region",
+  "North East Region",
+  "Oti Region",
+  "Savannah Region",
+  "Upper East Region",
+  "Upper West Region",
+  "Volta Region",
+  "Western North",
+  "Western Region",
+];

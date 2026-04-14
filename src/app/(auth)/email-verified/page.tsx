@@ -38,7 +38,7 @@ const RenderEmailVerifiedPage = async () => {
     priorityRole === "admin"
       ? "/admin/dashboard"
       : priorityRole === "teaching_staff"
-        ? "/teachers"
+        ? "/staff/dashboard"
         : priorityRole === "student"
           ? "/students"
           : "/";

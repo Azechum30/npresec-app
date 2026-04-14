@@ -1,11 +1,6 @@
 "use client";
 
-import { useItemsPerPageSync } from "@/hooks/use-items-per-page-sync";
-import { zodResolver } from "@hookform/resolvers/zod";
-import React from "react";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Form, FormControl, FormField, FormItem } from "../ui/form";
 import {
   Select,
   SelectContent,
@@ -26,71 +21,26 @@ export const ItemsPerPageSchema = z.object({
 });
 
 export const ItemsPerPage = ({
-  defaultValue,
+  value,
   onPageSizeChangeAction,
 }: {
-  defaultValue?: z.infer<typeof ItemsPerPageSchema>;
+  value: number;
   onPageSizeChangeAction?: (newPageSize: number) => void;
 }) => {
-  const initialPageSize = defaultValue?.itemsPerPage || 10;
-
-  // Use the custom hook for better state synchronization
-  const { currentPageSize, updatePageSize, isPending } = useItemsPerPageSync({
-    initialPageSize,
-    onPageSizeChangeAction,
-  });
-
-  const form = useForm<z.infer<typeof ItemsPerPageSchema>>({
-    mode: "onBlur",
-    defaultValues: {
-      itemsPerPage: currentPageSize as 10 | 25 | 50 | 100,
-    },
-    resolver: zodResolver(ItemsPerPageSchema),
-  });
-
-  // Update form value when currentPageSize changes
-  React.useEffect(() => {
-    form.setValue("itemsPerPage", currentPageSize as 10 | 25 | 50 | 100);
-  }, [currentPageSize, form]);
-
-  const handleOnValueChange = (value: (typeof itemsPerPageOptions)[number]) => {
-    form.setValue("itemsPerPage", value);
-    updatePageSize(value as number);
-  };
-
   return (
-    <Form {...form}>
-      <form>
-        <FormField
-          control={form.control}
-          name="itemsPerPage"
-          render={({ field }) => (
-            <FormItem>
-              <Select
-                value={field.value.toString()}
-                onValueChange={(value) => {
-                  handleOnValueChange(
-                    Number(value) as (typeof itemsPerPageOptions)[number]
-                  );
-                }}
-                disabled={isPending}>
-                <FormControl>
-                  <SelectTrigger className={isPending ? "opacity-50" : ""}>
-                    <SelectValue placeholder="Select the number of rows per page" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {itemsPerPageOptions.map((option) => (
-                    <SelectItem key={option} value={option.toString()}>
-                      {`${option} rows`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormItem>
-          )}
-        />
-      </form>
-    </Form>
+    <Select
+      value={String(value)}
+      onValueChange={(value) => onPageSizeChangeAction?.(Number(value))}>
+      <SelectTrigger>
+        <SelectValue placeholder="Select the number of rows per page" />
+      </SelectTrigger>
+      <SelectContent align="center" position="popper">
+        {itemsPerPageOptions.map((option) => (
+          <SelectItem key={option} value={option.toString()}>
+            {`${option} rows`}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };

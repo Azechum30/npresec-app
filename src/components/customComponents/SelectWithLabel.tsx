@@ -105,7 +105,7 @@ export default function SelectWithLabel({
               </FormControl>
             </PopoverTrigger>
             <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-              <Command>
+              <Command className="min-w-fit">
                 <CommandInput
                   placeholder={`Search ${fieldTitle.toLowerCase()}...`}
                 />

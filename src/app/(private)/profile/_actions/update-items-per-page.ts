@@ -1,42 +1,39 @@
 "use server";
+import { ActionError, CUSTOM_ERRORS } from "@/lib/constants";
 import { getUserPermissions } from "@/lib/get-session";
+import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
-import { getError } from "@/utils/get-error";
 import * as Sentry from "@sentry/nextjs";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag, updateTag } from "next/cache";
 import "server-only";
 
 export const updateItemsPerPage = async (itemsPerPage: number) => {
-  console.log("updateItemsPerPage - New value:", itemsPerPage);
   try {
     const { user, hasPermission } = await getUserPermissions("edit:users");
-    if (!user) return { error: "Kindly sign in to update your settings" };
+    if (!user) throw new ActionError(CUSTOM_ERRORS.AUTHENTICATION.message);
+
     if (!hasPermission)
-      return { error: "You do not have permission to update user settings" };
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: { itemsPerPage },
     });
 
-    console.log("Updated user itemsPerPage:", updatedUser.itemsPerPage);
+    if (!updatedUser) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
 
-    if (!updatedUser) {
-      return { error: "Failed to update items per page" };
-    }
-
-    // Comprehensive cache revalidation
-    // Note: revalidateTag calls removed due to argument mismatch issues
-
-    // Revalidate all pages that might use the user's itemsPerPage setting
     revalidatePath("/profile");
     revalidatePath("/profile/settings");
     revalidatePath("/(private)", "layout");
     revalidatePath("/(private)/(admin)", "layout");
-    revalidatePath("/(private)/(teachers)", "layout");
+    revalidatePath("/(private)/(staff)", "layout");
 
-    // Revalidate specific admin pages that use data tables
-    revalidateTag("users-list", "seconds");
+    updateTag("users-list");
+    updateTag("placement-list");
+    updateTag("staff");
+    updateTag("students-list");
+    updateTag("permissions-list");
+
     revalidateTag("permissions-list", "seconds");
     revalidatePath("/admin/students");
     revalidatePath("/admin/staff");
@@ -49,11 +46,10 @@ export const updateItemsPerPage = async (itemsPerPage: number) => {
     revalidatePath("/admin/houses");
     revalidatePath("/admin/board-of-governors");
 
-    console.log("Cache revalidation completed for itemsPerPage update");
     return { success: true };
   } catch (e) {
-    console.error("Failed to update items per page", e);
+    console.error(e);
     Sentry.captureException(e);
-    return { error: getError(e) };
+    return { error: getErrorMessage(e) };
   }
 };

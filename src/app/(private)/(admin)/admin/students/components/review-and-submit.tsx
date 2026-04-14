@@ -1,5 +1,6 @@
 "use client";
 
+import LoadingButton from "@/components/customComponents/LoadingButton";
 import {
   Card,
   CardContent,
@@ -7,20 +8,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useStudentStore } from "../store";
-import React, { useEffect, useState, useTransition } from "react";
-import { ClassesResponseType, DepartmentResponseType } from "@/lib/types";
-import { getServerSideProps } from "../../departments/actions/getServerSideProps";
-import { getClassesAction } from "../../classes/actions/server-actions";
-import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
-import LoadingButton from "@/components/customComponents/LoadingButton";
+import { ClassesResponseType, DepartmentResponseType } from "@/lib/types";
 import { ChevronLeft } from "lucide-react";
-import { createStudent } from "../actions/action";
-import { redirect } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { getClassesAction } from "../../classes/actions/server-actions";
+import { getServerSideProps } from "../../departments/actions/getServerSideProps";
 import { useCancelEditStudent } from "../hooks/use-cancel-edit-student";
-import { useHandleStudentUpdate } from "../hooks/use-handle-update-student";
 import { useHandleCreateStudent } from "../hooks/use-handle-create-student";
+import { useHandleStudentUpdate } from "../hooks/use-handle-update-student";
+import { useStudentStore } from "../store";
 
 export default function ReviewAndSubmit() {
   const {
@@ -56,13 +54,13 @@ export default function ReviewAndSubmit() {
         classesPromise.data.map((classItem) => ({
           id: classItem.id,
           name: classItem.name,
-        }))
+        })),
       );
       setDepartments(() =>
         departmentsPromise.departments.map((dp) => ({
           id: dp.id,
           name: dp.name,
-        }))
+        })),
       );
     };
 
@@ -75,15 +73,21 @@ export default function ReviewAndSubmit() {
 
   const submittedData = getStudentData();
 
-  const classesMap = classes.reduce((acc, cls) => {
-    acc[cls.id] = cls.name;
-    return acc;
-  }, {} as Record<string, string>);
+  const classesMap = classes.reduce(
+    (acc, cls) => {
+      acc[cls.id] = cls.name;
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
 
-  const departmentMap = departments.reduce((acc, dpt) => {
-    acc[dpt.id] = dpt.name;
-    return acc;
-  }, {} as Record<string, string>);
+  const departmentMap = departments.reduce(
+    (acc, dpt) => {
+      acc[dpt.id] = dpt.name;
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
 
   return (
     <Card>

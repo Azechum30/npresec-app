@@ -51,7 +51,7 @@ const RenderResendVerificationButton = async () => {
   if (hasEmailVerified && priorityRole === "admin")
     return redirect("/admin/dashboard");
   if (hasEmailVerified && priorityRole === "teacher")
-    return redirect("/teachers");
+    return redirect("/staff/dashboard");
   if (hasEmailVerified && priorityRole === "student")
     return redirect("/students");
 

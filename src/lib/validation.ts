@@ -74,13 +74,10 @@ const requiredString = z
 const optionalString = optionalField(z.string().nullish());
 const requiredDate = z.union([z.date(), z.string()]);
 const optionalDate = optionalField(z.union([z.date(), z.string()]).nullish());
-const requiredEmail = z
-  .string({ error: "This field is required!" })
-  .email("You must enter a valid email address");
+const requiredEmail = z.email("You must enter a valid email address");
 const optionalEmail = z
-  .string()
-  .min(0) // Allow empty string
-  .email("Invalid email address")
+  .email()
+  .min(0) // Allow empty string("Invalid email address")
   .or(z.literal("")) // Explicitly allow empty string
   .transform((val) => (val === "" ? undefined : val)) // Convert to undefined
   .nullish()
@@ -355,7 +352,7 @@ export const attendanceStatus = [
   "Late",
   "Excused",
 ] as const;
-const corcedDate = z.date({
+const corcedDate = z.coerce.date<Date>({
   error: "Invalid date format provided",
 });
 export const AttendanceSchema = z.object({
@@ -371,7 +368,7 @@ export const BulkAttendanceSchema = z.object({
   semester: z.string().min(1, "Semester cannot be empty"),
   studentEntries: z
     .array(AttendanceSchema)
-    .nonempty("At least one student must be marked present"),
+    .min(1, "At least one student must be marked present"),
 });
 
 export type BulkAttendanceType = z.infer<typeof BulkAttendanceSchema>;
@@ -499,23 +496,23 @@ export const SingleStudentScoreSchema = z
     classId: z.string().min(1, "Class ID is required"),
     courseId: z.string().min(1, "Course ID is required"),
     assessmentType: z.enum(AssesessmentSchema),
-    score: z
-      .number()
+    score: z.coerce
+      .number<number>()
       .min(0, "Score must be greater than 0")
       .max(100, "Score must be less than 100"),
     studentId: z.string().min(1, "Student ID is required"),
     studentName: z.string().min(1, "Student name is required"),
-    maxScore: z
-      .number()
+    maxScore: z.coerce
+      .number<number>()
       .min(0, "Max score must be greater than 0")
       .max(100, "Max score must be less than 100"),
-    weight: z
-      .number()
+    weight: z.coerce
+      .number<number>()
       .min(0, "Weight must be greater than 0")
       .max(1, "Weight must be less than 1"),
     semester: z.enum(Semester),
-    academicYear: z
-      .number()
+    academicYear: z.coerce
+      .number<number>()
       .min(2000, "Academic year must be greater than 2000"),
     remarks: z.string().optional(),
   })
@@ -617,23 +614,23 @@ export const BioSchema = z.object({
     .optional(),
   social: z.object({
     x: z
-      .union([z.string().url(), z.literal("")])
+      .union([z.url(), z.literal("")])
       .transform((val) => (val === "" ? undefined : val))
       .optional(),
     linkedIn: z
-      .union([z.string().url(), z.literal("")])
+      .union([z.url(), z.literal("")])
       .transform((val) => (val === "" ? undefined : val))
       .optional(),
     github: z
-      .union([z.string().url(), z.literal("")])
+      .union([z.url(), z.literal("")])
       .transform((val) => (val === "" ? undefined : val))
       .optional(),
     facebook: z
-      .union([z.string().url(), z.literal("")])
+      .union([z.url(), z.literal("")])
       .transform((val) => (val === "" ? undefined : val))
       .optional(),
     instagram: z
-      .union([z.string().url(), z.literal("")])
+      .union([z.url(), z.literal("")])
       .transform((val) => (val === "" ? undefined : val))
       .optional(),
   }),
@@ -760,15 +757,15 @@ export const HouseSchema = z.object({
   occupancy: z.object({
     maleOccupancy: z
       .object({
-        roomCount: z.number().min(0),
-        roomCapacity: z.number().min(0),
+        roomCount: z.coerce.number<number>().min(0),
+        roomCapacity: z.coerce.number<number>().min(0),
       })
       .optional(),
 
     femaleOccupancy: z
       .object({
-        roomCount: z.number().min(0),
-        roomCapacity: z.number().min(0),
+        roomCount: z.coerce.number<number>().min(0),
+        roomCapacity: z.coerce.number<number>().min(0),
       })
       .optional(),
   }),
@@ -777,8 +774,8 @@ export const HouseSchema = z.object({
 export type HouseType = z.infer<typeof HouseSchema>;
 
 export const RoomSchema = z.object({
-  houseId: z.string().cuid().min(1),
-  capacity: z.number().min(1),
+  houseId: z.string().min(1),
+  capacity: z.coerce.number<number>().min(1),
   rmGender: z.enum(["MALE", "FEMALE", "BOTH"]).optional(),
 });
 
@@ -811,8 +808,8 @@ export type ChangePasswordType = z.infer<typeof ChangePasswordSchema>;
 
 export const StudentGradesFilterSchema = z.object({
   classId: z.string().min(1, "Class ID is required"),
-  academicYear: z
-    .number()
+  academicYear: z.coerce
+    .number<number>()
     .min(
       new Date().getFullYear() - 6,
       "Academic year must be greater than 2000",
@@ -836,9 +833,8 @@ export const AssessmentTimelineSchema = z.object({
     error:
       "Assessment mode can only have either 'Assignment' or 'Midterm' or 'Project' or 'Examination' values.",
   }),
-  academicYear: z
-    .number()
-    .int()
+  academicYear: z.coerce
+    .number<number>()
     .min(
       new Date().getFullYear() - 5,
       `Academic year can only be above ${new Date().getFullYear() - 5}`,
@@ -874,11 +870,11 @@ export const BulkStudentsScoresSchema = z
         classId: z.string({ error: "classId is required" }).min(1),
         courseId: z.string({ error: "courseId is required!" }),
         studentId: z.string({ error: "studentId is required!" }),
-        maxScore: z.number().int().min(1).max(100),
-        score: z.number().int().max(100),
+        maxScore: z.coerce.number<number>().min(1).max(100),
+        score: z.coerce.number<number>().max(100),
         assessmentType: z.enum(AssesessmentSchema),
         semester: z.enum(Semester),
-        academicYear: z.number().max(new Date().getFullYear()),
+        academicYear: z.coerce.number<number>().max(new Date().getFullYear()),
       }),
     ),
   })
@@ -895,3 +891,164 @@ export const BulkStudentsScoresSchema = z
   });
 
 export type BulkStudentsScoresType = z.infer<typeof BulkStudentsScoresSchema>;
+
+export enum Gender {
+  MALE = "male",
+  FEMALE = "female",
+}
+
+export enum RESIDENTIAL_STATUS {
+  BOARDING = "Boarding",
+  DAY = "Day",
+}
+
+export enum RELATION {
+  FATHER = "Father",
+  MOTHER = "Mother",
+  UNCLE = "Uncle",
+  AUNTIE = "Auntie",
+  SISTER = "Sister",
+  BROTHER = "Brother",
+  COUSIN = "Cousin",
+  GRANDFATHER = "Grandfather",
+  GRANDMOTHER = "Grandmother",
+  FOSTER_PARENT = "Foster Parent",
+}
+
+export enum ADMISSION_STATUS {
+  PENDING = "PENDING",
+  ADMITTED = "ADMITTED",
+  REJECTED = "REJECTED",
+  WAITLISTED = "WAITLISTED",
+}
+
+export const FreshAdmissionsSchema = z.object({
+  lastName: z.string({ error: "lastName is required" }).min(1),
+  otherNames: z.string({ error: "other names arequired" }).min(1),
+  gender: z.enum(Gender),
+  jhsIndexNumber: z
+    .string()
+    .min(12, "Index number must have a minimum of 12 characters")
+    .max(12, "Index number must have a maximum of 12 characters"),
+  jhsAttended: z.string().min(1),
+  schoolRegion: z.string().optional(),
+  district: z.string().optional(),
+  programme: z.string().min(1),
+  birthDate: z.union([z.coerce.date<Date>(), z.string()]),
+  schoolLocation: z.string().optional(),
+  residentialStatus: z.enum(RESIDENTIAL_STATUS),
+  hometown: z.string().optional(),
+  guardianName: z.string().optional(),
+  guardianPhoneNumber: z.string().optional(),
+  guardianRelation: z.string().optional(),
+  primaryAddress: z.string().optional(),
+  isAcceptancePaid: z.boolean().optional(),
+  admissionStatus: z.enum(ADMISSION_STATUS),
+  aggregateScore: z.coerce.number<number>().min(6).optional(),
+  isFormSubmitted: z.boolean().optional(),
+  enrollmentCode: z.string().optional(),
+});
+
+export type FreshAdmissionsType = z.infer<typeof FreshAdmissionsSchema>;
+
+export const UpdateFreshStudentsAdmissionSchema = z.object({
+  id: z.cuid(),
+  ...FreshAdmissionsSchema.shape,
+});
+
+export type UpdateFreshStudentsAdmissionType = z.infer<
+  typeof UpdateFreshStudentsAdmissionSchema
+>;
+
+export const BulkUploadPlacedStudentsSchema = z.object({
+  data: z.array(
+    z.object({
+      ...FreshAdmissionsSchema.shape,
+    }),
+  ),
+});
+
+export type BulkUploadPlacedStudententType = z.infer<
+  typeof BulkUploadPlacedStudentsSchema
+>;
+
+export const VerifyStudentSchema = z.object({
+  jhsIndexNumber: z
+    .string({ error: "Student ID is required" })
+    .min(12)
+    .max(12, "Student Id must have a maximum of 12 characters"),
+});
+
+export type VerifyStudentType = z.infer<typeof VerifyStudentSchema>;
+
+export enum CURRENCY {
+  GHS = "GHS",
+  USD = "USD",
+  NGN = "NGN",
+}
+
+export const InitiatePaymentSchema = z.strictObject({
+  email: z.email().min(1),
+  name: z.string({ error: "A name is required" }).min(1),
+  studentId: z.string().min(12).max(12),
+  amount: z.coerce.number<number>(),
+  currency: z.enum(CURRENCY),
+});
+
+export const BioDataSchema = z.object({
+  lastName: z.string().min(1),
+  otherNames: z.string().min(1),
+  gender: z.union([z.enum(Gender), z.string()]),
+  birthDate: z.union([z.date(), z.string()]),
+  email: z.string().optional(),
+  phone: z.string().optional(),
+  hometown: z.string().optional(),
+  primaryAddress: z.string().optional(),
+});
+
+export const AcademicHistorySchema = z.object({
+  enrollmentCode: z.string(),
+  jhsIndexNumber: z.string().min(10).max(12),
+  aggregateScore: z.coerce.number<number>().optional(),
+  jhsAttended: z.string(),
+  schoolLocation: z.string().optional(),
+  district: z.string().optional(),
+  schoolRegion: z.string().optional(),
+});
+
+export const ParentOrGuardianSchema = z.object({
+  guardianName: z.string().optional(),
+  guardianRelation: z.string().optional(),
+  guardianPhoneNumber: z.string().optional(),
+  guardianEmail: z.string().optional(),
+});
+
+export const ProgramSelectionSchema = z.object({
+  programme: z.string(),
+  classId: z.string(),
+  className: z.string(),
+  departmentId: z.string(),
+});
+
+export type InitiatePaymentType = z.infer<typeof InitiatePaymentSchema>;
+
+export const StudentEnrollmentSchema = z.object({
+  ...BioDataSchema.shape,
+  ...AcademicHistorySchema.shape,
+  ...ParentOrGuardianSchema.shape,
+  ...ProgramSelectionSchema.shape,
+});
+
+export type StudentEnrollmentType = z.infer<typeof StudentEnrollmentSchema>;
+export type BioDataType = z.infer<typeof BioDataSchema>;
+export type AcademicHistoryType = z.infer<typeof AcademicHistorySchema>;
+export type ParentOrGuardianType = z.infer<typeof ParentOrGuardianSchema>;
+export type ProgramSelectionType = z.infer<typeof ProgramSelectionSchema>;
+
+export const TemplateSchema = z.object({
+  name: z.string().max(100),
+  content: z.string(),
+  isActive: z.boolean().nullable(),
+});
+
+export type TemplateType = z.infer<typeof TemplateSchema>;

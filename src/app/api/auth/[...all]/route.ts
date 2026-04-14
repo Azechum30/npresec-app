@@ -32,12 +32,12 @@ const emailOptions = {
 
 const botOptions = {
   mode: process.env.NODE_ENV === "development" ? "DRY_RUN" : "LIVE",
-  allow: ["CATEGORY:SEARCH_ENGINE", "UPTIME_MONITOR"],
+  allow: ["CATEGORY:SEARCH_ENGINE"],
 } satisfies BotOptions;
 
 const rateLimitOptions = {
   mode: process.env.NODE_ENV === "development" ? "DRY_RUN" : "LIVE",
-  interval: "2m",
+  interval: "1m",
   max: 5,
 } satisfies SlidingWindowRateLimitOptions<[]>;
 
@@ -81,11 +81,8 @@ const authHandlers = toNextJsHandler(auth.handler);
 
 export const { GET } = authHandlers;
 
-// Wrap the POST handler with Arcjet protections
 export const POST = async (req: NextRequest) => {
   const decision = await protect(req);
-
-  console.log("Arcjet Decision:", decision);
 
   if (decision.isDenied()) {
     if (decision.reason.isRateLimit()) {

@@ -1,3 +1,4 @@
+import LoadingState from "@/components/customComponents/Loading";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,7 +14,6 @@ import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useConfirmDelete } from "./useConfirmDelete";
-import LoadingState from "@/components/customComponents/Loading";
 
 type GenericActionsProps<T extends { id: string }> = {
   row: Row<T>;
@@ -50,19 +50,22 @@ export const GenericActions = <T extends { id: string }>({
             {pathname === "students" ? (
               <Link href={`/admin/students/edit/${original.id}`}>
                 <span className="flex items-center gap-1">
-                  <Edit className="size-5" />
+                  <Edit className="size-5 text-blue-500" />
                   Edit
                 </span>
               </Link>
             ) : (
               <span
                 className="flex items-center gap-1 w-full"
-                onClick={() => onOpen(dialogId as string, row.original.id)}>
-                <Edit className="size-5" />
+                onClick={() => {
+                  onOpen(dialogId as string, row.original.id);
+                }}>
+                <Edit className="size-5 text-blue-500" />
                 Edit
               </span>
             )}
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem
             className="hover:cursor-pointer"
             onClick={async () => {
@@ -71,7 +74,7 @@ export const GenericActions = <T extends { id: string }>({
                 await onDelete(original.id, String(original[secondaryKey]));
               }
             }}>
-            <Trash2 className="size-5" />
+            <Trash2 className="size-5 text-destructive" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>

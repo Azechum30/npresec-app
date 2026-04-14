@@ -151,10 +151,6 @@ export const bulkDeleteStudents = async (ids: string[]) => {
     updateTag("students-list");
     updateTag("users-list");
 
-    console.info(
-      `[BULK_DELETE] Successfully deleted ${result.count} users and updated ${Object.keys(classDecrementMap).length} classes.`,
-    );
-
     return { count: result.count };
   } catch (error) {
     console.error("[BULK_DELETE_ERROR]:", error);

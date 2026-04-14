@@ -159,7 +159,7 @@ export const MarkSingleStudentAttendanceForm = ({
           valueKey="id"
           selectedKey="fullName"
           placeholder="--Select Student--"
-          disabled={!!classId}
+          disabled={!classId}
         />
 
         <SelectWithLabel

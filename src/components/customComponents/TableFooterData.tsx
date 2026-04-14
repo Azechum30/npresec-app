@@ -1,30 +1,33 @@
 import { Table } from "@tanstack/react-table";
-import { Button } from "../ui/button";
 import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
+import { Button } from "../ui/button";
 import { ItemsPerPage } from "./items-per-page";
 
 type TableFooterDescriptionProps<TData> = {
   table: Table<TData>;
-  pageSizeOptions?: { itemsPerPage: 10 | 25 | 50 | 100 };
   onPageSizeChangeAction?: (newPageSize: number) => void;
 };
 
 export default function TableFooterDescription<TData>({
   table,
-  pageSizeOptions,
   onPageSizeChangeAction,
 }: TableFooterDescriptionProps<TData>) {
+  const { pageIndex, pageSize } = table.getState().pagination;
+  const totalRows = table.getCoreRowModel().rows.length;
+
+  const from = totalRows === 0 ? 0 : pageIndex * pageSize + 1;
+
+  const to = Math.min((pageIndex + 1) * pageSize, totalRows);
   return (
     <div className="w-full flex justify-between items-center ps-4 pt-4 pb-4">
       <div className="text-muted-foreground text-sm hidden lg:flex lg:items-center lg:space-x-2 ">
         <div>
-          {table.getSelectedRowModel().rows?.length} of{" "}
-          {table.getCoreRowModel().rows?.length} row(s) selected
+          Showing {from} - {to} of {totalRows}
         </div>
         <div>
           Page {table.getState().pagination.pageIndex + 1} of{" "}
@@ -33,7 +36,7 @@ export default function TableFooterDescription<TData>({
       </div>
 
       <ItemsPerPage
-        defaultValue={pageSizeOptions}
+        value={table.getState().pagination.pageSize}
         onPageSizeChangeAction={onPageSizeChangeAction}
       />
 
@@ -44,8 +47,7 @@ export default function TableFooterDescription<TData>({
           size="sm"
           className="flex items-center justify-center text-center gap-x-1 pe-5"
           onClick={() => table.setPageIndex(0)}
-          disabled={!table.getCanPreviousPage()}
-        >
+          disabled={!table.getCanPreviousPage()}>
           <ChevronsLeft className="size-5" />
         </Button>
         <Button
@@ -54,8 +56,7 @@ export default function TableFooterDescription<TData>({
           title="Go to previous page"
           className="flex items-center justify-center text-center gap-x-1 pe-5"
           onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
+          disabled={!table.getCanPreviousPage()}>
           <ChevronLeft className="size-5" />
         </Button>
         <Button
@@ -64,8 +65,7 @@ export default function TableFooterDescription<TData>({
           title="Go to next page"
           className="flex items-center justify-center text-center gap-x-1 ps-4"
           onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
+          disabled={!table.getCanNextPage()}>
           <ChevronRight className="size-5" />
         </Button>
         <Button
@@ -74,8 +74,7 @@ export default function TableFooterDescription<TData>({
           title="Go to next last page"
           className="flex items-center justify-center text-center gap-x-1 ps-4"
           onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-          disabled={!table.getCanNextPage()}
-        >
+          disabled={!table.getCanNextPage()}>
           <ChevronsRight className="size-5" />
         </Button>
       </div>

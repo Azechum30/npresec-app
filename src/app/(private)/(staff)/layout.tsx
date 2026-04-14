@@ -19,6 +19,7 @@ export default function TeachersLayout({
 const StaffAuthGuard = async ({ children }: { children: ReactNode }) => {
   await connection();
   const userRole = await hasRole("teaching_staff");
+
   if (!userRole) {
     redirect("/403");
   }

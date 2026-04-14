@@ -12,8 +12,6 @@ export const metadata: Metadata = {
   description: "Signin to access the system",
 };
 
-// export const dynamic = "force-dynamic";
-
 type Props = {
   searchParams: Promise<{ [key: string]: string | undefined }>;
 };

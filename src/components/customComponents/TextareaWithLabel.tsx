@@ -1,15 +1,15 @@
 "use client";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { InputHTMLAttributes } from "react";
-import { useFormContext } from "react-hook-form";
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form";
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { InputHTMLAttributes } from "react";
+import { useFormContext } from "react-hook-form";
 
 type TextAreaWithLabelProps = {
   name: string;
@@ -37,7 +37,7 @@ export default function TextAreaWithLabel({
             <Textarea
               id={name}
               rows={5}
-              className={cn("w-full max-w-md", className)}
+              className={cn("w-full max-w-xl", className)}
               {...field}
               {...props}
             />

@@ -1,3 +1,4 @@
+import { updateItemsPerPage } from "@/app/(private)/profile/_actions/update-items-per-page";
 import TableFooterDescription from "@/components/customComponents/TableFooterData";
 import TopActions from "@/components/customComponents/TopActions";
 import {
@@ -26,7 +27,8 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import React, { JSX, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import React, { JSX, useMemo, useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 import { useAuth } from "./SessionProvider";
 
@@ -50,6 +52,7 @@ const DataTable = <TData,>({
   onDelete,
 }: DataTableProps<TData>) => {
   const user = useAuth() as ExtendedSession["user"];
+  const router = useRouter();
 
   const userItemsPerPage = useMemo(() => {
     const validPageSizes = [10, 25, 50, 100];
@@ -68,27 +71,20 @@ const DataTable = <TData,>({
   const [sorting, setIsSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState<PaginationState>(() => ({
     pageIndex: 0,
-    pageSize: userItemsPerPage,
+    pageSize: userItemsPerPage || 10,
   }));
   const [expanded, setExpanded] = useState<ExpandedState>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
-  useEffect(() => {
-    if (userItemsPerPage !== pagination.pageSize) {
-      setPagination((prev) => ({
-        ...prev,
-        pageSize: userItemsPerPage,
-        pageIndex: 0,
-      }));
-    }
-  }, [userItemsPerPage, pagination.pageSize]); // Remove pagination.pageSize from dependencies to prevent loops
-
-  const handlePageSizeChange = (newPageSize: number) => {
+  const handlePageSizeChange = async (newPageSize: number) => {
     setPagination((prev) => ({
       ...prev,
       pageSize: newPageSize,
-      pageIndex: 0, // Reset to first page when changing page size
+      pageIndex: 0,
     }));
+
+    await updateItemsPerPage(newPageSize);
+    router.refresh();
   };
 
   const memoizedColums = useMemo(() => columns, [columns]);
@@ -134,7 +130,7 @@ const DataTable = <TData,>({
         <Table className="border mb-2">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroups) => (
-              <TableRow key={headerGroups.id} className="bg-accent">
+              <TableRow key={headerGroups.id} className="bg-primary/10">
                 {headerGroups.headers.map((header) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
@@ -185,9 +181,6 @@ const DataTable = <TData,>({
       <CardFooter>
         <TableFooterDescription
           table={table}
-          pageSizeOptions={
-            userItemsPerPage as unknown as { itemsPerPage: 10 | 25 | 50 | 100 }
-          }
           onPageSizeChangeAction={handlePageSizeChange}
         />
       </CardFooter>

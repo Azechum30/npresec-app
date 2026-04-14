@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
       },
     },
   },
-  // Disable source maps in development to prevent Sentry parsing errors
+  output: process.env.VERCEL === undefined ? "standalone" : "export",
   ...(process.env.NODE_ENV === "development" && {
     webpack: (config, { dev, isServer }) => {
       if (dev) {

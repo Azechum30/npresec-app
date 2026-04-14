@@ -24,6 +24,7 @@ type onUpload = Promise<{
   count?: number;
   error?: string;
   success?: boolean;
+  workerId?: string;
 }>;
 type UploadProps<T> = {
   handleUploadAction: (data: T) => onUpload;
@@ -115,6 +116,7 @@ export default function UploadComponent<T>({
       {dialogId && (
         <DialogContent
           className={cn(
+            "min-w-lg",
             data?.data?.length! > 0 &&
               "md:max-w-full md:max-h-full mx-auto transition-transform delay-300 ease-linear",
           )}>
@@ -124,7 +126,7 @@ export default function UploadComponent<T>({
               Read the instructions carefully for a smooth data upload:
             </DialogDescription>
           </DialogHeader>
-          <ul className="list-disc ml-4 text-sm text-muted-foreground ">
+          <ul className="list-disc text-sm text-muted-foreground rounded-md border px-6 py-4 bg-primary/5 ">
             <li className="leading-6">
               The file format should be an excel file formatted and saved as a
               Comma Separated Values (CSV) file.
@@ -157,7 +159,7 @@ export default function UploadComponent<T>({
                 <>
                   <div
                     className={cn(
-                      "w-full max-w-md mx-auto rounded-2xl h-[200px] border-2 border-dashed flex flex-col justify-center items-center gap-2 hover:cursor-pointer relative p-6",
+                      "w-full max-w-md mx-auto rounded-2xl h-50 border-2 border-dashed flex flex-col justify-center items-center gap-2 hover:cursor-pointer relative p-6",
                       data?.data.length! > 0 && "max-w-full h-auto",
                     )}>
                     <Button

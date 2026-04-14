@@ -1,17 +1,16 @@
 "use client";
 
-import { FC, useMemo } from "react";
-import { useGetColumns } from "./studentColumns";
 import DataTable from "@/components/customComponents/data-table";
-import { useBulkDeleteStudents } from "../hooks/use-bulk-delete-students";
-import LoadingState from "@/components/customComponents/Loading";
-import { studentTransformer } from "../utils/utils";
-import { useDeleteStudent } from "../hooks/use-delete-student";
-import StudentRowDetail from "./StudentRowDetail";
-import { getStudents } from "../actions/action";
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import { NoDataFound } from "@/components/customComponents/no-data-found";
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
+import { FC, useMemo } from "react";
+import { getStudents } from "../actions/action";
+import { useBulkDeleteStudents } from "../hooks/use-bulk-delete-students";
+import { useDeleteStudent } from "../hooks/use-delete-student";
+import { studentTransformer } from "../utils/utils";
+import { useGetColumns } from "./studentColumns";
+import StudentRowDetail from "./StudentRowDetail";
 
 type StudentDataTableProps = {
   initialState: Awaited<ReturnType<typeof getStudents>>;
@@ -26,7 +25,7 @@ export const StudentDataTable: FC<StudentDataTableProps> = ({
   const { preferredDateFormat } = useUserPreferredDateFormat();
   const transformer = useMemo(
     () => studentTransformer(preferredDateFormat),
-    [preferredDateFormat]
+    [preferredDateFormat],
   );
 
   return (
@@ -50,9 +49,6 @@ export const StudentDataTable: FC<StudentDataTableProps> = ({
           renderSubComponent={(row) => <StudentRowDetail row={row} />}
         />
       )}
-
-      {isPending && <LoadingState />}
-      {isDeletePending && <LoadingState />}
     </>
   );
 };

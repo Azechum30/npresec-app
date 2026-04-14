@@ -32,6 +32,7 @@ const resources = [
   "rooms",
   "timelines",
   "profile",
+  "admissions",
 ];
 const actions = ["create", "view", "edit", "delete", "export"];
 

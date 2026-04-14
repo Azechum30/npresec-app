@@ -27,7 +27,7 @@ const PUBLIC_ROUTES = [
 export function getRoleDashboardPath(role: UserRole): string {
   const dashboardMap: Record<UserRole, string> = {
     admin: "/admin/dashboard",
-    teaching_staff: "/teachers",
+    teaching_staff: "/staff/dashboard",
     staff: "/teachers",
     student: "/students",
     parent: "/parents",
@@ -149,7 +149,7 @@ export function getRouteDisplayName(path: string): string {
     "/admin/dashboard": "Admin Dashboard",
     "/admin/users": "User Management",
     "/admin/roles": "Role Management",
-    "/teachers": "Teachers Dashboard",
+    "/staff/dashboard": "Staff Dashboard",
     "/students": "Students Dashboard",
     "/parents": "Parents Dashboard",
     "/profile": "Profile",

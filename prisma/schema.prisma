@@ -244,6 +244,7 @@ model Student {
   guardianAddress   String?
   guardianRelation  String
   previousSchool    String?
+  jhsIndexNumber    String?
   admissionDate     DateTime           @default(now())
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
@@ -343,14 +344,20 @@ model Grade {
 }
 
 model Document {
-  id         String   @id @default(cuid())
-  name       String
-  type       String
-  url        String
-  studentId  String?
-  uploadedAt DateTime @default(now())
-  student    Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id          String    @id @default(cuid())
+  name        String
+  type        String
+  url         String
+  admissionId String
+  hash        String?
+  admision    Admission @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+  studentId   String?
+  uploadedAt  DateTime  @default(now())
+  student     Student?  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
 
+  @@unique([url, hash])
+  @@index([url])
   @@map("documents")
 }
 
@@ -520,4 +527,92 @@ model TwoFactor {
   @@index([secret])
   @@index([userId])
   @@map("twoFactor")
+}
+
+enum RESIDENTIAL_STATUS {
+  Day
+  Boarding
+}
+
+enum ADMISSION_STATUS {
+  PENDING
+  ADMITTED
+  REJECTED
+  WAITLISTED
+}
+
+enum PAYMENT_PROVIDER {
+  Paystack
+  FlutterWave
+  Stripe
+}
+
+enum PAYMENT_STATUS {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum CURRENCY {
+  GHS
+  USD
+  NGN
+}
+
+model Admission {
+  id                  String             @id @default(cuid())
+  lastName            String
+  otherNames          String
+  birthDate           DateTime
+  jhsIndexNumber      String             @unique
+  gender              String
+  programme           String
+  residentialStatus   RESIDENTIAL_STATUS @default(Day)
+  hometown            String?
+  jhsAttended         String
+  schoolLocation      String?
+  district            String?
+  schoolRegion        String?
+  enrollmentCode      String?            @unique
+  guardianName        String?
+  guardianRelation    String?
+  guardianPhoneNumber String?
+  primaryAddress      String?
+  aggregateScore      Int?
+  admissionStatus     ADMISSION_STATUS   @default(PENDING)
+  isAcceptancePaid    Boolean            @default(false)
+  isFormSubmitted     Boolean            @default(false)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  payments  Payment[]
+  documents Document[]
+
+  @@index([jhsIndexNumber])
+  @@map("admissions")
+}
+
+model Payment {
+  id            String           @id @default(cuid())
+  admissionId   String
+  amount        Decimal          @db.Decimal(10, 2)
+  currency      CURRENCY         @default(GHS)
+  transactionId BigInt?          @unique
+  provider      PAYMENT_PROVIDER @default(Paystack)
+  reference     String?          @unique
+  paymentStatus PAYMENT_STATUS   @default(PENDING)
+  metadata      Json?
+  paidAt        DateTime?
+  createdAt     DateTime         @default(now())
+  admission     Admission        @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+}
+
+model Template {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  content   String   @db.Text
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

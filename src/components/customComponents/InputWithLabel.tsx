@@ -56,9 +56,12 @@ export default function InputWithLabel({
           </FormLabel>
           <FormControl>
             <Input
-              // aria-invalid={form.formState.errors ? true : false}
+              aria-invalid={form.formState.errors.form?.message ? true : false}
               id={name}
-              className={cn("w-full max-w-xl ", className)}
+              className={cn(
+                "w-full max-w-xl disabled:hover:cursor-not-allowed ",
+                className,
+              )}
               {...field}
               {...props}
             />

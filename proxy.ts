@@ -94,7 +94,6 @@ export default async function proxy(request: NextRequest) {
       );
     }
 
-    // 1. Extract all role names
     const userRoleNames =
       session.user?.roles?.map((rs) => rs.role.name as UserRole) ?? [];
 
@@ -111,7 +110,11 @@ export default async function proxy(request: NextRequest) {
       );
     }
 
-    if (pathname === "/dashboard" || pathname === "/home") {
+    if (
+      pathname.startsWith("/admin") ||
+      pathname.startsWith("/staff") ||
+      pathname.startsWith("/students")
+    ) {
       const priorityOrder: UserRole[] = [
         "admin",
         "teaching_staff",
@@ -143,18 +146,16 @@ export default async function proxy(request: NextRequest) {
 function requiresRoleBasedAccess(pathname: string): boolean {
   const protectedPrefixes = [
     "/admin",
-    "/teachers",
+    "/staff",
     "/students",
     "/scores",
-    "/dashboard",
-    "/home",
     "/profile",
   ];
   return protectedPrefixes.some((path) => pathname.startsWith(path));
 }
 
 function needsEmailVerification(pathname: string): boolean {
-  const securePrefixes = ["/admin", "/teachers", "/students", "/scores"];
+  const securePrefixes = ["/admin", "/staff", "/students"];
   return securePrefixes.some((path) => pathname.startsWith(path));
 }
 
@@ -162,11 +163,11 @@ function hasRoleAccess(role: UserRole, pathname: string): boolean {
   const roleAccessMap: Record<UserRole, string[]> = {
     admin: ["/admin", "/profile", "/403", "/email-verified"],
     teaching_staff: [
-      "/teachers",
-      "/scores",
+      "/staff",
       "/profile",
       "/unauthorized",
       "/email-verified",
+      "/403",
     ],
     staff: ["/teachers", "/profile", "/403", "/email-verified"],
     student: ["/students", "/profile", "/403", "/email-verified"],
@@ -178,7 +179,7 @@ function hasRoleAccess(role: UserRole, pathname: string): boolean {
 function getDashboardPath(role: UserRole): string {
   const dashboardMap: Record<UserRole, string> = {
     admin: "/admin/dashboard",
-    teaching_staff: "/teachers",
+    teaching_staff: "/staff/dashboard",
     staff: "/teachers",
     student: "/students",
     parent: "/parents",

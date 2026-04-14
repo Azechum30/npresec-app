@@ -78,7 +78,7 @@ function TwoFactorComponent() {
               if (priorityRole === "admin") {
                 router.push("/admin/dashboard");
               } else if (priorityRole === "teaching_staff") {
-                router.push("/teachers");
+                router.push("/staff/dashboard");
               } else if (priorityRole === "student") {
                 router.push("/students");
               }
