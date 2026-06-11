@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import React, { ReactNode, Suspense } from "react";
 
-export default function TeachersLayout({
+export default function StaffLayout({
   children,
 }: {
   children: React.ReactNode;

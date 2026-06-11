@@ -1,10 +1,10 @@
 import AssessmentTimeLineCountDown from "@/components/customComponents/AssessmentTimelineCountDown";
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
-import LoadingState from "@/components/customComponents/Loading";
 import LoadingButton from "@/components/customComponents/LoadingButton";
 import { Notification } from "@/components/customComponents/notification";
 import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Form,
@@ -38,7 +38,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useEffect, useMemo, useState } from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { useDebouncedCallback } from "use-debounce";
-import { useFetchRequiredData } from "../_hooks/use-fetch-required-data";
 
 type ScoresType = {
   onSubmit: (values: GradeType) => void;
@@ -46,6 +45,8 @@ type ScoresType = {
   defaultValues?: GradeType;
   students?: StudentResponseType[];
   fetchStudentsError?: string;
+  classes: { id: string; name: string }[];
+  courses: { id: string; title: string }[];
   isPending?: boolean;
 };
 
@@ -56,6 +57,8 @@ export const CreateStudentScoresForm = ({
   students,
   fetchStudentsError,
   isPending,
+  classes,
+  courses,
 }: ScoresType) => {
   const form = useForm<GradeType>({
     resolver: zodResolver(GradeSchema),
@@ -226,7 +229,7 @@ export const CreateStudentScoresForm = ({
     dialogs["create-students-scores"],
   ]);
 
-  const { classes, courses, fetchError } = useFetchRequiredData();
+  // const { classes, courses, fetchError } = useFetchRequiredData();
 
   const years = useMemo(() => {
     return Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
@@ -250,7 +253,7 @@ export const CreateStudentScoresForm = ({
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
           className="space-y-6 border p-3 rounded-md max-h-[65vh] w-full overflow-y-auto scrollbar-thin">
-          {fetchError && <div className="text-red-500">{fetchError}</div>}
+          {/* {fetchError && <div className="text-red-500">{fetchError}</div>} */}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <SelectWithLabel
@@ -293,7 +296,6 @@ export const CreateStudentScoresForm = ({
               placeholder="Select Assessment Type"
             />
             <InputWithLabel
-              type="number"
               name="maxScore"
               fieldTitle="Max Score"
               schema={GradeSchema}
@@ -301,8 +303,6 @@ export const CreateStudentScoresForm = ({
             />
           </div>
           {fetchStudentsError && <ErrorComponent error={fetchStudentsError} />}
-
-          {isPending && <LoadingState />}
 
           {isValidParams && (!startDate || now < startDate) ? (
             <Notification description="It is either no timeline has been set for this assesment or the date for start of entry has not yet reached or all students have scores entered for them in this assessment mode." />
@@ -394,6 +394,8 @@ export const CreateStudentScoresForm = ({
               description="Kindly select the class, course, semester, academic year, and
               the mode of assessment to filter students for score entry. Be aware that the Max Score field refers to the total mark a student can obtain (overall score). Max score cannot exceed 100."
             />
+          ) : isPending ? (
+            <ShowLoadingState />
           ) : (
             <Notification
               description="No students found for the selected class, course, semester and
@@ -407,6 +409,7 @@ export const CreateStudentScoresForm = ({
               <LoadingButton
                 size="lg"
                 className="md:w-[25%]"
+                disabled={!form.formState.isReady}
                 loading={isSubmitting as boolean}>
                 {isSubmitting ? (
                   <>Saving Scores</>

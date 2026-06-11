@@ -1,9 +1,9 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GradeResponseType } from "@/lib/types";
 import { Row } from "@tanstack/react-table";
 import moment from "moment";
-import Image from "next/image";
 
 type StudentScoreDetailProps = {
   row: Row<GradeResponseType>;
@@ -26,15 +26,16 @@ export const StudentScoreDetail = ({ row }: StudentScoreDetailProps) => {
     <Card>
       <CardHeader className="border-b">
         <CardTitle className="relative flex justify-start items-center gap-3">
-          <div className="size-20 rounded-full border p-2 flex justify-center items-center">
-            <Image
-              src={student.user?.image ? student.user.image : "/no-avatar.jpg"}
-              alt={student.firstName + " " + student.lastName}
-              width={80}
-              height={80}
-              className="w-20 h-16 object-cover object-top rounded-full"
+          <Avatar size="lg">
+            <AvatarImage
+              className="size-20"
+              src={student.user?.image ?? "/no-avatar.jpg"}
             />
-          </div>
+            <AvatarFallback className="border-primary border font-bold bg-linear-120 from-primary to-muted-foreground bg-clip-text text-transparent">
+              {student.lastName.charAt(0).toUpperCase() +
+                student.firstName.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex flex-col items-start">
             <h1 className="text-base">
               {student.firstName} {student.lastName}

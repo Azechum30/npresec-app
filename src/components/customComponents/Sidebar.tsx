@@ -6,14 +6,17 @@ import {
   Award,
   Bed,
   BookOpen,
+  BookTemplate,
   ClipboardList,
   GraduationCap,
   Home,
   LayoutDashboard,
   List,
   LucideBuilding2,
+  PoundSterling,
   Shield,
   TimerIcon,
+  TrendingUpIcon,
   UserPen,
   UserPlus,
 } from "lucide-react";
@@ -56,6 +59,27 @@ export const Links = {
       section: "Admissions",
       Links: [
         { title: "CSSPS List", href: "/admin/admissions", icon: <List /> },
+        {
+          title: "Service Fees",
+          href: "/admin/service-fees",
+          icon: <PoundSterling />,
+        },
+        {
+          title: "Payments",
+          href: "/admin/payments",
+          icon: <TrendingUpIcon />,
+        },
+      ],
+    },
+
+    {
+      section: "Documents",
+      Links: [
+        {
+          title: "Templates",
+          href: "/admin/templates",
+          icon: <BookTemplate />,
+        },
       ],
     },
     {

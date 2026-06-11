@@ -15,6 +15,11 @@ export const getPlaceStudentByIndex = async (
     isAcceptancePaid: boolean;
     isFormSubmitted: boolean;
   };
+  student?: {
+    id: string;
+    studentNumber: string;
+    isPaymentAccepted: boolean | null;
+  };
   error?: string;
 }> => {
   try {
@@ -22,21 +27,34 @@ export const getPlaceStudentByIndex = async (
 
     if (!success) throw error;
 
-    const placedStudent = await prisma.admission.findUnique({
-      where: {
-        jhsIndexNumber: data.jhsIndexNumber,
-      },
-      select: {
-        jhsIndexNumber: true,
-        id: true,
-        isAcceptancePaid: true,
-        isFormSubmitted: true,
-      },
+    if (data?.serviceName?.toLowerCase().includes("admission")) {
+      const placedStudent = await prisma.admission.findUnique({
+        where: {
+          jhsIndexNumber: data.studentId,
+        },
+        select: {
+          jhsIndexNumber: true,
+          id: true,
+          isAcceptancePaid: true,
+          isFormSubmitted: true,
+        },
+      });
+
+      if (!placedStudent) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
+
+      return { placedStudent };
+    }
+
+    const student = await prisma.student.findUnique({
+      where: { studentNumber: data.studentId },
+      select: { id: true, studentNumber: true, isPaymentAccepted: true },
     });
 
-    if (!placedStudent) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
+    if (!student) {
+      throw new ActionError("Student ID does not exist");
+    }
 
-    return { placedStudent };
+    return { student };
   } catch (e) {
     console.error(e);
     Sentry.captureException(e);

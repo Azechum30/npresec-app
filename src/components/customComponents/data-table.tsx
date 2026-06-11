@@ -40,6 +40,7 @@ type DataTableProps<TData> = {
   transformer?: TransformerFn<TData>;
   renderSubComponent?: (row: Row<TData>) => JSX.Element;
   onDelete?: (rows: Row<TData>[]) => void;
+  exportKey?: string;
 };
 
 const DataTable = <TData,>({
@@ -50,6 +51,7 @@ const DataTable = <TData,>({
   showImportButton,
   renderSubComponent,
   onDelete,
+  exportKey,
 }: DataTableProps<TData>) => {
   const user = useAuth() as ExtendedSession["user"];
   const router = useRouter();
@@ -124,6 +126,7 @@ const DataTable = <TData,>({
           transformer={transformer}
           filename={filename}
           showImportButton={showImportButton}
+          exportKey={exportKey}
         />
       </CardHeader>
       <CardContent>

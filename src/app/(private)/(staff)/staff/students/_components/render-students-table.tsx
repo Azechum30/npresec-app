@@ -32,6 +32,7 @@ export const RenderStudentsTable = ({
           data={students ?? []}
           filename="Students-list"
           transformer={StudentTransformer}
+          exportKey="students"
         />
       )}
     </>

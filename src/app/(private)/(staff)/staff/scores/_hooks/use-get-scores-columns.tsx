@@ -1,10 +1,9 @@
-import { ColumnDef } from "@tanstack/react-table";
-import { GradeResponseType } from "@/lib/types";
-import Image from "next/image";
-import RowSelectionComponent from "@/components/customComponents/RowSelectionComponent";
-import { RowSelections } from "@/components/customComponents/RowSelections";
 import { GenericActions } from "@/components/customComponents/GenericActions";
 import { GenericRowExpansion } from "@/components/customComponents/GenericRowExpansion";
+import { RowSelections } from "@/components/customComponents/RowSelections";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GradeResponseType } from "@/lib/types";
+import { ColumnDef } from "@tanstack/react-table";
 import { useHandleStudentScoreDelete } from "./use-handle-student-score-delete";
 
 export const useGetScoresColumns = () => {
@@ -32,15 +31,13 @@ export const useGetScoresColumns = () => {
           : false;
         const url = isValid ? (image as string) : "/no-avatar.jpg";
         return (
-          <div className="size-8 rounded-full border p-1 flex justify-center items-center">
-            <Image
-              src={url}
-              alt="Avatar"
-              width={20}
-              height={20}
-              className="size-6 rounded-full object-cover object-top"
-            />
-          </div>
+          <Avatar>
+            <AvatarImage src={url} alt="avatar" />
+            <AvatarFallback>
+              {row.original.student.lastName.charAt(0) +
+                row.original.student.firstName.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
         );
       },
     },

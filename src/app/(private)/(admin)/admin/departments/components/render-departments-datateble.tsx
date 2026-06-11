@@ -41,6 +41,7 @@ export default function RenderDepartmentsDataTable({
           data={initialState.departments}
           transformer={transformer}
           filename="Departments-list"
+          exportKey="departments"
           onDelete={async (row) => {
             const ids = row.map((r) => r.original.id as string);
             const codes = row.map((r) => r.original.code);

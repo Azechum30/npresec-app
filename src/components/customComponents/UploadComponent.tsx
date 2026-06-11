@@ -109,14 +109,11 @@ export default function UploadComponent<T>({
   };
 
   return (
-    <Dialog
-      open={dialogs[dialogId] === true ? true : false}
-      onOpenChange={() => onClose(dialogId)}
-      modal={true}>
+    <Dialog open={!!dialogs[dialogId]} onOpenChange={() => onClose(dialogId)}>
       {dialogId && (
         <DialogContent
           className={cn(
-            "min-w-lg",
+            "w-full md:max-w-lg",
             data?.data?.length! > 0 &&
               "md:max-w-full md:max-h-full mx-auto transition-transform delay-300 ease-linear",
           )}>
@@ -159,15 +156,15 @@ export default function UploadComponent<T>({
                 <>
                   <div
                     className={cn(
-                      "w-full max-w-md mx-auto rounded-2xl h-50 border-2 border-dashed flex flex-col justify-center items-center gap-2 hover:cursor-pointer relative p-6",
-                      data?.data.length! > 0 && "max-w-full h-auto",
+                      "w-full md:max-w-lg mx-auto rounded-2xl h-20 border-2 border-dashed flex flex-col justify-center items-center gap-2 hover:cursor-pointer relative ",
+                      data?.data.length! > 0 && "md:max-w-full h-auto",
                     )}>
                     <Button
                       {...getRootProps()}
                       variant="ghost"
                       className={cn(
-                        "text-muted-foreground w-full h-full",
-                        acceptedFile && "w-1/2  mx-auto h-auto",
+                        "text-muted-foreground w-full md:max-w-lg min-h-full",
+                        acceptedFile && "w-1/2 mx-auto h-auto",
                       )}>
                       <UploadCloudIcon />
                       Browse

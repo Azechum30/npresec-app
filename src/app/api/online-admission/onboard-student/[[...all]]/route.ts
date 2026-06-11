@@ -15,10 +15,10 @@ import { revalidateTag } from "next/cache";
 import { singleStudentEmailWorkflow } from "../../../onboard/single-student/[[...all]]/route";
 
 const onlineAdmissionStudentOnboardingWorkflow = createWorkflow<
-  singleStudentType,
+  singleStudentType & { jhsIndexNumber: string },
   unknown
 >(async (ctx) => {
-  const { data } = ctx.requestPayload;
+  const { data, jhsIndexNumber } = ctx.requestPayload;
 
   const channelName = `userId-${data.userId}`;
   const password = generatePassword();
@@ -121,6 +121,7 @@ const onlineAdmissionStudentOnboardingWorkflow = createWorkflow<
             data: {
               ...rest,
               studentNumber: studentID,
+              jhsIndexNumber: jhsIndexNumber,
               currentLevel: rest.currentLevel as (typeof Levels)[number],
 
               house: targetHostel

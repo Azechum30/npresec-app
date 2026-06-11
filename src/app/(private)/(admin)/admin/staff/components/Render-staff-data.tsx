@@ -37,6 +37,7 @@ export default function RenderStaffData({ initialData }: Props) {
           data={initialData.staff}
           transformer={staffTransformer}
           filename="Staff-list"
+          exportKey="staff"
           onDelete={async (rows) => {
             const ids = rows.map((row) => row.original.id);
             await deletestaff(ids);

@@ -56,19 +56,19 @@ const TimerDisplay = ({
   time: { days: number; hours: number; minutes: number; seconds: number };
   label: string;
 }) => (
-  <div className="flex items-center gap-4">
+  <div className="flex justify-center md:justify-start items-center gap-4">
     <h3 className="font-semibold uppercase">{label}:</h3>
-    <div className="rounded-md bg-card border p-3 flex">
-      <span className="font-bold text-base bg-gradient-to-b from-primary to-secondary text-transparent bg-clip-text p-1.5 not-last-of-type:border-r">
+    <div className="rounded-md bg-card dark:bg-primary/10 border-primary border p-3 flex">
+      <span className="font-bold text-base bg-linear-90 from-primary to-muted-foreground text-transparent bg-clip-text p-1.5 not-last-of-type:border-r">
         {time.days}d{" "}
       </span>
-      <span className="font-bold text-base bg-gradient-to-b from-primary to-secondary text-transparent bg-clip-text p-1.5 not-last-of-type:border-r">
+      <span className="font-bold text-base bg-linear-90 from-primary to-muted-foreground text-transparent bg-clip-text p-1.5 not-last-of-type:border-r">
         {time.hours}h{" "}
       </span>
-      <span className="font-bold text-base bg-gradient-to-b from-primary to-secondary text-transparent bg-clip-text p-1.5 not-last-of-type:border-r">
+      <span className="font-bold text-base bg-linear-90 from-primary to-muted-foreground text-transparent bg-clip-text p-1.5 not-last-of-type:border-r">
         {time.minutes}m{" "}
       </span>
-      <span className="font-bold text-base bg-gradient-to-b from-primary to-secondary text-transparent bg-clip-text p-1.5 not-last-of-type:border-r">
+      <span className="font-bold text-base bg-linear-90 from-primary to-muted-foreground text-transparent bg-clip-text p-1.5 not-last-of-type:border-r">
         {time.seconds}s
       </span>
     </div>

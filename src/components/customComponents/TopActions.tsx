@@ -18,6 +18,7 @@ type TopActionsProps<T> = {
   showImportButton?: boolean;
   transformer?: TransformerFn<T>;
   onDelete?: (rows: Row<T>[]) => void;
+  exportKey?: string;
 };
 
 export default function TopActions<T>({
@@ -27,6 +28,7 @@ export default function TopActions<T>({
   showImportButton,
   transformer,
   onDelete,
+  exportKey,
 }: TopActionsProps<T>) {
   const transformData: IContent[] = transformer
     ? createDataTransformer(transformer)(data)
@@ -48,6 +50,7 @@ export default function TopActions<T>({
       <ExportAsExcel
         data={transformData}
         filename={filename}
+        exportKey={exportKey}
         className={cn(!showImportButton && "sm:col-span-2 lg:col-span-1")}
       />
       <ColumnVisibility table={table} className="hidden lg:inline-flex" />

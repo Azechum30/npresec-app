@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { Notification } from "./notification";
 
 type Props = {
   data: {
@@ -66,7 +67,7 @@ export const BarchartComponent = ({ data }: Props) => {
   );
 
   return (
-    <Card className="dark:bg-accent">
+    <Card className="dark:bg-card">
       <CardHeader className="border-b flex justify-between items-center mb-6">
         <div>
           <CardTitle className="font-bold text-lg">Top Performance</CardTitle>
@@ -132,7 +133,7 @@ export const BarchartComponent = ({ data }: Props) => {
             </div>
           </div>
         </div>
-      ) : (
+      ) : filteredData.length > 2 ? (
         <div className={cn("h-87.5 w-full")}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={filteredData} maxBarSize={30}>
@@ -156,6 +157,8 @@ export const BarchartComponent = ({ data }: Props) => {
             </BarChart>
           </ResponsiveContainer>
         </div>
+      ) : (
+        <Notification description="No data found" />
       )}
     </Card>
   );

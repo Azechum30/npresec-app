@@ -1,5 +1,4 @@
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
 import { AssesessmentType, Semester } from "@/lib/validation";
 import { getUserWithRole } from "@/utils/get-user-with-role";
 import { unauthorized } from "next/navigation";
@@ -9,6 +8,7 @@ import { getScoresAction } from "./_actions/get-scores-action";
 import { BulkStudentsScoresProvider } from "./_components/bulk-students-scores-provider";
 import { RenderScoresTable } from "./_components/render-scores-table";
 import { SearchQueryForm } from "./_components/search-query-form";
+import { ShowAddScoresButton } from "./_components/show-add-button";
 import { SingleStudentScoreDialog } from "./_components/single-student-score-dialog";
 import { CreateStudentsScoresDialog } from "./_forms/create-students-scores-dialog";
 
@@ -21,10 +21,7 @@ export default function ScoresPage({ searchParams }: Props) {
     <div>
       <div className="flex flex-col md:flex-row gap-4 md:gap-0 md:justify-between md:items-center">
         <h1 className="text-base font-medium line-clamp-1">Scores</h1>
-        <OpenDialogs
-          title="Add New Scores"
-          dialogKey="create-students-scores"
-        />
+        <ShowAddScoresButton />
       </div>
       <SearchQueryForm />
 

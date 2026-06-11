@@ -1,4 +1,7 @@
+import { cn } from "@/lib/utils";
+import { Table } from "@tanstack/react-table";
 import { ChevronDown, Columns3 } from "lucide-react";
+import { Fragment } from "react";
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -8,9 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Fragment } from "react";
-import { cn } from "@/lib/utils";
-import { Table } from "@tanstack/react-table";
 
 export default function ColumnVisibility({
   table,

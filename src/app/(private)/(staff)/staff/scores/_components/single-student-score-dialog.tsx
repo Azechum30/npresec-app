@@ -1,6 +1,6 @@
 "use client";
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
-import LoadingState from "@/components/customComponents/Loading";
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import {
   Dialog,
   DialogContent,
@@ -17,8 +17,7 @@ import { useHandleStudentScoreUpdate } from "../_hooks/use-handle-student-score-
 
 export const SingleStudentScoreDialog = () => {
   const { id, dialogs, onClose } = useGenericDialog();
-  const { studentScore, fetchError, fetchSuccess, isPending } =
-    useFetchStudentScore();
+  const { studentScore } = useFetchStudentScore();
   const { handleStudentScoreUpdate, isUpdating, updateError, updateSuccess } =
     useHandleStudentScoreUpdate();
 
@@ -63,30 +62,38 @@ export const SingleStudentScoreDialog = () => {
       }
     : undefined;
 
-  if (isPending) {
-    return <LoadingState />;
-  }
-
   return (
     <>
       <Dialog
-        open={dialogs["edit-student-score"] === true ? true : false}
+        open={!!dialogs["edit-student-score"]}
         onOpenChange={() => onClose("edit-student-score")}>
-        <DialogContent className="max-h-full">
-          <DialogHeader>
-            <DialogTitle>Update Student Score</DialogTitle>
-            <DialogDescription>
-              Kindly update the student score by filling the form and saving!
-            </DialogDescription>
-          </DialogHeader>
-          {updateError && <ErrorComponent error={updateError} />}
-          <SingleStudentScoreForm
-            onSubmitAction={handleStudentScoreUpdate}
-            id={id as string}
-            defaultValues={defaultValues}
-            isPending={isUpdating}
-          />
-        </DialogContent>
+        {dialogs["edit-student-score"] && defaultValues ? (
+          <DialogContent className="max-h-full">
+            <DialogHeader>
+              <DialogTitle>Update Student Score</DialogTitle>
+              <DialogDescription>
+                Kindly update the student score by filling the form and saving!
+              </DialogDescription>
+            </DialogHeader>
+            {updateError && <ErrorComponent error={updateError} />}
+            <SingleStudentScoreForm
+              onSubmitAction={handleStudentScoreUpdate}
+              id={id as string}
+              defaultValues={defaultValues}
+              isPending={isUpdating}
+            />
+          </DialogContent>
+        ) : (
+          <DialogContent>
+            <DialogHeader className="sr-only">
+              <DialogTitle>Loading</DialogTitle>
+              <DialogDescription>Data is loading</DialogDescription>
+            </DialogHeader>
+            <>
+              <ShowLoadingState />
+            </>
+          </DialogContent>
+        )}
       </Dialog>
     </>
   );

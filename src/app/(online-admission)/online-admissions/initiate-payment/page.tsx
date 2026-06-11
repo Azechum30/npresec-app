@@ -1,9 +1,9 @@
-import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
+import { CardLikeErrorComponent } from "@/components/customComponents/card-like-error-component";
 import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import { CURRENCY } from "@/lib/validation";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { getAdmissionAmount } from "./_actions/server-only-actions";
+import { getFeeTypeAmount } from "./_actions/server-only-actions";
 import { InitiatePaymentForm } from "./_forms/placed-student-details-form";
 
 type SearchParams = {
@@ -25,19 +25,23 @@ const RenderInitiatePayment = async ({ searchParams }: SearchParams) => {
   const query = await searchParams;
 
   const studentId = query.studentId ?? "";
+  const serviceTypeId = query.service_type_Id ?? "";
+  const serviceName = query.service_name ?? "";
 
-  const { error, amount } = await getAdmissionAmount(studentId);
+  const { error, amount } = await getFeeTypeAmount(serviceTypeId);
 
   if (error) {
-    return <ErrorComponent error={error} />;
+    return <CardLikeErrorComponent error={error} />;
   }
 
   if (amount) {
     return (
       <InitiatePaymentForm
         studentId={studentId}
-        amount={Number(amount.amount)}
+        amount={String(amount.price) + ".00"}
         currency={amount.currency as CURRENCY}
+        serviceTypeId={serviceTypeId}
+        serviceName={serviceName}
       />
     );
   }

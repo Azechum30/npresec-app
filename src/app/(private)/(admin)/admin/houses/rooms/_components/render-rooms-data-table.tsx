@@ -45,6 +45,7 @@ export const RenderRoomDataTable = ({ rooms }: RenderRoomDataTableProps) => {
       <DataTable
         filename="rooms-list"
         transformer={roomsTransformer}
+        exportKey="rooms"
         data={rooms}
         columns={columns}
         onDelete={async (rows) => {

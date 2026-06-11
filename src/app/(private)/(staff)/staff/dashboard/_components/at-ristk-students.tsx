@@ -73,7 +73,7 @@ export const AtRiskStudents = ({ data }: Props) => {
 
   return (
     <>
-      <Card className="dark:bg-accent">
+      <Card className="dark:bg-card">
         <CardHeader className="flex justify-between items-center">
           <div>
             <CardTitle className="text-lg font-bold text-destructive">

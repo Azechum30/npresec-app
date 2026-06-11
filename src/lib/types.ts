@@ -738,3 +738,70 @@ export const PlacementListSelect = {
 export type PlacementListType = Prisma.AdmissionGetPayload<{
   select: typeof PlacementListSelect;
 }>;
+
+export const ServicesSelect = {
+  id: true,
+  name: true,
+  price: true,
+  status: true,
+  count: true,
+  capacity: true,
+  academicYear: true,
+  deadline: true,
+  currency: true,
+  payments: {
+    select: {
+      id: true,
+      accountName: true,
+      amount: true,
+      customerName: true,
+      RequestedAmount: true,
+      bank: true,
+      countryCode: true,
+      paidAt: true,
+      transactionId: true,
+      transactionFee: true,
+    },
+  },
+} satisfies Prisma.FeeSelect;
+
+export type TService = Prisma.FeeGetPayload<{
+  select: typeof ServicesSelect;
+}>;
+
+export const PaymentSelect = {
+  id: true,
+  amount: true,
+  accountName: true,
+  bank: true,
+  brand: true,
+  channel: true,
+  currency: true,
+  customerEmail: true,
+  customerCode: true,
+  countryCode: true,
+  customerPhoneNumber: true,
+  customerName: true,
+  metadata: true,
+  feeId: true,
+  ipAddress: true,
+  transactionFee: true,
+  transactionId: true,
+  paidAt: true,
+  paymentStatus: true,
+  reference: true,
+  cardType: true,
+  orderId: true,
+  ReceiverBank: true,
+  ReceiverAccountNumber: true,
+  fee: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+} satisfies Prisma.PaymentSelect;
+
+export type TPayment = Prisma.PaymentGetPayload<{
+  select: typeof PaymentSelect;
+}>;

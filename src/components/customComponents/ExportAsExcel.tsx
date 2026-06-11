@@ -1,5 +1,6 @@
 "use client";
 
+import { useExportColumnConfigStore } from "@/hooks/use-export-column-config-store";
 import { cn } from "@/lib/utils";
 import xlsx, { IContent } from "json-as-xlsx";
 import { CloudDownloadIcon } from "lucide-react";
@@ -11,30 +12,36 @@ type ExportXLSXProps<T> = {
   data: T[];
   filename?: string;
   className?: string;
+  exportKey?: string;
 };
 
-// Internal component that handles the actual export logic
 const ExportAsExcelInternal = <T extends IContent>({
   data,
   filename,
   className,
+  exportKey,
 }: ExportXLSXProps<T>) => {
   const user = useAuth();
-
-  // Check if user has permission
+  const getEnabledKeys = useExportColumnConfigStore((s) => s.getEnabledKeys);
 
   const requiredRoles = ["admin", "teaching_staff"];
   const userRoles = user?.roles?.map((r) => r.role?.name).filter(Boolean) ?? [];
 
   const hasRole = requiredRoles.some((r) => userRoles.includes(r));
 
-  // Don't render if no permission
   if (!hasRole) {
     return null;
   }
 
   const handleExport = () => {
     if (!hasRole || data.length === 0) return;
+
+    const enabledKeys = exportKey ? getEnabledKeys(exportKey) : null;
+
+    const allKeys = Object.keys(data[0] || {});
+    const columnKeys = enabledKeys
+      ? allKeys.filter((k) => enabledKeys.includes(k))
+      : allKeys;
 
     const settings = {
       fileName: filename || "export",
@@ -45,10 +52,7 @@ const ExportAsExcelInternal = <T extends IContent>({
     const formattedData = [
       {
         sheet: filename ?? "Sheet 1",
-        columns: Object.keys(data[0] || {}).map((key) => ({
-          label: key,
-          value: key,
-        })),
+        columns: columnKeys.map((key) => ({ label: key, value: key })),
         content: data,
       },
     ];
@@ -58,11 +62,10 @@ const ExportAsExcelInternal = <T extends IContent>({
 
   return (
     <Button
-      variant="outline"
       onClick={handleExport}
       className={cn(
         data.length === 0 && "pointer-events-none disabled:pointer-events-none",
-        className
+        className,
       )}
       disabled={data.length === 0}>
       <CloudDownloadIcon className="size-5" />
@@ -76,6 +79,6 @@ export const ExportAsExcel = dynamic(
   () => Promise.resolve(ExportAsExcelInternal),
   {
     ssr: false,
-    loading: () => null, // Don't show loading state to avoid layout shift
-  }
+    loading: () => null,
+  },
 ) as typeof ExportAsExcelInternal;

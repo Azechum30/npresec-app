@@ -9,9 +9,9 @@ datasource db {
 }
 
 model User {
-  id                       String     @id @default(cuid())
-  email                    String     @unique
-  username                 String     @unique
+  id                       String      @id @default(cuid())
+  email                    String      @unique
+  username                 String      @unique
   roles                    UserRole[]
   name                     String?
   linkedInUrl              String?
@@ -19,29 +19,26 @@ model User {
   facebookUrl              String?
   instagramUrl             String?
   bio                      String?
-  subscribeToOurNewsLetter Boolean?   @default(false)
+  subscribeToOurNewsLetter Boolean?    @default(false)
   socials                  Json?
-  timezone                 String?    @default("Africa/Accra")
-  dateFormat               String?    @default("DD/MM/YYYY")
-  itemsPerPage             Int?       @default(10)
+  timezone                 String?     @default("Africa/Accra")
+  dateFormat               String?     @default("DD/MM/YYYY")
+  itemsPerPage             Int?        @default(10)
   emailNotifications       Json?
-  notificationFrequency    String?    @default("realtime")
-  theme                    String?    @default("system")
-  compactMode              Boolean    @default(false)
-  showTips                 Boolean    @default(false)
+  notificationFrequency    String?     @default("realtime")
+  theme                    String?     @default("system")
+  compactMode              Boolean     @default(false)
+  showTips                 Boolean     @default(false)
   image                    String?
-  emailVerified            Boolean?   @default(false)
+  emailVerified            Boolean?    @default(false)
   sessions                 Session[]
   student                  Student?
   staff                    Staff?
-  createdAt                DateTime   @default(now())
-  updatedAt                DateTime   @default(now()) @updatedAt
-  // role                     Role?        @relation(fields: [roleId], references: [id])
-
-  accounts Account[]
-
-  twoFactorEnabled Boolean?    @default(false)
-  twofactors       TwoFactor[]
+  createdAt                DateTime    @default(now())
+  updatedAt                DateTime    @default(now()) @updatedAt
+  accounts                 Account[]
+  twoFactorEnabled         Boolean?    @default(false)
+  twofactors               TwoFactor[]
 
   @@index([email, username])
   @@map("users")
@@ -150,7 +147,7 @@ model Staff {
   user                   User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
   classes                Class[]       @relation("ClassStaff")
   courses                Course[]      @relation("CourseStaff")
-  grades                 Grade[] // Grades assigned by this staff member
+  grades                 Grade[]
 
   @@index([employeeId, firstName, lastName, gender])
   @@map("staff")
@@ -257,11 +254,13 @@ model Student {
   currentClass      Class?             @relation(fields: [classId], references: [id])
   department        Department?        @relation(fields: [departmentId], references: [id])
   user              User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  houseId           String?            @unique
-  roomId            String?            @unique
+  houseId           String?
+  roomId            String?
   room              Room?              @relation(fields: [roomId], references: [id])
   house             House?             @relation(fields: [houseId], references: [id])
   promotions        StudentPromotion[]
+  isPaymentAccepted Boolean?           @default(false)
+  payments          Payment[]
 
   @@index([departmentId, currentLevel])
   @@index([firstName, lastName, studentNumber])
@@ -305,8 +304,7 @@ model SemesterSummary {
   remarks       String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, academicYear, semester])
   @@index([studentId, academicYear])
@@ -320,21 +318,19 @@ model Grade {
   staffId        String?
   assessmentType AssessmentType
   score          Float
-  maxScore       Float          @default(100) // Maximum possible score
-  weight         Float?         @default(1.0) // Weight of this assessment (e.g., 0.3 for 30%)
+  maxScore       Float          @default(100)
+  weight         Float?         @default(1.0)
   semester       Semester
-  academicYear   Int // e.g., 2024
-  isExempt       Boolean        @default(false) // For exempted assessments
-  isRetake       Boolean        @default(false) // For retake exams
-  remarks        String? // Staff comments
-  gradedAt       DateTime? // When the grade was assigned
+  academicYear   Int
+  isExempt       Boolean        @default(false)
+  isRetake       Boolean        @default(false)
+  remarks        String?
+  gradedAt       DateTime?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
-
-  // Relations
-  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  staff   Staff?  @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  course         Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student        Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  staff          Staff?         @relation(fields: [staffId], references: [id], onDelete: SetNull)
 
   @@unique([studentId, courseId, assessmentType, semester, academicYear])
   @@index([studentId, academicYear])
@@ -443,12 +439,11 @@ model StudentPromotion {
   toLevel       Level?
   academicYear  Int
   promotedAt    DateTime @default(now())
-  promotedBy    String? // User ID who performed the promotion
-  criteria      Json? // Store promotion criteria details
+  promotedBy    String?
+  criteria      Json?
   forcePromoted Boolean  @default(false)
   notes         String?
-
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId, academicYear])
   @@index([academicYear, fromLevel])
@@ -545,6 +540,7 @@ enum PAYMENT_PROVIDER {
   Paystack
   FlutterWave
   Stripe
+  Cash
 }
 
 enum PAYMENT_STATUS {
@@ -585,27 +581,78 @@ model Admission {
   isFormSubmitted     Boolean            @default(false)
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
-
-  payments  Payment[]
-  documents Document[]
+  deletedAt           DateTime?
+  payments            Payment[]
+  documents           Document[]
 
   @@index([jhsIndexNumber])
   @@map("admissions")
 }
 
 model Payment {
-  id            String           @id @default(cuid())
-  admissionId   String
-  amount        Decimal          @db.Decimal(10, 2)
-  currency      CURRENCY         @default(GHS)
-  transactionId BigInt?          @unique
-  provider      PAYMENT_PROVIDER @default(Paystack)
-  reference     String?          @unique
-  paymentStatus PAYMENT_STATUS   @default(PENDING)
-  metadata      Json?
-  paidAt        DateTime?
-  createdAt     DateTime         @default(now())
-  admission     Admission        @relation(fields: [admissionId], references: [id], onDelete: Cascade)
+  id                               String           @id @default(cuid())
+  admissionId                      String?
+  studentId                        String?
+  amount                           Decimal          @db.Decimal(10, 2)
+  channel                          String?
+  ipAddress                        String?
+  transactionFee                   Decimal          @db.Decimal(10, 2)
+  cardType                         String?
+  bank                             String?
+  brand                            String?
+  countryCode                      String?
+  deletedAt                        DateTime?
+  accountName                      String?
+  ReceiverAccountNumber            String?
+  ReceiverBank                     String?
+  customerName                     String?
+  customerPhoneNumber              String?
+  customerCode                     String?
+  customerEmail                    String?
+  orderId                          String?          @unique
+  RequestedAmount                  Decimal          @default(0.00) @db.Decimal(10, 2)
+  customerInternationalPhoneFormat String?
+  currency                         CURRENCY         @default(GHS)
+  transactionId                    BigInt?          @unique
+  provider                         PAYMENT_PROVIDER @default(Paystack)
+  reference                        String?          @unique
+  paymentStatus                    PAYMENT_STATUS   @default(PENDING)
+  feeId                            String?
+  fee                              Fee?             @relation(fields: [feeId], references: [id], onDelete: Restrict)
+  metadata                         Json?
+  paidAt                           DateTime?
+  student                          Student?         @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  createdAt                        DateTime         @default(now())
+  admission                        Admission?       @relation(fields: [admissionId], references: [id], onDelete: Restrict)
+
+  @@index([orderId, reference, transactionId])
+  @@map("payments")
+}
+
+enum STATUS {
+  OPENED
+  CLOSED
+  LATE_PAYMENT
+}
+
+model Fee {
+  id           String    @id @default(cuid())
+  academicYear String
+  name         String    @unique
+  price        Decimal   @db.Decimal(10, 2)
+  currency     CURRENCY  @default(GHS)
+  count        Int       @default(0)
+  capacity     Int?
+  status       STATUS    @default(CLOSED)
+  deadline     DateTime
+  payments     Payment[]
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([academicYear, name])
+  @@index([academicYear, name])
+  @@map("fees")
 }
 
 model Template {
@@ -615,4 +662,24 @@ model Template {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Setting {
+  id                String  @id @default(cuid())
+  enableEditing     Boolean @default(false)
+  enableDeleting    Boolean @default(false)
+  enableScoresEntry Boolean @default(false)
+  enableDataExports Boolean @default(false)
+
+  @@map("settings")
+}
+
+model ExportColumnConfig {
+  id        String   @id @default(cuid())
+  exportKey String   @unique
+  columns   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("export_column_configs")
 }

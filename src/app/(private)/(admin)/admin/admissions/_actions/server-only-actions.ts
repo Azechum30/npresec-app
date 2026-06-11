@@ -51,26 +51,15 @@ export const createNewStudentAdmissionAction = async (
         CUSTOM_ERRORS.UNIQUE_CONSTRAINTS.code,
       );
 
-    await prisma.$transaction(async (tx) => {
-      const result = await tx.admission.create({
-        data: {
-          ...data,
-          birthDate: new Date(data.birthDate),
-          enrollmentCode: data.enrollmentCode
-            ? data.enrollmentCode.trim()
-            : null,
-        },
-      });
-
-      await tx.payment.create({
-        data: {
-          admissionId: result.id,
-          amount: 51.0,
-          currency: "GHS",
-          paymentStatus: "PENDING",
-        },
-      });
+    const result = await prisma.admission.create({
+      data: {
+        ...data,
+        birthDate: new Date(data.birthDate),
+        enrollmentCode: data.enrollmentCode ? data.enrollmentCode.trim() : null,
+      },
     });
+
+    if (!result) throw new ActionError("Could add student to placement-list");
 
     updateTag("placement-list");
     return { success: true };

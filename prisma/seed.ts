@@ -33,6 +33,9 @@ const resources = [
   "timelines",
   "profile",
   "admissions",
+  "services",
+  "payments",
+  "templates",
 ];
 const actions = ["create", "view", "edit", "delete", "export"];
 

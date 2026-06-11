@@ -46,6 +46,7 @@ const RenderClassesDataTable: React.FC<RenderClassesDataTableProps> = ({
           data={initialState.data}
           transformer={classDataTransformer}
           filename="Classes-list"
+          exportKey="classes"
           onDelete={async (rows) => {
             const ids = rows.map((row) => row.original.id);
             const codes = rows.map((row) => row.original.code);

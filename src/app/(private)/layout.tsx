@@ -1,13 +1,18 @@
 import MainContainer from "@/components/customComponents/MainContainer";
+import { ExportColumnConfigProvider } from "@/components/customComponents/export-column-config-provider";
 import SessionProvider from "@/components/customComponents/SessionProvider";
+import { SetSystemWideActions } from "@/components/customComponents/set-system-wide-actions";
+import SettingsProvider from "@/components/customComponents/settings-provider";
 import Sidebar from "@/components/customComponents/Sidebar";
 import TanstackQueryProvider from "@/components/providers/tanstack-query-provider";
 import { ExtendedSession } from "@/lib/auth-client";
 import { getAuthUser } from "@/lib/get-session";
+import { env } from "@/lib/server-only-actions/validate-env";
 import { Loader } from "lucide-react";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { ReactNode, Suspense } from "react";
+import { getSystemSettings } from "../actions/get-system-settings";
 import { RegisterClientSideBackgroundNotifications } from "./(admin)/admin/users/_hooks/register-client-side-background-notifications";
 
 export default function PrivateRoutesLayout({
@@ -21,6 +26,8 @@ export default function PrivateRoutesLayout({
         <Suspense fallback={<LayoutFallback />}>
           <RenderSessionProvider>
             <Sidebar />
+            <SetSystemWideActions />
+            <ExportColumnConfigProvider />
             <MainContainer>{children}</MainContainer>
           </RenderSessionProvider>
         </Suspense>
@@ -33,6 +40,7 @@ const RenderSessionProvider = async ({ children }: { children: ReactNode }) => {
   await connection();
 
   const user = await getAuthUser();
+  const { settings } = await getSystemSettings();
 
   if (!user) {
     redirect("/sign-in");
@@ -67,6 +75,11 @@ const RenderSessionProvider = async ({ children }: { children: ReactNode }) => {
               "placement-list-upload-failed",
               "placement-list-upload-success",
             ]}
+          />
+          <SettingsProvider
+            cluster={env.NEXT_PUBLIC_PUSHER_CLUSTER}
+            pusherKey={env.NEXT_PUBLIC_PUSHER_APP_KEY}
+            initial={settings}
           />
         </Suspense>
       </>

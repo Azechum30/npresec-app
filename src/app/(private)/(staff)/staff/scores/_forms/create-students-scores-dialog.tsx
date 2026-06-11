@@ -1,4 +1,5 @@
 "use client";
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +11,7 @@ import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { useFetchRequiredData } from "../_hooks/use-fetch-required-data";
 import { useFetchStudentsBaseOnQuery } from "../_hooks/use-fetch-students-base-on-query";
 import { useHandleScoresCreation } from "../_hooks/use-handle-scores-creation";
 import { CreateStudentScoresForm } from "./create-students-scores-form";
@@ -25,6 +27,8 @@ export const CreateStudentsScoresDialog = () => {
     createSuccess,
     createCount,
   } = useHandleScoresCreation();
+
+  const { classes, courses } = useFetchRequiredData();
 
   const prevCreationRef = useRef(false);
   const prevSuccessRef = useRef(false);
@@ -62,25 +66,39 @@ export const CreateStudentsScoresDialog = () => {
 
   return (
     <Dialog
-      open={dialogs["create-students-scores"] === true ? true : false}
+      open={!!dialogs["create-students-scores"]}
       onOpenChange={() => handleClose()}>
-      <DialogContent className={cn("max-h-full w-full md:max-w-5xl")}>
-        <DialogHeader>
-          <DialogTitle>Capture Assessment Scores</DialogTitle>
-          <DialogDescription className="prose max-w-prose">
-            Select the class, course, semester and academic year and filter to
-            get students whose scores are not yet captured for the selected
-            class and course!
-          </DialogDescription>
-        </DialogHeader>
-        <CreateStudentScoresForm
-          onSubmit={handleScoresCreation}
-          students={students}
-          fetchStudentsError={fetchError}
-          isPending={isPending}
-          isSubmitting={isCreating}
-        />
-      </DialogContent>
+      {dialogs["create-students-scores"] && classes && courses ? (
+        <DialogContent className={cn("max-h-full w-full md:max-w-5xl")}>
+          <DialogHeader>
+            <DialogTitle>Capture Assessment Scores</DialogTitle>
+            <DialogDescription className="prose max-w-prose">
+              Select the class, course, semester and academic year and filter to
+              get students whose scores are not yet captured for the selected
+              class and course!
+            </DialogDescription>
+          </DialogHeader>
+          <CreateStudentScoresForm
+            onSubmit={handleScoresCreation}
+            students={students}
+            fetchStudentsError={fetchError}
+            isPending={isPending}
+            isSubmitting={isCreating}
+            classes={classes}
+            courses={courses}
+          />
+        </DialogContent>
+      ) : (
+        <DialogContent>
+          <DialogHeader className="sr-only">
+            <DialogTitle>Loading</DialogTitle>
+            <DialogDescription>Data is loading</DialogDescription>
+          </DialogHeader>
+          <>
+            <ShowLoadingState />
+          </>
+        </DialogContent>
+      )}
     </Dialog>
   );
 };

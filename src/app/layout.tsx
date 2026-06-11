@@ -54,8 +54,11 @@ export default function RootLayout({
           disableTransitionOnChange={true}>
           <Suspense
             fallback={
-              <div className="w-full h-screen flex justify-center items-center ">
+              <div className="w-full h-screen flex justify-center items-center space-x-3">
                 <Loader className="size-16 text-primary animate-spin" />
+                <span className="bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono animate-ping">
+                  Data is loading...
+                </span>
               </div>
             }>
             <RouteTrackingProvider>

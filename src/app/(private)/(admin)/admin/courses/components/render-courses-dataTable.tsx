@@ -43,6 +43,7 @@ const RenderCoursesDataTable: FC<CoursesDataTableProps> = ({
           columns={columns}
           transformer={transformer}
           filename="Courses-list"
+          exportKey="courses"
           onDelete={async (rows) => {
             const ids = rows.map((row) => row.original.id);
             const codes = rows.map((row) => row.original.code);

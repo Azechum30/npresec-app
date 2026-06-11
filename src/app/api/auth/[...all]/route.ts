@@ -37,8 +37,8 @@ const botOptions = {
 
 const rateLimitOptions = {
   mode: process.env.NODE_ENV === "development" ? "DRY_RUN" : "LIVE",
-  interval: "1m",
-  max: 5,
+  interval: "10s",
+  max: 20,
 } satisfies SlidingWindowRateLimitOptions<[]>;
 
 const signupOptions = {

@@ -77,7 +77,8 @@ export const updateAndCreateStudentRecord = async (
           religion: "Christian",
           roleId: role.id,
         },
-      } satisfies singleStudentType;
+        jhsIndexNumber: updated.jhsIndexNumber,
+      } satisfies singleStudentType & { jhsIndexNumber: string };
 
       const existingEmail = await prisma.user.findFirst({
         where: { email: body.data.email },

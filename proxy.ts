@@ -23,6 +23,7 @@ export default async function proxy(request: NextRequest) {
     "/reset-password",
     "/reset-password-notice",
     "/403",
+    "/api/webhook/paystack",
   ]);
 
   const isPublicRoute =

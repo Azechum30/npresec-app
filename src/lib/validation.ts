@@ -445,8 +445,8 @@ export const Semester = ["First", "Second"] as const;
 
 const studentScores = z.object({
   studentId: z.string().min(1, "Student ID is required"),
-  score: z
-    .number()
+  score: z.coerce
+    .number<number>()
     .min(0, "Score must be greater than 0")
     .max(100, "Score must be less than 100"),
 });
@@ -459,17 +459,17 @@ export const GradeSchema = z
     scores: z
       .array(studentScores)
       .nonempty("At least one student score is required"),
-    maxScore: z
-      .number()
+    maxScore: z.coerce
+      .number<number>()
       .min(0, "Max score must be greater than 0")
       .max(100, "Max score must be less than or equal to 100"),
-    weight: z
-      .number()
+    weight: z.coerce
+      .number<number>()
       .min(0, "Weight must be greater than 0")
       .max(1, "Weight must be less than 1"),
     semester: z.enum(Semester),
-    academicYear: z
-      .number()
+    academicYear: z.coerce
+      .number<number>()
       .min(2000, "Academic year must be greater than 2000"),
     remarks: z.string().optional(),
   })
@@ -973,10 +973,12 @@ export type BulkUploadPlacedStudententType = z.infer<
 >;
 
 export const VerifyStudentSchema = z.object({
-  jhsIndexNumber: z
+  studentId: z
     .string({ error: "Student ID is required" })
     .min(12)
-    .max(12, "Student Id must have a maximum of 12 characters"),
+    .max(14, "Student Id must have a maximum of 12 characters"),
+  paymentType: z.string().min(1),
+  serviceName: z.string().nullable(),
 });
 
 export type VerifyStudentType = z.infer<typeof VerifyStudentSchema>;
@@ -990,9 +992,14 @@ export enum CURRENCY {
 export const InitiatePaymentSchema = z.strictObject({
   email: z.email().min(1),
   name: z.string({ error: "A name is required" }).min(1),
-  studentId: z.string().min(12).max(12),
-  amount: z.coerce.number<number>(),
+  studentId: z.string().min(12).max(14),
+  amount: z
+    .union([z.string(), z.coerce.number<number>()])
+    .refine((val) => !isNaN(Number(val)), "Invalid payment amount"),
   currency: z.enum(CURRENCY),
+  phone: z.string().min(10).max(13),
+  serviceTypeId: z.string().min(1),
+  serviceName: z.string().min(1),
 });
 
 export const BioDataSchema = z.object({
@@ -1052,3 +1059,23 @@ export const TemplateSchema = z.object({
 });
 
 export type TemplateType = z.infer<typeof TemplateSchema>;
+
+export enum FEE_PAYMENT_STATUS {
+  OPEN = "OPENED",
+  CLOSED = "CLOSED",
+  LATE_PAYMENT = "LATE_PAYMENT",
+}
+
+export const FeeSchema = z.object({
+  name: z.string().min(1).max(60),
+  academicYear: z.string().min(1).max(9),
+  price: z
+    .union([z.string().min(4), z.coerce.number<number>()])
+    .refine((val) => !isNaN(Number(val)), "Invalid number"),
+  currency: z.enum(["GHS", "USD", "NGN"]),
+  capacity: z.coerce.number<number>().min(100).max(1000),
+  status: z.enum(FEE_PAYMENT_STATUS),
+  deadline: z.coerce.date<Date>(),
+});
+
+export type FeeType = z.infer<typeof FeeSchema>;

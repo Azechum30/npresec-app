@@ -2,6 +2,7 @@ import "server-only";
 
 import arcjet, {
   type BotOptions,
+  detectBot,
   type EmailOptions,
   fixedWindow,
   FixedWindowRateLimitOptions,
@@ -10,6 +11,7 @@ import arcjet, {
   slidingWindow,
   validateEmail,
 } from "@arcjet/next";
+import { headers } from "next/headers";
 import { env } from "./server-only-actions/validate-env";
 
 export const aj = arcjet({
@@ -28,7 +30,7 @@ export const emailOptions = {
 } satisfies EmailOptions;
 
 export const botOptions = {
-  mode: process.env.NODE_ENV === "development" ? "DRY_RUN" : "LIVE",
+  mode: "LIVE",
   allow: ["CATEGORY:SEARCH_ENGINE", "UPTIME_MONITOR"],
 } satisfies BotOptions;
 
@@ -94,6 +96,59 @@ export const bulkRequestRateLimit = async (userId: string) => {
   if (decisions.isDenied()) {
     if (decisions.reason.isRateLimit()) {
       return { error: "Too many upload requests. Please try again later" };
+    }
+  }
+
+  return { success: true };
+};
+
+export const ajPublic = arcjet({
+  key: env.ARCJET_KEY,
+  characteristics: ["src.ip"],
+  rules: [
+    shield({
+      mode: "LIVE",
+    }),
+  ],
+});
+
+export const pubArcjectRateLimit = async (): Promise<{
+  error?: string;
+  success?: boolean;
+}> => {
+  const rqh = await headers();
+  const req = await request();
+
+  const xf = rqh.get("x-forwarded-for") ?? "127.0.0.1";
+  const ipAddress = xf.split(",")[0];
+
+  const arc = ajPublic.withRule(fixedWindow(rateLimitOptions));
+
+  const decisions = await arc.protect(req, {
+    "src.ip": ipAddress,
+  });
+
+  if (decisions.isDenied() && decisions.reason.isRateLimit()) {
+    return { error: "Too many request. Please try again later!" };
+  }
+
+  return { success: true };
+};
+
+export const pubBotProtection = async () => {
+  const rqh = await headers();
+  const req = await request();
+
+  const xf = rqh.get("x-forwarded-for") ?? "127.0.0.1";
+  const ip = xf.split(",")[0];
+
+  const arc = ajPublic.withRule(detectBot(botOptions));
+  const decisions = await arc.protect(req, { "src.ip": ip });
+
+  if (decisions.isDenied()) {
+    console.log(decisions);
+    if (decisions.reason.isBot()) {
+      return { error: "Bots are not allowed here." };
     }
   }
 

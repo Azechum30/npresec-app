@@ -6,8 +6,6 @@ import { RenderChangePasswordModal } from "./_components/render-change-password-
 import { RenderSecuritySettings } from "./_components/render-security-setting";
 import { RenderSettingsForm } from "./_components/render-settings-form";
 
-// export const dynamic = "force-dynamic";
-
 export default function ProfilePage() {
   return (
     <Card>

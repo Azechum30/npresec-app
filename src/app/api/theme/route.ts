@@ -1,7 +1,6 @@
-"use server";
-import { NextRequest, NextResponse } from "next/server";
-import { getUserWithPermissions } from "@/utils/get-user-with-permission";
 import { prisma } from "@/lib/prisma";
+import { getUserWithPermissions } from "@/utils/get-user-with-permission";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,6 +24,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to update theme:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

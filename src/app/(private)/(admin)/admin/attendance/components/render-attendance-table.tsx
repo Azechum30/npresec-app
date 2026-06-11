@@ -120,6 +120,7 @@ export const RenderAttendanceTable = ({
         columns={columns}
         data={filterAttendance}
         transformer={attendanceTransformer}
+        exportKey="attendance"
         filename={
           classId
             ? `Attendance for ${promise.data.filter((value) => value.id === classId)[0].name}`

@@ -50,7 +50,7 @@ type Props<T extends BaseMetric> = {
 export const RealtimeMetricsDashboard = <T extends BaseMetric>({
   data,
   title = "Student Performance Metrics",
-  description = "Track class metrics by timeframe",
+  description = "Track class metrics",
   unitLabel = "%",
   kpiLabel = "Cumulative Total",
   yAxisDomain = [0, 100],
@@ -95,7 +95,7 @@ export const RealtimeMetricsDashboard = <T extends BaseMetric>({
   );
 
   return (
-    <Card className="dark:bg-accent">
+    <Card className="dark:bg-card">
       <CardHeader className="border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <CardTitle className="text-lg font-bold">{title}</CardTitle>

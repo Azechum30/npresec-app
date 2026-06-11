@@ -128,7 +128,7 @@ export default function SelectWithLabel({
 
                       return (
                         <CommandItem
-                          className="hover:bg-secondary hover:cursor-pointer"
+                          className="hover:bg-muted-foreground/35 hover:cursor-pointer"
                           key={value}
                           value={label} // Search matches against label
                           onSelect={() => {

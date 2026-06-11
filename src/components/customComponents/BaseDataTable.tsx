@@ -38,7 +38,7 @@ export const BaseDataTable = <TData, TValue>({
           {table.getHeaderGroups().map((headerGroups) => (
             <TableRow
               key={headerGroups.id}
-              className="bg-gradient-to-r from-secondary/15 to-primary/15">
+              className="bg-linear-to-r from-secondary/15 to-primary/15">
               {headerGroups.headers.map((header) => (
                 <TableHead key={header.id}>
                   {flexRender(

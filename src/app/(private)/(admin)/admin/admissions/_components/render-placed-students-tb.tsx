@@ -64,6 +64,7 @@ export const RenderPlacedStudentsTb = ({ data }: Props) => {
               columns={registeredColumns}
               transformer={admittedTransformer}
               filename="admitted-list"
+              exportKey="admitted-list"
               onDelete={async (rows) => {
                 const ids = rows.map((row) => row.original.id);
                 await handleBulkPlacementDelete(
@@ -78,6 +79,7 @@ export const RenderPlacedStudentsTb = ({ data }: Props) => {
               columns={columns}
               transformer={placementTransformer}
               filename="placement-list"
+              exportKey="placement-list"
               showImportButton={true}
               onDelete={async (rows) => {
                 const ids = rows.map((row) => row.original.id);

@@ -4,7 +4,6 @@ import { NextRequest } from "next/server";
 import { verifySignatureAppRouter } from "@upstash/qstash/dist/nextjs";
 
 const handler = async (req: NextRequest) => {
-  console.log("Cleanup request received");
   try {
     const { userIds, employeeIds } = (await req.json()) as {
       userIds: string[];

@@ -63,6 +63,7 @@ export const RenderStaffPersonalizedDashboard = ({
                     ? "stable"
                     : "down"
               }
+              className="dark:bg-card shadow-lg border-t-4  md:border-l-4 md:border-t-0  border-primary "
             />
             <MetricCard
               title="Classes"
@@ -76,6 +77,7 @@ export const RenderStaffPersonalizedDashboard = ({
                     ? "stable"
                     : "down"
               }
+              className="dark:bg-card shadow-lg border-t-4  md:border-l-4 md:border-t-0  border-destructive "
             />
             <MetricCard
               title="Courses"
@@ -89,6 +91,7 @@ export const RenderStaffPersonalizedDashboard = ({
                     ? "stable"
                     : "down"
               }
+              className="dark:bg-card shadow-lg border-t-4  md:border-l-4 md:border-t-0  border-primary/50 "
             />
           </div>
           <div className="flex flex-col md:flex-row gap-4">

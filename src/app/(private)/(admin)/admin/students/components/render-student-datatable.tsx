@@ -41,6 +41,7 @@ export const StudentDataTable: FC<StudentDataTableProps> = ({
           data={initialState.students}
           transformer={transformer}
           filename="Students-list"
+          exportKey="students"
           onDelete={async (rows) => {
             const ids = rows.map((row) => row.original.id);
             const stIds = rows.map((row) => row.original.studentNumber);

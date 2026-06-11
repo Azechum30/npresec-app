@@ -9,10 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
+import { useSystemWideActionsStore } from "@/hooks/use-system-wide-actions-store";
 import { Row } from "@tanstack/react-table";
 import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "./SessionProvider";
 import { useConfirmDelete } from "./useConfirmDelete";
 
 type GenericActionsProps<T extends { id: string }> = {
@@ -34,53 +36,132 @@ export const GenericActions = <T extends { id: string }>({
   const { onOpen } = useGenericDialog();
   const { ConfirmDeleteComponent, confirmDelete } = useConfirmDelete();
 
+  const user = useAuth();
+  const { settings } = useSystemWideActionsStore();
+  const userRoles =
+    user?.roles?.flatMap((r) => r.role?.name).filter((r) => r !== undefined) ??
+    [];
+
   const { original } = row;
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="hover:cursor-pointer">
-            <MoreHorizontal className="size-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuLabel className="text-xs">Actions</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="hover:cursor-pointer">
-            {pathname === "students" ? (
-              <Link href={`/admin/students/edit/${original.id}`}>
-                <span className="flex items-center gap-1">
+  if (
+    !userRoles.includes("admin") &&
+    (settings?.enableDeleting || settings?.enableEditing)
+  ) {
+    return (
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:cursor-pointer">
+              <MoreHorizontal className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel className="text-xs">Actions</DropdownMenuLabel>
+            {settings.enableEditing && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="hover:cursor-pointer">
+                  {pathname === "students" ? (
+                    <Link href={`/admin/students/edit/${original.id}`}>
+                      <span className="flex items-center gap-1">
+                        <Edit className="size-5 text-blue-500" />
+                        Edit
+                      </span>
+                    </Link>
+                  ) : (
+                    <span
+                      className="flex items-center gap-1 w-full"
+                      onClick={() => {
+                        onOpen(dialogId as string, row.original.id);
+                      }}>
+                      <Edit className="size-5 text-blue-500" />
+                      Edit
+                    </span>
+                  )}
+                </DropdownMenuItem>
+              </>
+            )}
+            {settings.enableDeleting && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="hover:cursor-pointer"
+                  onClick={async () => {
+                    const ok = await confirmDelete();
+                    if (ok) {
+                      await onDelete(
+                        original.id,
+                        String(original[secondaryKey]),
+                      );
+                    }
+                  }}>
+                  <Trash2 className="size-5 text-destructive" />
+                  Delete
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <ConfirmDeleteComponent />
+        {isPending && <LoadingState />}
+      </>
+    );
+  } else if (userRoles.includes("admin")) {
+    return (
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:cursor-pointer">
+              <MoreHorizontal className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel className="text-xs">Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="hover:cursor-pointer">
+              {pathname === "students" ? (
+                <Link href={`/admin/students/edit/${original.id}`}>
+                  <span className="flex items-center gap-1">
+                    <Edit className="size-5 text-blue-500" />
+                    Edit
+                  </span>
+                </Link>
+              ) : (
+                <span
+                  className="flex items-center gap-1 w-full"
+                  onClick={() => {
+                    onOpen(dialogId as string, row.original.id);
+                  }}>
                   <Edit className="size-5 text-blue-500" />
                   Edit
                 </span>
-              </Link>
-            ) : (
-              <span
-                className="flex items-center gap-1 w-full"
-                onClick={() => {
-                  onOpen(dialogId as string, row.original.id);
-                }}>
-                <Edit className="size-5 text-blue-500" />
-                Edit
-              </span>
-            )}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="hover:cursor-pointer"
-            onClick={async () => {
-              const ok = await confirmDelete();
-              if (ok) {
-                await onDelete(original.id, String(original[secondaryKey]));
-              }
-            }}>
-            <Trash2 className="size-5 text-destructive" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <ConfirmDeleteComponent />
-      {isPending && <LoadingState />}
-    </>
-  );
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="hover:cursor-pointer"
+              onClick={async () => {
+                const ok = await confirmDelete();
+                if (ok) {
+                  await onDelete(original.id, String(original[secondaryKey]));
+                }
+              }}>
+              <Trash2 className="size-5 text-destructive" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <ConfirmDeleteComponent />
+        {isPending && <LoadingState />}
+      </>
+    );
+  }
+
+  return null;
 };

@@ -46,19 +46,8 @@ export const { POST } = serve<{
 
             if (existing) return;
 
-            await prisma.$transaction(async (tx) => {
-              const result = await tx.admission.create({
-                data: student,
-              });
-
-              await tx.payment.create({
-                data: {
-                  admissionId: result.id,
-                  amount: 51.0,
-                  paymentStatus: "PENDING",
-                  currency: "GHS",
-                },
-              });
+            await prisma.admission.create({
+              data: student,
             });
           }),
         );

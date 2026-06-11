@@ -1,6 +1,7 @@
 "use client";
 
 import { updateThemeAction } from "@/app/(private)/profile/_actions/update-theme-action";
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import {
   Check,
   Key,
@@ -9,8 +10,10 @@ import {
   Monitor,
   Moon,
   Settings,
+  Settings2,
   Shield,
   Sun,
+  Table2,
   UsersRoundIcon,
 } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -44,6 +47,7 @@ export default function UserButton() {
   const hasRole = userRoleNames.includes(requiredRole);
 
   const { setTheme, theme } = useTheme();
+  const { onOpen, id } = useGenericDialog();
 
   const handleThemeChange = (newTheme: "system" | "light" | "dark") => {
     setTheme(newTheme);
@@ -77,7 +81,7 @@ export default function UserButton() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" alignOffset={-150}>
+      <DropdownMenuContent align="center">
         <Link
           href={`/profile`}
           className="w-full flex items-center space-x-2 flex-nowrap">
@@ -173,6 +177,22 @@ export default function UserButton() {
                         <Key className="size-4 mr-2" />
                         Manage Permissions
                       </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="hover:cursor-pointer hover:bg-accent"
+                      onClick={() =>
+                        onOpen("open-system-wide-actions-setting")
+                      }>
+                      <Settings2 className="size-4" />
+                      System Actions
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="hover:cursor-pointer hover:bg-accent"
+                      onClick={() => onOpen("export-column-config")}>
+                      <Table2 className="size-4" />
+                      Export Column Settings
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>
