@@ -134,7 +134,9 @@ export default function DashboardContent({
   const classChartData = data.classDistribution
     .map((cls) => ({
       name:
-        cls.name.split(" ")[0].charAt(0).toUpperCase() + cls.name.split("-")[1],
+        cls.name.split(" ")[0].charAt(0).toUpperCase() +
+        cls.name.split(" ")[1].charAt(0).toUpperCase() +
+        cls.name.split("-")[1].toUpperCase(),
       students: cls.studentCount,
     }))
     .filter((cls) => cls.students > 0);
@@ -282,9 +284,9 @@ export default function DashboardContent({
         {/* Department Distribution Chart */}
         <Card className="md:col-span-4 shadow-lg dark:bg-card ">
           <CardHeader>
-            <CardTitle className="text-lg">Departmental Enrollment</CardTitle>
+            <CardTitle className="text-lg">Learning Area Enrollment</CardTitle>
             <CardDescription className="bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
-              Breakdown of students per academic department
+              Breakdown of students per learning area
             </CardDescription>
           </CardHeader>
           <CardContent>

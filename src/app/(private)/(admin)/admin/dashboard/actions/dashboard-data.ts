@@ -1,8 +1,8 @@
 "use server";
+
 import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { getError } from "@/utils/get-error";
-
 import * as Sentry from "@sentry/nextjs";
 
 export type DashboardData = {
@@ -103,12 +103,13 @@ export async function getDashboardData() {
       prisma.student.findMany({
         take: 5,
         orderBy: {
-          dateEnrolled: "desc",
+          createdAt: "desc",
         },
         select: {
           id: true,
           firstName: true,
           lastName: true,
+          middleName: true,
           studentNumber: true,
           dateEnrolled: true,
           currentLevel: true,
@@ -218,6 +219,7 @@ export async function getDashboardData() {
       recentStudents: recentStudents.map((student) => ({
         id: student.id,
         firstName: student.firstName,
+        middleName: student.middleName,
         lastName: student.lastName,
         studentNumber: student.studentNumber,
         departmentName: student.department?.name,
