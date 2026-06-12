@@ -70,7 +70,7 @@ export type BulkUploadDepartmentType = z.infer<
 /* --------------------------- Teacher Schema and Types ------------------------ */
 const requiredString = z
   .string({ error: "This field is required!" })
-  .regex(/^[a-zA-Z\s]+$/, "This field can only accept alpahbets!");
+  .regex(/^[a-zA-Z-\s]+$/, "This field can only accept alpahbets!");
 const optionalString = optionalField(z.string().nullish());
 const requiredDate = z.union([z.date(), z.string()]);
 const optionalDate = optionalField(z.union([z.date(), z.string()]).nullish());
