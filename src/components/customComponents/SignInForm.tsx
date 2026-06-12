@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import { useRouteTracking } from "@/components/providers/RouteTrackingProvider";
@@ -5,7 +6,7 @@ import {
   sendVerificationEmailAction,
   signInAction,
 } from "@/lib/server-only-actions/authenticate";
-import { SignInSchema, SignInType } from "@/lib/validation";
+import { SignInSchema, type SignInType } from "@/lib/validation";
 import { useGSAP } from "@gsap/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import gsap from "gsap";
@@ -20,7 +21,7 @@ import {
   Shield,
   Sparkles,
 } from "lucide-react";
-import { Route } from "next";
+import type { Route } from "next";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState, useTransition } from "react";
@@ -405,10 +406,7 @@ export default function SignInForm() {
 
               {/* Submit Button */}
               <div className="signin-button space-y-4">
-                <div
-                  className="relative"
-                  onMouseEnter={() => setHoveredElement("login")}
-                  onMouseLeave={() => setHoveredElement(null)}>
+                <div className="relative">
                   <LoadingButton
                     loading={isPending || isRedirecting}
                     className="w-full relative overflow-hidden bg-linear-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 h-12 font-semibold">

@@ -1,25 +1,26 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
+
 "use server";
-import { auth } from "@/lib/auth";
+import { auth, type User } from "@/lib/auth";
+import { priorityRoles, type UserRole } from "@/lib/types";
+import { getAuthRedirectPathWithLogging } from "@/utils/auth-redirects";
 import { rateLimit } from "@/utils/rateLimit";
 import * as Sentry from "@sentry/nextjs";
+import { BetterAuthError } from "better-auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import "server-only";
+import { isUserOlderThan36Days } from "../compare-user-created-date-with-current-date";
 import { prisma } from "../prisma";
 import {
   ResetPasswordSchema,
-  ResetPasswordType,
+  type ResetPasswordType,
   SignInSchema,
-  SignInType,
+  type SignInType,
   SignUpSchema,
-  SignUpType,
+  type SignUpType,
 } from "../validation";
-
-import { User } from "@/lib/auth";
-import { priorityRoles, UserRole } from "@/lib/types";
-import { getAuthRedirectPathWithLogging } from "@/utils/auth-redirects";
-import { BetterAuthError } from "better-auth";
 
 export const signUpAction = async (data: SignUpType) => {
   try {
@@ -154,7 +155,9 @@ export const signInAction = async (data: SignInType, callbackUrl?: string) => {
     if (user) {
       const userRole = getUserRole(user as User);
 
-      if (!user.twoFactorEnabled) {
+      const olderThan36Days = isUserOlderThan36Days(user.createdAt);
+
+      if (!user.twoFactorEnabled && olderThan36Days) {
         return {
           success: true,
           user: user as User,
@@ -211,7 +214,7 @@ export const resetPasswordAction = async (values: ResetPasswordType) => {
 
     const parsed = ResetPasswordSchema.safeParse(values);
     if (!parsed.success) {
-      return { errors: parsed.error.flatten().fieldErrors };
+      return { errors: parsed.error.message };
     }
 
     const { password, token } = parsed.data;

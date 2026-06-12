@@ -345,6 +345,9 @@ importers:
       tippy.js:
         specifier: ^6.3.7
         version: 6.3.7
+      ua-parser:
+        specifier: ^0.3.5
+        version: 0.3.5
       use-debounce:
         specifier: ^10.0.6
         version: 10.1.0(react@19.2.4)
@@ -7061,6 +7064,9 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  ua-parser@0.3.5:
+    resolution: {integrity: sha512-M7V4rRbrM7qyKgUzdJze9Rm4YJJPzQPfhTsJAtrTUSPU1ELgmxt6a6Dc4pOH20BTWLhbZqoTiAaeH4u18Bm+7Q==}
+
   uc.micro@2.1.0:
     resolution: {integrity: sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A==}
 
@@ -7295,6 +7301,9 @@ packages:
 
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
+
+  yamlparser@0.0.2:
+    resolution: {integrity: sha512-Cou9FCGblEENtn1/8La5wkDM/ISMh2bzu5Wh7dYzCzA0o9jD4YGyLkUJxe84oPBGoB92f+Oy4ZjVhA8S0C2wlQ==}
 
   yargs-parser@18.1.3:
     resolution: {integrity: sha512-o50j0JeToy/4K6OZcaQmW6lyXXKhq7csREXcDwk2omFPJEwUNOVtJKvmDr9EI1fAJZUyZcRF7kxGBWmRXudrCQ==}
@@ -14516,6 +14525,10 @@ snapshots:
 
   typescript@5.9.3: {}
 
+  ua-parser@0.3.5:
+    dependencies:
+      yamlparser: 0.0.2
+
   uc.micro@2.1.0: {}
 
   unbox-primitive@1.1.0:
@@ -14789,6 +14802,8 @@ snapshots:
   y18n@5.0.8: {}
 
   yallist@3.1.1: {}
+
+  yamlparser@0.0.2: {}
 
   yargs-parser@18.1.3:
     dependencies:

@@ -14,16 +14,8 @@ export default function ProfilePage() {
       </CardHeader>
       <CardContent>
         <ProfileTab
-          bio={
-            <>
-              <RenderBioForm />
-            </>
-          }
-          settings={
-            <>
-              <RenderSettingsForm />
-            </>
-          }
+          bio={<RenderBioForm />}
+          settings={<RenderSettingsForm />}
           security={
             <>
               <RenderSecuritySettings />

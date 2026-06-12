@@ -11,6 +11,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { DisableOrEnable2FA } from "./enable-or-disable-2fa";
 import { UserAccounts } from "./user-accounts";
 import { UserSessions } from "./user-sessions";
 
@@ -41,12 +42,14 @@ export const RenderSecuritySettings = () => {
             <RenderUserAccounts />
           </Suspense>
         </fieldset>
-        <fieldset className="border rounded-lg p-4">
-          <legend className="text-base font-bold p-2">Your Sessions</legend>
+        <fieldset className="border rounded-lg p-4 sapce-y-8">
+          <legend className="text-base font-bold p-2">Sessions & 2FA</legend>
 
           <Suspense fallback={<>Loading...</>}>
             <RenderUserSessions />
           </Suspense>
+
+          <DisableOrEnable2FA />
         </fieldset>
       </CardContent>
     </Card>

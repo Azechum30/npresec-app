@@ -1,5 +1,11 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
+import { columns } from "@/app/(private)/(admin)/admin/dashboard/components/DashboardColumns";
+import { BaseDataTable } from "@/components/customComponents/BaseDataTable";
+import LoadingState from "@/components/customComponents/Loading";
+import { MetricCard } from "@/components/customComponents/metrics-component";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,6 +15,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  type ChartConfig,
+  ChartContainer,
+  ChartLegend,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import {
   BookOpen,
   GraduationCap,
   Home,
@@ -16,34 +29,23 @@ import {
   TrendingUp,
   UserPen,
 } from "lucide-react";
-import { DashboardData } from "../actions/dashboard-data";
-
-import { columns } from "@/app/(private)/(admin)/admin/dashboard/components/DashboardColumns";
-import { BaseDataTable } from "@/components/customComponents/BaseDataTable";
-import LoadingState from "@/components/customComponents/Loading";
-import { MetricCard } from "@/components/customComponents/metrics-component";
-import { Button } from "@/components/ui/button";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
+  type BarShapeProps,
   CartesianGrid,
-  Cell,
   Label,
+  LabelList,
+  type LabelProps,
   Line,
   LineChart,
   Pie,
   PieChart,
   XAxis,
 } from "recharts";
+import type { DashboardData } from "../actions/dashboard-data";
 
 const chartOptions = {
   students: {
@@ -60,12 +62,50 @@ const chartOptions = {
   },
 } satisfies ChartConfig;
 
+const COLORS = [
+  "var(--chart-1)", // Primary Copper/Orange
+  "var(--chart-2)", // Vibrant Purple/Blue
+  "var(--chart-5)", // Secondary Copper
+  "var(--chart-4)", // Deep Muted Purple
+  "var(--chart-3)", // Accent Gray/Neutral
+];
+
+const getPath = (x: number, y: number, width: number, height: number) => {
+  return `M${x},${y + height}C${x + width / 3},${y + height} ${x + width / 2},${y + height / 3}
+  ${x + width / 2}, ${y}
+  C${x + width / 2},${y + height / 3} ${x + (2 * width) / 3},${y + height} ${x + width}, ${y + height}
+  Z`;
+};
+
+const TriangleBar = (props: BarShapeProps) => {
+  const { x, y, width, height, index } = props;
+
+  const color = COLORS[index % COLORS.length];
+
+  return (
+    <path
+      strokeWidth={props.isActive ? 5 : 0}
+      d={getPath(Number(x), Number(y), Number(width), Number(height))}
+      stroke={color}
+      fill={color}
+      style={{
+        transition: "stroke-width 0.3s ease-out",
+      }}
+    />
+  );
+};
+
+const CustomColorLabel = (props: LabelProps) => {
+  const fill = COLORS[(props.index ?? 0) % COLORS.length];
+  return <Label {...props} fill={fill} />;
+};
+
 export default function DashboardContent({
   promise,
 }: {
   promise: DashboardData;
 }) {
-  const [data, setData] = useState<DashboardData>(() => promise);
+  const [data, __] = useState<DashboardData>(() => promise);
   const genderTotals = useMemo(() => {
     return [
       (data?.counts.studentMales as number) ?? 0,
@@ -86,14 +126,6 @@ export default function DashboardContent({
     name: cls.name,
     students: cls.studentCount,
   }));
-
-  const COLORS = [
-    "var(--chart-1)", // Primary Copper/Orange
-    "var(--chart-2)", // Vibrant Purple/Blue
-    "var(--chart-5)", // Secondary Copper
-    "var(--chart-4)", // Deep Muted Purple
-    "var(--chart-3)", // Accent Gray/Neutral
-  ];
 
   const genderData = [
     {
@@ -198,6 +230,7 @@ export default function DashboardContent({
           description="Total enrolled"
           icon={<GraduationCap />}
           trend="up"
+          className="border-b-4 sm:border-l-4 sm:border-b-0 border-primary"
         />
         <MetricCard
           title="Teachers"
@@ -205,6 +238,7 @@ export default function DashboardContent({
           description="Active staff"
           icon={<UserPen />}
           trend="stable"
+          className="border-b-4 sm:border-l-4 sm:border-b-0 border-primary/80"
         />
         <MetricCard
           title="Departments"
@@ -212,6 +246,7 @@ export default function DashboardContent({
           description="Academic units"
           icon={<Home />}
           trend="up"
+          className="border-b-4 sm:border-l-4 sm:border-b-0 border-primary/60"
         />
         <MetricCard
           title="Classes"
@@ -219,6 +254,7 @@ export default function DashboardContent({
           description="Active rooms"
           icon={<LucideBuilding2 />}
           trend="down"
+          className="border-b-4 sm:border-l-4 sm:border-b-0 border-primary/40"
         />
         <MetricCard
           title="Courses"
@@ -226,12 +262,13 @@ export default function DashboardContent({
           description="Catalog size"
           icon={<BookOpen />}
           trend="up"
+          className="border-b-4 sm:border-l-4 sm:border-b-0 border-primary/20"
         />
       </div>
 
       <div className="grid gap-6 md:grid-cols-7">
         {/* Department Distribution Chart */}
-        <Card className="md:col-span-4 shadow-lg dark:bg-accent ">
+        <Card className="md:col-span-4 shadow-lg dark:bg-card ">
           <CardHeader>
             <CardTitle className="text-lg">Departmental Enrollment</CardTitle>
             <CardDescription className="bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
@@ -255,12 +292,15 @@ export default function DashboardContent({
                   tick={{ fontSize: 12 }}
                 />
                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                <Bar dataKey="students" radius={[6, 6, 0, 0]} barSize={40}>
+                <Bar
+                  dataKey="students"
+                  radius={[6, 6, 0, 0]}
+                  barSize={40}
+                  shape={TriangleBar}>
                   {departmentChartData.map((_, i) => (
-                    <Cell
-                      key={`cell-${i}`}
-                      fill={COLORS[i % COLORS.length]}
-                      fillOpacity={0.8}
+                    <LabelList
+                      key={`cell-${i.toFixed(2)}`}
+                      content={CustomColorLabel}
                     />
                   ))}
                 </Bar>
@@ -271,7 +311,7 @@ export default function DashboardContent({
         </Card>
 
         {/* Class Distribution Chart */}
-        <Card className="md:col-span-3 shadow-lg dark:bg-accent">
+        <Card className="md:col-span-3 shadow-lg dark:bg-card">
           <CardHeader>
             <CardTitle className="text-lg">Gender Balance</CardTitle>
             <CardDescription className="bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
@@ -326,7 +366,7 @@ export default function DashboardContent({
       </div>
 
       <div className="grid gap-6 md:grid-cols-7">
-        <Card className="md:col-span-3 shadow-lg dark:bg-accent">
+        <Card className="md:col-span-3 shadow-lg dark:bg-card">
           <CardHeader>
             <CardTitle className="text-lg">
               Staff Distribution by Gender
@@ -392,7 +432,7 @@ export default function DashboardContent({
         </Card>
         {/* Year Group Distribution */}
 
-        <Card className="md:col-span-4 shadow-lg dark:bg-accent">
+        <Card className="md:col-span-4 shadow-lg dark:bg-card">
           <CardHeader>
             <CardTitle className="text-lg">
               Year Group Gender Distribution
@@ -455,7 +495,7 @@ export default function DashboardContent({
 
       <div className="grid gap-6 md:grid-cols-7">
         {/* Department Distribution Chart */}
-        <Card className="md:col-span-4 shadow-lg dark:bg-accent ">
+        <Card className="md:col-span-4 shadow-lg dark:bg-card ">
           <CardHeader>
             <CardTitle className="text-lg">Class Enrollment</CardTitle>
             <CardDescription className="bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono">
@@ -479,12 +519,15 @@ export default function DashboardContent({
                   tick={{ fontSize: 12 }}
                 />
                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                <Bar dataKey="students" radius={[6, 6, 0, 0]} barSize={40}>
+                <Bar
+                  dataKey="students"
+                  radius={[6, 6, 0, 0]}
+                  barSize={40}
+                  shape={TriangleBar}>
                   {departmentChartData.map((_, i) => (
-                    <Cell
-                      key={`cell-${i}`}
-                      fill={COLORS[i % COLORS.length]}
-                      fillOpacity={0.8}
+                    <LabelList
+                      key={`cell-${i.toFixed(2)}`}
+                      content={CustomColorLabel}
                     />
                   ))}
                 </Bar>
@@ -495,7 +538,7 @@ export default function DashboardContent({
         </Card>
 
         {/* Class Distribution Chart */}
-        <Card className="md:col-span-3 shadow-lg dark:bg-accent">
+        <Card className="md:col-span-3 shadow-lg dark:bg-card">
           <CardHeader>
             <CardTitle className="text-lg">
               Teaching Staff Distribution
@@ -559,7 +602,7 @@ export default function DashboardContent({
       </div>
 
       {/* Recent Students */}
-      <Card className="overflow-auto shadow-lg dark:bg-accent">
+      <Card className="overflow-auto shadow-lg dark:bg-card">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
           <div>
             <CardTitle className="text-lg">
@@ -581,7 +624,7 @@ export default function DashboardContent({
           <BaseDataTable
             columns={columns}
             data={data.recentStudents}
-            className="dark:bg-accent"
+            className="dark:bg-card"
           />
         </CardContent>
       </Card>

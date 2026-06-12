@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use server";
 
 import * as Sentry from "@sentry/nextjs";
@@ -8,10 +9,10 @@ import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/server-only-actions/validate-env";
 import { workflowClient } from "@/lib/server-only-actions/workflow";
 import {
-  AssesessmentSchema,
+  type AssesessmentSchema,
   BulkStudentsScoresSchema,
-  BulkStudentsScoresType,
-  Semester,
+  type BulkStudentsScoresType,
+  type Semester,
 } from "@/lib/validation";
 export const bulkUploadStudentsScores = async (values: unknown) => {
   try {
@@ -29,9 +30,9 @@ export const bulkUploadStudentsScores = async (values: unknown) => {
           grade.assessmentType as (typeof AssesessmentSchema)[number],
         classId: grade.classId as string,
         courseId: grade.courseId as string,
-        maxScore: parseInt(grade.maxScore.toString()),
-        score: parseInt(grade.score.toString()),
-        academicYear: parseInt(grade.academicYear.toString()),
+        maxScore: parseInt(grade.maxScore.toString(), 10),
+        score: parseInt(grade.score.toString(), 10),
+        academicYear: parseInt(grade.academicYear.toString(), 10),
         semester: grade.semester as (typeof Semester)[number],
       }),
     );
@@ -179,7 +180,7 @@ export const bulkUploadStudentsScores = async (values: unknown) => {
       };
     }
 
-    timelines.map((timeline) => {
+    timelines.forEach((timeline) => {
       if (timeline.startDate > now) {
         errors.push(
           `The timeline set for ${timeline.assessmentType} will open on ${timeline.startDate.toLocaleDateString()}.`,
@@ -197,13 +198,17 @@ export const bulkUploadStudentsScores = async (values: unknown) => {
       return { error: errors.join("\n") };
     }
 
-    const DuplicateMap = new Map(
-      existingScores.map((grade) => [grade.studentId, grade]),
+    const StudentCourseMap = new Map(
+      existingScores.map((grade) => [
+        `${grade.studentId}-${grade.courseId}-${grade.assessmentType}-${grade.semester}-${grade.academicYear}`,
+        grade,
+      ]),
     );
 
-    const finalFilteredData = transformedData.filter(
-      (grade) => !DuplicateMap.has(grade.studentId.id),
-    );
+    const finalFilteredData = transformedData.filter((grade) => {
+      const key = `${grade.studentId.id}-${grade.courseId.id}-${grade.assessmentType}-${grade.semester}-${grade.academicYear}`;
+      return !StudentCourseMap.has(key);
+    });
 
     if (finalFilteredData.length > 0) {
       await workflowClient.trigger({

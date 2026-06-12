@@ -272,10 +272,7 @@ const ResetPasswordForm = () => {
                 />
               </div>
               <div className="reset-password-button space-y-4">
-                <div
-                  className="relative"
-                  onMouseOver={() => setHoveredElement("reset")}
-                  onMouseLeave={() => setHoveredElement(null)}>
+                <div className="relative">
                   <LoadingButton
                     loading={false}
                     className="relative w-full bg-linear-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 h-12 font-semibold overflow-hidden">
