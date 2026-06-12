@@ -187,14 +187,6 @@ const ResetPasswordForm = () => {
 
       if (res?.error) {
         toast.error(res.error);
-      } else if (res?.errors) {
-        const errors = res.errors;
-        if ("password" in errors) {
-          form.setError("password", {
-            type: "validate",
-            message: errors.password?.join(",") as string,
-          });
-        }
       } else {
         setIsRedirecting(true);
         toast.success("Password reset successfully");

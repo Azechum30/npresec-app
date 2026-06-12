@@ -213,9 +213,7 @@ export const resetPasswordAction = async (values: ResetPasswordType) => {
     }
 
     const parsed = ResetPasswordSchema.safeParse(values);
-    if (!parsed.success) {
-      return { errors: parsed.error.message };
-    }
+    if (!parsed.success) throw parsed.error;
 
     const { password, token } = parsed.data;
     if (!token) {
