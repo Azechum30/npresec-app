@@ -117,15 +117,27 @@ export default function DashboardContent({
     return <LoadingState />;
   }
 
-  const departmentChartData = data.departmentDistribution.map((dept) => ({
-    name: dept.name,
-    students: dept.studentCount,
-  }));
+  const departmentChartData = data.departmentDistribution
+    .map((dept) => ({
+      name: dept.name,
+      students: dept.studentCount,
+    }))
+    .filter(
+      (dept) =>
+        dept.students > 0 &&
+        dept.name !== "ICT" &&
+        dept.name !== "Mathematics" &&
+        dept.name !== "Languages" &&
+        dept.name !== "Science",
+    );
 
-  const classChartData = data.classDistribution.map((cls) => ({
-    name: cls.name,
-    students: cls.studentCount,
-  }));
+  const classChartData = data.classDistribution
+    .map((cls) => ({
+      name:
+        cls.name.split(" ")[0].charAt(0).toUpperCase() + cls.name.split("-")[1],
+      students: cls.studentCount,
+    }))
+    .filter((cls) => cls.students > 0);
 
   const genderData = [
     {
@@ -175,22 +187,22 @@ export default function DashboardContent({
 
   const staffDistributionPerDept = [
     {
-      name: "General Arts",
+      name: "Arts",
       value: data.counts.staffCount4GArt,
       fill: "var(--ring)",
     },
     {
-      name: "Home Economics",
+      name: "Home",
       value: data.counts.staffCount4Home,
       fill: "var(--destructive)",
     },
     {
-      name: "Technical",
+      name: "Tech",
       value: data.counts.staffCount4Tech,
       fill: "#FF7F50",
     },
     {
-      name: "Visual Arts",
+      name: "VArts",
       value: data.counts.staffCount4VArt,
       fill: "var(--muted-foreground)",
     },
@@ -200,22 +212,22 @@ export default function DashboardContent({
       fill: "#DAA06D",
     },
     {
-      name: "Mathematics",
+      name: "Math",
       value: data.counts.staffCount4Math,
       fill: "var(--chart-2)",
     },
     {
-      name: "Languages",
-      value: data.counts.staffCount4Math,
+      name: "Lang",
+      value: data.counts.staffCount4Lang,
       fill: "#FF5F1F",
     },
     {
-      name: "Agriculture",
+      name: "Agric",
       value: data.counts.staffCount4Agric,
       fill: "#F88379",
     },
     {
-      name: "Science",
+      name: "Sci",
       value: data.counts.staffCount4Science,
       fill: "var(--chart-5)",
     },

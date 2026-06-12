@@ -1,5 +1,7 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
+import LoadingButton from "@/components/customComponents/LoadingButton";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,13 +10,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { SheetIcon, UploadCloud, UploadCloudIcon, X } from "lucide-react";
-import { useCSVReader } from "react-papaparse";
-
-import LoadingButton from "@/components/customComponents/LoadingButton";
 import { cn } from "@/lib/utils";
+import { SheetIcon, UploadCloud, UploadCloudIcon, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState, useTransition } from "react";
+import { useCSVReader } from "react-papaparse";
 import { toast } from "sonner";
 import BaseTable from "../../app/(private)/(admin)/admin/departments/components/BaseTable";
 import { useGenericDialog } from "../../hooks/use-open-create-teacher-dialog";
@@ -73,7 +73,7 @@ export default function UploadComponent<T>({
     setData((prev) => ({ ...prev, data: rows }));
   }
 
-  const dialogId = pathname + "-upload";
+  const dialogId = `${pathname}-upload`;
 
   function SaveToDatabase() {
     startTransition(async () => {
@@ -114,8 +114,9 @@ export default function UploadComponent<T>({
         <DialogContent
           className={cn(
             "w-full md:max-w-lg",
-            data?.data?.length! > 0 &&
-              "md:max-w-full md:max-h-full mx-auto transition-transform delay-300 ease-linear",
+            data?.data &&
+              data.data.length > 0 &&
+              "md:max-w-full md:max-h-full mx-auto transition-transform delay-300 ease-linear mb-6",
           )}>
           <DialogHeader>
             <DialogTitle>Select a CSV File of {formatPath}</DialogTitle>
@@ -157,7 +158,9 @@ export default function UploadComponent<T>({
                   <div
                     className={cn(
                       "w-full md:max-w-lg mx-auto rounded-2xl h-20 border-2 border-dashed flex flex-col justify-center items-center gap-2 hover:cursor-pointer relative ",
-                      data?.data.length! > 0 && "md:max-w-full h-auto",
+                      data?.data &&
+                        data.data.length > 0 &&
+                        "md:max-w-full h-auto",
                     )}>
                     <Button
                       {...getRootProps()}

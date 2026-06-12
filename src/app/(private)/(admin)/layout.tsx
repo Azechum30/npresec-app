@@ -1,6 +1,7 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { AdminAuthGuard } from "@/components/customComponents/admin-guard";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import { ReactNode, Suspense } from "react";
+import { type ReactNode, Suspense } from "react";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
