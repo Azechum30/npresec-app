@@ -1,4 +1,6 @@
-import { StudentGradeRow } from "@/app/(private)/(admin)/admin/grades/_hooks/use-get-students-grades-columns";
+/** biome-ignore-all assist/source/organizeImports: reason */
+
+import type { StudentGradeRow } from "@/app/(private)/(admin)/admin/grades/_hooks/use-get-students-grades-columns";
 import { GRADING_SYSTEM } from "@/lib/constants";
 import {
   Document,
@@ -22,17 +24,16 @@ const styles = StyleSheet.create({
   page: {
     padding: 40,
     fontFamily: "Helvetica",
-    color: "#1e293b", // Deep slate for better readability
+    color: "#1e293b",
     lineHeight: 1.5,
   },
-  // Top accent bar
   accentBar: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     height: 8,
-    backgroundColor: "#0f172a", // School Primary Color
+    backgroundColor: "#0f172a",
   },
   headerSection: {
     flexDirection: "column",

@@ -1,3 +1,5 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
+
 import { StatementOfResultsTemplate } from "@/components/StatementOfResultsTemplate";
 import { ASSESSMENT_WEIGHTS } from "@/lib/constants";
 import { generateQrcode } from "@/lib/generate-verification-qrcode";
@@ -6,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/server-only-actions/validate-env";
 import { getGradeInfo } from "@/lib/services/transcripts.service";
 import { StudentSelect } from "@/lib/types";
-import { Semester } from "@/lib/validation";
+import type { Semester } from "@/lib/validation";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { NextResponse } from "next/server";
 
@@ -28,7 +30,7 @@ export const GET = async (
     const searchParams = new URL(req.url).searchParams;
 
     const semester = searchParams.get("semester") || "";
-    const academicYear = parseInt(searchParams.get("academicYear") || "0");
+    const academicYear = parseInt(searchParams.get("academicYear") || "0", 10);
 
     const summary = await prisma.semesterSummary.findUnique({
       where: {
@@ -41,9 +43,9 @@ export const GET = async (
       include: { student: { select: StudentSelect } },
     });
 
-    if (!summary || !summary.isPublished) {
+    if (!summary?.isPublished) {
       return NextResponse.json(
-        { error: "Results are yet published" },
+        { error: "Results are yet to be published" },
         { status: 403 },
       );
     }

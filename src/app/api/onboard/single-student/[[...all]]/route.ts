@@ -1,17 +1,18 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { computeGraduationDate } from "@/lib/compute-graduation-date";
 import { generatePassword } from "@/lib/generatePassword";
 import { prisma } from "@/lib/prisma";
 import { triggerServerNotification } from "@/lib/pusher";
 import { sendMail } from "@/lib/resend-config";
 import { env } from "@/lib/server-only-actions/validate-env";
-import { SingleEmailType, singleStudentType } from "@/lib/types";
-import { status } from "@/lib/validation";
+import type { SingleEmailType, singleStudentType } from "@/lib/types";
+import type { status } from "@/lib/validation";
 import { createUserCredentials } from "@/utils/create-user-credentials";
 import {
   CONSTANTS,
-  Department,
+  type Department,
   generateStudentIndex,
-  gradelevels,
+  type gradelevels,
 } from "@/utils/generateStudentIndex";
 import { triggerRollback } from "@/utils/trigger-better-auth-user-delete";
 import { createWorkflow, serveMany } from "@upstash/workflow/dist/nextjs";
@@ -21,7 +22,7 @@ export const singleStudentEmailWorkflow = createWorkflow<
   SingleEmailType,
   unknown
 >(async (context) => {
-  const { emailData, source, userId } = context.requestPayload;
+  const { emailData, userId } = context.requestPayload;
   const channelName = `userId-${userId}`;
 
   await context.run("single-student-email-workflow", async () => {
@@ -82,7 +83,7 @@ const singleStudentCreationWorkflow = createWorkflow<
     },
   );
 
-  const created = await context.run("onboard-student", async () => {
+  await context.run("onboard-student", async () => {
     try {
       const result = await prisma.$transaction(async (tx) => {
         const latestStudent = await tx.student.findFirst({
@@ -93,13 +94,14 @@ const singleStudentCreationWorkflow = createWorkflow<
               lt: new Date(admissionYear + 1, 0, 1),
             },
           },
-          orderBy: { studentNumber: "desc" },
+          orderBy: [{ studentNumber: "desc" }, { lastName: "asc" }],
           select: { studentNumber: true },
         });
 
         const sequence = latestStudent
           ? (parseInt(
               latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
+              10,
             ) || 0) + 1
           : 1;
 
@@ -140,7 +142,7 @@ const singleStudentCreationWorkflow = createWorkflow<
 
       return result;
     } catch (e) {
-      console.error("failed to onboard student");
+      console.error("failed to onboard student", e);
       await triggerRollback(authUser.id as string);
     }
   });
