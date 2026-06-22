@@ -1,54 +1,46 @@
-import { getServerSideProps } from "@/app/(private)/(admin)/admin/departments/actions/getServerSideProps";
+/** biome-ignore-all assist/source/organizeImports: reason */
 import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
 import FileUploadInput from "@/components/customComponents/FileUploadInput";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import LoadingButton from "@/components/customComponents/LoadingButton";
 import { MultiSelectCombox } from "@/components/customComponents/mult-select-combox";
 import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
-import { useConfirmDelete } from "@/components/customComponents/useConfirmDelete";
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormField } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
 import { RANKS } from "@/lib/constants";
-import {
-  ClassesResponseType,
-  CourseResponseType,
-  DepartmentResponseType,
-} from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
   STAFF_CATEGORY,
   STAFF_TYPE,
   StaffSchema,
-  StaffType,
+  type StaffType,
 } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { useQueries } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { toast } from "sonner";
-import { getClassesAction } from "../../../classes/actions/server-actions";
-import { getCourses } from "../../../courses/actions/actions";
+import { classQueryOptions } from "../../../classes/actions/queries";
+import { coursesQueryOptions } from "../../../courses/actions/queries";
+import { departmentsQueryOptions } from "../../../departments/actions/queries";
 
 type CreateStaffProps = {
-  onSubmit: (data: StaffType) => Promise<void>;
+  onSubmitAction: (data: StaffType) => Promise<void>;
   id?: string;
   defaultValues?: StaffType;
-  onDelete?: () => void;
-  isDeletePending?: boolean;
-  isPending?: boolean;
+  isPending: boolean;
 };
 
 export default function CreateStaffForm({
-  onSubmit,
+  onSubmitAction,
   id,
   defaultValues,
-  onDelete,
-  isDeletePending,
   isPending,
 }: CreateStaffProps) {
   const form = useForm<StaffType>({
     resolver: zodResolver(StaffSchema),
-    defaultValues: {
+    defaultValues: defaultValues ?? {
       firstName: "",
       lastName: "",
       middleName: "",
@@ -65,86 +57,70 @@ export default function CreateStaffForm({
       classes: [],
       courses: [],
       isDepartmentHead: false,
-      ...defaultValues,
     },
   });
 
-  const [departments, setDepartments] = useState<DepartmentResponseType[]>([]);
-  const [courses, setCourses] = useState<CourseResponseType[]>([]);
-  const [classes, setClasses] = useState<ClassesResponseType[]>([]);
-  const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
-  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
-  const [isLoadingClasses, setIsLoadingClasses] = useState(true);
-
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const res = await getServerSideProps();
-        if (res.error) {
-          toast.error(res.error);
-          return;
-        }
-        setDepartments(res.departments || []);
-      } catch (error) {
-        toast.error("Failed to fetch departments");
-      } finally {
-        setIsLoadingDepartments(false);
-      }
-    };
-
-    const fetchCourses = async () => {
-      try {
-        const res = await getCourses();
-        if (res.error) {
-          toast.error(res.error);
-          return;
-        }
-        setCourses(res.courses || []);
-      } catch (error) {
-        toast.error("Failed to fetch courses");
-      } finally {
-        setIsLoadingCourses(false);
-      }
-    };
-
-    const fetchClasses = async () => {
-      try {
-        const res = await getClassesAction();
-        if (res.error) {
-          toast.error(res.error);
-          return;
-        }
-        setClasses(res.data || []);
-      } catch (error) {
-        toast.error("Failed to fetch classes");
-      } finally {
-        setIsLoadingClasses(false);
-      }
-    };
-
-    fetchDepartments();
-    fetchCourses();
-    fetchClasses();
-  }, []);
-
-  const handleSubmit = (data: StaffType) => {
-    onSubmit(data);
-  };
-
-  const { confirmDelete, ConfirmDeleteComponent } = useConfirmDelete(
-    "Delete Staff",
-    "Are you sure you want to delete this staff member?",
-  );
-
+  const departmentId = useWatch({
+    control: form.control,
+    name: "departmentId",
+  });
   const staffType = useWatch({
     control: form.control,
     name: "staffType",
   });
+  const courseIds = useWatch({
+    control: form.control,
+    name: "courses",
+  });
+
+  const [departmentsQueryData, classQueryData, coursesQueryData] = useQueries({
+    queries: [departmentsQueryOptions, classQueryOptions, coursesQueryOptions],
+  });
+
+  const departments = useMemo(() => {
+    if (!departmentsQueryData.data) return [];
+
+    return departmentsQueryData.data.map((dp) => ({
+      id: dp.id,
+      name: dp.name,
+    }));
+  }, [departmentsQueryData.data]);
+
+  const classes = useMemo(() => {
+    if (!courseIds || !classQueryData.data) return [];
+
+    return classQueryData.data
+      .filter((c) => c.courses.some((c) => courseIds.includes(c.id)))
+      .map((cls) => ({
+        id: cls.id,
+        name: `${cls.name} (${cls.level.replace(/_/g, " ")})`,
+      }));
+  }, [courseIds, classQueryData.data]);
+
+  const courses = useMemo(() => {
+    if (!departmentId || !coursesQueryData.data) return [];
+
+    return coursesQueryData.data
+      .filter((c) => c.departments.some((dep) => dep.id === departmentId))
+      .map((cs) => ({
+        id: cs.id,
+        title: cs.title,
+      }));
+  }, [departmentId, coursesQueryData.data]);
+
+  const isLoading =
+    departmentsQueryData.isLoading ||
+    coursesQueryData.isLoading ||
+    classQueryData.isLoading;
+
+  if (isLoading) {
+    return <ShowLoadingState />;
+  }
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={form.handleSubmit(onSubmitAction)}
         className="space-y-4 w-full border rounded-md max-h-[80vh] overflow-y-auto p-2">
         {/* Personal Information */}
         <fieldset className="space-y-4 border p-4 rounded-md">
@@ -314,11 +290,10 @@ export default function CreateStaffForm({
                 name="departmentId"
                 fieldTitle="Department"
                 placeholder="Select department"
-                data={departments.map((dept) => ({
-                  value: dept.id,
-                  label: dept.name,
-                }))}
+                data={departments}
                 schema={StaffSchema}
+                selectedKey="name"
+                valueKey="id"
               />
               <FormField
                 control={form.control}
@@ -340,22 +315,16 @@ export default function CreateStaffForm({
               name="courses"
               fieldTitle="Assigned Courses"
               placeholder="--- Select courses ---"
-              data={courses.map((course) => ({
-                id: course.id,
-                name: `${course.code} - ${course.title}`,
-              }))}
+              data={courses}
               schema={StaffSchema}
               valueKey="id"
-              selectedKey="name"
+              selectedKey="title"
             />
             <MultiSelectCombox
               name="classes"
               fieldTitle="Assigned Classes"
               placeholder="--- Select classes ---"
-              data={classes.map((cls) => ({
-                id: cls.id,
-                name: `${cls.name} (${cls.level.split("_").join(" ")})`,
-              }))}
+              data={classes}
               schema={StaffSchema}
               valueKey="id"
               selectedKey="name"
@@ -398,28 +367,14 @@ export default function CreateStaffForm({
 
         {/* Action Buttons */}
         <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-center space-x-4 pt-6 border-t">
-          {id && onDelete && (
-            <LoadingButton
-              loading={isDeletePending as boolean}
-              type="button"
-              variant="destructive"
-              className="md:w-[25%]"
-              onClick={async () => {
-                const ok = await confirmDelete();
-                ok && onDelete();
-              }}>
-              Delete Staff
-            </LoadingButton>
-          )}
           <LoadingButton
             className="md:w-[25%]"
             type="submit"
-            loading={isPending as boolean}>
+            loading={isPending}>
             {id ? "Update Staff" : "Create Staff"}
           </LoadingButton>
         </div>
       </form>
-      <ConfirmDeleteComponent />
     </Form>
   );
 }

@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import {
@@ -8,42 +9,28 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { useEffect, useRef } from "react";
-import { toast } from "sonner";
-import { useHandleStaffCreation } from "../hooks/use-handle-staff-creation";
+import type { StaffType } from "@/lib/validation";
+import { useCreateStaffMutationFn } from "../actions/mutations";
 import CreateStaffForm from "./forms/create-staff-form";
 
 export default function CreateStaffDialog() {
-  const { id, dialogs, onClose } = useGenericDialog();
-  const { handleStaffCreation, isPending, createError, createSuccess } =
-    useHandleStaffCreation();
+  const { dialogs, onClose } = useGenericDialog();
 
-  const previousCreationRef = useRef<boolean>(false);
-  useEffect(() => {
-    const wasCreating = previousCreationRef.current;
+  const { mutateAsync, isPending } = useCreateStaffMutationFn();
 
-    if (wasCreating && !isPending && createError) {
-      toast.error(createError);
-    }
-    previousCreationRef.current = isPending;
-  }, [createError, isPending]);
+  const handleStaffCreation = (data: StaffType) =>
+    Promise.try(async () => {
+      await mutateAsync(data);
+      onClose("create-staff");
+    });
 
-  useEffect(() => {
-    if (createSuccess) {
-      toast.success(
-        "Staff onboarding is been processed in the background. You would be notified when the processing is done.",
-      );
-      setTimeout(() => {
-        onClose("createStaff");
-      }, 100);
-    }
-  }, [createSuccess, onClose]);
+  const isOpen = !!dialogs["create-staff"];
 
   return (
     <Dialog
-      open={dialogs["createStaff"] === true ? true : false}
+      open={isOpen}
       onOpenChange={() => {
-        onClose("createStaff");
+        onClose("create-staff");
       }}>
       <DialogContent className="md:max-w-4xl">
         <DialogHeader>
@@ -52,7 +39,10 @@ export default function CreateStaffDialog() {
             Kindly fill the form to create a new staff profile
           </DialogDescription>
         </DialogHeader>
-        <CreateStaffForm onSubmit={handleStaffCreation} isPending={isPending} />
+        <CreateStaffForm
+          onSubmitAction={handleStaffCreation}
+          isPending={isPending}
+        />
       </DialogContent>
     </Dialog>
   );

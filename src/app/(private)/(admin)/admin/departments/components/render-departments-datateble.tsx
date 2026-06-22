@@ -1,57 +1,49 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
-import { useGetDepartmentColumns } from "./columns";
 import DataTable from "@/components/customComponents/data-table";
-import { getServerSideProps } from "../actions/getServerSideProps";
-import DepartmentRowDetail from "./DepartmentRowDetail";
-import { useDeleteDepartment } from "../hooks/use-delete-department";
-import LoadingState from "@/components/customComponents/Loading";
-import { useBulkDeleteDepartments } from "../hooks/use-bulk-delete-departments";
-import { departmentTransformer } from "../utils/department-transformer";
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
-import { NoDataFound } from "@/components/customComponents/no-data-found";
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { useDeleteDepartmentsMutationFn } from "../actions/mutations";
+import { departmentsQueryOptions } from "../actions/queries";
+import { departmentTransformer } from "../utils/department-transformer";
+import { useGetDepartmentColumns } from "./columns";
+import DepartmentRowDetail from "./DepartmentRowDetail";
 
-type RenderProps = {
-  initialState: Awaited<ReturnType<typeof getServerSideProps>>;
-};
-
-export default function RenderDepartmentsDataTable({
-  initialState,
-}: RenderProps) {
+export default function RenderDepartmentsDataTable() {
   const columns = useGetDepartmentColumns();
-  const { isPending } = useDeleteDepartment();
-  const { deletedepartments } = useBulkDeleteDepartments();
   const { preferredDateFormat } = useUserPreferredDateFormat();
   const transformer = useMemo(
     () => departmentTransformer(preferredDateFormat),
-    [preferredDateFormat]
+    [preferredDateFormat],
   );
+
+  const { data, error } = useSuspenseQuery({
+    ...departmentsQueryOptions,
+  });
+
+  const { mutateAsync } = useDeleteDepartmentsMutationFn();
 
   return (
     <>
-      {initialState.error ? (
-        <ErrorComponent error={initialState.error} />
-      ) : initialState.departments === undefined ? (
-        <NoDataFound />
+      {error ? (
+        <ErrorComponent error={error.message} />
       ) : (
         <DataTable
           columns={columns}
-          data={initialState.departments}
+          data={data}
           transformer={transformer}
           filename="Departments-list"
           exportKey="departments"
           onDelete={async (row) => {
             const ids = row.map((r) => r.original.id as string);
-            const codes = row.map((r) => r.original.code);
-            await deletedepartments(ids, codes);
+            await mutateAsync({ ids });
           }}
           renderSubComponent={(row) => <DepartmentRowDetail row={row} />}
         />
       )}
-
-      {isPending && <LoadingState />}
     </>
   );
 }

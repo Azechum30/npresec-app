@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import {
@@ -8,31 +9,28 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { DepartmentType } from "@/lib/validation";
-import { toast } from "sonner";
-import { createDepartment } from "../actions/create-department-action";
+import type { DepartmentType } from "@/lib/validation";
+import { useCreateDepartmentMutationFn } from "../actions/mutations";
 import CreateDepartment from "../forms/create-department";
 
 export default function CreateDepartmentDialog() {
   const { dialogs, onClose } = useGenericDialog();
 
+  const { mutateAsync, isPending } = useCreateDepartmentMutationFn();
+
   async function handleSubmit(data: DepartmentType) {
-    const resp = await createDepartment(data);
-
-    if (resp?.error) {
-      toast.error(resp.error);
-      return;
+    try {
+      await mutateAsync(data);
+      onClose("create-department");
+    } catch (error) {
+      console.error("Failed to create department", error);
     }
-    if (resp?.department === undefined) return;
-    toast.success("department created successfully!");
-
-    setTimeout(() => onClose("createDepartment"), 100);
   }
 
+  const isOpen = !!dialogs["create-department"];
+
   return (
-    <Dialog
-      open={dialogs["createDepartment"] === true ? true : false}
-      onOpenChange={() => onClose("createDepartment")}>
+    <Dialog open={isOpen} onOpenChange={() => onClose("create-department")}>
       <DialogContent className="">
         <DialogHeader className="bg-background backdrop-blur-lg">
           <DialogTitle>Create A New Department</DialogTitle>
@@ -40,7 +38,7 @@ export default function CreateDepartmentDialog() {
             Kindly fill the form to create a new department
           </DialogDescription>
         </DialogHeader>
-        <CreateDepartment onSubmit={handleSubmit} />
+        <CreateDepartment onSubmitAction={handleSubmit} isPending={isPending} />
       </DialogContent>
     </Dialog>
   );

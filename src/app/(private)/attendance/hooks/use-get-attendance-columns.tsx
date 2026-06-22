@@ -1,15 +1,16 @@
-import { ColumnDef } from "@tanstack/react-table";
-import { AttendanceResponseType } from "@/lib/types";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
-import moment from "moment";
+/**biome-ignore-all assist/source/organizeImports: reason */
+
+import { AvatarComponent } from "@/components/customComponents/avatar-component";
 import { GenericActions } from "@/components/customComponents/GenericActions";
 import { RowSelections } from "@/components/customComponents/RowSelections";
-import { useDeleteSingleAttendance } from "@/app/(private)/(admin)/admin/attendance/hooks/use-delete-single-attendance";
+import type { AttendanceResponseType } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import type { ColumnDef } from "@tanstack/react-table";
+import moment from "moment";
+import { useDeleteAttendanceMutationFn } from "../actions/mutations";
 
 export const useGetAttendanceColumns = () => {
-  const { handleDeleteSingleAttendance, isPending } =
-    useDeleteSingleAttendance();
+  const { isPending, mutateAsync } = useDeleteAttendanceMutationFn();
   return [
     {
       id: "selection",
@@ -24,15 +25,10 @@ export const useGetAttendanceColumns = () => {
       cell: ({ row }) => {
         const url = row.original.student.user?.image;
         return (
-          <div className="rounded-full border border-blue-300 dark:border-blue-200 size-8 flex justify-center items-center mx-auto">
-            <Image
-              src={url ? url : "/no-avatar.jpg"}
-              alt="Avatar"
-              width={20}
-              height={40}
-              className="rounded-full size-6 object-cover object-top"
-            />
-          </div>
+          <AvatarComponent
+            image={url ?? undefined}
+            fallback={`${row.original.student.lastName} ${row.original.student.firstName}`}
+          />
         );
       },
     },
@@ -68,7 +64,7 @@ export const useGetAttendanceColumns = () => {
                   ? "bg-red-200 dark:bg-red-950 rounded-md px-4  py-2 text-xs"
                   : row.original.status === "Late"
                     ? "bg-orange-200 dark:bg-orange-950 rounded-md px-4  py-2 text-xs"
-                    : "bg-blue-200 dark:bg-blue-950 rounded-md px-4 py-2 text-xs"
+                    : "bg-blue-200 dark:bg-blue-950 rounded-md px-4 py-2 text-xs",
             )}>
             {row.original.status.toString()}
           </span>
@@ -80,9 +76,11 @@ export const useGetAttendanceColumns = () => {
       cell: ({ row }) => (
         <GenericActions
           row={row}
-          onDelete={handleDeleteSingleAttendance}
+          onDelete={async () => {
+            Promise.try(async () => await mutateAsync(row.original.id));
+          }}
           secondaryKey="id"
-          dialogId="editAttendance"
+          dialogId="edit-attendance"
           isPending={isPending}
         />
       ),

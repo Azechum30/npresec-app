@@ -11,7 +11,7 @@ import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import "server-only";
-import { isUserOlderThan36Days } from "../compare-user-created-date-with-current-date";
+import { isUserOlderThanTwelveMonths } from "../compare-user-created-date-with-current-date";
 import { prisma } from "../prisma";
 import {
   ResetPasswordSchema,
@@ -155,9 +155,11 @@ export const signInAction = async (data: SignInType, callbackUrl?: string) => {
     if (user) {
       const userRole = getUserRole(user as User);
 
-      const olderThan36Days = isUserOlderThan36Days(user.createdAt);
+      const userOlderThanTwelveMonths = isUserOlderThanTwelveMonths(
+        user.createdAt,
+      );
 
-      if (!user.twoFactorEnabled && olderThan36Days) {
+      if (!user.twoFactorEnabled && userOlderThanTwelveMonths) {
         return {
           success: true,
           user: user as User,

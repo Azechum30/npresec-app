@@ -1,17 +1,18 @@
 "use server";
 
+import type { Prisma } from "@/generated/prisma/client";
+import { ActionError, CUSTOM_ERRORS } from "@/lib/constants";
 import { getUserPermissions } from "@/lib/get-session";
+import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
 import { DepartmentSelect } from "@/lib/types";
-import { Prisma } from "@/generated/prisma/client";
-import { getErrorMessage } from "@/lib/getErrorMessage";
 
 export const getServerSideProps = async (codes?: string[]) => {
   try {
     const { hasPermission } = await getUserPermissions("view:departments");
 
     if (!hasPermission) {
-      return { error: "Permission denied" };
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
     }
 
     let query: Prisma.DepartmentWhereInput = {};
@@ -33,6 +34,7 @@ export const getServerSideProps = async (codes?: string[]) => {
     return { departments: departments || [] };
   } catch (error) {
     console.error("Could not fetch departments", error);
-    return { error: getErrorMessage(error) };
+    const err = getErrorMessage(error);
+    throw err;
   }
 };

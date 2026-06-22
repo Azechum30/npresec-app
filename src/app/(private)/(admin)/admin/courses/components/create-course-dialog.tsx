@@ -1,3 +1,4 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 import {
   Dialog,
@@ -7,39 +8,32 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
+import type { CoursesType } from "@/lib/validation";
+import { useCreateCourseMutationFn } from "../actions/mutations";
 import CreateCourseForm from "../forms/create-course";
-import { CoursesType } from "@/lib/validation";
-import { createCourse } from "../actions/actions";
-import { toast } from "sonner";
 
 export default function CreateCourseDialog() {
   const { dialogs, onClose } = useGenericDialog();
+  const { mutateAsync, isPending } = useCreateCourseMutationFn();
 
-  const handleSubmit = async (values: CoursesType) => {
-    const { error } = await createCourse(values);
-    if (error) {
-      toast.error(error);
-      return;
-    } else {
-      toast.success("Course created successfully");
-      setTimeout(() => onClose("createCourse"), 300);
-    }
-  };
+  const handleSubmit = (values: CoursesType) =>
+    Promise.try(async () => {
+      await mutateAsync(values);
+      onClose("create-course");
+    });
+
+  const isOpen = !!dialogs["create-course"];
   return (
-    <>
-      <Dialog
-        open={dialogs["createCourse"]}
-        onOpenChange={() => onClose("createCourse")}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create a new Course</DialogTitle>
-            <DialogDescription>
-              Kindly fill the form to create a new course!
-            </DialogDescription>
-          </DialogHeader>
-          <CreateCourseForm onSubmit={handleSubmit} />
-        </DialogContent>
-      </Dialog>
-    </>
+    <Dialog open={isOpen} onOpenChange={() => onClose("create-course")}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create a new Course</DialogTitle>
+          <DialogDescription>
+            Kindly fill the form to create a new course!
+          </DialogDescription>
+        </DialogHeader>
+        <CreateCourseForm onSubmitAction={handleSubmit} isPending={isPending} />
+      </DialogContent>
+    </Dialog>
   );
 }

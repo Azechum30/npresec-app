@@ -1,5 +1,6 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { steps } from "@/lib/constants";
-import {
+import type {
   AcademicInfoType,
   GuardianInfoType,
   PersonalInfoType,
@@ -137,15 +138,15 @@ export const useStudentStore = create<StudentStoreProps>()(
               personalInfo: {
                 firstName: student.firstName,
                 lastName: student.lastName,
-                middleName: student.middleName,
+                middleName: student.middleName ?? "",
                 birthDate: student.birthDate,
                 gender: student.gender,
                 email: student.email,
-                phone: student.phone,
-                nationality: student.nationality,
-                religion: student.religion,
-                address: student.address,
-                photoURL: student.photoURL,
+                phone: student.phone ?? "",
+                nationality: student.nationality ?? "",
+                religion: student.religion ?? "",
+                address: student.address ?? "",
+                photoURL: student.photoURL ?? "",
               },
               academicInfo: {
                 currentLevel: student.currentLevel,
@@ -158,10 +159,10 @@ export const useStudentStore = create<StudentStoreProps>()(
               },
               guardianInfo: {
                 guardianName: student.guardianName,
-                guardianPhone: student.guardianPhone,
-                guardianRelation: student.guardianRelation,
-                guardianAddress: student.guardianAddress,
-                guardianEmail: student.guardianEmail,
+                guardianPhone: student.guardianPhone ?? "",
+                guardianRelation: student.guardianRelation ?? "",
+                guardianAddress: student.guardianAddress ?? "",
+                guardianEmail: student.guardianEmail ?? "",
               },
             })),
           resetForm: () => {
@@ -180,12 +181,20 @@ export const useStudentStore = create<StudentStoreProps>()(
     {
       name: "student-form-store",
       storage: customStorage,
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.personalInfo.birthDate = new Date(state.personalInfo.birthDate);
+          state.academicInfo.dateEnrolled = new Date(
+            state.academicInfo.dateEnrolled,
+          );
+        }
+      },
       partialize: (state) => {
         const { actions, ...persistedState } = state;
         return persistedState;
       },
-    }
-  )
+    },
+  ),
 );
 
 export const useCurrentStep = () =>

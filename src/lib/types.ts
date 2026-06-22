@@ -1,5 +1,5 @@
-import { Course, Grade, Prisma } from "@/generated/prisma/client";
-import { StaffType } from "./validation";
+import type { Course, Grade, Prisma } from "@/generated/prisma/client";
+import type { StaffType } from "./validation";
 
 export const DepartmentInclude = {
   head: {
@@ -82,6 +82,17 @@ export const ClassesSelect = {
   createdAt: true,
   maxCapacity: true,
   currentEnrollment: true,
+  classTeacherId: true,
+  classTeacher: {
+    select: {
+      firstName: true,
+      lastName: true,
+      phone: true,
+      staffType: true,
+      staffCategory: true,
+      userId: true,
+    },
+  },
   staff: {
     select: {
       id: true,
@@ -89,6 +100,8 @@ export const ClassesSelect = {
       middleName: true,
       lastName: true,
       employeeId: true,
+      staffCategory: true,
+      staffType: true,
     },
   },
   level: true,
@@ -188,6 +201,14 @@ export const StudentSelect = {
     select: {
       id: true,
       name: true,
+    },
+  },
+  attendance: {
+    select: {
+      academicYear: true,
+      classId: true,
+      date: true,
+      semester: true,
     },
   },
   user: {
@@ -510,7 +531,9 @@ export type UserRole =
   | "teaching_staff"
   | "student"
   | "parent"
-  | "staff";
+  | "staff"
+  | "form_master"
+  | "classTeacher";
 
 export const priorityRoles = [
   "admin",

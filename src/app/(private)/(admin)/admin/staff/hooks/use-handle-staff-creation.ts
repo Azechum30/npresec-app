@@ -1,5 +1,7 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
+
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { StaffType } from "@/lib/validation";
+import type { StaffType } from "@/lib/validation";
 import { useState, useTransition } from "react";
 import { createStaff } from "../actions/server";
 
@@ -10,19 +12,19 @@ export const useHandleStaffCreation = () => {
   const { dialogs } = useGenericDialog();
 
   const handleStaffCreation = async (data: StaffType) => {
-    if (!dialogs["createStaff"]) {
+    if (!dialogs["create-staff"]) {
       setCreateError("");
       setCreateSuccess(false);
 
       return;
     }
     startTransition(async () => {
-      const res = await createStaff(data);
-      if (res.error) {
-        setCreateError(res.error);
-        setCreateSuccess(false);
-        return;
-      }
+      await createStaff(data);
+      // if (res.error) {
+      //   setCreateError(res.error);
+      //   setCreateSuccess(false);
+      //   return;
+      // }
       setCreateError("");
       setCreateSuccess(true);
     });

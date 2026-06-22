@@ -178,10 +178,11 @@ export const ClassesSchema = z.object({
     ),
   code: z.string().nullish(),
   level: z.enum(grades),
-  maxCapacity: z.number().optional(),
+  maxCapacity: z.coerce.number<number>().optional(),
   createdAt: z.date().nullish(),
   departmentId: z.string().nullish(),
   staff: z.array(z.string()).optional(),
+  classTeacherId: z.string().optional(),
 });
 
 export type ClassesType = z.infer<typeof ClassesSchema>;

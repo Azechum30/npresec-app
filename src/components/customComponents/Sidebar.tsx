@@ -1,6 +1,7 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 import { useOpenSidebar } from "@/hooks/use-open-sidebar";
-import { UserRole } from "@/lib/types";
+import type { UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
   Award,
@@ -47,11 +48,6 @@ export const Links = {
         { title: "Classes", href: "/admin/classes", icon: <LucideBuilding2 /> },
         { title: "Departments", href: "/admin/departments", icon: <Home /> },
         { title: "Courses", href: "/admin/courses", icon: <BookOpen /> },
-        {
-          title: "Attendance",
-          href: "/admin/attendance",
-          icon: <ClipboardList />,
-        },
       ],
     },
 
@@ -152,22 +148,44 @@ export default function Sidebar() {
   const { open } = useOpenSidebar();
 
   const user = useAuth();
-  const roles =
+  const roles = new Set(
     user?.roles?.flatMap((rs) => rs.role?.name as UserRole).filter(Boolean) ??
-    [];
+      [],
+  );
+
+  const hasAttendancePermission =
+    roles.has("admin") || roles.has("classTeacher");
 
   let links:
     | typeof Links.ADMIN
     | typeof Links.TEACHING_STAFF
     | typeof Links.STUDENT = [];
 
-  if (roles.includes("admin")) {
+  const newLink = {
+    title: "Attendance",
+    href: "/attendance",
+    icon: <ClipboardList />,
+  };
+
+  if (roles.has("admin")) {
     links = Links.ADMIN;
-  } else if (roles.includes("teaching_staff")) {
+  } else if (roles.has("teaching_staff") || roles.has("classTeacher")) {
     links = Links.TEACHING_STAFF;
-  } else if (roles.includes("student")) {
+  } else if (roles.has("student")) {
     links = Links.STUDENT;
   }
+
+  const processedLinks = links.map((section) => {
+    if (section.section === "Academics" && hasAttendancePermission) {
+      return {
+        ...section,
+        Links: [...section.Links, newLink].sort((a, b) =>
+          a.title.localeCompare(b.title),
+        ),
+      };
+    }
+    return section;
+  });
 
   return (
     <div
@@ -196,7 +214,7 @@ export default function Sidebar() {
             <SidebarOpenButton className="text-primary" />
           </div>
         </div>
-        {links.map((link) => (
+        {processedLinks.map((link) => (
           <div
             key={link.section}
             className=" w-full flex flex-col items-center md:items-start gap-y-3 px-4 sm:px-2 lg:px-4 ">

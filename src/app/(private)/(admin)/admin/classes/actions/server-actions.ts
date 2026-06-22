@@ -1,23 +1,25 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use server";
 
 import "server-only";
 
 import { getErrorMessage } from "@/lib/getErrorMessage";
 
-import { Prisma } from "@/generated/prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
+import { ActionError, CUSTOM_ERRORS } from "@/lib/constants";
 import { getUserPermissions } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
 import { ClassesSelect } from "@/lib/types";
 import {
   BulkClassesSchema,
-  BulkClassesType,
+  type BulkClassesType,
   BulkDeleteClassesSchema,
-  BulkDeleteClassesType,
+  type BulkDeleteClassesType,
   ClassesSchema,
-  ClassesType,
-  gradesType,
+  type ClassesType,
+  type gradesType,
   UpdateClassSchema,
-  UpdateClassType,
+  type UpdateClassType,
 } from "@/lib/validation";
 import { CONSTANTS } from "@/utils/generateStudentIndex";
 import { revalidatePath } from "next/cache";
@@ -29,21 +31,12 @@ export const createClassAction = async (values: ClassesType) => {
   try {
     const { hasPermission } = await getUserPermissions("create:classes");
 
-    if (!hasPermission) return { error: "Permission denied!" };
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     const result = ClassesSchema.safeParse(values);
 
-    let zodErrors = {};
-
-    if (!result.success || result.error) {
-      result.error.issues.forEach((issue) => {
-        zodErrors = { ...zodErrors, [issue.path[0]]: issue.message };
-      });
-    }
-
-    if (Object.keys(zodErrors).length > 0) {
-      return { errors: zodErrors };
-    }
+    if (!result.success) throw result.error;
 
     const prismaErrors: string[] = [];
 
@@ -80,7 +73,7 @@ export const createClassAction = async (values: ClassesType) => {
       }
     });
 
-    if (prismaErrors.length > 0) return { prismaErrors: prismaErrors };
+    if (prismaErrors.length > 0) throw new ActionError(prismaErrors[0]);
 
     const normalizedClass = {
       ...result.data,
@@ -89,6 +82,7 @@ export const createClassAction = async (values: ClassesType) => {
       createdAt: result.data?.createdAt as Date | undefined,
       level: result.data?.level.trim() as gradesType,
       maxCapacity: result.data?.maxCapacity as number | undefined,
+      classTeacherId: result.data.classTeacherId ?? null,
     };
 
     const createdDate = new Date(
@@ -110,9 +104,11 @@ export const createClassAction = async (values: ClassesType) => {
     });
 
     const sequenceNumber = lastClass
-      ? Number.isNaN(parseInt(lastClass.code.slice(-CONSTANTS.SEQUENCE_LENGTH)))
+      ? Number.isNaN(
+          parseInt(lastClass.code.slice(-CONSTANTS.SEQUENCE_LENGTH), 10),
+        )
         ? 1
-        : parseInt(lastClass.code.slice(-CONSTANTS.SEQUENCE_LENGTH)) + 1
+        : parseInt(lastClass.code.slice(-CONSTANTS.SEQUENCE_LENGTH), 10) + 1
       : 1;
 
     const response = await prisma.class.create({
@@ -127,6 +123,7 @@ export const createClassAction = async (values: ClassesType) => {
               sequenceNumber,
             ),
         name: normalizedClass.name,
+        classTeacherId: normalizedClass.classTeacherId,
         createdAt: normalizedClass.createdAt,
         departmentId: normalizedClass.departmentId,
         level: normalizedClass.level,
@@ -142,10 +139,9 @@ export const createClassAction = async (values: ClassesType) => {
       select: ClassesSelect,
     });
 
-    revalidatePath("/admin/classes");
-
     return { class: response };
   } catch (error) {
+    if (error instanceof ActionError) throw error;
     return { error: getErrorMessage(error) };
   }
 };
@@ -154,7 +150,8 @@ export const getClassesAction = async (codes?: string[]) => {
   try {
     const { hasPermission } = await getUserPermissions("view:classes");
 
-    if (!hasPermission) return { error: "Permision denied" };
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     let query: Prisma.ClassWhereInput = {};
 
@@ -182,7 +179,8 @@ export const getClass = async (id: string) => {
   try {
     const { hasPermission } = await getUserPermissions("view:classes");
 
-    if (!hasPermission) return { error: "Permission denied!" };
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     const data = await prisma.class.findUnique({
       where: {
@@ -191,7 +189,7 @@ export const getClass = async (id: string) => {
       select: ClassesSelect,
     });
 
-    if (!data) return { error: "Class not found!" };
+    if (!data) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
 
     return { data };
   } catch (error) {
@@ -207,21 +205,36 @@ export const updateClass = async (values: UpdateClassType) => {
 
     const result = UpdateClassSchema.safeParse(values);
 
-    console.log(result.data);
+    if (!result.success) throw result.error;
 
-    let zodErrors = {};
+    const { id, ...rest } = result.data;
 
-    if (result.error) {
-      result.error.issues.forEach((issue) => ({
-        zodErrors: { ...zodErrors, [issue.path[0]]: issue.message },
-      }));
+    const duplicate = await prisma.class.findFirst({
+      where: {
+        AND: [
+          {
+            OR: [
+              { code: rest.code as string },
+              { name: rest.name },
+              { classTeacherId: rest.classTeacherId },
+            ],
+          },
+          { id: { not: id } },
+        ],
+      },
+    });
+
+    if (duplicate) {
+      if (duplicate.code === rest.code) {
+        throw new ActionError("A class already exists with this code");
+      } else if (duplicate.name === rest.name) {
+        throw new ActionError("A class already exists with this name");
+      } else if (duplicate.classTeacherId === rest.classTeacherId) {
+        throw new ActionError(
+          "The selected staff is already assigned as a form master",
+        );
+      } else throw new ActionError("A duplicate record found");
     }
-
-    if (Object.keys(zodErrors).length > 0) {
-      return { errors: zodErrors };
-    }
-
-    const { id, ...rest } = result.data!;
 
     const updatedClass = await prisma.class.update({
       where: {
@@ -231,6 +244,7 @@ export const updateClass = async (values: UpdateClassType) => {
         ...rest,
         createdAt: rest.createdAt as Date,
         departmentId: rest.departmentId ? rest.departmentId : null,
+        classTeacherId: rest.classTeacherId,
         code: rest.code as string,
         staff: {
           connect: rest.staff?.map((staffId) => ({ id: staffId })),
@@ -239,14 +253,17 @@ export const updateClass = async (values: UpdateClassType) => {
       select: ClassesSelect,
     });
 
-    if (!updatedClass) return { error: "Could not update class!" };
-
-    revalidatePath("/admin/classes");
+    if (!updatedClass) throw new ActionError("Failed to update class");
 
     return { class: updatedClass };
   } catch (error) {
     console.error(error);
-    return { error: "Something went wrong!" };
+    if (error instanceof ActionError) {
+      throw error;
+    } else {
+      const err = getErrorMessage(error);
+      throw err;
+    }
   }
 };
 

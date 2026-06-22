@@ -1,35 +1,42 @@
+/** biome-ignore-all assist/source/organizeImports:reason */
+
+import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { getQueryClient } from "@/components/providers/get-query-client";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { Suspense } from "react";
-import { getClassesAction } from "./actions/server-actions";
+import { departmentsQueryOptions } from "../departments/actions/queries";
+import { staffQueryOptions } from "../staff/actions/queries";
+import { classQueryOptions } from "./actions/queries";
 import ClassesProvider from "./components/ClassesProvider";
+import CreateClassDialog from "./components/CreateClassDialog";
 import EditClassDialog from "./components/EditClassDialog";
 import RenderClassesDataTable from "./components/RenderClassesDataTable";
 
-import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import { connection } from "next/server";
-import CreateClassDialog from "./components/CreateClassDialog";
+export default async function ClassesPage() {
+  const queryClient = getQueryClient();
+  await Promise.all([
+    queryClient.ensureQueryData(classQueryOptions),
+    queryClient.ensureQueryData(departmentsQueryOptions),
+    queryClient.ensureQueryData(staffQueryOptions),
+  ]);
 
-// export const dynamic = "force-dynamic";
-
-export default function ClassesPage() {
   return (
     <>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-base font-semibold line-clamp-1">All Classes</h1>
-        <OpenDialogs dialogKey="createClass" />
+        <OpenDialogs dialogKey="create-class" title="Add Class" />
       </div>
+
       <Suspense fallback={<FallbackComponent />}>
-        <RenderClasses />
+        <HydrationBoundary state={dehydrate(queryClient)}>
+          <RenderClassesDataTable />
+        </HydrationBoundary>
       </Suspense>
+
       <ClassesProvider />
       <EditClassDialog />
       <CreateClassDialog />
     </>
   );
 }
-
-const RenderClasses = async () => {
-  await connection();
-  const data = await getClassesAction();
-  return <RenderClassesDataTable initialState={data} />;
-};

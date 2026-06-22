@@ -1,10 +1,12 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
+import { getQueryKey } from "@/app/(private)/(admin)/admin/staff/utils/get-query-key";
 import { triggerStaffCreation } from "@/app/(private)/(admin)/admin/staff/utils/trigger-staff-creation";
 import { generatePassword } from "@/lib/generatePassword";
 import { prisma } from "@/lib/prisma";
 import { triggerServerNotification } from "@/lib/pusher";
 import { sendMail } from "@/lib/resend-config";
 import { env } from "@/lib/server-only-actions/validate-env";
-import { SingleEmailType, SingleStaffCreationType } from "@/lib/types";
+import type { SingleEmailType, SingleStaffCreationType } from "@/lib/types";
 import { createUserCredentials } from "@/utils/create-user-credentials";
 import { transformAndValidateStaffData } from "@/utils/staff-data-transformer";
 import { WorkflowNonRetryableError } from "@upstash/workflow";
@@ -119,7 +121,8 @@ const singleStaffCreationWorkflow = createWorkflow<
   }
 
   await context.run("final-workflow-cleanup", async () => {
-    revalidateTag("staff", "seconds");
+    revalidateTag(getQueryKey().staff.all[0], "seconds");
+    revalidateTag("users-list", "seconds");
 
     await triggerServerNotification(channelName, "staff-onboarding-success", {
       message: `staff with email ${createdUser.email} has been successfully onboarded`,
@@ -135,7 +138,7 @@ export const { POST } = serveMany(
   },
   {
     baseUrl: env.UPSTASH_WORKFLOW_URL,
-    failureFunction: async ({ context, failStatus, failResponse }) => {
+    failureFunction: async ({ context, failResponse }) => {
       const payload = context.requestPayload as any;
       const channelName = `userId-${payload.userId}`;
       const isStaffWorkflow = "rawData" in payload;

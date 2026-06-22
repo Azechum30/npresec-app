@@ -1,11 +1,17 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { checkEntityExistencePossibleDuplicates } from "@/app/(private)/(admin)/admin/staff/utils/check-enity-existence-possible-duplicates";
+import { getQueryKey } from "@/app/(private)/(admin)/admin/staff/utils/get-query-key";
 import { validateAndTransformBulkData } from "@/app/(private)/(admin)/admin/staff/utils/validate-and-transform-bulk-data";
 import { arcjetEmailProtection } from "@/lib/arcjet";
 import { prisma } from "@/lib/prisma";
 import { triggerServerNotification } from "@/lib/pusher";
 import { sendMail } from "@/lib/resend-config";
 import { env } from "@/lib/server-only-actions/validate-env";
-import { BulkEmailType, RequestBodyType, UserWithIndexT } from "@/lib/types";
+import type {
+  BulkEmailType,
+  RequestBodyType,
+  UserWithIndexT,
+} from "@/lib/types";
 import { createUserCredentials } from "@/utils/create-user-credentials";
 import { getEmailBatchConfig } from "@/utils/email-batch-config";
 
@@ -108,7 +114,7 @@ const staffCreationWorkflow = createWorkflow<RequestBodyType, unknown>(
 
           for (let idx = 0; idx < chunk.length; idx++) {
             const staffData = chunk[idx];
-            const password = staffData.password;
+            //const password = staffData.password;
             const originalRecord = rawData.data.find(
               (d) => d.email === staffData.email,
             );
@@ -118,18 +124,32 @@ const staffCreationWorkflow = createWorkflow<RequestBodyType, unknown>(
               const { user } = await createUserCredentials({
                 email: staffData.email,
                 username: staffData.username,
-                password,
+                password: staffData.password,
                 roleId: staffData.roleId,
                 lastName: staffData.lastName,
               });
 
-              const { email, username, roleId, imageURL, ...rest } = staffData;
+              const {
+                email,
+                username,
+                roleId,
+                imageURL,
+                departmentId,
+                password,
+                ...rest
+              } = staffData;
+
+              const sanitizedDepartmentId =
+                departmentId && departmentId.trim() !== ""
+                  ? departmentId
+                  : null;
+
               await prisma.staff.upsert({
                 where: { employeeId: rest.employeeId },
                 update: {},
                 create: {
                   ...rest,
-                  departmentId: rest.departmentId,
+                  departmentId: sanitizedDepartmentId,
                   birthDate: new Date(rest.birthDate),
                   courses: rest.courses
                     ? {
@@ -187,7 +207,7 @@ const staffCreationWorkflow = createWorkflow<RequestBodyType, unknown>(
     }
 
     await context.run("final-cleanup", async () => {
-      revalidateTag("staff", "seconds");
+      revalidateTag(getQueryKey().staff.all[0], "seconds");
       revalidateTag("users-list", "seconds");
       await triggerServerNotification(
         channelName,

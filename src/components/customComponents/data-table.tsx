@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports:reason */
 import { updateItemsPerPage } from "@/app/(private)/profile/_actions/update-items-per-page";
 import TableFooterDescription from "@/components/customComponents/TableFooterData";
 import TopActions from "@/components/customComponents/TopActions";
@@ -9,26 +10,26 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ExtendedSession } from "@/lib/auth-client";
+import type { ExtendedSession } from "@/lib/auth-client";
 import { fuzzyFilter } from "@/lib/fuzzyFilter";
-import { TransformerFn } from "@/utils/createDataTransformer";
+import type { TransformerFn } from "@/utils/createDataTransformer";
 import {
-  ColumnDef,
-  ExpandedState,
+  type ColumnDef,
+  type ExpandedState,
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  PaginationState,
-  Row,
-  RowSelectionState,
-  SortingState,
+  type PaginationState,
+  type Row,
+  type RowSelectionState,
+  type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
-import React, { JSX, useMemo, useState } from "react";
+import React, { type JSX, useMemo, useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 import { useAuth } from "./SessionProvider";
 
@@ -117,7 +118,7 @@ const DataTable = <TData,>({
   });
 
   return (
-    <Card className="mt-4 relative">
+    <Card className="mt-4 relative shadow-2xl pb-8">
       <CardHeader>
         <TopActions
           table={table}

@@ -1,18 +1,23 @@
-import { StaffResponseType } from "@/lib/types";
-import { ColumnDef } from "@tanstack/react-table";
+/** biome-ignore-all assist/source/organizeImports: reason */
+import type { StaffResponseType } from "@/lib/types";
+import type { ColumnDef } from "@tanstack/react-table";
 
 import { GenericActions } from "@/components/customComponents/GenericActions";
-import { useDeleteStaff } from "../hooks/use-delete-staff";
-import { RowSelections } from "@/components/customComponents/RowSelections";
 import { GenericRowExpansion } from "@/components/customComponents/GenericRowExpansion";
-import { GenericColumnSorting } from "@/components/customComponents/GenericColumnSorting";
-import Image from "next/image";
+import { RowSelections } from "@/components/customComponents/RowSelections";
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
+import { fuzzyFilter } from "@/lib/fuzzyFilter";
+import Image from "next/image";
+import { useDeleteStaffMutationFn } from "../actions/mutations";
 
 export const useGetStaffColumns = () => {
   const { formatDate } = useUserPreferredDateFormat();
 
-  const { deleteStaff, isPending } = useDeleteStaff();
+  const { isPending, mutateAsync } = useDeleteStaffMutationFn();
+
+  const handleDelete = async (id: string) => {
+    Promise.try(async () => mutateAsync(id));
+  };
   return [
     {
       id: "visibility",
@@ -47,26 +52,26 @@ export const useGetStaffColumns = () => {
         );
       },
     },
-    {
-      header: "EmployeeID",
-      accessorKey: "employeeId",
-    },
-    {
-      header: "Firstname",
-      accessorKey: "firstName",
-    },
-
+    // {
+    //   header: "EmployeeID",
+    //   accessorKey: "employeeId",
+    // },
     {
       header: "Lastname",
       accessorKey: "lastName",
     },
     {
-      header: "BirthDate",
-      accessorKey: "birthDate",
+      header: "Firstname",
+      accessorKey: "firstName",
+    },
+    {
+      header: "Othernames",
+      accessorKey: "middleName",
+    },
 
-      cell: ({ row }) => {
-        return formatDate(row.original.birthDate);
-      },
+    {
+      header: "BirthDate",
+      accessorFn: (row) => formatDate(row.birthDate),
     },
     {
       header: "Gender",
@@ -75,17 +80,17 @@ export const useGetStaffColumns = () => {
     {
       header: "Department",
       accessorKey: "department.name",
-      cell: ({ row }) =>
-        row.original.department?.name ? row.original.department.name : "",
+      cell: (info) => info.getValue(),
+      filterFn: fuzzyFilter,
     },
     {
       header: "Actions",
       cell: ({ row }) => {
         return (
           <GenericActions
-            dialogId="editStaff"
+            dialogId="edit-staff"
             row={row}
-            onDelete={deleteStaff}
+            onDelete={handleDelete}
             secondaryKey="employeeId"
             isPending={isPending}
           />

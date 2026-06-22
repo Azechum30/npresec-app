@@ -148,6 +148,7 @@ model Staff {
   classes                Class[]       @relation("ClassStaff")
   courses                Course[]      @relation("CourseStaff")
   grades                 Grade[]
+  formMaster             Class?        @relation("FormMaster")
 
   @@index([employeeId, firstName, lastName, gender])
   @@map("staff")
@@ -180,10 +181,12 @@ model Class {
   departmentId      String?
   maxCapacity       Int?
   currentEnrollment Int          @default(0)
+  classTeacherId    String?      @unique
   attendance        Attendance[]
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
   department        Department?  @relation(fields: [departmentId], references: [id])
+  classTeacher      Staff?       @relation("FormMaster", fields: [classTeacherId], references: [id], onDelete: SetNull)
   students          Student[]
   courses           Course[]     @relation("ClassCourses")
   staff             Staff[]      @relation("ClassStaff")
@@ -279,8 +282,9 @@ model Attendance {
   student      Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
   class        Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
 
-  @@unique([studentId, date, classId])
-  @@unique([studentId, date])
+  @@unique([studentId, date, classId, semester, academicYear])
+  @@index([studentId])
+  @@index([classId])
   @@map("attendance")
 }
 

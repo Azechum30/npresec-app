@@ -1,38 +1,33 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import LoadingButton from "@/components/customComponents/LoadingButton";
 import { MultiSelectCombox } from "@/components/customComponents/mult-select-combox";
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import TextAreaWithLabel from "@/components/customComponents/TextareaWithLabel";
-import { useConfirmDelete } from "@/components/customComponents/useConfirmDelete";
 import { Form } from "@/components/ui/form";
-import {
-  ClassesResponseType,
-  DepartmentResponseType,
-  StaffResponseType,
-} from "@/lib/types";
-import { CoursesSchema, CoursesType } from "@/lib/validation";
+import { CoursesSchema, type CoursesType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueries } from "@tanstack/react-query";
 import { Plus, Save } from "lucide-react";
-import React from "react";
-import { useForm } from "react-hook-form";
-import { getClassesAction } from "../../classes/actions/server-actions";
-import { getServerSideProps } from "../../departments/actions/getServerSideProps";
-import { getStaff } from "../../staff/actions/server";
+import { useMemo, type FC } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { classQueryOptions } from "../../classes/actions/queries";
+import { departmentsQueryOptions } from "../../departments/actions/queries";
+import { staffQueryOptions } from "../../staff/actions/queries";
 
 type CreateCoursProps = {
-  onSubmit: (data: CoursesType) => Promise<void>;
+  onSubmitAction: (data: CoursesType) => Promise<void>;
+  isPending: boolean;
   defaultValues?: CoursesType;
-  onDelete?: () => Promise<void>;
   id?: string;
-  isDeletePending?: boolean;
 };
 
-const CreateCourseForm: React.FC<CreateCoursProps> = ({
-  onSubmit,
-  onDelete,
+const CreateCourseForm: FC<CreateCoursProps> = ({
+  onSubmitAction,
+  isPending,
   defaultValues,
   id,
-  isDeletePending,
 }) => {
   const form = useForm<CoursesType>({
     resolver: zodResolver(CoursesSchema),
@@ -46,179 +41,153 @@ const CreateCourseForm: React.FC<CreateCoursProps> = ({
           departments: [],
           staff: [],
           classes: [],
-          createdAt: undefined,
+          createdAt: new Date(),
         },
   });
 
-  const [departments, setDepartments] = React.useState<
-    DepartmentResponseType[] | undefined
-  >();
-  const [teachers, setTeachers] = React.useState<
-    Array<StaffResponseType> | undefined
-  >();
-  const [classes, setClasses] = React.useState<
-    Array<ClassesResponseType> | undefined
-  >();
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const { confirmDelete, ConfirmDeleteComponent } = useConfirmDelete();
+  const departmentIds = useWatch({
+    control: form.control,
+    name: "departments",
+  });
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      setError(null);
-      const [departments, teachers, classes] = await Promise.all([
-        getServerSideProps(),
-        getStaff(),
-        getClassesAction(),
-      ]);
+  const [departmentsQueryData, staffQueryData, classesQueryData] = useQueries({
+    queries: [departmentsQueryOptions, staffQueryOptions, classQueryOptions],
+  });
 
-      if (departments.error) {
-        setError(departments.error);
-        setIsLoading(false);
-      } else if (teachers.error) {
-        setError(teachers.error);
-        setIsLoading(false);
-      } else if (classes.error) {
-        setError(classes.error);
-        setIsLoading(false);
-      } else {
-        setDepartments(departments.departments);
-        setTeachers(() => {
-          const newArray = teachers.staff?.map((tr) => ({
-            ...tr,
-            firstName: `${tr.lastName} ${tr.firstName} ${
-              tr.middleName && tr.middleName
-            }`,
-          }));
-          return newArray;
-        });
-        setClasses(classes.data);
-        setIsLoading(false);
-      }
-    };
+  const departments = useMemo(() => {
+    if (!departmentsQueryData.data) return [];
 
-    fetchData();
-  }, []);
+    return departmentsQueryData.data.map((dp) => ({
+      id: dp.id,
+      name: dp.name,
+    }));
+  }, [departmentsQueryData.data]);
 
-  const [isPending, startTransition] = React.useTransition();
+  const staff = useMemo(() => {
+    if (!staffQueryData.data) return [];
 
-  const handleSubmit = async (data: CoursesType) => {
-    startTransition(async () => {
-      await onSubmit(data);
-    });
-  };
+    return staffQueryData.data
+      .filter((st) => st.staffType === "Teaching")
+      .map((st) => ({
+        id: st.id,
+        name: `${st.lastName} ${st.firstName} ${st.middleName}`,
+      }));
+  }, [staffQueryData.data]);
+
+  const classes = useMemo(() => {
+    if (!departmentIds || !classesQueryData.data) return [];
+    return classesQueryData.data
+      .filter((cls) => departmentIds.includes(cls.departmentId as string))
+      .map((cls) => ({
+        id: cls.id,
+        name: `${cls.name} (${cls.level.replace(/_/g, " ")})`,
+      }));
+  }, [departmentIds, classesQueryData.data]);
+
+  const isLoading =
+    departmentsQueryData.isLoading ||
+    staffQueryData.isLoading ||
+    classesQueryData.isLoading;
+
+  if (isLoading) {
+    return <ShowLoadingState />;
+  }
 
   return (
-    <>
-      <ConfirmDeleteComponent />
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(handleSubmit)}
-          className="space-y-4 w-full h-[80vh] text-left rounded-md border p-4 overflow-auto">
-          <InputWithLabel
-            name="code"
-            fieldTitle="Course Code"
-            placeholder="e.g. Math101, Eng101 (optional)"
-            disabled={!!id}
-            schema={CoursesSchema}
-          />
-          <InputWithLabel
-            name="title"
-            fieldTitle="Course Title"
-            placeholder="e.g. Mathematics"
-            schema={CoursesSchema}
-          />
-          <InputWithLabel
-            name="credits"
-            fieldTitle="Course Credits"
-            type="number"
-            min={0}
-            placeholder="e.g. 2 or 3 or 5"
-            schema={CoursesSchema}
-          />
-          <DatePickerWithLabel
-            name="createdAt"
-            fieldTitle="Created Date"
-            schema={CoursesSchema}
-            startDate={1990}
-            endDate={new Date().getFullYear()}
-          />
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmitAction)}
+        className="space-y-4 w-full h-[80vh] text-left rounded-md border p-4 overflow-auto">
+        <InputWithLabel
+          name="code"
+          fieldTitle="Course Code"
+          placeholder="e.g. Math101, Eng101 (optional)"
+          disabled={!!id}
+          schema={CoursesSchema}
+        />
+        <InputWithLabel
+          name="title"
+          fieldTitle="Course Title"
+          placeholder="e.g. Mathematics"
+          schema={CoursesSchema}
+        />
+        <InputWithLabel
+          name="credits"
+          fieldTitle="Course Credits"
+          type="number"
+          min={0}
+          placeholder="e.g. 2 or 3 or 5"
+          schema={CoursesSchema}
+        />
+        <DatePickerWithLabel
+          name="createdAt"
+          fieldTitle="Created Date"
+          schema={CoursesSchema}
+          startDate={1990}
+          endDate={new Date().getFullYear()}
+        />
 
-          {departments !== undefined && departments.length > 0 && (
-            <MultiSelectCombox
-              name="departments"
-              fieldTitle="Select the streams that run the Course"
-              data={departments}
-              valueKey="id"
-              selectedKey="name"
-              schema={CoursesSchema}
-              placeholder="--- Select departments ---"
-            />
-          )}
-
-          {classes !== undefined && classes.length > 0 && (
-            <MultiSelectCombox
-              name="classes"
-              fieldTitle="Select the classes that offer this Course"
-              data={classes}
-              valueKey="id"
-              selectedKey="name"
-              schema={CoursesSchema}
-              placeholder="--- Select clasess ---"
-            />
-          )}
-          {teachers !== undefined && teachers.length > 0 && (
-            <MultiSelectCombox
-              name="staff"
-              fieldTitle="Select the teachers who teach this Course"
-              data={teachers}
-              valueKey="id"
-              selectedKey="firstName"
-              schema={CoursesSchema}
-              placeholder="--- Select staff ---"
-            />
-          )}
-          <TextAreaWithLabel
-            name="description"
-            fieldTitle="Course Descritpion"
-            placeholder="e.g. This course is about..."
+        {departments !== undefined && departments.length > 0 && (
+          <MultiSelectCombox
+            name="departments"
+            fieldTitle="Select the streams that run the Course"
+            data={departments}
+            valueKey="id"
+            selectedKey="name"
+            schema={CoursesSchema}
+            placeholder="Select departments"
           />
-          <div className="flex flex-col gap-4">
-            <LoadingButton loading={isPending} type="submit">
-              {id ? (
-                isPending ? (
-                  "Saving..."
-                ) : (
-                  <>
-                    <Save /> Save
-                  </>
-                )
-              ) : isPending ? (
-                "Creating..."
+        )}
+
+        {classes !== undefined && classes.length > 0 && (
+          <MultiSelectCombox
+            name="classes"
+            fieldTitle="Select the classes that offer this Course"
+            data={classes}
+            valueKey="id"
+            selectedKey="name"
+            schema={CoursesSchema}
+            placeholder="--- Select clasess ---"
+          />
+        )}
+        {staff && staff.length > 0 && (
+          <MultiSelectCombox
+            name="staff"
+            fieldTitle="Select the teachers who teach this Course"
+            data={staff}
+            valueKey="id"
+            selectedKey="name"
+            schema={CoursesSchema}
+            placeholder="Select staff"
+          />
+        )}
+        <TextAreaWithLabel
+          name="description"
+          fieldTitle="Course Descritpion"
+          placeholder="e.g. This course is about..."
+        />
+        <div className="flex flex-col gap-4">
+          <LoadingButton loading={isPending} type="submit">
+            {id ? (
+              isPending ? (
+                "Saving..."
               ) : (
                 <>
-                  <Plus />
-                  Create
+                  <Save /> Save
                 </>
-              )}
-            </LoadingButton>
-          </div>
-          {id && (
-            <LoadingButton
-              loading={isDeletePending as boolean}
-              type="button"
-              variant="destructive"
-              onClick={async () => {
-                const ok = await confirmDelete();
-                if (ok) await onDelete?.();
-              }}>
-              {isDeletePending ? "Deleting..." : "Delete"}
-            </LoadingButton>
-          )}
-        </form>
-      </Form>
-    </>
+              )
+            ) : isPending ? (
+              "Creating..."
+            ) : (
+              <>
+                <Plus />
+                Create
+              </>
+            )}
+          </LoadingButton>
+        </div>
+      </form>
+    </Form>
   );
 };
 

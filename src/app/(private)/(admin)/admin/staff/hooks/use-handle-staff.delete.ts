@@ -1,8 +1,7 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { deleteStaffRequest } from "../actions/server";
-import { toast } from "sonner";
-import { useState } from "react";
 
 export const useHandleStaffDelete = () => {
   const [isDeleting, startDeleteTransition] = useTransition();
@@ -12,12 +11,12 @@ export const useHandleStaffDelete = () => {
 
   const handleStaffDelete = async () => {
     startDeleteTransition(async () => {
-      const res = await deleteStaffRequest(id as string);
-      if (!res.success || res.error) {
-        setError(res.error || "Failed to delete staff");
-        setSuccess(false);
-        return;
-      }
+      await deleteStaffRequest(id as string);
+      // if (!res.success || res.error) {
+      //   setError(res.error || "Failed to delete staff");
+      //   setSuccess(false);
+      //   return;
+      // }
       setError("");
       setSuccess(true);
     });

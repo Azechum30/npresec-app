@@ -1,6 +1,8 @@
 "use server";
 
+import { ActionError, CUSTOM_ERRORS } from "@/lib/constants";
 import { getUserPermissions } from "@/lib/get-session";
+import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
 import { DepartmentSelect } from "@/lib/types";
 
@@ -8,7 +10,8 @@ export const getDepartment = async (id: string) => {
   try {
     const { hasPermission } = await getUserPermissions("view:departments");
 
-    if (!hasPermission) throw new Error("Unauthorized!");
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     const department = await prisma.department.findUnique({
       where: {
@@ -17,11 +20,12 @@ export const getDepartment = async (id: string) => {
       select: DepartmentSelect,
     });
 
-    if (!department) return { error: "No department found!" };
+    if (!department) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
 
     return { department };
   } catch (error) {
     console.error("Could not fetch department: ", error);
-    return { error: "Something went wrong!" };
+    const err = getErrorMessage(error);
+    throw err;
   }
 };

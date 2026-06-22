@@ -1,8 +1,9 @@
-import { auth } from "@/lib/auth";
+/** biome-ignore-all assist/source/organizeImports: reason */
+import type { auth } from "@/lib/auth";
 import { getSession } from "@/lib/get-session";
-import { UserRole } from "@/lib/types";
+import type { UserRole } from "@/lib/types";
 import { createAuthRedirect } from "@/utils/auth-redirects";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 export const config = {
   matcher: [
@@ -173,6 +174,14 @@ function hasRoleAccess(role: UserRole, pathname: string): boolean {
     staff: ["/teachers", "/profile", "/403", "/email-verified"],
     student: ["/students", "/profile", "/403", "/email-verified"],
     parent: ["/parents", "/profile", "/403", "/email-verified"],
+    classTeacher: [
+      "/staff",
+      "/profile",
+      "/unauthorized",
+      "/email-verified",
+      "/403",
+    ],
+    form_master: [],
   };
   return (roleAccessMap[role] ?? []).some((path) => pathname.startsWith(path));
 }
@@ -184,6 +193,8 @@ function getDashboardPath(role: UserRole): string {
     staff: "/teachers",
     student: "/students",
     parent: "/parents",
+    classTeacher: "/staff/dashboard",
+    form_master: "/staff/dashboard",
   };
   return dashboardMap[role] || "/";
 }

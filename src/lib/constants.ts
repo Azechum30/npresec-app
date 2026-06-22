@@ -1,5 +1,5 @@
-import { Column, Row, Table } from "@tanstack/react-table";
-import { DateFormatType } from "./validation";
+import type { Column, Row, Table } from "@tanstack/react-table";
+import type { DateFormatType } from "./validation";
 
 export const steps = [
   { title: "Personal", step: 1 },

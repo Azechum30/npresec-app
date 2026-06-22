@@ -1,93 +1,70 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import LoadingButton from "@/components/customComponents/LoadingButton";
 import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
 import { Form, FormDescription } from "@/components/ui/form";
-import { ClassesResponseType, DepartmentResponseType } from "@/lib/types";
-import { AcademicInfoSchema, AcademicInfoType } from "@/lib/validation";
+import { AcademicInfoSchema, type AcademicInfoType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueries } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { getClassesAction } from "../../classes/actions/server-actions";
-import { getServerSideProps } from "../../departments/actions/getServerSideProps";
+import { classQueryOptions } from "../../classes/actions/queries";
+import { departmentsQueryOptions } from "../../departments/actions/queries";
 import { useCancelEditStudent } from "../hooks/use-cancel-edit-student";
-import { useStudentStore } from "../store";
+import { useAcademicInfo, useStudentStore } from "../store";
 
 export default function AcademicInfoForm() {
   const { isEditing, academicInfo } = useStudentStore();
   const form = useForm<AcademicInfoType>({
     resolver: zodResolver(AcademicInfoSchema),
-    defaultValues: {
-      ...academicInfo,
-      classId: academicInfo.classId || "",
-      departmentId: academicInfo.departmentId || "",
-      graduationDate: academicInfo.graduationDate || undefined,
-      previousSchool: academicInfo.previousSchool || "",
-    },
+    defaultValues: academicInfo,
     mode: "onBlur",
   });
 
-  const [classes, setClasses] = useState<
-    Pick<ClassesResponseType, "id" | "name">[]
-  >([]);
-  const [departments, setDepartments] = useState<
-    Pick<DepartmentResponseType, "id" | "name">[]
-  >([]);
-
   const { actions } = useStudentStore();
-  const academicInfoData = useWatch({ control: form.control });
+  const academicInfoData = useAcademicInfo();
+  const selectedDepartment = useWatch({
+    control: form.control,
+    name: "departmentId",
+  });
 
   useEffect(() => {
-    actions.setAcademicInfo(academicInfoData);
-  }, [actions, academicInfoData]);
+    form.reset(academicInfoData);
+  }, [form, academicInfoData]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const [departmentPromise, classPromise] = await Promise.all([
-        getServerSideProps(),
-        getClassesAction(),
-      ]);
+  const [classQueryData, departmentsQueryData] = useQueries({
+    queries: [classQueryOptions, departmentsQueryOptions],
+  });
 
-      if (departmentPromise.error) {
-        return <div>An error has occurred!</div>;
-      }
+  const departments = useMemo(() => {
+    if (!departmentsQueryData.data) return [];
 
-      if (classPromise.error) {
-        return <div>An error has occurred!</div>;
-      }
+    return departmentsQueryData.data.map((dept) => ({
+      id: dept.id,
+      name: dept.name,
+    }));
+  }, [departmentsQueryData.data]);
 
-      if (departmentPromise.departments === undefined) return;
-      if (classPromise.data === undefined) return;
+  const classes = useMemo(() => {
+    if (!selectedDepartment || !classQueryData.data) return [];
 
-      setClasses(() => {
-        const newClass = classPromise.data.map((classItem) => ({
-          id: classItem.id,
-          name: classItem.name,
-        }));
-        return [...newClass];
-      });
-
-      setDepartments(() =>
-        departmentPromise.departments.map((dept) => ({
-          id: dept.id,
-          name: dept.name,
-        })),
-      );
-    };
-
-    fetchData();
-  }, []);
+    return classQueryData.data
+      .filter((cls) => cls.departmentId === selectedDepartment)
+      .map((cls) => ({
+        id: cls.id,
+        name: `${cls.name} (${cls.level.replace(/_/g, " ")})`,
+      }));
+  }, [selectedDepartment, classQueryData.data]);
 
   const { handleCancel } = useCancelEditStudent();
 
   function handleSubmit(data: AcademicInfoType) {
-    try {
+    Promise.try(() => {
       actions.setAcademicInfo(data);
       actions.NextStep();
-    } catch (error) {
-      console.log(error);
-    }
+    });
   }
 
   const levels = [

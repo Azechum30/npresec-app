@@ -1,3 +1,5 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
+
 "use client";
 import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import {
@@ -8,111 +10,68 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { CourseResponseType } from "@/lib/types";
-import { CoursesType } from "@/lib/validation";
-import { useEffect, useState, useTransition } from "react";
-import { toast } from "sonner";
-import { deleteCourse, getCourse, updateCourse } from "../actions/actions";
+import type { CoursesType } from "@/lib/validation";
+import { useQuery } from "@tanstack/react-query";
+import { useUpdateCourseMutationFn } from "../actions/mutations";
+import { getCourseQueryOption } from "../actions/queries";
 import CreateCourseForm from "../forms/create-course";
-
-type CourseDetailType = Omit<
-  CourseResponseType,
-  "departments" | "classes" | "teachers"
->;
-
-// interface FinalCourseDetail extends CourseDetailType {
-//   departments: string[];
-//   classes: string[];
-//   staff: string[];
-// }
 
 const EditCourseDialog = () => {
   const { id, dialogs, onClose } = useGenericDialog();
-  const [course, setCourse] =
-    useState<Awaited<ReturnType<typeof getCourse>>["course"]>();
-  const [isDeletePending, startTransition] = useTransition();
+  const { isPending, mutateAsync } = useUpdateCourseMutationFn(id as string);
 
-  useEffect(() => {
-    if (!id || !dialogs["editCourse"]) return;
-    const fetchCourse = async () => {
-      setCourse(undefined);
-      const res = await getCourse(id as string);
-      if (res.error || res.course === undefined) {
-        return toast.error("Failed to fetch course");
-      }
+  const validId = id ?? null;
+  const isOpen = !!dialogs["edit-course"];
 
-      setCourse({
-        ...res.course,
-      });
-    };
+  const { data } = useQuery({
+    ...getCourseQueryOption(validId as string),
+    enabled: isOpen && !!validId,
+  });
 
-    fetchCourse();
-  }, [id, dialogs]);
-
-  const handleUpdate = async (values: CoursesType) => {
-    const { error } = await updateCourse({ id: id as string, data: values });
-    if (error) {
-      toast.error(error || "Something went wrong!");
-      return;
-    } else {
-      toast.success("Course was updated successfully");
-      setTimeout(() => onClose("editCourse"), 300);
-    }
-  };
-
-  const handleDelete = async () => {
-    startTransition(async () => {
-      const { error } = await deleteCourse(id as string);
-
-      if (error) {
-        toast.error(error);
-        return;
-      } else {
-        toast.success("Course deleted successfully!");
-        setTimeout(() => onClose("editCourse"), 300);
-      }
+  const handleUpdate = async (values: CoursesType) =>
+    Promise.try(async () => {
+      await mutateAsync({ data: { ...values }, id: validId as string });
+      onClose("edit-course");
     });
-  };
 
   return (
-    <>
-      <Dialog
-        open={dialogs["editCourse"]}
-        onOpenChange={() => onClose("editCourse")}>
-        {course ? (
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Course</DialogTitle>
-              <DialogDescription>
-                Kindly make changes and save in realtime!
-              </DialogDescription>
-            </DialogHeader>
-            <CreateCourseForm
-              defaultValues={{
-                ...course,
-                departments: course.departments.map((dt) => dt.id),
-                classes: course.classes.map((cl) => cl.id),
-                staff: course.staff.map((s) => s.id),
-              }}
-              id={id}
-              onSubmit={handleUpdate}
-              onDelete={handleDelete}
-              isDeletePending={isDeletePending}
-            />
-          </DialogContent>
-        ) : (
-          <DialogContent>
-            <DialogHeader className="sr-only">
-              <DialogTitle>Loading Data</DialogTitle>
-              <DialogDescription>
-                Please waiting data being fetched!
-              </DialogDescription>
-            </DialogHeader>
-            <ShowLoadingState />
-          </DialogContent>
-        )}
-      </Dialog>
-    </>
+    <Dialog open={isOpen} onOpenChange={() => onClose("edit-course")}>
+      {data && isOpen && validId ? (
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Course</DialogTitle>
+            <DialogDescription>
+              Kindly make changes and save in realtime!
+            </DialogDescription>
+          </DialogHeader>
+          <CreateCourseForm
+            defaultValues={{
+              title: data.title,
+              code: data.code,
+              classes: data.classes.map((cls) => cls.id),
+              createdAt: data.createdAt,
+              credits: data.credits,
+              departments: data.departments.map((dp) => dp.id),
+              description: data.description,
+              staff: data.staff.map((st) => st.id),
+            }}
+            id={validId}
+            onSubmitAction={handleUpdate}
+            isPending={isPending}
+          />
+        </DialogContent>
+      ) : (
+        <DialogContent>
+          <DialogHeader className="sr-only">
+            <DialogTitle>Loading Data</DialogTitle>
+            <DialogDescription>
+              Please waiting data being fetched!
+            </DialogDescription>
+          </DialogHeader>
+          <ShowLoadingState />
+        </DialogContent>
+      )}
+    </Dialog>
   );
 };
 

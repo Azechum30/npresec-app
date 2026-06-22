@@ -1,15 +1,21 @@
-import { Button } from "@/components/ui/button";
-import { ClassesResponseType } from "@/lib/types";
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowDownUp, ArrowUpDown, Minus, Plus } from "lucide-react";
-import { useDeleteClass } from "../hooks/use-delete-class";
+/** biome-ignore-all assist/source/organizeImports:reason */
+
 import { GenericActions } from "@/components/customComponents/GenericActions";
 import { RowSelections } from "@/components/customComponents/RowSelections";
+import { Button } from "@/components/ui/button";
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
+import type { ClassesResponseType } from "@/lib/types";
+import type { ColumnDef } from "@tanstack/react-table";
+import { Minus, Plus } from "lucide-react";
+import { useDeleteClassMutationFn } from "../actions/mutations";
 
 export const useGetClassesColumns = () => {
-  const { deleteclass } = useDeleteClass();
   const { formatDate } = useUserPreferredDateFormat();
+  const { mutateAsync, isPending } = useDeleteClassMutationFn();
+
+  const handleDelete = async (id: string) => {
+    Promise.try(async () => await mutateAsync({ id }));
+  };
   return [
     {
       id: "selection",
@@ -54,9 +60,10 @@ export const useGetClassesColumns = () => {
         return (
           <GenericActions
             row={row}
-            onDelete={deleteclass}
+            onDelete={handleDelete}
             secondaryKey="id"
-            dialogId="editClass"
+            dialogId="edit-class"
+            isPending={isPending}
           />
         );
       },

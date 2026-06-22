@@ -1,10 +1,11 @@
-import { Table } from "@tanstack/react-table";
+import type { Table } from "@tanstack/react-table";
 import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
+import { startTransition, useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { ItemsPerPage } from "./items-per-page";
 
@@ -17,12 +18,21 @@ export default function TableFooterDescription<TData>({
   table,
   onPageSizeChangeAction,
 }: TableFooterDescriptionProps<TData>) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    startTransition(() => setIsMounted(true));
+  }, []);
+
   const { pageIndex, pageSize } = table.getState().pagination;
   const totalRows = table.getCoreRowModel().rows.length;
 
   const from = totalRows === 0 ? 0 : pageIndex * pageSize + 1;
 
   const to = Math.min((pageIndex + 1) * pageSize, totalRows);
+
+  if (!isMounted) return null;
+
   return (
     <div className="w-full flex justify-between items-center ps-4 pt-4 pb-4">
       <div className="text-muted-foreground text-sm hidden lg:flex lg:items-center lg:space-x-2 ">

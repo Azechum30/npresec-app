@@ -1,9 +1,10 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
-import { useStudentStore } from "../store";
-import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { steps } from "@/lib/constants";
+import { cn } from "@/lib/utils";
+import { useStudentStore } from "../store";
 
 export default function StudentOnboardingNavbar({
   className,
@@ -31,13 +32,13 @@ export default function StudentOnboardingNavbar({
               {/* Vertical connector for desktop */}
 
               {index < steps.length - 1 && (
-                <div className="grow justify-center relative w-[2px] h-[27px]">
-                  <div className="hidden md:block absolute left-4 top-[29px] h-full w-[2px] bg-muted-foreground -z-10" />
+                <div className="grow justify-center relative w-0.5 h-6.75">
+                  <div className="hidden md:block absolute left-4 top-7.25 h-full w-0.5 bg-muted-foreground -z-10" />
                   <div
                     className={cn(
-                      "hidden md:block absolute left-4 top-[29px] h-full w-[2px] bg-primary -z-10 transition-transform duration-300 origin-top transform",
+                      "hidden md:block absolute left-4 top-7.25 h-full w-0.5 bg-primary -z-10 transition-transform duration-300 origin-top transform",
                       currentStep > index + 1 ? "scale-y-100" : "scale-y-0",
-                      isEditing && "scale-y-100"
+                      isEditing && "scale-y-100",
                     )}
                   />
                 </div>
@@ -56,7 +57,7 @@ export default function StudentOnboardingNavbar({
                       isCompleted && "bg-primary border-primary",
                       !isActive &&
                         !isCompleted &&
-                        "bg-muted border-foreground group-hover:bg-muted-foreground"
+                        "bg-muted border-foreground group-hover:bg-muted-foreground",
                     )}>
                     {step.step}
                   </span>
@@ -70,20 +71,19 @@ export default function StudentOnboardingNavbar({
                       }),
                       "hidden md:inline-flex md:justify-center md:items-center text-left border-2 border-primary-foreground",
                       isActive && "border-primary",
-                      isCompleted && "border-primary"
+                      isCompleted && "border-primary",
                     )}>
                     {step.title}
                   </span>
                 </button>
 
-                {/* Horizontal connector for mobile - FIXED POSITIONING */}
                 {index < steps.length - 1 && (
-                  <div className="grow h-[2px] w-full relative md:hidden">
+                  <div className="grow h-0.5 w-full relative md:hidden">
                     <div className="absolute top-0 left-0 w-full h-full bg-muted-foreground" />
                     <div
                       className={cn(
                         "absolute top-0 left-0 w-full h-full bg-primary transition-transform duration-300 ease-in-out origin-left transform",
-                        currentStep > index + 1 ? "scale-x-100" : "scale-x-0"
+                        currentStep > index + 1 ? "scale-x-100" : "scale-x-0",
                       )}
                     />
                   </div>

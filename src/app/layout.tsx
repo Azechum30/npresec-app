@@ -1,3 +1,5 @@
+/** biome-ignore-all assist/source/organizeImports:reason */
+
 import ThemeProvider from "@/components/customComponents/theme-provider";
 import { ToggleOverflow } from "@/components/customComponents/toggle-overflow";
 import RouteTrackingProvider from "@/components/providers/RouteTrackingProvider";
@@ -6,11 +8,9 @@ import "@/lib/orpc.server";
 import { cn } from "@/lib/utils";
 import { Loader } from "lucide-react";
 import type { Metadata } from "next";
-import { Geist, Poppins, Roboto } from "next/font/google";
+import { Poppins, Roboto } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
-
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -54,10 +54,10 @@ export default function RootLayout({
           disableTransitionOnChange={true}>
           <Suspense
             fallback={
-              <div className="w-full h-screen flex justify-center items-center space-x-3">
+              <div className="w-full h-screen flex justify-center items-center">
                 <Loader className="size-16 text-primary animate-spin" />
-                <span className="bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent font-mono animate-ping">
-                  Data is loading...
+                <span className="font-mono text-base bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent animate-pulse">
+                  Loading Data...
                 </span>
               </div>
             }>

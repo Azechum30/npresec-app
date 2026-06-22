@@ -1,5 +1,7 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import {
   Dialog,
   DialogContent,
@@ -8,82 +10,33 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
+import type { StaffType } from "@/lib/validation";
+import { useQuery } from "@tanstack/react-query";
+import { useUpdateStaffMutationFn } from "../actions/mutations";
+import { getStaffQueryOptions } from "../actions/queries";
 import CreateStaffForm from "./forms/create-staff-form";
-
-import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
-import { useEffect, useRef } from "react";
-import { toast } from "sonner";
-import { useFetchInitialStaffData } from "../hooks/use-fetch-initial-staff-data";
-import { useHandleStaffUpdate } from "../hooks/use-handle-staff-update";
-import { useHandleStaffDelete } from "../hooks/use-handle-staff.delete";
 
 export default function EditStaffDialog() {
   const { id, dialogs, onClose } = useGenericDialog();
-  const { handleStaffUpdate, isUpdating, updateError, updateSucess } =
-    useHandleStaffUpdate();
-  const { handleStaffDelete, isDeleting, success, error } =
-    useHandleStaffDelete();
-  const { values, fetchError } = useFetchInitialStaffData();
+  const { mutateAsync, isPending } = useUpdateStaffMutationFn(id as string);
 
-  // Show initial fetch error once
-  const didShowFetchErrorRef = useRef(false);
-  useEffect(() => {
-    if (fetchError && !didShowFetchErrorRef.current) {
-      toast.error(fetchError);
-      didShowFetchErrorRef.current = true;
-    }
-  }, [fetchError]);
+  const isOpen = !!dialogs["edit-staff"];
+  const validId = id ?? null;
 
-  // Show update error after an attempt completes
-  const prevUpdatingRef = useRef<boolean>(false);
-  useEffect(() => {
-    const wasUpdating = prevUpdatingRef.current;
-    if (wasUpdating && !isUpdating && updateError) {
-      toast.error(updateError);
-    }
-    prevUpdatingRef.current = isUpdating;
-  }, [isUpdating, updateError]);
+  const { data } = useQuery({
+    ...getStaffQueryOptions(validId as string),
+    enabled: isOpen && !!validId,
+  });
 
-  // Show delete error after an attempt completes
-  const prevDeletingRef = useRef<boolean>(false);
-  useEffect(() => {
-    const wasDeleting = prevDeletingRef.current;
-    if (wasDeleting && !isDeleting && error) {
-      toast.error(error);
-    }
-    prevDeletingRef.current = isDeleting;
-  }, [isDeleting, error]);
-
-  const wpRef = useRef<boolean | null>(false);
-
-  useEffect(() => {
-    const wasUpateSucess = wpRef.current;
-
-    if (wasUpateSucess && !isUpdating && updateSucess) {
-      toast.success("Staff profile updated successfully");
-      setTimeout(() => {
-        onClose("editStaff");
-      }, 100);
-    }
-    wpRef.current = isUpdating;
-  }, [updateSucess, isUpdating]);
-
-  useEffect(() => {
-    if (success) {
-      toast.success("Staff profile deleted successfully");
-      setTimeout(() => {
-        onClose("editStaff");
-      }, 100);
-    }
-  }, [success, onClose]);
+  const handleStaffUpdate = (data: StaffType) =>
+    Promise.try(async () => {
+      await mutateAsync({ ...data, id: validId as string });
+      onClose("edit-staff");
+    });
 
   return (
-    <Dialog
-      open={dialogs["editStaff"] === true ? true : false}
-      onOpenChange={() => {
-        onClose("editStaff");
-      }}>
-      {!!id && dialogs["editStaff"] && values ? (
+    <Dialog open={isOpen} onOpenChange={() => onClose("edit-staff")}>
+      {validId && isOpen && data ? (
         <DialogContent className="w-full md:max-w-4xl">
           <DialogHeader>
             <DialogTitle>Edit Staff Profile</DialogTitle>
@@ -94,11 +47,21 @@ export default function EditStaffDialog() {
 
           <CreateStaffForm
             id={id}
-            defaultValues={values}
-            onSubmit={handleStaffUpdate}
-            onDelete={handleStaffDelete}
-            isPending={isUpdating}
-            isDeletePending={isDeleting}
+            defaultValues={{
+              ...data,
+              courses: data.courses.map((c) => c.id),
+              email: data.user?.email as string,
+              username: data.user?.username as string,
+              classes: data.classes.map((c) => c.id),
+              licencedNumber: data.licencedNumber ?? undefined,
+              rgNumber: data.rgNumber ?? undefined,
+              ghcardNumber: data.ghcardNumber ?? undefined,
+              ssnitNumber: data.ssnitNumber ?? undefined,
+              imageURL: data.user?.image ?? undefined,
+              academicQual: data.academicQual ?? undefined,
+            }}
+            onSubmitAction={handleStaffUpdate}
+            isPending={isPending}
           />
         </DialogContent>
       ) : (

@@ -1,59 +1,52 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
-import LoadingState from "@/components/customComponents/Loading";
+import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import DataTable from "@/components/customComponents/data-table";
-import { useCourseStore } from "@/hooks/use-generic-store";
-import { FC, use, useEffect, useMemo } from "react";
-import { getCourses } from "../actions/actions";
+import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { useDeleteCoursesMutationFn } from "../actions/mutations";
+import { coursesQueryOptions } from "../actions/queries";
+import { coursesTransformer } from "../utils/courses-transformer";
 import CourseRowDetail from "./CourseRowDetail";
 import { useGetCourseColumns } from "./courses-columns";
-import { useDeleteCourse } from "../hooks/use-delete-course";
-import { useBulkDeleteCourses } from "../hooks/use-bulk-delete-courses";
-import { coursesTransformer } from "../utils/courses-transformer";
-import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
-import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
-import { NoDataFound } from "@/components/customComponents/no-data-found";
 
-type CoursesDataTableProps = {
-  initialState: Awaited<ReturnType<typeof getCourses>>;
-};
-
-const RenderCoursesDataTable: FC<CoursesDataTableProps> = ({
-  initialState,
-}) => {
+const RenderCoursesDataTable = () => {
   const columns = useGetCourseColumns();
-  const { isPending: isDeletePending } = useDeleteCourse();
-  const { deleteCourses } = useBulkDeleteCourses();
   const { preferredDateFormat } = useUserPreferredDateFormat();
 
   const transformer = useMemo(
     () => coursesTransformer(preferredDateFormat),
-    [preferredDateFormat]
+    [preferredDateFormat],
   );
+  const { mutateAsync } = useDeleteCoursesMutationFn();
+
+  const { data, error } = useSuspenseQuery({
+    ...coursesQueryOptions,
+  });
 
   return (
     <>
-      {initialState.error ? (
-        <ErrorComponent error={initialState.error} />
-      ) : initialState.courses === undefined ? (
-        <NoDataFound />
+      {error ? (
+        <ErrorComponent error={error.message} />
+      ) : data === undefined ? (
+        <FallbackComponent />
       ) : (
         <DataTable
-          data={initialState.courses}
+          data={data}
           columns={columns}
           transformer={transformer}
           filename="Courses-list"
           exportKey="courses"
           onDelete={async (rows) => {
             const ids = rows.map((row) => row.original.id);
-            const codes = rows.map((row) => row.original.code);
-            await deleteCourses(ids, codes);
+            await Promise.try(async () => mutateAsync(ids));
           }}
           renderSubComponent={(row) => <CourseRowDetail row={row} />}
         />
       )}
-
-      {isDeletePending && <LoadingState />}
     </>
   );
 };

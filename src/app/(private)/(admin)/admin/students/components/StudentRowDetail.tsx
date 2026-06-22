@@ -1,6 +1,7 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
-import { StudentResponseType } from "@/lib/types";
-import { Row } from "@tanstack/react-table";
+import type { StudentResponseType } from "@/lib/types";
+import type { Row } from "@tanstack/react-table";
 import {
   BadgeCheck,
   BookOpen,
@@ -101,35 +102,35 @@ export default function StudentRowDetail({ row }: StudentRowDetailProps) {
           <h3 className="font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2 text-lg">
             <UserCircle2 className="w-6 h-6 text-blue-500" /> Personal Info
           </h3>
-          <ul className="space-y-2 text-gray-700 dark:text-gray-300 text-wrap">
-            <li className="flex items-center gap-3">
+          <ul className="space-y-2 text-gray-700 dark:text-gray-300">
+            <li className="flex items-center gap-2 text-wrap">
               <Mail className="w-5 h-5 text-red-400" />
               <span className="font-medium">Email:</span>
               <span>{original.user?.email ?? "N/A"}</span>
             </li>
-            <li className="flex items-center gap-3">
+            <li className="flex items-center gap-2 text-wrap">
               <Phone className="w-5 h-5 text-green-400" />
               <span className="font-medium">Phone:</span>
               <span>{original.phone ?? "N/A"}</span>
             </li>
-            <li className="flex items-center gap-3">
+            <li className="flex items-center gap-2 text-wrap">
               <MapPin className="w-5 h-5 text-yellow-400" />
               <span className="font-medium">Address:</span>
               <span>{original.address ?? "N/A"}</span>
             </li>
-            <li className="flex items-center gap-3">
+            <li className="flex items-center gap-2 text-wrap">
               <span className="font-medium">Nationality:</span>
               <span>{original.nationality ?? "N/A"}</span>
             </li>
-            <li className="flex items-center gap-3">
+            <li className="flex items-center gap-2 text-wrap">
               <span className="font-medium">Religion:</span>
               <span>{original.religion ?? "N/A"}</span>
             </li>
-            <li className="flex items-center gap-3">
+            <li className="flex items-center gap-2 text-wrap">
               <span className="font-medium">Gender:</span>
               <span>{original.gender ?? "N/A"}</span>
             </li>
-            <li className="flex items-center gap-3">
+            <li className="flex items-center gap-2 text-wrap">
               <span className="font-medium">Birth Date:</span>
               <span>
                 {original.birthDate ? formatDate(original.birthDate) : "N/A"}

@@ -1,3 +1,5 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
+
 "use server";
 import "server-only";
 
@@ -5,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { DepartmentSelect } from "@/lib/types";
 import {
   DeleteDepartmentsSchema,
-  DeleteDepartmentsType,
+  type DeleteDepartmentsType,
 } from "@/lib/validation";
 import { getUserWithPermissions } from "@/utils/get-user-with-permission";
 import { revalidatePath } from "next/cache";

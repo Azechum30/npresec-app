@@ -1,7 +1,9 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
+
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
+import type { StaffType } from "@/lib/validation";
 import { useEffect, useState } from "react";
 import { getStaffMember } from "../actions/server";
-import { StaffType } from "@/lib/validation";
 
 export const useFetchInitialStaffData = () => {
   const [values, setValues] = useState<StaffType | undefined>();
@@ -9,7 +11,7 @@ export const useFetchInitialStaffData = () => {
   const [fetchSucess, setFetchSuccess] = useState(false);
   const { id, dialogs } = useGenericDialog();
 
-  const isEditOpen = dialogs["editStaff"] === true;
+  const isEditOpen = !!dialogs["edit-staff"];
 
   useEffect(() => {
     if (!isEditOpen || !id) return;
@@ -17,12 +19,6 @@ export const useFetchInitialStaffData = () => {
     const fetchStaffData = async () => {
       const res = await getStaffMember(id as string);
 
-      if (res.error) {
-        setFetchError(res.error || "Failed to fetch staff data");
-        setFetchSuccess(false);
-        setValues(undefined);
-        return;
-      }
       if (res.staff === undefined) {
         setFetchError("");
         setFetchSuccess(false);

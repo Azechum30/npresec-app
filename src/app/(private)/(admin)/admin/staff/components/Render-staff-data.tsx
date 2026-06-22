@@ -1,46 +1,44 @@
-"use client";
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 import DataTable from "@/components/customComponents/data-table";
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
-import { NoDataFound } from "@/components/customComponents/no-data-found";
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { getStaff } from "../actions/server";
-import { useBulkDeleteStaff } from "../hooks/use-bulk-delete-staff";
+import { useDeleteStaffsMutationFn } from "../actions/mutations";
+import { staffQueryOptions } from "../actions/queries";
 import { createStaffTransformer } from "../utils/staff-transformer";
 import { useGetStaffColumns } from "./StaffColumns";
 import StaffRowDetail from "./StaffRowDetail";
 
-type Props = {
-  initialData: Awaited<ReturnType<typeof getStaff>>;
-};
-
-export default function RenderStaffData({ initialData }: Props) {
+export default function RenderStaffData() {
   const columns = useGetStaffColumns();
-  const { deletestaff } = useBulkDeleteStaff();
   const { preferredDateFormat } = useUserPreferredDateFormat();
   const staffTransformer = useMemo(
     () => createStaffTransformer(preferredDateFormat),
     [preferredDateFormat],
   );
+  const { mutateAsync } = useDeleteStaffsMutationFn();
+
+  const { data, error } = useSuspenseQuery({
+    ...staffQueryOptions,
+  });
 
   return (
     <>
-      {initialData.error ? (
-        <ErrorComponent error={initialData.error} />
-      ) : initialData.staff === undefined ? (
-        <NoDataFound />
+      {error ? (
+        <ErrorComponent error={error.message} />
       ) : (
         <DataTable
           showImportButton={true}
           columns={columns}
-          data={initialData.staff}
+          data={data}
           transformer={staffTransformer}
           filename="Staff-list"
           exportKey="staff"
           onDelete={async (rows) => {
             const ids = rows.map((row) => row.original.id);
-            await deletestaff(ids);
+            Promise.try(async () => await mutateAsync(ids));
           }}
           renderSubComponent={(row) => <StaffRowDetail row={row} />}
         />

@@ -3,13 +3,13 @@
 
 import type { Prisma } from "@/generated/prisma/client";
 import { computeGraduationDate } from "@/lib/compute-graduation-date";
+import { ActionError, CUSTOM_ERRORS } from "@/lib/constants";
 import { generatePassword } from "@/lib/generatePassword";
 import { getUserPermissions } from "@/lib/get-session";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/server-only-actions/validate-env";
 import { workflowClient } from "@/lib/server-only-actions/workflow";
-import { StudentSelect } from "@/lib/types";
 import {
   type BulkCreateStudentsType,
   EditStudentSchema,
@@ -27,8 +27,10 @@ import { getError } from "@/utils/get-error";
 import { triggerRollback } from "@/utils/trigger-better-auth-user-delete";
 import { triggerImageUpload } from "@/utils/trigger-image-upload";
 import * as Sentry from "@sentry/nextjs";
-import { updateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { filterBools } from "../../staff/utils/check-existing-related-records";
+import { getQueryKey } from "../../staff/utils/get-query-key";
+import { getSingleCachedStudent } from "../utils/get-single-cached-student";
 import { validateAndTransformStudentsData } from "../utils/validate-and-transform-students-data";
 
 export const createStudent = async (values: StudentType) => {
@@ -44,17 +46,14 @@ export const createStudent = async (values: StudentType) => {
       }),
     ]);
 
-    if (!hasPermission || !user) return { error: "Permission denied!" };
-    if (existingUser) return { error: `${values.email} is already taken!` };
-    if (!role) return { error: "Student role not found in system." };
+    if (!hasPermission || !user)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
+    if (existingUser)
+      throw new ActionError(`${values.email} is already taken!`);
+    if (!role) throw new ActionError("Student role not found in system.");
 
-    // 2. Validation
     const result = StudentSchema.safeParse(values);
-    if (!result.success) {
-      return {
-        error: result.error.message,
-      };
-    }
+    if (!result.success) throw result.error;
 
     const { email, imageFile, classId, departmentId, photoURL, ...rest } =
       result.data;
@@ -84,14 +83,15 @@ export const createStudent = async (values: StudentType) => {
     }
 
     console.error("[CREATE_STUDENT_ERROR]:", error);
-    return { error: getError(error) };
+    throw getErrorMessage(error);
   }
 };
 
 export const getStudents = async (studentIDs?: string[]) => {
   try {
     const { hasPermission } = await getUserPermissions("view:students");
-    if (!hasPermission) return { error: "Permission denied" };
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     let query: Prisma.StudentWhereInput = {};
 
@@ -107,14 +107,15 @@ export const getStudents = async (studentIDs?: string[]) => {
   } catch (error) {
     console.error("Could not fetch students:", error);
     Sentry.captureException(error);
-    return { error: getError(error) };
+    throw getErrorMessage(error);
   }
 };
 
 export const bulkDeleteStudents = async (ids: string[]) => {
   try {
     const { hasPermission } = await getUserPermissions("delete:students");
-    if (!hasPermission) return { error: "Permission denied" };
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     const studentsToDelete = await prisma.student.findMany({
       where: { id: { in: ids } },
@@ -149,23 +150,22 @@ export const bulkDeleteStudents = async (ids: string[]) => {
       });
     });
 
-    updateTag("students-list");
-    updateTag("users-list");
+    revalidateTag(getQueryKey().student.all[0], "seconds");
+    revalidateTag(getQueryKey().user.all[0], "seconds");
 
     return { count: result.count };
   } catch (error) {
     console.error("[BULK_DELETE_ERROR]:", error);
     Sentry.captureException(error);
-    return {
-      error: getError(error),
-    };
+    throw getErrorMessage(error);
   }
 };
 
 export const deleteStudent = async (id: string) => {
   try {
     const { hasPermission } = await getUserPermissions("delete:students");
-    if (!hasPermission) return { error: "Permission denied" };
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     const existingStudent = await prisma.student.findUnique({
       where: { id },
@@ -175,7 +175,7 @@ export const deleteStudent = async (id: string) => {
       },
     });
 
-    if (!existingStudent) return { error: "No student found!" };
+    if (!existingStudent) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
 
     await prisma.$transaction(async (tsx) => {
       await tsx.class.update({
@@ -190,48 +190,43 @@ export const deleteStudent = async (id: string) => {
       });
     });
 
-    updateTag("students-list");
-    updateTag("users-list");
+    revalidateTag(getQueryKey().student.all[0], "seconds");
+    revalidateTag(getQueryKey().user.all[0], "seconds");
 
     return { success: true };
   } catch (error) {
-    Sentry.captureException(error);
     console.error("Could not delete student: ", error);
-    return { error: getError(error) };
+    Sentry.captureException(error);
+    throw getErrorMessage(error);
   }
 };
 
 export const getStudent = async (id: string) => {
   try {
     const { hasPermission } = await getUserPermissions("view:students");
-    if (!hasPermission) return { error: "Permission denied!" };
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
-    const student = await prisma.student.findUnique({
-      where: { id },
-      select: StudentSelect,
-    });
+    const student = await getSingleCachedStudent(id);
 
-    if (!student) return { error: "Could not fetch student!" };
+    if (!student) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
 
     return { student };
   } catch (error) {
-    Sentry.captureException(error);
     console.error("Could not fetch student: ", error);
-    return { error: getErrorMessage(error) };
+    Sentry.captureException(error);
+    throw getErrorMessage(error);
   }
 };
 
 export const updateStudent = async (values: EditStudentType) => {
   try {
     const { hasPermission } = await getUserPermissions("edit:students");
-    if (!hasPermission) return { error: "Permission denied" };
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     const result = EditStudentSchema.safeParse(values);
-    if (!result.success) {
-      return {
-        error: result.error.issues.flatMap((e) => e.message).join("\n"),
-      };
-    }
+    if (!result.success) throw result.error;
 
     const { id, data } = result.data;
     const admissionYear = new Date(data.dateEnrolled).getFullYear();
@@ -249,10 +244,6 @@ export const updateStudent = async (values: EditStudentType) => {
 
       const yearInDB = new Date(current.dateEnrolled).getFullYear();
       if (yearInDB !== admissionYear) {
-        console.info(
-          `[UPDATE_STUDENT] Re-indexing ${current.studentNumber} due to enrollment year change.`,
-        );
-
         const latest = await tx.student.findFirst({
           where: {
             departmentId: data.departmentId,
@@ -266,7 +257,7 @@ export const updateStudent = async (values: EditStudentType) => {
         });
 
         const sequence = latest
-          ? (parseInt(latest.studentNumber.slice(-3)) || 0) + 1
+          ? (parseInt(latest.studentNumber.slice(-3), 10) || 0) + 1
           : 1;
         const dept = await tx.department.findUnique({
           where: { id: data.departmentId as string },
@@ -340,13 +331,14 @@ export const updateStudent = async (values: EditStudentType) => {
       );
     }
 
-    updateTag("students-list");
+    revalidateTag(getQueryKey().student.all[0], "seconds");
+    revalidateTag(getQueryKey(id).student.single[0], "seconds");
 
     return { success: true };
-  } catch (error: any) {
-    console.error("[UPDATE_STUDENT_ERROR]:", error.message);
+  } catch (error) {
+    console.error(error);
     Sentry.captureException(error);
-    return { error: getError(error) };
+    throw getErrorMessage(error);
   }
 };
 

@@ -1,15 +1,17 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
+import { getQueryKey } from "@/app/(private)/(admin)/admin/staff/utils/get-query-key";
 import { emailBatchWorkflow } from "@/app/api/batch/onboard-staff/[[...all]]/route";
 import { computeGraduationDate } from "@/lib/compute-graduation-date";
 import { prisma } from "@/lib/prisma";
 import { triggerServerNotification } from "@/lib/pusher";
 import { env } from "@/lib/server-only-actions/validate-env";
-import { BulkStudentOnboardingType, UserWithIndexT } from "@/lib/types";
+import type { BulkStudentOnboardingType, UserWithIndexT } from "@/lib/types";
 import { createUserCredentials } from "@/utils/create-user-credentials";
 import { getEmailBatchConfig } from "@/utils/email-batch-config";
 import {
-  Department,
+  type Department,
   generateStudentIndex,
-  gradelevels,
+  type gradelevels,
 } from "@/utils/generateStudentIndex";
 import { createWorkflow, serveMany } from "@upstash/workflow/dist/nextjs";
 import { revalidateTag } from "next/cache";
@@ -65,7 +67,7 @@ const studentsOnboardingWorkflow = createWorkflow<
               });
 
               const seq = latest
-                ? (parseInt(latest.studentNumber.slice(-3)) || 0) + 1
+                ? (parseInt(latest.studentNumber.slice(-3), 10) || 0) + 1
                 : 1;
               const studentID = generateStudentIndex({
                 admissionYear,
@@ -142,8 +144,8 @@ const studentsOnboardingWorkflow = createWorkflow<
   }
 
   await context.run("final-students-onboarding-cleanup", async () => {
-    revalidateTag("students-list", "seconds");
-    revalidateTag("users-list", "seconds");
+    revalidateTag(getQueryKey().student.all[0], "seconds");
+    revalidateTag(getQueryKey().user.all[0], "seconds");
     await triggerServerNotification(
       channelName,
       "student-bulk-creation-success",

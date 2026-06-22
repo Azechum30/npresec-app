@@ -1,12 +1,12 @@
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { StaffSelect } from "@/lib/types";
-import { StaffType } from "@/lib/validation";
+import type { StaffType } from "@/lib/validation";
 import { triggerRollback } from "@/utils/trigger-better-auth-user-delete";
 
 export const triggerStaffCreation = async (
   userId: string,
-  data: Omit<StaffType, "imageFile" | "email" | "username">
+  data: Omit<StaffType, "imageFile" | "email" | "username">,
 ) => {
   const {
     departmentId,

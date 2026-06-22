@@ -1,15 +1,20 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 import { GenericActions } from "@/components/customComponents/GenericActions";
 import { RowSelections } from "@/components/customComponents/RowSelections";
 import { Button } from "@/components/ui/button";
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
-import { CourseResponseType } from "@/lib/types";
-import { ColumnDef } from "@tanstack/react-table";
+import type { CourseResponseType } from "@/lib/types";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Minus, Plus } from "lucide-react";
-import { useDeleteCourse } from "../hooks/use-delete-course";
+import { useDeleteCourseMutationFn } from "../actions/mutations";
 
 export const useGetCourseColumns = () => {
-  const { deletecourse, isPending } = useDeleteCourse();
+  const { isPending, mutateAsync } = useDeleteCourseMutationFn();
   const { formatDate } = useUserPreferredDateFormat();
+
+  const handleDelete = async (id: string) => {
+    Promise.try(async () => await mutateAsync(id));
+  };
   return [
     {
       id: "selection",
@@ -34,9 +39,7 @@ export const useGetCourseColumns = () => {
     },
     {
       header: "CreatedAt",
-      cell: ({ row }) => {
-        return formatDate(row.original.createdAt);
-      },
+      accessorFn: (row) => formatDate(row.createdAt),
     },
 
     {
@@ -60,9 +63,9 @@ export const useGetCourseColumns = () => {
         return (
           <GenericActions
             row={row}
-            onDelete={deletecourse}
+            onDelete={handleDelete}
             secondaryKey="id"
-            dialogId="editCourse"
+            dialogId="edit-course"
             isPending={isPending}
           />
         );

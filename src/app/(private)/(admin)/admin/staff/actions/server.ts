@@ -1,8 +1,8 @@
 /** biome-ignore-all assist/source/organizeImports: reason */
 
 "use server";
-import { Prisma } from "@/generated/prisma/client";
 import { arcjetEmailProtection } from "@/lib/arcjet";
+import { ActionError, CUSTOM_ERRORS } from "@/lib/constants";
 import { getUserPermissions } from "@/lib/get-session";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
@@ -13,39 +13,33 @@ import { StaffSelect } from "@/lib/types";
 import { StaffSchema, type StaffType } from "@/lib/validation";
 import { transformAndValidateStaffData } from "@/utils/staff-data-transformer";
 import { triggerImageUpload } from "@/utils/trigger-image-upload";
-import { updateTag } from "next/cache";
+import * as Sentry from "@sentry/nextjs";
+import { revalidateTag } from "next/cache";
 import "server-only";
+import z from "zod";
 import { checkExistingRelatedRecords } from "../utils/check-existing-related-records";
 import { getCachedStaff } from "../utils/get-cached-staff";
+import { getQueryKey } from "../utils/get-query-key";
+import { getSingleCachedStaff } from "../utils/get-single-cached-staff";
 
 export const createStaff = async (values: unknown) => {
   try {
     const { user: authUser, hasPermission } =
       await getUserPermissions("create:staff");
 
-    if (!authUser || !hasPermission) return { error: "Permission denied" };
+    if (!authUser || !hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     const { data, error, success } = StaffSchema.safeParse(values);
 
-    if (!success || error) {
-      const zodError = error.issues.map((issue) => ({
-        field: [issue.path.join(".")],
-        message: issue.message,
-      }));
-
-      return {
-        error: zodError.map((e) => `${e.field}: ${e.message}`).join("\n"),
-      };
-    }
+    if (!success) throw error;
 
     const { error: emailCheckError } = await arcjetEmailProtection(
       data.email,
       authUser.id,
     );
 
-    if (emailCheckError) {
-      return { error: emailCheckError };
-    }
+    if (emailCheckError) throw new ActionError(emailCheckError);
 
     const normalizedStaff = transformAndValidateStaffData(data);
 
@@ -56,9 +50,9 @@ export const createStaff = async (values: unknown) => {
       });
 
       if (department?.headId !== null && normalizedStaff.isDepartmentHead) {
-        return {
-          error: "The Selected Department already has a head assigned.",
-        };
+        throw new ActionError(
+          "The Selected Department already has a head assigned.",
+        );
       }
     }
 
@@ -70,10 +64,10 @@ export const createStaff = async (values: unknown) => {
     );
 
     if (duplicates) {
-      return { error: duplicates };
+      throw new ActionError(duplicates);
     }
 
-    if (!staffRole) return { error: "No teaching role found!" };
+    if (!staffRole) throw new ActionError("No teaching role found!");
 
     await workflowClient.trigger({
       url: `${env.UPSTASH_WORKFLOW_URL}/api/single/onboard-staff/singleStaffCreationWorkflow`,
@@ -87,13 +81,7 @@ export const createStaff = async (values: unknown) => {
     return { success: true };
   } catch (error) {
     console.error("Could not create staff:", error);
-
-    return {
-      error:
-        process.env.NODE_ENV === "development"
-          ? String(error)
-          : "Something went wrong!",
-    };
+    throw getErrorMessage(error);
   }
 };
 
@@ -101,64 +89,82 @@ export const getStaff = async () => {
   try {
     const { hasPermission } = await getUserPermissions("view:staff");
 
-    if (!hasPermission) return { error: "Permission denied" };
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     const staffData = await getCachedStaff();
 
     return { staff: staffData || [] };
   } catch (error) {
     console.error("Could not fetch staff:", error);
-    return {
-      error:
-        process.env.NODE_ENV === "development"
-          ? getErrorMessage(error)
-          : "Something went wrong!",
-    };
+    throw getErrorMessage(error);
   }
 };
 
 export const getStaffMember = async (id: string) => {
   try {
     const { hasPermission } = await getUserPermissions("view:staff");
-    if (!hasPermission) return { error: "Permission denied" };
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
-    const staff = await prisma.staff.findUnique({
-      where: { id },
-      select: StaffSelect,
-    });
+    const staff = await getSingleCachedStaff(id);
 
-    if (!staff) {
-      return { error: `No Staff found with this ${id}` };
-    }
+    if (!staff) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
 
     return { staff };
   } catch (error) {
-    return {
-      error:
-        process.env.NODE_ENV === "development"
-          ? getErrorMessage(error)
-          : "Something went wrong!",
-    };
+    console.error("An error occurred", error);
+    Sentry.captureException(error);
+    throw getErrorMessage(error);
   }
 };
 
-export const updateStaff = async (id: string, data: StaffType) => {
+export const updateStaff = async (data: StaffType & { id: string }) => {
   try {
     const { hasPermission } = await getUserPermissions("edit:staff");
-    if (!hasPermission) return { error: "Permission denied" };
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
-    const unvalidData = StaffSchema.safeParse(data);
+    const unvalidData = StaffSchema.extend({ id: z.string() }).safeParse(data);
 
-    if (!unvalidData.success) {
-      const zodissues = unvalidData.error.issues
-        .map((err) => `${err.path[0] as any}: ${err.message}`)
-        .join("\n");
-      return {
-        error: zodissues,
-      };
+    if (!unvalidData.success) throw unvalidData.error;
+
+    const { id, ...rest } = unvalidData.data;
+
+    const normalizedStaff = transformAndValidateStaffData(rest);
+
+    const existing = await prisma.staff.findFirst({
+      where: {
+        id: { not: id },
+        OR: [
+          { employeeId: normalizedStaff.employeeId },
+          { ghcardNumber: normalizedStaff.ghcardNumber },
+          { licencedNumber: normalizedStaff.licencedNumber },
+          { ssnitNumber: normalizedStaff.ssnitNumber },
+          { rgNumber: normalizedStaff.rgNumber },
+        ],
+      },
+    });
+
+    if (existing) {
+      if (existing.ghcardNumber === normalizedStaff.ghcardNumber) {
+        throw new ActionError(
+          "A staff already exists with this Ghana card number",
+        );
+      } else if (existing.employeeId === normalizedStaff.employeeId) {
+        throw new ActionError("A staff already exists with this staff ID");
+      } else if (existing.licencedNumber === normalizedStaff.licencedNumber) {
+        throw new ActionError(
+          "A staff already exists with this licence number",
+        );
+      } else if (existing.ssnitNumber === normalizedStaff.ssnitNumber) {
+        throw new ActionError("A staff already exists with this SSNIT number");
+      } else if (existing.rgNumber === normalizedStaff.rgNumber) {
+        throw new ActionError(
+          "A staff already exists with this registered number",
+        );
+      }
     }
-
-    const normalizedStaff = transformAndValidateStaffData(unvalidData.data);
 
     const {
       email,
@@ -221,45 +227,22 @@ export const updateStaff = async (id: string, data: StaffType) => {
         "user" as const,
       ));
     }
-
-    updateTag("staff-list");
+    revalidateTag(getQueryKey().staff.all[0], "seconds");
+    revalidateTag(getQueryKey(id).staff.single[1] as string, "seconds");
 
     return { data: updatedRecord };
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2003") {
-        const targetFields = error.meta?.target as string[];
-
-        const errorMessage = targetFields.includes("headId")
-          ? "The department already has a head assigned"
-          : "Foreign key validation failed!";
-
-        return { error: errorMessage };
-      } else if (error.code === "P2002") {
-        const targetFields = error.meta?.target as string[];
-        const errorMessage = targetFields.includes("employeeId")
-          ? "Staff ID already exists"
-          : "An unknown error has occurred!";
-
-        return { error: errorMessage };
-      }
-    } else if (error instanceof TypeError) {
-      return { error: "Invalid arguments passed!" };
-    } else {
-      return {
-        error:
-          process.env.NODE_ENV === "development"
-            ? getErrorMessage(error)
-            : "Something went wrong!",
-      };
-    }
+    console.error(error);
+    Sentry.captureException(error);
+    throw getErrorMessage(error);
   }
 };
 
 export const deleteStaffRequest = async (id: string) => {
   try {
     const { hasPermission } = await getUserPermissions("delete:staff");
-    if (!hasPermission) return { error: "Permission denied" };
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     const staffWithUserId = await prisma.staff.findFirst({
       where: {
@@ -277,28 +260,24 @@ export const deleteStaffRequest = async (id: string) => {
       });
     }
 
-    if (!staffWithUserId) {
-      return { error: `No staff with ID ${id} found!` };
-    }
+    if (!staffWithUserId) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
 
-    updateTag("staff-list");
+    revalidateTag(getQueryKey().staff.all[0], "seconds");
+    revalidateTag("users-list", "seconds");
 
     return { success: true };
   } catch (error) {
     console.error(error);
-    return {
-      error:
-        process.env.NODE_ENV === "development"
-          ? getErrorMessage(error)
-          : "Something went wrong!",
-    };
+    Sentry.captureException(error);
+    throw getErrorMessage(error);
   }
 };
 
-export const bulkDeleteStaff = async (rows: string[], user?: any) => {
+export const bulkDeleteStaff = async (rows: string[]) => {
   try {
     const { hasPermission } = await getUserPermissions("delete:staff");
-    if (!hasPermission) return { error: "Permission denied" };
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
     const staffWithUserIds = await prisma.staff.findMany({
       where: {
         id: { in: rows },
@@ -319,18 +298,15 @@ export const bulkDeleteStaff = async (rows: string[], user?: any) => {
 
     const count = userIdsToDelete.length;
 
-    if (!count) return { error: "Could not delete records!" };
+    if (!count) throw new ActionError("Resources not found");
 
-    updateTag("staff-list");
+    revalidateTag(getQueryKey().staff.all[0], "seconds");
+    revalidateTag("users-list", "seconds");
 
     return { count };
   } catch (error) {
     console.error(error);
-    return {
-      error:
-        process.env.NODE_ENV === "development"
-          ? getErrorMessage(error)
-          : "Something went wrong!",
-    };
+    Sentry.captureException(error);
+    throw getErrorMessage(error);
   }
 };

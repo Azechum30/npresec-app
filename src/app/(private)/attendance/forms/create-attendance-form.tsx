@@ -1,50 +1,53 @@
-import React, { cache, useEffect, useState } from "react";
-import {
-  AttendanceType,
-  BulkAttendanceSchema,
-  BulkAttendanceType,
-} from "@/lib/validation";
-import { useFieldArray, useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
-import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
-import { ClassesResponseType, StudentResponseType } from "@/lib/types";
-import { getClassesAction } from "@/app/(private)/(admin)/admin/classes/actions/server-actions";
-import { getStudents } from "@/app/(private)/(admin)/admin/students/actions/action";
-import { toast } from "sonner";
+/**biome-ignore-all assist/source/organizeImports: reason */
+"use client";
+
+import { AvatarComponent } from "@/components/customComponents/avatar-component";
 import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
+import LoadingButton from "@/components/customComponents/LoadingButton";
+import { Notification } from "@/components/customComponents/notification";
+import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
+import { useAuth } from "@/components/customComponents/SessionProvider";
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
-  TableHeader,
-  TableRow,
   TableBody,
   TableCell,
   TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectTrigger,
-  SelectItem,
-  SelectContent,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import {
+  type AttendanceType,
+  BulkAttendanceSchema,
+  type BulkAttendanceType,
+} from "@/lib/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueries } from "@tanstack/react-query";
 import { CheckCircle, Clock, FileSymlink, PlusCircle, X } from "lucide-react";
-import LoadingButton from "@/components/customComponents/LoadingButton";
-import LoadingState from "@/components/customComponents/Loading";
+import { type FC, useEffect, useMemo } from "react";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
+import { classQueryOptions } from "../../(admin)/admin/classes/actions/queries";
+import { studentsQueryOptions } from "../../(admin)/admin/students/actions/queries";
 
 type CreateAttendanceFormProps = {
   onSubmit: (data: BulkAttendanceType) => Promise<void>;
   defaultValues?: BulkAttendanceType;
-  id?: string;
   isPending?: boolean;
 };
 
-export const CreateAttendanceForm: React.FC<CreateAttendanceFormProps> = ({
+export const CreateAttendanceForm: FC<CreateAttendanceFormProps> = ({
   onSubmit,
   defaultValues,
-  id,
   isPending,
 }) => {
   const form = useForm<BulkAttendanceType>({
@@ -55,12 +58,7 @@ export const CreateAttendanceForm: React.FC<CreateAttendanceFormProps> = ({
           date: new Date(),
           classId: "",
           semester: "",
-          studentEntries: [
-            {
-              studentId: "",
-              status: "Present" as AttendanceType["status"],
-            },
-          ],
+          studentEntries: [],
         },
   });
 
@@ -68,63 +66,79 @@ export const CreateAttendanceForm: React.FC<CreateAttendanceFormProps> = ({
     control: form.control,
     name: "classId",
   });
+  const date = useWatch({
+    control: form.control,
+    name: "date",
+  });
+  const semester = useWatch({
+    control: form.control,
+    name: "semester",
+  });
 
   const { fields, replace } = useFieldArray({
     control: form.control,
     name: "studentEntries",
   });
 
-  const [classes, setClasses] = useState<
-    Pick<ClassesResponseType, "id" | "name">[]
-  >([]);
-  const [students, setStudents] = useState<
-    Pick<
-      StudentResponseType,
-      "id" | "firstName" | "lastName" | "studentNumber" | "classId"
-    >[]
-  >([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const user = useAuth();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const [classesPromise, studentsPromise] = await Promise.all([
-          getClassesAction(),
-          getStudents(),
-        ]);
+  const [classQueryData, studentsQueryData] = useQueries({
+    queries: [classQueryOptions, studentsQueryOptions],
+  });
 
-        if (classesPromise.error) {
-          toast.error(classesPromise.error);
-          setIsLoading(false);
-          return;
-        }
-        if (studentsPromise.error) {
-          toast.error(studentsPromise.error);
-          setIsLoading(false);
-          return;
-        }
-        if (classesPromise.data) {
-          setClasses(classesPromise.data);
-        }
+  const classes = useMemo(() => {
+    if (!classQueryData.data) return [];
 
-        if (studentsPromise.students) {
-          setStudents(studentsPromise.students);
-        }
-      } catch (err) {
-        console.error(err);
-        toast.error("Something went wrong");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+    if (user?.roles?.some((r) => r.role?.name === "classTeacher"))
+      return classQueryData.data
+        .filter((cl) => cl.classTeacher?.userId === user?.id)
+        .map((cls) => ({
+          id: cls.id,
+          name: `${cls.name} (${cls.level.replace(/_/g, " ")})`,
+        }));
+
+    return classQueryData.data.map((cls) => ({
+      id: cls.id,
+      name: `${cls.name} (${cls.level.replace(/_/g, " ")})`,
+    }));
+  }, [classQueryData.data, user]);
+
+  const students = useMemo(() => {
+    if (!selectClassId || !studentsQueryData.data) return [];
+
+    return (
+      studentsQueryData.data
+        .filter((stu) => {
+          const hasAttendanceToday = stu.attendance?.some((at) => {
+            return (
+              at.date.toISOString().split("T")[0] ===
+                date.toISOString().split("T")[0] &&
+              String(semester) === String(at?.semester)
+            );
+          });
+          return selectClassId === String(stu.classId) && !hasAttendanceToday;
+        })
+        .map((stu) => ({
+          id: stu.id,
+          lastName: stu.lastName,
+          firstName: stu.firstName,
+          studentNumber: stu.studentNumber,
+          gender: stu.gender,
+          image: stu.user?.image,
+          classId: stu.classId,
+        })) ?? []
+    );
+  }, [studentsQueryData.data, selectClassId, semester, date]);
+
+  const studentMap = useMemo(
+    () => new Map(students.map((s) => [s.id, s])),
+    [students],
+  );
 
   useEffect(() => {
     if (!selectClassId) return;
     const classStudents = students.filter(
-      (student) => student.classId === selectClassId
+      (student) => student.classId === selectClassId,
     );
     const updateStudents = classStudents.map((student) => ({
       studentId: student.id,
@@ -135,13 +149,9 @@ export const CreateAttendanceForm: React.FC<CreateAttendanceFormProps> = ({
   }, [selectClassId, replace, students]);
 
   async function handleSubmit(values: BulkAttendanceType) {
-    try {
-      console.log(values);
+    await Promise.try(async () => {
       await onSubmit(values);
-    } catch (err) {
-      console.error(err);
-      toast.error("Something went wrong");
-    }
+    });
   }
 
   function markAllAs(status: AttendanceType["status"]) {
@@ -152,19 +162,18 @@ export const CreateAttendanceForm: React.FC<CreateAttendanceFormProps> = ({
     replace(updateStudents);
   }
 
-  const filterStudents = students.filter(
-    (student) => student.classId === selectClassId
-  );
+  const isLoading = classQueryData.isLoading || studentsQueryData.isLoading;
+
+  if (isLoading) return <ShowLoadingState />;
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         className={cn(
-          "space-y-10 w-full text-left rounded-md border p-4",
-          selectClassId && "h-full overflow-auto scrollbar-thin"
+          "space-y-6 w-full text-left rounded-md border p-4 max-h-[75vh] overflow-auto scrollbar-thin",
         )}>
-        <div className={"flex flex-col md:flex-row gap-4 w-full"}>
+        <div className={"flex flex-col md:flex-row gap-2 w-full"}>
           <div className="flex-1">
             <SelectWithLabel
               name="classId"
@@ -197,7 +206,7 @@ export const CreateAttendanceForm: React.FC<CreateAttendanceFormProps> = ({
           </div>
         </div>
 
-        {selectClassId && filterStudents.length > 0 && (
+        {selectClassId && students.length > 0 ? (
           <div className="w-full">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
               <Button
@@ -237,34 +246,34 @@ export const CreateAttendanceForm: React.FC<CreateAttendanceFormProps> = ({
                 Mark All Excused
               </Button>
             </div>
-            <div className="border rounded-md w-full h-full overflow-auto scrollbar-thin">
+            <div className="border rounded-md">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-orange-50 dark:bg-orange-900/20">
-                    <TableHead className="text-orange-800 dark:text-orange-200">
-                      Student ID
-                    </TableHead>
-                    <TableHead className="text-orange-800 dark:text-orange-200">
-                      First Name
-                    </TableHead>
-                    <TableHead className="text-orange-800 dark:text-orange-200">
-                      Last Name
-                    </TableHead>
-                    <TableHead className="text-orange-800 dark:text-orange-200">
-                      Attendance Status
-                    </TableHead>
+                  <TableRow>
+                    <TableHead>Avatar</TableHead>
+                    <TableHead>Student ID</TableHead>
+                    <TableHead>Last Name</TableHead>
+                    <TableHead>First Name</TableHead>
+                    <TableHead>Gender</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {fields.map((field, index) => {
-                    const student = filterStudents.find(
-                      (s) => s.id === field.studentId
-                    );
+                    const student = studentMap.get(field.studentId);
                     return (
                       <TableRow key={field.id}>
+                        <TableCell>
+                          <AvatarComponent
+                            image={student?.image ?? undefined}
+                            fallback={`${student?.lastName} ${student?.firstName}`}
+                          />
+                        </TableCell>
                         <TableCell>{student?.studentNumber}</TableCell>
-                        <TableCell>{student?.firstName}</TableCell>
                         <TableCell>{student?.lastName}</TableCell>
+                        <TableCell>{student?.firstName}</TableCell>
+                        <TableCell>{student?.gender}</TableCell>
+
                         <TableCell>
                           <FormField
                             control={form.control}
@@ -283,7 +292,7 @@ export const CreateAttendanceForm: React.FC<CreateAttendanceFormProps> = ({
                                       field.value === "Late" &&
                                         "text-orange-500",
                                       field.value === "Excused" &&
-                                        "text-blue-500"
+                                        "text-blue-500",
                                     )}>
                                     <SelectValue placeholder="Present" />
                                   </SelectTrigger>
@@ -323,16 +332,18 @@ export const CreateAttendanceForm: React.FC<CreateAttendanceFormProps> = ({
               </Table>
             </div>
           </div>
+        ) : (
+          <Notification description="All students for the selected class, date and semester have attendance recorded already" />
         )}
 
-        {selectClassId && filterStudents.length > 0 && (
-          <LoadingButton loading={isPending as boolean}>
+        {selectClassId && students.length > 0 && (
+          <LoadingButton
+            loading={isPending as boolean}
+            className="w-full sm:w-[25%] sm:mx-auto">
             <PlusCircle className="size-5" />
-            {isPending ? "Saving Attendance" : "Record Attendance"}
+            {isPending ? "Saving Attendance" : "Save Records"}
           </LoadingButton>
         )}
-
-        {isLoading && <LoadingState />}
       </form>
     </Form>
   );

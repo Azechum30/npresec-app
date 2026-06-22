@@ -1,4 +1,4 @@
-import { UserRole } from "@/lib/types";
+import type { UserRole } from "@/lib/types";
 
 interface RedirectOptions {
   callbackUrl?: string | null;
@@ -31,6 +31,8 @@ export function getRoleDashboardPath(role: UserRole): string {
     staff: "/teachers",
     student: "/students",
     parent: "/parents",
+    classTeacher: '/staff/dashborad',
+    form_master: '/staff/dashboard'
   };
 
   return dashboardMap[role] || "/profile";

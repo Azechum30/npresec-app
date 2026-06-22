@@ -1,6 +1,13 @@
+/** biome-ignore-all lint/a11y/useSemanticElements: reason */
 import { UploadCloud } from "lucide-react";
 import Image from "next/image";
-import React, { useEffect, useRef, useState, startTransition } from "react";
+import {
+  type InputHTMLAttributes,
+  startTransition,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useFormContext } from "react-hook-form";
 import {
   FormControl,
@@ -10,13 +17,14 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
+
 type FileUploadInputProps = {
   name: string;
   fieldTitle: string;
   className?: string;
   photoURL?: string;
   isEditing?: boolean;
-} & React.InputHTMLAttributes<HTMLInputElement>;
+} & InputHTMLAttributes<HTMLInputElement>;
 
 export default function FileUploadInput({
   name,
@@ -35,7 +43,7 @@ export default function FileUploadInput({
     if (isEditing) {
       startTransition(() => setPreview(photoURL as string));
     }
-  }, [isEditing, setPreview, photoURL]);
+  }, [isEditing, photoURL]);
   return (
     <FormField
       control={form.control}
@@ -58,7 +66,7 @@ export default function FileUploadInput({
                   inputRef.current?.blur();
                 }
               }}
-              className="border-2 border-dashed border-primary dark:border-primary/80 rounded-lg p-4 bg-linear-to-br from-accent via-white to-primary/75 dark:from-accent/90  dark:via-accent dark:to-accent relative flex justify-center items-center cursor-pointer transition-all duration-200 hover:shadow-lg">
+              className="border-2 border-dashed border-primary dark:border-primary/80 rounded-lg p-4 bg-linear-to-br from-accent via-white to-primary/75 dark:from-accent/90  dark:via-card dark:to-card relative flex justify-center items-center cursor-pointer transition-all duration-200 hover:shadow-lg">
               <Input
                 ref={inputRef}
                 id={name}

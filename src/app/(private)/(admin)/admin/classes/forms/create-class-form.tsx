@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import LoadingButton from "@/components/customComponents/LoadingButton";
@@ -18,35 +19,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  ClassesResponseType,
-  DepartmentResponseType,
-  StaffResponseType,
-} from "@/lib/types";
-import { ClassesSchema, ClassesType, grades } from "@/lib/validation";
+import { ClassesSchema, type ClassesType, grades } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PlusCircle, Save, Trash } from "lucide-react";
-import { FC, useEffect, useState, useTransition } from "react";
+import { useQueries } from "@tanstack/react-query";
+import { PlusCircle, Save } from "lucide-react";
+import { type FC, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { getServerSideProps } from "../../departments/actions/getServerSideProps";
-import { getStaff } from "../../staff/actions/server";
+import { departmentsQueryOptions } from "../../departments/actions/queries";
+import { staffQueryOptions } from "../../staff/actions/queries";
 
-type onSubmitFormResponse = ClassesResponseType | { errors?: {} } | undefined;
+// type onSubmitFormResponse = ClassesResponseType | { errors?: {} } | undefined;
 
 type CreateClassFormProps = {
-  onSubmit: (data: ClassesType) => Promise<onSubmitFormResponse>;
+  onSubmitAction: (data: ClassesType) => Promise<void>;
   id?: string;
   defaultValues?: ClassesType;
-  onDelete?: () => void;
-  isDeletePending?: boolean;
+  isPending: boolean;
 };
 
 const CreateClassForm: FC<CreateClassFormProps> = ({
-  onSubmit,
-  onDelete,
+  onSubmitAction,
+  isPending,
   id,
   defaultValues,
-  isDeletePending,
 }) => {
   const form = useForm<ClassesType>({
     resolver: zodResolver(ClassesSchema),
@@ -63,109 +58,50 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
         },
   });
 
-  const [departments, setDepartments] = useState<DepartmentResponseType[]>([]);
-  const [teachers, setTeachers] = useState<{ id: string; fullName: string }[]>(
-    [],
-  );
+  const [departmentsQueryData, staffQueryData] = useQueries({
+    queries: [departmentsQueryOptions, staffQueryOptions],
+  });
 
-  const [isPending, startTransition] = useTransition();
+  const staff = useMemo(() => {
+    if (!staffQueryData.data) return [];
 
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      const [staffs, departments] = await Promise.all([
-        getStaff(),
-        getServerSideProps(),
-      ]);
+    return staffQueryData.data
+      .filter((st) => st.staffType === "Teaching")
+      .map((st) => ({
+        id: st.id,
+        fullName: `${st.lastName} ${st.firstName} ${st.middleName}`,
+      }));
+  }, [staffQueryData.data]);
 
-      if (
-        staffs.error ||
-        departments.error ||
-        departments.departments === undefined ||
-        staffs.staff === undefined
-      )
-        return;
-
-      setDepartments(departments?.departments);
-      setTeachers(
-        staffs.staff.map((st) => ({
-          id: st.id,
-          fullName: st.middleName
-            ? `${st.lastName} ${st.firstName} ${st.middleName}`
-            : `${st.lastName} ${st.firstName}`,
-        })),
-      );
-    };
-
-    fetchDepartments();
-  }, []);
-
-  const handleSubmit = (data: ClassesType) => {
-    startTransition(async () => {
-      const res = await onSubmit(data);
-      if (res !== undefined && "errors" in res) {
-        const errors = res.errors!;
-
-        if ("code" in errors) {
-          form.setError("code", {
-            type: "validate",
-            message: errors.code as string,
-          });
-        } else if ("name" in errors) {
-          form.setError("name", {
-            type: "validate",
-            message: errors.name as string,
-          });
-        } else if ("level" in errors) {
-          form.setError("level", {
-            type: "validate",
-            message: errors.level as string,
-          });
-        } else if ("teachers" in errors) {
-          form.setError("staff", {
-            type: "validate",
-            message: errors.teachers as string,
-          });
-        } else if ("departmentId" in errors) {
-          form.setError("departmentId", {
-            type: "validate",
-            message: errors.departmentId as string,
-          });
-        } else if ("createdAt" in errors) {
-          form.setError("createdAt", {
-            type: "validate",
-            message: errors.createdAt as string,
-          });
-        }
-      }
-    });
-  };
-
-  const handleTeacherChange = (selectedTeachers: StaffResponseType[]) => {
-    form.setValue(
-      "staff",
-      selectedTeachers.map((teacher) => teacher.id),
-    );
-  };
+  const departments = useMemo(() => {
+    if (!departmentsQueryData.data) return [];
+    return departmentsQueryData.data.map((dp) => ({
+      id: dp.id,
+      name: dp.name,
+    }));
+  }, [departmentsQueryData.data]);
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={form.handleSubmit(onSubmitAction)}
         className="space-y-4 w-full h-[80vh] text-left rounded-md border p-4 overflow-auto">
         <InputWithLabel
           name="name"
           fieldTitle="Class Name"
-          disabled={id ? true : false}
+          disabled={!!id}
           schema={ClassesSchema}
+          placeholder="Enter class name"
         />
         <InputWithLabel
           name="code"
           fieldTitle="Class Code"
-          disabled={id ? true : false}
+          disabled={!!id}
           schema={ClassesSchema}
+          placeholder="Enter class code (optional)"
         />
 
-        {departments && departments.length > 0 && (
+        {departmentsQueryData.data && departmentsQueryData.data.length > 0 && (
           <SelectWithLabel
             name="departmentId"
             fieldTitle="Associated Department"
@@ -173,7 +109,7 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
             data={departments}
             valueKey="id"
             selectedKey="name"
-            placeholder="--Select department--"
+            placeholder="Select department"
           />
         )}
 
@@ -226,15 +162,27 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
           endDate={new Date().getFullYear()}
         />
 
-        {teachers && teachers.length > 0 && (
-          <MultiSelectCombox
-            name="staff"
-            fieldTitle="Teachers"
-            data={teachers}
-            valueKey="id"
-            selectedKey="fullName"
-            placeholder="--- Select teachers ---"
-          />
+        {staffQueryData.data && staffQueryData.data.length > 0 && (
+          <>
+            <MultiSelectCombox
+              name="staff"
+              fieldTitle="Assign Staff"
+              data={staff}
+              valueKey="id"
+              selectedKey="fullName"
+              placeholder="Select staff assigned to class"
+            />
+
+            <SelectWithLabel
+              name="classTeacherId"
+              data={staff}
+              selectedKey="fullName"
+              fieldTitle="Form Master"
+              valueKey="id"
+              schema={ClassesSchema}
+              placeholder="Select form master"
+            />
+          </>
         )}
         <div className="flex flex-col gap-y-3">
           <LoadingButton loading={isPending}>
@@ -258,17 +206,6 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
               </span>
             )}
           </LoadingButton>
-
-          {!!id && (
-            <LoadingButton
-              loading={isDeletePending as boolean}
-              type="button"
-              variant="destructive"
-              onClick={() => onDelete?.()}>
-              <Trash className="size-5" />
-              <span>Delete</span>
-            </LoadingButton>
-          )}
         </div>
       </form>
     </Form>

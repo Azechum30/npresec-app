@@ -1,4 +1,5 @@
 /** biome-ignore-all assist/source/organizeImports: reason */
+import { getQueryKey } from "@/app/(private)/(admin)/admin/staff/utils/get-query-key";
 import { computeGraduationDate } from "@/lib/compute-graduation-date";
 import { generatePassword } from "@/lib/generatePassword";
 import { prisma } from "@/lib/prisma";
@@ -149,7 +150,7 @@ const singleStudentCreationWorkflow = createWorkflow<
 
   await context.run("final-student-cleanup", async () => {
     revalidateTag("users-list", "seconds");
-    revalidateTag("students-list", "seconds");
+    revalidateTag(getQueryKey().student.all[0], "seconds");
 
     await triggerServerNotification(
       channelName,

@@ -1,16 +1,16 @@
-import { StudentResponseType } from "@/lib/types";
-import { ColumnDef } from "@tanstack/react-table";
-import moment from "moment";
-import { RowSelections } from "@/components/customComponents/RowSelections";
+/**biome-ignore-all assist/source/organizeImports: reason */
 import { GenericActions } from "@/components/customComponents/GenericActions";
-import { useDeleteStudent } from "../hooks/use-delete-student";
 import { GenericRowExpansion } from "@/components/customComponents/GenericRowExpansion";
-import Image from "next/image";
+import { RowSelections } from "@/components/customComponents/RowSelections";
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
+import type { StudentResponseType } from "@/lib/types";
+import type { ColumnDef } from "@tanstack/react-table";
+import Image from "next/image";
+import { useDeleteStudentMutationFn } from "../actions/mutations";
 
 export const useGetColumns = () => {
-  const { deletestudent } = useDeleteStudent();
   const { formatDate } = useUserPreferredDateFormat();
+  const { mutateAsync, isPending } = useDeleteStudentMutationFn();
   return [
     {
       id: "selection",
@@ -32,12 +32,13 @@ export const useGetColumns = () => {
         const url = isValid ? image : "/no-avatar.jpg";
 
         return (
-          <div className="size-8 rounded-full border border-orange-500 dark:border-orange-200 flex items-center justify-center">
+          <div className="size-8 rounded-full border border-primary  flex items-center justify-center">
             <Image
               src={url ? url : "/no-avatar.jpg"}
               alt="Avatar"
               width={20}
               height={20}
+              loading="lazy"
               className="size-6 rounded-full object-cover object-top"
             />
           </div>
@@ -49,12 +50,12 @@ export const useGetColumns = () => {
       accessorFn: (row) => row.studentNumber,
     },
     {
-      header: "FirstName",
-      accessorFn: (row) => row.firstName,
-    },
-    {
       header: "LastName",
       accessorFn: (row) => row.lastName,
+    },
+    {
+      header: "FirstName",
+      accessorFn: (row) => row.firstName,
     },
     {
       header: "BirthDate",
@@ -78,8 +79,11 @@ export const useGetColumns = () => {
       cell: ({ row }) => (
         <GenericActions<StudentResponseType>
           row={row}
-          onDelete={deletestudent}
+          onDelete={async () => {
+            await Promise.try(async () => await mutateAsync(row.original.id));
+          }}
           secondaryKey="studentNumber"
+          isPending={isPending}
         />
       ),
       enableHiding: false,

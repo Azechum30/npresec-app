@@ -1,55 +1,34 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import LoadingButton from "@/components/customComponents/LoadingButton";
 import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
 import { Form, FormDescription } from "@/components/ui/form";
-import { PersonalInfoSchema, PersonalInfoType } from "@/lib/validation";
+import { PersonalInfoSchema, type PersonalInfoType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 import FileUploadInput from "@/components/customComponents/FileUploadInput";
 import { ChevronRight } from "lucide-react";
 import { useEffect } from "react";
 import { useCancelEditStudent } from "../hooks/use-cancel-edit-student";
-import { useStudentStore } from "../store";
+import { usePersonalInfo, useStudentStore } from "../store";
 
 export default function PersonalInfoForm() {
   const { actions, isEditing, personalInfo } = useStudentStore();
 
   const form = useForm<PersonalInfoType>({
     resolver: zodResolver(PersonalInfoSchema),
-    defaultValues: personalInfo
-      ? {
-          ...personalInfo,
-          address: personalInfo.address || "",
-          middleName: personalInfo.middleName || "",
-          phone: personalInfo.phone || "",
-          nationality: personalInfo.nationality || "",
-          religion: personalInfo.religion || "",
-        }
-      : {
-          birthDate: "",
-          address: "",
-          email: "",
-          firstName: "",
-          gender: "",
-          imageFile: undefined,
-          lastName: "",
-          middleName: "",
-          nationality: "",
-          phone: "",
-          photoURL: "",
-          religion: "",
-        },
+    defaultValues: personalInfo,
     mode: "onBlur",
   });
 
-  const personInfoData = useWatch({ control: form.control });
+  const personInfoData = usePersonalInfo();
 
   useEffect(() => {
-    actions.setPersonalInfo(personInfoData);
-  }, [actions, personInfoData]);
+    form.reset(personInfoData);
+  }, [form, personInfoData]);
 
   const { handleCancel } = useCancelEditStudent();
 

@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
@@ -9,74 +10,35 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { DepartmentType } from "@/lib/validation";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { updateDepartmentAction } from "../actions/create-department-action";
-import { deleteDepartment } from "../actions/delete-departments-action";
-import { getDepartment } from "../actions/get-department";
+import type { DepartmentType } from "@/lib/validation";
+import { useQuery } from "@tanstack/react-query";
+import { useUpdateDepartmentMutationFn } from "../actions/mutations";
+import { getDepartmentQueryOptions } from "../actions/queries";
 import CreateDepartment from "../forms/create-department";
 
 export default function EditDepartment() {
   const { id, dialogs, onClose } = useGenericDialog();
-  const [defaultValues, setDefaultValues] = useState<
-    DepartmentType | undefined
-  >(undefined);
+  const { mutateAsync, isPending } = useUpdateDepartmentMutationFn(
+    id as string,
+  );
 
-  useEffect(() => {
-    if (!id || !dialogs["editDepartment"]) return;
-
-    const fetchDepartment = async () => {
-      setDefaultValues(undefined);
-      try {
-        const response = await getDepartment(id as string);
-
-        if (response?.error) {
-          setDefaultValues(undefined);
-          return toast.error(response.error);
-        }
-
-        setDefaultValues({
-          ...response?.department,
-          code: response?.department?.code!,
-          name: response?.department?.name!,
-          headId: response?.department?.headId || undefined,
-          description: response?.department?.description || "",
-        });
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    fetchDepartment();
-  }, [id, dialogs]);
+  const isOpen = !!dialogs["edit-department"];
+  const validId = id ?? null;
+  const { data } = useQuery({
+    ...getDepartmentQueryOptions(validId as string),
+    enabled: isOpen && !!validId,
+  });
 
   async function handleUpdate(data: DepartmentType) {
-    const response = await updateDepartmentAction(id as string, data);
-    if (response === undefined || "error" in response) {
-      toast.error(response?.error);
-      return;
-    } else {
-      toast.success("record updated successfully!");
-      setTimeout(() => onClose("editDepartment"), 300);
-    }
-  }
-
-  async function handleDelete(id: string) {
-    const { error } = await deleteDepartment(id);
-    if (error) {
-      toast.error(error);
-    } else {
-      toast.success("record deleted successfully");
-      setTimeout(() => onClose("editDepartment"), 300);
-    }
+    Promise.try(async () => {
+      await mutateAsync({ ...data, id: validId as string });
+      onClose("edit-department");
+    });
   }
 
   return (
-    <Dialog
-      open={dialogs["editDepartment"]}
-      onOpenChange={() => onClose("editDepartment")}>
-      {!!id && dialogs["editDepartment"] && defaultValues ? (
+    <Dialog open={isOpen} onOpenChange={() => onClose("edit-department")}>
+      {validId && isOpen && data ? (
         <DialogContent className="max-h-full">
           <DialogHeader>
             <DialogTitle>Edit Department Data</DialogTitle>
@@ -85,10 +47,16 @@ export default function EditDepartment() {
             </DialogDescription>
           </DialogHeader>
           <CreateDepartment
-            id={id}
-            defaultValues={defaultValues}
-            onSubmit={handleUpdate}
-            onDelete={handleDelete}
+            id={validId}
+            defaultValues={{
+              code: data.code,
+              name: data.name,
+              createdAt: data.createdAt,
+              description: data.description,
+              headId: data.head?.id,
+            }}
+            onSubmitAction={handleUpdate}
+            isPending={isPending}
           />
         </DialogContent>
       ) : (

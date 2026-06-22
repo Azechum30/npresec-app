@@ -1,28 +1,30 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 "use server";
 
-import { Prisma } from "@/generated/prisma/client";
-import { getAuthUser, getUserPermissions } from "@/lib/get-session";
+import type { Prisma } from "@/generated/prisma/client";
+import { ActionError, CUSTOM_ERRORS } from "@/lib/constants";
+import { getUserPermissions } from "@/lib/get-session";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
 import { CourseSelect } from "@/lib/types";
 import {
   BulkUploadCoursesSchema,
-  BulkUploadCourses as BulkUploadCoursesType,
+  type BulkUploadCourses as BulkUploadCoursesType,
   CoursesSchema,
-  CoursesType,
+  type CoursesType,
   CourseUpdateSchema,
-  CourseUpdateType,
+  type CourseUpdateType,
 } from "@/lib/validation";
+import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
+import z from "zod";
 import { generateCourseCode } from "../utils/generate-course-code";
 
-// Helper function to generate unique course codes
 async function generateUniqueCourseCode(): Promise<string> {
-  // Find the highest sequence number from existing auto-generated course codes
   const existingCourses = await prisma.course.findMany({
     where: {
       code: {
-        startsWith: "CRS", // Only consider auto-generated codes
+        startsWith: "CRS",
       },
     },
     select: { code: true },
@@ -31,7 +33,6 @@ async function generateUniqueCourseCode(): Promise<string> {
 
   let sequenceNumber = 1;
   if (existingCourses.length > 0) {
-    // Extract the highest sequence number from auto-generated codes
     const highestCode = existingCourses[0].code;
     const match = highestCode.match(/CRS(\d+)$/);
     if (match) {
@@ -39,7 +40,6 @@ async function generateUniqueCourseCode(): Promise<string> {
     }
   }
 
-  // Ensure we don't conflict with any existing codes
   let attempts = 0;
   let finalCode: string;
 
@@ -47,24 +47,23 @@ async function generateUniqueCourseCode(): Promise<string> {
     finalCode = generateCourseCode(sequenceNumber, "CRS{sequence:3}");
     sequenceNumber++;
 
-    // Check if this code already exists
     const existingCode = await prisma.course.findUnique({
       where: { code: finalCode },
       select: { id: true },
     });
 
-    if (!existingCode) break; // Code is unique
+    if (!existingCode) break;
 
     attempts++;
     if (attempts > 100) {
       throw new Error("Unable to generate unique course code");
     }
+    // biome-ignore lint/correctness/noConstantCondition: reason
   } while (true);
 
-  return finalCode!;
+  return finalCode;
 }
 
-// Helper function to generate multiple unique course codes
 async function generateUniqueCourseCodes(count: number): Promise<string[]> {
   const codes: string[] = [];
 
@@ -79,58 +78,18 @@ async function generateUniqueCourseCodes(count: number): Promise<string[]> {
 export const createCourse = async (values: CoursesType) => {
   try {
     const { hasPermission } = await getUserPermissions("create:courses");
-    if (!hasPermission) {
-      return { error: "Permission denied!" };
-    }
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     const { error, success, data } = CoursesSchema.safeParse(values);
 
-    if (!success) {
-      const zodError = error.flatten();
+    if (!success) throw error;
 
-      if (zodError.fieldErrors.title) {
-        return {
-          error: zodError.fieldErrors.title[0],
-        };
-      }
-
-      // Code validation is now optional, so we only check if code is provided and invalid
-      if (zodError.fieldErrors.code && values.code) {
-        return {
-          error: zodError.fieldErrors.code[0],
-        };
-      }
-      if (zodError.fieldErrors.createdAt) {
-        return {
-          error: zodError.fieldErrors.createdAt[0],
-        };
-      }
-
-      if (zodError.fieldErrors.credits) {
-        return { error: zodError.fieldErrors.credits[0] };
-      }
-
-      if (zodError.fieldErrors.staff) {
-        return { error: zodError.fieldErrors.staff[0] };
-      }
-      if (zodError.fieldErrors.classes) {
-        return { error: zodError.fieldErrors.classes[0] };
-      }
-      if (zodError.fieldErrors.departments) {
-        return { error: zodError.fieldErrors.departments[0] };
-      }
-      if (zodError.fieldErrors.description) {
-        return { error: zodError.fieldErrors.description[0] };
-      }
-    }
-
-    // Generate course code if not provided
     let finalCode = data?.code;
     if (!finalCode) {
       finalCode = await generateUniqueCourseCode();
     }
 
-    // Check for existing courses
     const existingCourse = await prisma.course.findFirst({
       where: {
         OR: [{ code: finalCode }, { title: data?.title }],
@@ -139,11 +98,11 @@ export const createCourse = async (values: CoursesType) => {
 
     if (existingCourse !== null) {
       if (existingCourse.code === finalCode) {
-        return { error: "Course code already exists!" };
+        throw new ActionError("course code is already taken");
       }
 
       if (existingCourse.title === data?.title) {
-        return { error: "Course title already exists!" };
+        throw new ActionError("course title is already taken");
       }
     }
 
@@ -174,32 +133,21 @@ export const createCourse = async (values: CoursesType) => {
       select: CourseSelect,
     });
 
-    if (!course) {
-      return { error: "Course creation failed!" };
-    }
-
-    revalidatePath("/admin/courses");
-
     return { course };
   } catch (error) {
     console.error("Course creations failed: ", error);
-
-    return { error: getErrorMessage(error) };
+    Sentry.captureException(error);
+    throw getErrorMessage(error);
   }
 };
 
 export const getCourses = async (codes?: string[]) => {
   try {
-    const user = await getAuthUser();
+    const { user, hasPermission } = await getUserPermissions("view:courses");
 
-    if (!user) {
-      return { error: "User not found!" };
-    }
-
-    const { hasPermission } = await getUserPermissions("view:courses");
-    if (!hasPermission) {
-      return { error: "Permission denied!" };
-    }
+    if (!user) throw new ActionError(CUSTOM_ERRORS.AUTHENTICATION.message);
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     let query: Prisma.CourseWhereInput = {};
 
@@ -228,55 +176,55 @@ export const getCourses = async (codes?: string[]) => {
     return { courses: courses || [] };
   } catch (error) {
     console.error("Courses fetching failed: ", error);
-    return { error: "Courses fetching failed!" };
+    Sentry.captureException(error);
+    throw getErrorMessage(error);
   }
 };
 
 export const getCourse = async (id: string) => {
   try {
     const { hasPermission } = await getUserPermissions("view:courses");
-    if (!hasPermission) {
-      return { error: "Permission denied!" };
-    }
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     const course = await prisma.course.findUnique({
       where: { id },
       select: CourseSelect,
     });
 
-    if (!course) return { error: "No course found!" };
+    if (!course) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
 
     return { course };
   } catch (error) {
     console.error("Could not fetch course:", error);
-    return { error: "Something went wrong!" };
+    Sentry.captureException(error);
+    throw getErrorMessage(error);
   }
 };
 
 export const updateCourse = async (values: CourseUpdateType) => {
   try {
     const { hasPermission } = await getUserPermissions("edit:courses");
-    if (!hasPermission) {
-      return { error: "Permission denied!" };
-    }
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
     const { error, success, data } = CourseUpdateSchema.safeParse(values);
 
-    if (!success) {
-      const zodErrors = error.flatten();
+    if (!success) throw error;
 
-      if (zodErrors.fieldErrors.id) {
-        return { error: zodErrors.fieldErrors.id[0] };
-      }
+    const { data: courseData, id } = data;
 
-      if (zodErrors.fieldErrors.data) {
-        return { error: zodErrors.fieldErrors.data[0] };
-      }
-    }
+    const duplicate = await prisma.course.findFirst({
+      where: {
+        AND: [
+          { OR: [{ code: courseData.code }, { title: courseData.title }] },
+          { id: { not: id } },
+        ],
+      },
+    });
 
-    const { data: courseData, id } = data!;
-
-    console.log({ ...courseData, id });
+    if (duplicate)
+      throw new ActionError("A course with this code or title already exists");
 
     const course = await prisma.course.update({
       where: {
@@ -308,88 +256,65 @@ export const updateCourse = async (values: CourseUpdateType) => {
       select: CourseSelect,
     });
 
-    if (!course) {
-      return { error: "Could not update course" };
-    }
-
-    revalidatePath("/admin/courses");
-
     return { course };
   } catch (error) {
     console.error("Could not update course: ", error);
-
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2002") {
-        const targetFields = error.meta?.target as string[];
-
-        const errorMessages = targetFields.includes("code")
-          ? "Course code provided in your request already exists!"
-          : targetFields.includes("title")
-            ? "Course title provided already exist!"
-            : "An unknown error has occurred!";
-
-        return { error: errorMessages };
-      }
-    }
-
-    return { error: getErrorMessage(error) };
+    Sentry.captureException(error);
+    throw getErrorMessage(error);
   }
 };
 
 export const deleteCourse = async (id: string) => {
   try {
     const { hasPermission } = await getUserPermissions("delete:courses");
-    if (!hasPermission) {
-      return { error: "Permission denied!" };
-    }
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
+    const exists = await getCourse(id);
 
     const course = await prisma.course.delete({
-      where: { id },
+      where: { id: exists.course.id },
     });
-
-    if (!course) {
-      return { error: "Could not deleted course" };
-    }
-
-    revalidatePath("/admin/courses");
 
     return { course };
   } catch (error) {
     console.error("Could not fetch course: ", error);
-    return { error: "Something went wrong!" };
+    Sentry.captureException(error);
+    throw getErrorMessage(error);
   }
 };
 
 export const bulkDeleteCourses = async (ids: string[]) => {
   try {
     const { hasPermission } = await getUserPermissions("delete:courses");
-    if (!hasPermission) {
-      return { error: "Permission denied!" };
-    }
+    if (!hasPermission)
+      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
 
-    if (!Array.isArray(ids)) {
-      return { error: "Expected an array of string IDs" };
-    }
+    const { success, data, error } = z.array(z.string()).min(1).safeParse(ids);
 
-    const count = await prisma.course
-      .deleteMany({
-        where: {
-          id: { in: ids },
-        },
-      })
-      .then((value) => value.count);
+    if (!success) throw error;
 
-    if (!(count > 0)) {
-      return { error: "Could not delete the selected course(s)" };
-    }
+    const existingRecords = await prisma.course.findMany({
+      where: { id: { in: data } },
+      select: { id: true },
+    });
 
-    revalidatePath("/admin/courses");
+    const idsToDelete = data.filter((id) =>
+      existingRecords.map((r) => r.id === id),
+    );
 
-    return { count };
+    if (idsToDelete.length === 0)
+      throw new ActionError("No courses matched the provided Ids");
+
+    const payload = await prisma.course.deleteMany({
+      where: {
+        id: { in: idsToDelete },
+      },
+    });
+    return { count: payload.count };
   } catch (error) {
     console.error("Could not delete the selected courses: ", error);
-
-    return { error: getErrorMessage(error) };
+    Sentry.captureException(error);
+    throw getErrorMessage(error);
   }
 };
 

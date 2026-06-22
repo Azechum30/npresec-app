@@ -1,16 +1,22 @@
-import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
-import { ArrowUpDown, Minus, Plus } from "lucide-react";
-import { DepartmentResponseType } from "@/lib/types";
+/** biome-ignore-all assist/source/organizeImports: reason */
+
 import { GenericActions } from "@/components/customComponents/GenericActions";
-import { useDeleteDepartment } from "../hooks/use-delete-department";
 import { RowSelections } from "@/components/customComponents/RowSelections";
+import { Button } from "@/components/ui/button";
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
+import type { DepartmentResponseType } from "@/lib/types";
+import type { ColumnDef } from "@tanstack/react-table";
+import { Minus, Plus } from "lucide-react";
+import { useDeleteDepartmentMutationFn } from "../actions/mutations";
 
 export const useGetDepartmentColumns = () => {
-  const { deletedepartment, isPending } = useDeleteDepartment();
-
   const { formatDate } = useUserPreferredDateFormat();
+  const { mutateAsync, isPending } = useDeleteDepartmentMutationFn();
+
+  const handleDelete = (id: string) =>
+    Promise.try(async () => {
+      await mutateAsync(id);
+    });
 
   return [
     {
@@ -23,37 +29,11 @@ export const useGetDepartmentColumns = () => {
     },
 
     {
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            className="capitalize text-sm justify-start text-left"
-            size="sm"
-            onClick={() =>
-              column.toggleSorting(column.getIsSorted() === "asc")
-            }>
-            <ArrowUpDown className="size-4" />
-            {column.id}
-          </Button>
-        );
-      },
+      header: "Code",
       accessorKey: "code",
     },
     {
-      header: ({ column }) => {
-        return (
-          <Button
-            size="sm"
-            variant="ghost"
-            className="capitalize text-sm"
-            onClick={() =>
-              column.toggleSorting(column.getIsSorted() === "asc")
-            }>
-            <ArrowUpDown className="size-4" />
-            {column.id}
-          </Button>
-        );
-      },
+      header: "Name",
       accessorKey: "name",
     },
     {
@@ -81,9 +61,9 @@ export const useGetDepartmentColumns = () => {
         return (
           <GenericActions
             row={row}
-            onDelete={deletedepartment}
+            onDelete={handleDelete}
             secondaryKey="code"
-            dialogId="editDepartment"
+            dialogId="edit-department"
             isPending={isPending}
           />
         );

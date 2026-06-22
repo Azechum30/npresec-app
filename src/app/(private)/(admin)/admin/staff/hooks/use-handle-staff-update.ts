@@ -1,7 +1,8 @@
-import { StaffEditType, StaffType } from "@/lib/validation";
+/** biome-ignore-all assist/source/organizeImports: reason */
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
+import type { StaffType } from "@/lib/validation";
 import { useState, useTransition } from "react";
 import { updateStaff } from "../actions/server";
-import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 
 export const useHandleStaffUpdate = () => {
   const [isUpdating, startTransition] = useTransition();
@@ -11,12 +12,12 @@ export const useHandleStaffUpdate = () => {
 
   const handleStaffUpdate = async (data: StaffType) => {
     startTransition(async () => {
-      const res = await updateStaff(id as string, data);
-      if (res?.error) {
-        setUpdateError(res.error || "Could not save changes to staff data");
-        setUpdateSuccess(false);
-        return;
-      }
+      await updateStaff({ ...data, id: id as string });
+      // if (res?.error) {
+      //   setUpdateError(res.error || "Could not save changes to staff data");
+      //   setUpdateSuccess(false);
+      //   return;
+      // }
       setUpdateError("");
       setUpdateSuccess(true);
     });

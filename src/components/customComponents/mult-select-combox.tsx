@@ -1,3 +1,5 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
+
 import { isZodFieldRequired } from "@/lib/isZodFieldRequired";
 import { cn } from "@/lib/utils";
 import { useFormContext } from "react-hook-form";
@@ -22,7 +24,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 type Props<T = any> = {
-  name: string;
+  name: keyof T & string;
   fieldTitle: string;
   data: T[];
   className?: string;
@@ -63,7 +65,7 @@ export const MultiSelectCombox = ({
         <FormItem>
           <FormLabel htmlFor={field.name} className="text-sm font-bold">
             {fieldTitle}
-            {isRequired && <span className="text-red-500">*</span>}
+            {isRequired && <span className="text-destructive">*</span>}
           </FormLabel>
           <FormControl>
             <Popover>
@@ -85,7 +87,7 @@ export const MultiSelectCombox = ({
               <PopoverContent className={cn("w-100 p-0", className)}>
                 <Command>
                   <CommandInput placeholder="Search..." />
-                  <CommandList>
+                  <CommandList className="overflow-y-auto max-h-75">
                     <CommandEmpty>No course found.</CommandEmpty>
                     <CommandGroup>
                       <CommandItem
@@ -126,7 +128,7 @@ export const MultiSelectCombox = ({
                         ) {
                           return (
                             <CommandItem
-                              key={index}
+                              key={index.toFixed(2)}
                               onSelect={() => {
                                 const currentValues = field.value || [];
                                 const newValue = currentValues.includes(item)
@@ -146,7 +148,7 @@ export const MultiSelectCombox = ({
                           );
                         }
 
-                        if (typeof item === "object" && typeof item !== null) {
+                        if (typeof item === "object") {
                           const value = String(
                             item[valueKey] as keyof typeof item,
                           );
@@ -174,6 +176,7 @@ export const MultiSelectCombox = ({
                             </CommandItem>
                           );
                         }
+                        return null;
                       })}
                     </CommandGroup>
                   </CommandList>

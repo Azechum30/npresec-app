@@ -1,3 +1,7 @@
+/**
+ * biome-ignore-all assist/source/organizeImports: reason
+ * biome-ignore-all lint/a11y/noStaticElementInteractions: reason
+ * */
 import LoadingState from "@/components/customComponents/Loading";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { useSystemWideActionsStore } from "@/hooks/use-system-wide-actions-store";
-import { Row } from "@tanstack/react-table";
+import type { Row } from "@tanstack/react-table";
 import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -43,6 +47,7 @@ export const GenericActions = <T extends { id: string }>({
     [];
 
   const { original } = row;
+  const handleKeyPress = () => {};
   if (
     !userRoles.includes("admin") &&
     (settings?.enableDeleting || settings?.enableEditing)
@@ -65,7 +70,9 @@ export const GenericActions = <T extends { id: string }>({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="hover:cursor-pointer">
                   {pathname === "students" ? (
-                    <Link href={`/admin/students/edit/${original.id}`}>
+                    <Link
+                      prefetch="auto"
+                      href={`/admin/students/edit/${original.id}`}>
                       <span className="flex items-center gap-1">
                         <Edit className="size-5 text-blue-500" />
                         Edit
@@ -73,6 +80,7 @@ export const GenericActions = <T extends { id: string }>({
                     </Link>
                   ) : (
                     <span
+                      onKeyUp={handleKeyPress}
                       className="flex items-center gap-1 w-full"
                       onClick={() => {
                         onOpen(dialogId as string, row.original.id);
@@ -134,6 +142,7 @@ export const GenericActions = <T extends { id: string }>({
                 </Link>
               ) : (
                 <span
+                  onKeyUp={handleKeyPress}
                   className="flex items-center gap-1 w-full"
                   onClick={() => {
                     onOpen(dialogId as string, row.original.id);

@@ -1,49 +1,32 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLabel";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import LoadingButton from "@/components/customComponents/LoadingButton";
 import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
 import TextAreaWithLabel from "@/components/customComponents/TextareaWithLabel";
-import { useConfirmDelete } from "@/components/customComponents/useConfirmDelete";
 import { Form } from "@/components/ui/form";
-import { StaffResponseType } from "@/lib/types";
-import { DepartmentSchema, DepartmentType } from "@/lib/validation";
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
+import { DepartmentSchema, type DepartmentType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PlusCircle, Save, Trash2 } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { PlusCircle, Save } from "lucide-react";
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { getStaff } from "../../staff/actions/server";
-
-type onDeleteResponseType = Promise<
-  | {
-      name: string;
-      code: string;
-      description: string | null;
-      headId: string | null;
-      id: string;
-      createdAt: Date;
-    }
-  | {
-      error: string;
-    }
-  | string
-  | number
-  | undefined
->;
+import { staffQueryOptions } from "../../staff/actions/queries";
 
 type CreateDepartmentProps = {
   id?: string;
-  onSubmit: (data: DepartmentType) => void;
-  onDelete?: (id: string) => Promise<void>;
+  onSubmitAction: (data: DepartmentType) => Promise<void>;
   defaultValues?: DepartmentType;
+  isPending: boolean;
 };
 
 export default function CreateDepartment({
+  isPending,
   id,
   defaultValues,
-  onSubmit,
-  onDelete,
+  onSubmitAction,
 }: CreateDepartmentProps) {
   const form = useForm<DepartmentType>({
     resolver: zodResolver(DepartmentSchema),
@@ -57,51 +40,29 @@ export default function CreateDepartment({
           createdAt: undefined,
         },
   });
+  const { dialogs } = useGenericDialog();
+  const isOpen = !!dialogs["create-department"] || !!dialogs["edit-department"];
 
-  const [isPending, startTransition] = useTransition();
-  const [isDeletePending, startDeleteTransition] = useTransition();
-  const { ConfirmDeleteComponent, confirmDelete } = useConfirmDelete();
-  const [teachers, setTeachers] = useState<StaffResponseType[]>([]);
+  const { data } = useQuery({
+    ...staffQueryOptions,
+    enabled: isOpen,
+  });
 
-  useEffect(() => {
-    const fetchTeachers = async () => {
-      const res = await getStaff();
-      if (res.error) {
-        return toast.error(res.error);
-      }
-      if (res.staff === undefined) return;
-      setTeachers((prev) => {
-        const newArray = res.staff?.map((st) => ({
-          ...st,
-          firstName: `${st.lastName} ${st.firstName} ${
-            st.middleName ? st.middleName : ""
-          }`,
-        }));
-        return newArray;
-      });
-    };
-
-    fetchTeachers();
-  }, []);
-
-  async function handleSubmit(values: DepartmentType) {
-    startTransition(async () => {
-      await onSubmit(values);
-    });
-  }
-
-  async function handleDelete(id: string) {
-    startDeleteTransition(async () => {
-      await onDelete?.(id);
-    });
-  }
+  const staff = useMemo(() => {
+    if (!data) return [];
+    return data
+      .filter((st) => st.staffType === "Teaching")
+      .map((st) => ({
+        id: st.id,
+        fullName: `${st.lastName} ${st.firstName} ${st.middleName}`,
+      }));
+  }, [data]);
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={form.handleSubmit(onSubmitAction)}
         className="space-y-4 border rounded-md max-h-[80dvh] overflow-auto p-4">
-        <ConfirmDeleteComponent />
         <InputWithLabel
           name="name"
           fieldTitle="Name"
@@ -115,17 +76,16 @@ export default function CreateDepartment({
           schema={DepartmentSchema}
         />
 
-        {teachers && teachers.length > 0 && (
+        {data && data.length > 0 && (
           <SelectWithLabel
             name="headId"
             fieldTitle="Department Head"
-            data={teachers}
+            data={staff}
             valueKey="id"
-            selectedKey="firstName"
+            selectedKey="fullName"
             placeholder="--Select HOD--"
           />
         )}
-
         <TextAreaWithLabel name="description" fieldTitle="Description" />
         <DatePickerWithLabel
           name="createdAt"
@@ -147,20 +107,6 @@ export default function CreateDepartment({
               </>
             )}
           </LoadingButton>
-          {id && (
-            <LoadingButton
-              loading={isDeletePending}
-              variant="destructive"
-              type="button"
-              onClick={async () => {
-                const ok = await confirmDelete();
-                if (ok) {
-                  await handleDelete(id);
-                }
-              }}>
-              <Trash2 className="size-4 mr-1" /> Delete{" "}
-            </LoadingButton>
-          )}
         </div>
       </form>
     </Form>
