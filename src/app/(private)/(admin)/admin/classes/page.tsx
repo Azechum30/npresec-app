@@ -28,11 +28,11 @@ export default async function ClassesPage() {
         <OpenDialogs dialogKey="create-class" title="Add Class" />
       </div>
 
-      <Suspense fallback={<FallbackComponent />}>
-        <HydrationBoundary state={dehydrate(queryClient)}>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <Suspense fallback={<FallbackComponent />}>
           <RenderClassesDataTable />
-        </HydrationBoundary>
-      </Suspense>
+        </Suspense>
+      </HydrationBoundary>
 
       <ClassesProvider />
       <EditClassDialog />

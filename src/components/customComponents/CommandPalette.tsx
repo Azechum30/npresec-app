@@ -1,7 +1,8 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 import { useOpenCommandPalette } from "@/hooks/use-open-command-palette";
 import { File } from "lucide-react";
-import { Route } from "next";
+import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import {
   CommandDialog,

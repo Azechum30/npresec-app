@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import { useOpenSidebar } from "@/hooks/use-open-sidebar";
@@ -18,6 +19,9 @@ export default function SidebarOpenButton({
     <Button
       onClick={() => handleOpen(open)}
       variant="outline"
+      type="button"
+      role="navigation"
+      aria-label="open-side-bar"
       size="icon"
       className={className}>
       {open ? (

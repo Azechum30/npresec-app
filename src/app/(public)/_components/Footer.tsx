@@ -1,3 +1,4 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import Logo from "@/../public/logo.png";
@@ -25,7 +26,7 @@ import {
   Sparkles,
   Star,
 } from "lucide-react";
-import { Route } from "next";
+import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";

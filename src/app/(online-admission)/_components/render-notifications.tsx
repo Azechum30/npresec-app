@@ -1,3 +1,4 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import { RegisterClientSideBackgroundNotifications } from "@/app/(private)/(admin)/admin/users/_hooks/register-client-side-background-notifications";

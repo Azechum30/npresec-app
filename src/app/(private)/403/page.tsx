@@ -1,8 +1,9 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { buttonVariants } from "@/components/ui/button";
 import { getUserRole } from "@/lib/get-session";
-import { UserRole } from "@/lib/types";
-import { Route } from "next";
+import type { UserRole } from "@/lib/types";
+import type { Route } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
@@ -59,8 +60,9 @@ const RenderForbiddenPage = async () => {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-background">
-      <div className="bg-accent shadow-md rounded-lg p-8 max-w-lg text-center">
+      <div className="bg-card shadow-2xl rounded-lg p-8 max-w-lg text-center">
         <div className="text-red-500">
+          {/** biome-ignore lint/a11y/noSvgWithoutTitle: reason */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-16 w-16 mx-auto"

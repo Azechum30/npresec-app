@@ -202,7 +202,7 @@ export default function Sidebar() {
           )}>
           <div className="size-10 shrink-0 flex items-center justify-center border-2 dark:group-hover:border-gray-600  rounded-full p-1.5 ">
             <Avatar className="w-full h-full">
-              <AvatarImage src="/logo.png" />
+              <AvatarImage src="/logo.png" alt='School Logo' />
               <AvatarFallback>NP</AvatarFallback>
             </Avatar>
           </div>

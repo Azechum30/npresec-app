@@ -31,7 +31,10 @@ export const ItemsPerPage = ({
     <Select
       value={String(value)}
       onValueChange={(value) => onPageSizeChangeAction?.(Number(value))}>
-      <SelectTrigger>
+      <SelectTrigger
+        type="button"
+        role="combobox"
+        aria-label="items-per-page-button">
         <SelectValue placeholder="Select the number of rows per page" />
       </SelectTrigger>
       <SelectContent align="center" position="popper">

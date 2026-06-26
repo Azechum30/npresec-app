@@ -28,7 +28,7 @@ export const Show2FABanner = () => {
 
   return (
     <div
-      className="bg-primary/10 border-primary border-l-4 text-primary p-4 mb-6 flex items-center justify-between rounded-md shadow-2xl"
+      className="border-primary border-l-4 p-4 mb-6 flex items-center justify-between rounded-md shadow-2xl"
       role="alert">
       <p>
         We highly recommend enabling two factor authentication (2FA) for your

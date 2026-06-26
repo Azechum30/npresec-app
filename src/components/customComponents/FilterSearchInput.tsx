@@ -1,9 +1,10 @@
-import { Table } from "@tanstack/react-table";
-import { Input } from "../ui/input";
-import { SearchIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+/**biome-ignore-all assist/source/organizeImports: reason */
 import { cn } from "@/lib/utils";
+import type { Table } from "@tanstack/react-table";
+import { SearchIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Input } from "../ui/input";
 
 type FilterSearchInputProps = {
   table: Table<any>;

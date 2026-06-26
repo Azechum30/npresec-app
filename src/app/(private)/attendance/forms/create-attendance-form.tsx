@@ -25,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { cn } from "@/lib/utils";
 import {
   type AttendanceType,
@@ -81,9 +82,20 @@ export const CreateAttendanceForm: FC<CreateAttendanceFormProps> = ({
   });
 
   const user = useAuth();
+  const { dialogs } = useGenericDialog();
+  const isOpen = !!dialogs["create-attendance"];
 
   const [classQueryData, studentsQueryData] = useQueries({
-    queries: [classQueryOptions, studentsQueryOptions],
+    queries: [
+      {
+        ...classQueryOptions,
+        enabled: isOpen,
+      },
+      {
+        ...studentsQueryOptions,
+        enabled: isOpen,
+      },
+    ],
   });
 
   const classes = useMemo(() => {

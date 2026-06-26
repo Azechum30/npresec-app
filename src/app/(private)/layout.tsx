@@ -1,7 +1,7 @@
 /** biome-ignore-all assist/source/organizeImports: reason */
 
+import { DotMatrixLoader } from "@/components/customComponents/dot-matrix-loader";
 import { ExportColumnConfigProvider } from "@/components/customComponents/export-column-config-provider";
-import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import MainContainer from "@/components/customComponents/MainContainer";
 import SessionProvider from "@/components/customComponents/SessionProvider";
 import { SetSystemWideActions } from "@/components/customComponents/set-system-wide-actions";
@@ -9,6 +9,7 @@ import SettingsProvider from "@/components/customComponents/settings-provider";
 import Sidebar from "@/components/customComponents/Sidebar";
 import TanstackQueryProvider from "@/components/providers/tanstack-query-provider";
 import type { ExtendedSession } from "@/lib/auth-client";
+import { EVENTS } from "@/lib/constants";
 import { getAuthUser } from "@/lib/get-session";
 import { env } from "@/lib/server-only-actions/validate-env";
 import { redirect } from "next/navigation";
@@ -47,35 +48,15 @@ const RenderSessionProvider = async ({ children }: { children: ReactNode }) => {
   if (!user) {
     return redirect("/sign-in");
   }
+
+  const WEB_SOCKET_EVENTS = EVENTS;
   return (
     <SessionProvider value={user as ExtendedSession["user"]}>
       {children}
       <Suspense>
         <RegisterClientSideBackgroundNotifications
           userId={user.id}
-          eventNames={[
-            "Error-sending-staff-emails",
-            "bulk-rate-limit-exceeded",
-            "staff-progress",
-            "staff-emails-partial-complete",
-            "staff-bulk-creation-success",
-            "staff-onboarding-progress",
-            "staff-emails-sent-completed",
-            "staff-emails-sending-progress",
-            "staff-onboarding-email-sent",
-            "staff-onboarding-success",
-            "workflow-failed",
-            "single-student-email-success",
-            "single-student-email-error",
-            "single-student-onboard-success",
-            "single-student-workflow-failed",
-            "student-bulk-creation-success",
-            "bulk-student-workflow-failed",
-            "students-emails-sent-completed",
-            "students-grades-upload-success",
-            "placement-list-upload-failed",
-            "placement-list-upload-success",
-          ]}
+          eventNames={WEB_SOCKET_EVENTS}
         />
         <SettingsProvider
           cluster={env.NEXT_PUBLIC_PUSHER_CLUSTER}
@@ -87,4 +68,4 @@ const RenderSessionProvider = async ({ children }: { children: ReactNode }) => {
   );
 };
 
-const LayoutFallback = () => <FallbackComponent />;
+const LayoutFallback = () => <DotMatrixLoader />;

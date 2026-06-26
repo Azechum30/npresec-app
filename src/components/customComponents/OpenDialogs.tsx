@@ -1,7 +1,9 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
+
 "use client";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { PlusCircle } from "lucide-react";
-import { FC } from "react";
+import type { FC } from "react";
 import { Button } from "../ui/button";
 
 const variantType = [
@@ -25,6 +27,8 @@ const OpenDialogs: FC<{
 
   return (
     <Button
+      aria-label={`${dialogKey}-button`}
+      type="button"
       variant={variant ? variant : "default"}
       size={size ? size : "lg"}
       className="w-full md:w-auto hover:cursor-pointer"

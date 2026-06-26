@@ -1,12 +1,12 @@
 /** biome-ignore-all assist/source/organizeImports:reason */
 
+import { DotMatrixLoader } from "@/components/customComponents/dot-matrix-loader";
 import ThemeProvider from "@/components/customComponents/theme-provider";
 import { ToggleOverflow } from "@/components/customComponents/toggle-overflow";
 import RouteTrackingProvider from "@/components/providers/RouteTrackingProvider";
 import { Toaster } from "@/components/ui/sonner";
 import "@/lib/orpc.server";
 import { cn } from "@/lib/utils";
-import { Loader } from "lucide-react";
 import type { Metadata } from "next";
 import { Poppins, Roboto } from "next/font/google";
 import { Suspense } from "react";
@@ -52,15 +52,7 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange={true}>
-          <Suspense
-            fallback={
-              <div className="w-full h-screen flex justify-center items-center">
-                <Loader className="size-16 text-primary animate-spin" />
-                <span className="font-mono text-base bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent animate-pulse">
-                  Loading Data...
-                </span>
-              </div>
-            }>
+          <Suspense fallback={<DotMatrixLoader />}>
             <RouteTrackingProvider>
               <Toaster richColors duration={5000} />
               {children}

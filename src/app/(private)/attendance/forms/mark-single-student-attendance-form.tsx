@@ -14,6 +14,8 @@ import DatePickerWithLabel from "@/components/customComponents/DatePickerWithLab
 import LoadingButton from "@/components/customComponents/LoadingButton";
 import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
 import { useAuth } from "@/components/customComponents/SessionProvider";
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { useQueries } from "@tanstack/react-query";
 import { PlusCircleIcon } from "lucide-react";
 import { classQueryOptions } from "../../(admin)/admin/classes/actions/queries";
@@ -56,21 +58,31 @@ export const MarkSingleStudentAttendanceForm = ({
     name: "semester",
   });
   const user = useAuth();
+  const { dialogs } = useGenericDialog();
+  const isOpen = !!dialogs["create-single-attendance"];
+
   const [classQueryData, studentsQueryData] = useQueries({
-    queries: [classQueryOptions, studentsQueryOptions],
+    queries: [
+      {
+        ...classQueryOptions,
+        enabled: isOpen,
+      },
+      {
+        ...studentsQueryOptions,
+        enabled: isOpen,
+      },
+    ],
   });
 
   const classes = useMemo(() => {
-    if (!classQueryData.data || !user) return [];
+    if (!classQueryData.data) return [];
 
-    if (user.roles?.map((role) => role.role?.name === "classTeacher"))
+    if (user?.roles?.some((role) => role.role?.name === "classTeacher"))
       return classQueryData.data
         .filter((cls) => cls.classTeacher?.userId === user.id)
         .map((cls) => ({
-          id: {
-            id: cls.id,
-            name: `${cls.name} (${cls.level.replace(/_/g, " ")})`,
-          },
+          id: cls.id,
+          name: `${cls.name} (${cls.level.replace(/_/g, " ")})`,
         }));
 
     return classQueryData.data.map((cls) => ({
@@ -104,6 +116,10 @@ export const MarkSingleStudentAttendanceForm = ({
   async function handleSubmit(values: SingleStudentAttendance) {
     await onSubmitAction(values);
   }
+
+  const isLoading = classQueryData.isLoading || studentsQueryData.isLoading;
+
+  if (isLoading) return <ShowLoadingState />;
 
   return (
     <Form {...form}>

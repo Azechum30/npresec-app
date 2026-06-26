@@ -1,11 +1,11 @@
 /**biome-ignore-all assist/source/organizeImports: reason */
+import { AvatarComponent } from "@/components/customComponents/avatar-component";
 import { GenericActions } from "@/components/customComponents/GenericActions";
 import { GenericRowExpansion } from "@/components/customComponents/GenericRowExpansion";
 import { RowSelections } from "@/components/customComponents/RowSelections";
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
 import type { StudentResponseType } from "@/lib/types";
 import type { ColumnDef } from "@tanstack/react-table";
-import Image from "next/image";
 import { useDeleteStudentMutationFn } from "../actions/mutations";
 
 export const useGetColumns = () => {
@@ -23,25 +23,11 @@ export const useGetColumns = () => {
     {
       header: "Avatar",
       cell: ({ row }) => {
-        const { image } = row.original.user ?? {};
-        const isValid = image
-          ? image.startsWith("http") ||
-            image.startsWith("https") ||
-            image.startsWith("/")
-          : false;
-        const url = isValid ? image : "/no-avatar.jpg";
-
         return (
-          <div className="size-8 rounded-full border border-primary  flex items-center justify-center">
-            <Image
-              src={url ? url : "/no-avatar.jpg"}
-              alt="Avatar"
-              width={20}
-              height={20}
-              loading="lazy"
-              className="size-6 rounded-full object-cover object-top"
-            />
-          </div>
+          <AvatarComponent
+            image={row.original.user?.image ?? undefined}
+            fallback={`${row.original.lastName} ${row.original.firstName}`}
+          />
         );
       },
     },

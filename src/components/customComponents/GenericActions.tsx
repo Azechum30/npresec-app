@@ -57,6 +57,9 @@ export const GenericActions = <T extends { id: string }>({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
+              type="button"
+              role="dialog"
+              aria-label={`$open-{pathname}-actions`}
               variant="ghost"
               size="icon"
               className="hover:cursor-pointer">
@@ -123,6 +126,9 @@ export const GenericActions = <T extends { id: string }>({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
+              type="button"
+              role="dialog"
+              aria-label={`$open-{pathname}-actions`}
               variant="ghost"
               size="icon"
               className="hover:cursor-pointer">

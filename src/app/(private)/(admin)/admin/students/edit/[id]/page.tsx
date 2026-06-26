@@ -1,16 +1,21 @@
 /**biome-ignore-all assist/source/organizeImports: reason */
-import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { DotMatrixLoader } from "@/components/customComponents/dot-matrix-loader";
 import { getQueryClient } from "@/components/providers/get-query-client";
-import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { getStudent } from "../../actions/action";
-import { getStudentQueryOptions } from "../../actions/queries";
-import { RenderStudentEdit } from "../../components/RenderStudentEdit";
+import { studentsQueryOptions } from "../../actions/queries";
 import StudentOnboardingNavbar from "../../components/studentsOnboardingNavbar";
+import { ViewStudentDetails } from "./view-student-details";
 type Params = {
   params: Promise<{ id: string }>;
+};
+
+export const generateStateParams = async () => {
+  const queryClient = getQueryClient();
+  const { students } = await queryClient.ensureQueryData(studentsQueryOptions);
+  return students.map(({ id }) => id).slice(100);
 };
 
 export const generateMetadata = async ({
@@ -25,6 +30,7 @@ export const generateMetadata = async ({
       title: {
         absolute: `Student | ${result.student.lastName} ${result.student.firstName}`,
       },
+      description: `Profile details of ${result.student.lastName} ${result.student.firstName} ${result.student.middleName}`,
     };
   } else {
     return {
@@ -33,27 +39,14 @@ export const generateMetadata = async ({
     };
   }
 };
-export default async function StudentEditPage(params: Params) {
-  const { id } = await params.params;
-  const queryClient = getQueryClient();
-
-  await queryClient.ensureQueryData(getStudentQueryOptions(id));
-
+export default function StudentEditPage(params: Params) {
   return (
     <div className="flex flex-col md:flex-row gap-4">
       <StudentOnboardingNavbar className=" bg-background flex-1 sticky top-16 max-h-[85vh] mb-10 md:mb-0 p-4  rounded-md border shadow-2xl" />
-      <Suspense fallback={<FallbackComponent />}>
-        <HydrationBoundary state={dehydrate(queryClient)}>
-          <RenderStudentEdit studentId={id} />
-        </HydrationBoundary>
+
+      <Suspense fallback={<DotMatrixLoader />}>
+        <ViewStudentDetails params={params.params} />
       </Suspense>
     </div>
   );
 }
-
-// const RendenStudentEditPage = async ({ params }: { params: Params }) => {
-//   await connection();
-//   const { id } = await params.params;
-
-//   return <RenderStudentEdit studentId={id} />;
-// };

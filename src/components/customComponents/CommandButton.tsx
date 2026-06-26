@@ -1,3 +1,5 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
+
 "use client";
 import { useOpenCommandPalette } from "@/hooks/use-open-command-palette";
 import { useOpenSidebar } from "@/hooks/use-open-sidebar";
@@ -12,12 +14,15 @@ export default function CommandButton() {
   return (
     <Button
       variant="outline"
+      type="button"
+      aria-label="tigger-command-palette-button"
+      role="group"
       onClick={onOpen}
       className={cn(
         "relative md:w-auto w-75 lg:w-75 py-2 flex items-center justify-between text-muted-foreground hover:text-inherit",
         open && "w-57.5 md:w-auto lg:w-75",
       )}>
-      <span>Search the system...</span>
+      Search
       <span
         className={cn(
           `md:hidden absolute top-1/2 right-1 -translate-y-1/2 z-40 flex lg:flex items-center text-xs bg-gray-300 hover:bg-inherit dark:bg-gray-700/75 dark:hover:bg-inherit rounded-md px-2 py-1`,

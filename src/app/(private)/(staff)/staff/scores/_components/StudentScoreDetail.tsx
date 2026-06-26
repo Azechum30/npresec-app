@@ -1,8 +1,9 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+/** biome-ignore-all assist/source/organizeImports: reason */
+import { AvatarComponent } from "@/components/customComponents/avatar-component";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { GradeResponseType } from "@/lib/types";
-import { Row } from "@tanstack/react-table";
+import type { GradeResponseType } from "@/lib/types";
+import type { Row } from "@tanstack/react-table";
 import moment from "moment";
 
 type StudentScoreDetailProps = {
@@ -26,16 +27,10 @@ export const StudentScoreDetail = ({ row }: StudentScoreDetailProps) => {
     <Card>
       <CardHeader className="border-b">
         <CardTitle className="relative flex justify-start items-center gap-3">
-          <Avatar size="lg">
-            <AvatarImage
-              className="size-20"
-              src={student.user?.image ?? "/no-avatar.jpg"}
-            />
-            <AvatarFallback className="border-primary border font-bold bg-linear-120 from-primary to-muted-foreground bg-clip-text text-transparent">
-              {student.lastName.charAt(0).toUpperCase() +
-                student.firstName.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <AvatarComponent
+            image={student.user?.image ?? undefined}
+            fallback={`${student.lastName} ${student.firstName}`}
+          />
           <div className="flex flex-col items-start">
             <h1 className="text-base">
               {student.firstName} {student.lastName}

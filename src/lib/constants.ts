@@ -234,3 +234,27 @@ export const REGIONS = [
   "Western North",
   "Western Region",
 ];
+
+export const EVENTS = [
+  "Error-sending-staff-emails",
+  "bulk-rate-limit-exceeded",
+  "staff-progress",
+  "staff-emails-partial-complete",
+  "staff-bulk-creation-success",
+  "staff-onboarding-progress",
+  "staff-emails-sent-completed",
+  "staff-emails-sending-progress",
+  "staff-onboarding-email-sent",
+  "staff-onboarding-success",
+  "workflow-failed",
+  "single-student-email-success",
+  "single-student-email-error",
+  "single-student-onboard-success",
+  "single-student-workflow-failed",
+  "student-bulk-creation-success",
+  "bulk-student-workflow-failed",
+  "students-emails-sent-completed",
+  "students-grades-upload-success",
+  "placement-list-upload-failed",
+  "placement-list-upload-success",
+];

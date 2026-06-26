@@ -1,11 +1,11 @@
-import { Suspense } from "react";
-import { DashboardData, getDashboardData } from "./actions/dashboard-data";
-import DashboardContent from "./components/dashboard-content";
-
+/**biome-ignore-all assist/source/organizeImports: reason */
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
+import { Suspense } from "react";
+import { type DashboardData, getDashboardData } from "./actions/dashboard-data";
+import DashboardContent from "./components/dashboard-content";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard - NPRESEC SMIS",
@@ -20,7 +20,7 @@ export default async function DashboardOverviewPage() {
         <h1 className="text-3xl font-bold tracking-tight">School Overview</h1>
         <p className="text-muted-foreground text-sm">
           Real-time analytics for{" "}
-          <span className="bg-gradient-to-tr from-primary to-muted-foreground bg-clip-text text-transparent font-bold">
+          <span className="bg-linear-to-br from-primary to-muted-foreground bg-clip-text text-transparent font-bold">
             PRESBY SHTS, NAKPANDURI
           </span>
           .

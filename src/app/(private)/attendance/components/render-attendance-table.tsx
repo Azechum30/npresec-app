@@ -74,7 +74,11 @@ export const RenderAttendanceTable = () => {
       <Card className="px-4 shadow-2xl flex flex-col md:flex-row md:justify-between md:items-center space-y-3 lg:space-y-0 mt-4 md:flex-wrap">
         <div className="flex flex-col md:flex-row gap-4 md:flex-1 lg:flex-initial">
           <Select value={classId} onValueChange={setClassId}>
-            <SelectTrigger className="w-full md:max-w-xs">
+            <SelectTrigger
+              className="w-full md:max-w-xs"
+              type="button"
+              role="combobox"
+              aria-label="Filter-class-button">
               <SelectValue placeholder="Filter By Class" />
             </SelectTrigger>
             <SelectContent align="center" position="popper">
@@ -86,7 +90,11 @@ export const RenderAttendanceTable = () => {
             </SelectContent>
           </Select>
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="w-full md:max-w-xs">
+            <SelectTrigger
+              className="w-full md:max-w-xs"
+              type="button"
+              role="combobox"
+              aria-label="filter-status-button">
               <SelectValue placeholder="Filter By Status" />
             </SelectTrigger>
             <SelectContent align="center" position="popper">
@@ -120,7 +128,7 @@ export const RenderAttendanceTable = () => {
           />
           <Button
             variant="outline"
-            className="border-orange-400"
+            className="w-full md:w-auto border-orange-400"
             onClick={() => {
               setClassId("");
               setStartDate(undefined);

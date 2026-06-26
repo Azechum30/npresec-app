@@ -1,11 +1,21 @@
-import UploadComponent from "@/components/customComponents/UploadComponent";
+"use client";
+
+import dynamic from "next/dynamic";
 import { bulkCreateStudents } from "../actions/action";
+
+const BulkUploadStudentsModal = dynamic(
+  () =>
+    import("@/components/customComponents/UploadComponent").then(
+      (mod) => mod.default,
+    ),
+  { ssr: false },
+);
 
 export default function StudentProvider() {
   return (
-    <UploadComponent
+    <BulkUploadStudentsModal
       filepath="students/students-template.csv"
-      handleUploadAction={bulkCreateStudents}
+      handleUploadAction={bulkCreateStudents as any}
     />
   );
 }

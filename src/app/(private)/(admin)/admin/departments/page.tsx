@@ -20,17 +20,19 @@ export default async function DepartmentPage() {
     queryClient.ensureQueryData(staffQueryOptions),
   ]);
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
+    <>
       <div className="flex flex-col gap-y-2 sm:flex-row sm:justify-between sm:items-center sm:gap-y-0">
         <h1 className="font-semibold line-clamp-1">All Departments</h1>
         <OpenDialogs dialogKey="create-department" title="Add Department" />
       </div>
-      <Suspense fallback={<FallbackComponent />}>
-        <RenderDepartmentsDataTable />
-      </Suspense>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <Suspense fallback={<FallbackComponent />}>
+          <RenderDepartmentsDataTable />
+        </Suspense>
+      </HydrationBoundary>
       <DepartmentUploadProvider />
       <EditDepartment />
       <CreateDepartmentDialog />
-    </HydrationBoundary>
+    </>
   );
 }

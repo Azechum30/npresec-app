@@ -1,37 +1,28 @@
 /**biome-ignore-all assist/source/organizeImports: reason */
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import { getQueryClient } from "@/components/providers/get-query-client";
 import { Button } from "@/components/ui/button";
-import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { PlusCircle } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { classQueryOptions } from "../classes/actions/queries";
-import { departmentsQueryOptions } from "../departments/actions/queries";
-import { studentsQueryOptions } from "./actions/queries";
-import { StudentDataTable } from "./components/render-student-datatable";
+import { StreamStudentsData } from "./components/stream-student-data";
 import StudentProvider from "./components/StudentProvider";
 
 export const metadata: Metadata = {
-  title: "Admin - Students",
+  title: "Manage Students",
+  description:
+    "Manage students data in real-time by CRUD operations on students data",
+  keywords: ["students", "Manage", "Presby SHTS Nakpanduri"],
 };
 
-export default async function StudentsPage() {
-  const queryClient = getQueryClient();
-
-  await Promise.all([
-    queryClient.ensureQueryData(departmentsQueryOptions),
-    queryClient.ensureQueryData(classQueryOptions),
-    queryClient.ensureQueryData(studentsQueryOptions),
-  ]);
+export default function StudentsPage() {
   return (
     <>
       <div className="flex flex-col md:flex-row gap-4 md:justify-between md:items-center">
         <h3 className="text-base font-semibold line-clamp-1">
           Manage Students
         </h3>
-        <Link href="/admin/students/onboarding">
+        <Link prefetch="auto" href="/admin/students/onboarding">
           <Button variant="default" asChild className="w-full">
             <span>
               <PlusCircle className="size-5" />
@@ -42,10 +33,9 @@ export default async function StudentsPage() {
       </div>
 
       <Suspense fallback={<FallbackComponent />}>
-        <HydrationBoundary state={dehydrate(queryClient)}>
-          <StudentDataTable />
-        </HydrationBoundary>
+        <StreamStudentsData />
       </Suspense>
+
       <StudentProvider />
     </>
   );

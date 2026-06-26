@@ -22,53 +22,87 @@ export const RegisterClientSideBackgroundNotifications = ({
     if (!userId) return;
 
     const channelName = `userId-${userId}`;
-    const channel = pusherClient?.subscribe(channelName);
+    let channel: any = null;
 
-    eventNames.forEach((eventName) => {
-      channel.bind(
-        eventName,
-        (data: {
-          sent?: number;
-          failed?: number;
-          total?: number;
-          message: string;
-          type: "error" | "success" | "warning" | "info";
-        }) => {
-          if (data.type === "error") {
-            toast.error(data.message);
-          } else if (data.type === "success") {
-            toast.success(data.message);
-            router.refresh();
+    const connectAndBindPusher = () => {
+      pusherClient.connect();
 
-            const queryKey = EVENT_TO_QUERY_KEY[eventName];
+      channel = pusherClient?.subscribe(channelName);
 
-            if (queryKey) {
-              queryClient.invalidateQueries({ queryKey });
+      eventNames.forEach((eventName) => {
+        channel.bind(
+          eventName,
+          (data: {
+            sent?: number;
+            failed?: number;
+            total?: number;
+            message: string;
+            type: "error" | "success" | "warning" | "info";
+          }) => {
+            if (data.type === "error") {
+              toast.error(data.message);
+            } else if (data.type === "success") {
+              toast.success(data.message);
+              router.refresh();
+
+              const queryKey = EVENT_TO_QUERY_KEY[eventName];
+              if (queryKey) {
+                queryClient.invalidateQueries({ queryKey });
+              }
+            } else if (data.type === "info") {
+              toast.info(data.message, {
+                description:
+                  data.sent && data.total
+                    ? `${data.sent} out of ${data.total} emails have sent successfully`
+                    : "",
+              });
+            } else {
+              toast.warning(data.message, {
+                description:
+                  data.failed && data.sent
+                    ? `${data.sent} emails were sent. However, ${data.failed} emails failed to be sent`
+                    : "",
+              });
             }
-          } else if (data.type === "info") {
-            toast.info(data.message, {
-              description:
-                data.sent && data.total
-                  ? `${data.sent} out of ${data.total} emails have sent successfully`
-                  : "",
-            });
-          } else {
-            toast.warning(data.message, {
-              description:
-                data.failed && data.sent
-                  ? `${data.sent} emails were sent. However, ${data.failed} emails failed to be sent`
-                  : "",
-            });
-          }
-        },
-      );
-    });
+          },
+        );
+      });
+    };
 
-    return () => {
-      for (const event of eventNames) {
-        channel.unbind(event);
+    const disconnectAndUnbindPusher = () => {
+      if (channel) {
+        for (const event of eventNames) {
+          channel.unbind(event);
+        }
+        pusherClient.unsubscribe(channelName);
       }
-      pusherClient.unsubscribe(channelName);
+      // Force disconnect the global WebSocket client so the connection payload hits 0
+      pusherClient.disconnect();
+    };
+
+    // 3. Trigger initial connection on mount
+    connectAndBindPusher();
+
+    // 4. Handle Back/Forward Cache Lifecycle Events
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        connectAndBindPusher();
+      }
+    };
+
+    const handlePageHide = () => {
+      // Run right before page vanishes so Chrome can freeze the tab in memory safely
+      disconnectAndUnbindPusher();
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+    window.addEventListener("pagehide", handlePageHide);
+
+    // 5. Standard cleanup for traditional Next.js page unmounting
+    return () => {
+      disconnectAndUnbindPusher();
+      window.removeEventListener("pageshow", handlePageShow);
+      window.removeEventListener("pagehide", handlePageHide);
     };
   }, [userId, eventNames, router, queryClient]);
 

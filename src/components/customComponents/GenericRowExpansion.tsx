@@ -1,7 +1,9 @@
-import { FC } from "react";
-import { Button } from "../ui/button";
+/**biome-ignore-all assist/source/organizeImports: reason */
+
+import type { ComponentProps } from "@/lib/constants";
 import { Minus, Plus } from "lucide-react";
-import { ComponentProps } from "@/lib/constants";
+import type { FC } from "react";
+import { Button } from "../ui/button";
 
 export const GenericRowExpansion: FC<ComponentProps> = ({
   table,
@@ -9,22 +11,22 @@ export const GenericRowExpansion: FC<ComponentProps> = ({
   row,
 }) => {
   return (
-    <>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={
-          isHeader
-            ? () => table?.toggleAllRowsExpanded()
-            : () => row?.toggleExpanded()
-        }>
-        {(isHeader && table?.getIsAllRowsExpanded()) ||
-        (!isHeader && row?.getIsExpanded()) ? (
-          <Minus className="size-5" />
-        ) : (
-          <Plus className="size-5" />
-        )}
-      </Button>
-    </>
+    <Button
+      variant="ghost"
+      type="button"
+      aria-label="expand-student-row"
+      size="sm"
+      onClick={
+        isHeader
+          ? () => table?.toggleAllRowsExpanded()
+          : () => row?.toggleExpanded()
+      }>
+      {(isHeader && table?.getIsAllRowsExpanded()) ||
+      (!isHeader && row?.getIsExpanded()) ? (
+        <Minus className="size-5" />
+      ) : (
+        <Plus className="size-5" />
+      )}
+    </Button>
   );
 };

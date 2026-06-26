@@ -29,11 +29,11 @@ export default async function CoursesPage() {
         <h1 className="text-base font-semibold line-clamp-1">Manage Courses</h1>
         <OpenDialogs dialogKey="create-course" title="Add Course" />
       </div>
-      <Suspense fallback={<FallbackComponent />}>
-        <HydrationBoundary state={dehydrate(queryClient)}>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <Suspense fallback={<FallbackComponent />}>
           <RenderCoursesDataTable />
-        </HydrationBoundary>
-      </Suspense>
+        </Suspense>
+      </HydrationBoundary>
 
       <CoursesProvider />
       <EditCourseDialog />
