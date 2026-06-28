@@ -1,18 +1,19 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
-import { useRef, useLayoutEffect, useState } from "react";
-import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
-import { PublicMainContainer } from "./PublicMainContainer";
 import BackgroundImage from "@/../public/background.jpg";
-import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { Library, ChevronDown } from "lucide-react";
+import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { TextPlugin } from "gsap/TextPlugin";
-import { useGSAP } from "@gsap/react";
-import { Route } from "next";
+import { ChevronDown, Library } from "lucide-react";
+import type { Route } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { useRef, useState } from "react";
+import { PublicMainContainer } from "./PublicMainContainer";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, TextPlugin, useGSAP);
@@ -169,7 +170,6 @@ export const Hero = () => {
         delay: 3,
       });
 
-      // Enhanced button hover animations
       const buttons = container.current.querySelectorAll(".hero-button");
       buttons.forEach((button) => {
         const btn = button as HTMLElement;
@@ -193,10 +193,11 @@ export const Hero = () => {
         });
       });
 
-      // Cleanup function
       return () => {
         mainTl.kill();
-        ScrollTrigger.getAll().forEach((st) => st.kill());
+        ScrollTrigger.getAll().forEach((st) => {
+          st.kill();
+        });
       };
     },
     { scope: container },
@@ -213,41 +214,38 @@ export const Hero = () => {
   return (
     <section
       ref={container}
-      className="relative w-full min-h-screen overflow-hidden"
-    >
+      className="relative w-full min-h-screen overflow-hidden">
       {/* Background Image */}
       <div ref={backgroundRef} className="absolute inset-0 hero-background">
         <Image
           src={BackgroundImage}
           alt="Presbyterian SHTS Nakpanduri Campus"
           className="h-full w-full object-cover object-center"
-          priority
+          loading="lazy"
           quality={90}
           placeholder="blur"
         />
       </div>
 
       {/* Overlay */}
-      <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-background/70 via-background/80 to-background/90 dark:from-background/85 dark:via-background/90 dark:to-background/95" />
+      <div className="hero-overlay absolute inset-0 bg-linear-to-b from-background/70 via-background/80 to-background/90 dark:from-background/85 dark:via-background/90 dark:to-background/95" />
 
       {/* Content */}
       <div
         ref={contentRef}
-        className="relative z-10 flex min-h-screen items-center justify-center"
-      >
+        className="relative z-10 flex min-h-screen items-center justify-center">
         <PublicMainContainer className="py-20">
           <div className="flex flex-col text-center items-center space-y-8 max-w-4xl mx-auto">
             {/* Badge */}
             <Badge
               variant="outline"
-              className="hero-badge px-6 py-2 text-sm font-medium border-primary/30 bg-background/80 backdrop-blur-sm hover:bg-primary/10 transition-colors duration-300"
-            >
+              className="hero-badge px-6 py-2 text-sm font-medium border-primary/30 bg-background/80 backdrop-blur-sm hover:bg-primary/10 transition-colors duration-300">
               An Institution of Academic Excellence
             </Badge>
 
             {/* Title */}
             <h1 className="tracking-tight text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
-              <span className="hero-title-word inline-block bg-gradient-to-r from-orange-500 via-pink-500 to-red-500 bg-clip-text text-transparent">
+              <span className="hero-title-word inline-block bg-linear-to-r from-primary  to-muted-foreground bg-clip-text text-transparent">
                 Presbyterian
               </span>{" "}
               <span className="hero-title-word inline-block text-foreground">
@@ -276,11 +274,10 @@ export const Hero = () => {
                   size: "lg",
                   className:
                     "group relative overflow-hidden px-8 py-4 text-base font-semibold",
-                })}`}
-              >
+                })}`}>
                 <Library className="size-5 mr-2 group-hover:rotate-12 transition-transform duration-300" />
                 <span className="relative z-10">Learning Areas</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                <div className="absolute inset-0 bg-linear-to-r from-primary/0 via-primary/10 to-primary/0 translate-x-full group-hover:translate-x-full transition-transform duration-700" />
               </Link>
 
               <Link
@@ -290,8 +287,7 @@ export const Hero = () => {
                   variant: "outline",
                   className:
                     "group px-8 py-4 text-base font-semibold border-2 hover:border-primary/50",
-                })}`}
-              >
+                })}`}>
                 <span className="group-hover:tracking-wider transition-all duration-300">
                   About Us
                 </span>
@@ -301,10 +297,10 @@ export const Hero = () => {
             {/* Scroll Indicator */}
             <div className="hero-scroll-indicator absolute bottom-8 left-1/2 transform -translate-x-1/2">
               <button
+                type="button"
                 onClick={scrollToNext}
-                className="flex flex-col items-center space-y-2 text-muted-foreground hover:text-foreground transition-colors duration-300 group"
-                aria-label="Scroll to next section"
-              >
+                className="flex flex-col items-center space-y-2 text-foreground/70 hover:text-foreground transition-colors duration-300 group"
+                aria-label="Scroll to next section">
                 <span className="text-sm font-medium">Explore More</span>
                 <ChevronDown className="scroll-chevron size-6 group-hover:scale-110 transition-transform duration-300" />
               </button>
@@ -317,8 +313,8 @@ export const Hero = () => {
       {isLoaded && (
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-10 w-2 h-2 bg-primary/30 rounded-full animate-pulse" />
-          <div className="absolute top-1/3 right-16 w-3 h-3 bg-orange-400/20 rounded-full animate-pulse delay-1000" />
-          <div className="absolute bottom-1/4 left-20 w-1.5 h-1.5 bg-pink-400/30 rounded-full animate-pulse delay-2000" />
+          <div className="absolute top-1/3 right-16 w-3 h-3 bg-primary/20 rounded-full animate-pulse delay-1000" />
+          <div className="absolute bottom-1/4 left-20 w-1.5 h-1.5 bg-accent/30 rounded-full animate-pulse delay-2000" />
         </div>
       )}
     </section>

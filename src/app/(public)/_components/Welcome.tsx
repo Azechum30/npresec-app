@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import CarouselImage1 from "@/../public/carousel-image1.jpg";
@@ -9,7 +10,6 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   ArrowRight,
-  Award,
   BookOpenText,
   ChevronRight,
   Expand,
@@ -17,11 +17,10 @@ import {
   Quote,
   Sparkles,
   UserRoundCheckIcon,
-  Users2,
 } from "lucide-react";
-import { Route } from "next";
+import type { Route } from "next";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { CarouselComponent } from "./CarouselComponent";
 import { PublicMainContainer } from "./PublicMainContainer";
 
@@ -36,46 +35,29 @@ const keyLinks = [
     href: "/admission",
     icon: BookOpenText,
     description: "View current admission requirements and accepted students",
-    color: "from-blue-500 to-cyan-500",
-    bgColor: "bg-blue-50 dark:bg-blue-950/20",
+    color: "from-secondary to-accent",
+    bgColor: "bg-secondary/10 dark:bg-secondary/20",
   },
   {
     name: "Learning Areas",
     href: "/programs",
     icon: Expand,
     description: "Explore our diverse academic programs and specializations",
-    color: "from-purple-500 to-pink-500",
-    bgColor: "bg-purple-50 dark:bg-purple-950/20",
-  },
-  {
-    name: "Students Portal",
-    href: "/students",
-    icon: Users2,
-    description: "Access student resources and academic services",
-    color: "from-green-500 to-emerald-500",
-    bgColor: "bg-green-50 dark:bg-green-950/20",
-  },
-  {
-    name: "Alumni Platform",
-    href: "/alumni-platform",
-    icon: Award,
-    description: "Connect with our alumni network and success stories",
-    color: "from-orange-500 to-red-500",
-    bgColor: "bg-orange-50 dark:bg-orange-950/20",
+    color: "from-secondary to-accent",
+    bgColor: "bg-secondary/10 dark:bg-secondary/20",
   },
   {
     name: "Teachers Portal",
-    href: "/teachers",
+    href: "/staff/dashboard",
     icon: UserRoundCheckIcon,
     description: "Faculty resources and teaching tools",
-    color: "from-teal-500 to-cyan-500",
-    bgColor: "bg-teal-50 dark:bg-teal-950/20",
+    color: "from-secondary to-accent",
+    bgColor: "bg-secondary/10 dark:bg-secondary/20",
   },
 ];
 
 export const Welcome = () => {
   const container = useRef<HTMLElement>(null);
-  const [hoveredLink, setHoveredLink] = useState<number | null>(null);
 
   useGSAP(
     () => {
@@ -127,7 +109,7 @@ export const Welcome = () => {
             duration: 1,
             ease: "back.out(1.7)",
           },
-          "-=0.8"
+          "-=0.8",
         )
 
         // Title with skew correction
@@ -140,7 +122,7 @@ export const Welcome = () => {
             duration: 1.2,
             ease: "power2.out",
           },
-          "-=0.6"
+          "-=0.6",
         )
 
         // Content sections with stagger
@@ -154,7 +136,7 @@ export const Welcome = () => {
             stagger: 0.3,
             ease: "power2.out",
           },
-          "-=0.8"
+          "-=0.8",
         )
 
         // Carousel with 3D flip
@@ -167,7 +149,7 @@ export const Welcome = () => {
             duration: 1.5,
             ease: "back.out(1.3)",
           },
-          "-=1.2"
+          "-=1.2",
         )
 
         // Key links with wave effect
@@ -185,7 +167,7 @@ export const Welcome = () => {
             },
             ease: "back.out(1.2)",
           },
-          "-=1"
+          "-=1",
         )
 
         // Read more button
@@ -197,7 +179,7 @@ export const Welcome = () => {
             duration: 0.8,
             ease: "back.out(1.4)",
           },
-          "-=0.4"
+          "-=0.4",
         );
 
       // Floating animations
@@ -224,16 +206,16 @@ export const Welcome = () => {
       });
 
       return () => {
-        ScrollTrigger.getAll().forEach((st) => st.kill());
+        ScrollTrigger.getAll().forEach((st) => {
+          st.kill();
+        });
       };
     },
-    { scope: container }
+    { scope: container },
   );
 
   // Link hover animations
   const handleLinkHover = (index: number, isEntering: boolean) => {
-    setHoveredLink(isEntering ? index : null);
-
     const item = container.current?.querySelector(`.key-link-${index}`);
     if (!item) return;
 
@@ -256,33 +238,33 @@ export const Welcome = () => {
   return (
     <section
       ref={container}
-      className="welcome-container relative bg-gradient-to-b from-background via-accent/30 to-background py-8 md:py-24 overflow-hidden">
+      className="welcome-container relative bg-linear-to-b from-background via-secondary/30 to-background py-8 md:py-24 overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 -right-40 w-80 h-80 bg-orange-500/5 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-pink-500/3 to-blue-500/3 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-linear-to-r from-accent/3 to-secondary/3 rounded-full blur-3xl" />
       </div>
 
       <PublicMainContainer className="relative z-10">
         <div className="grid lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Welcome Message Section */}
           <div className="lg:col-span-5 welcome-content">
-            <div className="welcome-badge inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full border border-primary/20 mb-6">
+            <div className="welcome-badge inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-primary/10 to-muted-foreground/10 rounded-full border border-primary/20 mb-6">
               <Quote className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-primary">
                 Welcome Message
               </span>
             </div>
 
-            <h2 className="welcome-title text-3xl md:text-4xl font-bold mb-6 bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">
+            <h2 className="welcome-title text-3xl md:text-4xl font-bold mb-6 bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent">
               Welcome to Excellence
             </h2>
 
             <div className="space-y-6 mb-8">
-              <p className="text-lg leading-relaxed text-muted-foreground">
+              <p className="text-lg leading-relaxed">
                 Welcome to{" "}
-                <span className="font-semibold text-foreground">
+                <span className="font-semibold">
                   Presbyterian Senior High Technical School (NPRESEC)
                 </span>
                 , a premier government assisted senior high school of the North
@@ -290,18 +272,18 @@ export const Welcome = () => {
                 Bunkprugu-Nakpanduri District.
               </p>
 
-              <p className="leading-relaxed text-muted-foreground">
+              <p className="leading-relaxed">
                 We are dedicated to the well-being and success of our students,
                 providing them with extraordinary experiences and networks that
                 allow them to grow and develop into future leaders, innovators,
                 and responsible citizens.
               </p>
 
-              <div className="p-4 bg-gradient-to-r from-primary/5 to-orange-500/5 rounded-lg border border-primary/10">
+              <div className="p-4 bg-linear-to-r from-primary/5 to-secondary/5 rounded-lg border border-primary/10">
                 <p className="text-sm font-medium text-primary mb-2">
                   Our Mission
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-foreground/70">
                   To provide quality education that nurtures academic
                   excellence, character development, and practical skills for
                   holistic growth.
@@ -317,7 +299,7 @@ export const Welcome = () => {
                   size: "lg",
                   className:
                     "hover:bg-primary hover:text-primary-foreground transition-all duration-300",
-                }
+                },
               )}`}>
               <span className="group-hover:tracking-wider transition-all duration-300">
                 Read More
@@ -333,7 +315,7 @@ export const Welcome = () => {
                 <CarouselComponent images={CarouselImages} />
                 {/* Decorative elements */}
                 <div className="absolute -top-4 -right-4 w-8 h-8 bg-primary/20 rounded-full animate-pulse" />
-                <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-orange-500/20 rounded-full animate-pulse delay-1000" />
+                <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-primary/20 rounded-full animate-pulse delay-1000" />
               </div>
             </div>
           </div>
@@ -341,9 +323,9 @@ export const Welcome = () => {
           {/* Key Links Section */}
           <div className="lg:col-span-3 welcome-content">
             <div className="mb-6">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-full border border-blue-500/20 mb-4">
-                <Sparkles className="w-4 h-4 text-blue-500" />
-                <span className="text-sm font-medium text-blue-500">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-primary/15 to-muted-foreground/20 rounded-full border border-secondary/20 mb-4">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-primary">
                   Quick Access
                 </span>
               </div>
@@ -366,7 +348,7 @@ export const Welcome = () => {
                       onMouseLeave={() => handleLinkHover(index, false)}>
                       <div className="flex items-center gap-4">
                         <div
-                          className={`link-icon p-2 rounded-lg bg-gradient-to-br ${link.color} text-white transition-transform duration-300`}>
+                          className={`link-icon p-2 rounded-lg bg-linear-to-br ${link.color} text-foreground transition-transform duration-300`}>
                           <Icon className="w-5 h-5" />
                         </div>
 
@@ -374,24 +356,24 @@ export const Welcome = () => {
                           <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors duration-300">
                             {link.name}
                           </h4>
-                          <p className="text-sm text-muted-foreground line-clamp-2 group-hover:text-foreground transition-colors duration-300">
+                          <p className="text-sm text-foreground/70 line-clamp-2 group-hover:text-foreground transition-colors duration-300">
                             {link.description}
                           </p>
                         </div>
 
                         <ChevronRight
-                          className={`w-5 h-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1`}
+                          className={`w-5 h-5 text-foreground/70 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1`}
                         />
                       </div>
 
                       {/* Hover overlay */}
                       <div
-                        className={`absolute inset-0 bg-gradient-to-br ${link.color} opacity-0 group-hover:opacity-5 rounded-xl transition-opacity duration-500`}
+                        className={`absolute inset-0 bg-linear-to-br ${link.color} opacity-0 group-hover:opacity-5 rounded-xl transition-opacity duration-500`}
                       />
                     </Link>
 
                     {index < keyLinks.length - 1 && (
-                      <Separator className="mt-3 opacity-30" />
+                      <Separator className="mt-3 opacity-70" />
                     )}
                   </div>
                 );
@@ -399,13 +381,13 @@ export const Welcome = () => {
             </div>
 
             {/* Additional CTA */}
-            <div className="mt-8 p-4 bg-gradient-to-r from-primary/5 to-orange-500/5 rounded-lg border border-primary/10">
+            <div className="mt-8 p-4 bg-linear-to-r from-primary/5 to-secondary/5 rounded-lg border border-primary/10">
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-semibold text-primary text-sm">
                     Need Help?
                   </h4>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-foreground/70">
                     Contact our support team
                   </p>
                 </div>

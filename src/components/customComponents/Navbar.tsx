@@ -1,6 +1,6 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
-import Logo from "@/../public/logo.png";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -12,13 +12,13 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-import { Route } from "next";
-import Image from "next/image";
+import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ThemeSwitcher } from "./ThemeSwitecher";
 import { TriggerMobileNavbar } from "./TriggerMobileNavbar";
+import { AvatarComponent } from "./avatar-component";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -67,7 +67,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [hoveredLink, setHoveredLink] = useState<number | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [_, setIsLoaded] = useState(false);
 
   // Handle scroll effect
   useEffect(() => {
@@ -117,7 +117,7 @@ export default function Navbar() {
             stagger: 0.1,
             ease: "back.out(1.2)",
           },
-          "-=0.5"
+          "-=0.5",
         )
         .to(
           ".navbar-actions",
@@ -128,7 +128,7 @@ export default function Navbar() {
             duration: 0.8,
             ease: "back.out(1.7)",
           },
-          "-=0.4"
+          "-=0.4",
         )
         .to(
           ".navbar-decoration",
@@ -140,7 +140,7 @@ export default function Navbar() {
             stagger: 0.2,
             ease: "elastic.out(1, 0.5)",
           },
-          "-=0.3"
+          "-=0.3",
         );
 
       // Floating animation for decorations
@@ -172,7 +172,7 @@ export default function Navbar() {
         },
       });
     },
-    { scope: container }
+    { scope: container },
   );
 
   const isCurrentPath = (href: string) => {
@@ -183,8 +183,8 @@ export default function Navbar() {
   return (
     <>
       {/* Background decorations */}
-      <div className="navbar-decoration floating-navbar-decoration fixed top-4 right-20 w-3 h-3 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full blur-sm pointer-events-none z-40" />
-      <div className="navbar-decoration floating-navbar-decoration fixed top-8 left-1/4 w-2 h-2 bg-gradient-to-br from-accent/30 to-primary/30 rounded-full blur-sm pointer-events-none z-40" />
+      <div className="navbar-decoration floating-navbar-decoration fixed top-4 right-20 w-3 h-3 bg-linear-to-br from-primary/20 to-secondary/20 rounded-full blur-sm pointer-events-none z-40" />
+      <div className="navbar-decoration floating-navbar-decoration fixed top-8 left-1/4 w-2 h-2 bg-linear-to-br from-accent/30 to-primary/30 rounded-full blur-sm pointer-events-none z-40" />
 
       <header
         ref={container}
@@ -197,7 +197,7 @@ export default function Navbar() {
           }
         `}>
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-50" />
+        <div className="absolute inset-0 bg-linear-to-r from-transparent via-primary/5 to-transparent opacity-50" />
 
         {/* Sparkle decoration */}
         <div className="navbar-decoration absolute top-3 left-1/2 transform -translate-x-1/2">
@@ -210,19 +210,17 @@ export default function Navbar() {
             href={"/" as Route}
             className="navbar-brand flex items-center gap-3 mr-6">
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative flex items-center justify-center p-2 bg-gradient-to-br from-background to-accent/30 border border-border/50 rounded-[50%] shadow-sm group-hover:shadow-lg transition-all duration-300 group-hover:scale-105">
-                <Image
-                  src={Logo}
-                  alt="NPRESEC Logo"
-                  width={48}
-                  height={24}
-                  className="w-12 h-6 object-contain"
-                />
-              </div>
+              <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-secondary/20 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              {/* <div className="relative flex items-center justify-center p-2 bg-linear-to-br from-background to-accent/30 border border-border/50 rounded-[50%] shadow-sm group-hover:shadow-lg transition-all duration-300 group-hover:scale-105"> */}
+              <AvatarComponent
+                image="/logo.png"
+                fallback="Nakpanduri Presec"
+                className="w-12 h-6.5 object-scale-down object-center"
+              />
+              {/* </div> */}
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <span className="font-bold text-lg bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent">
                 PresbySHTS
               </span>
               {/*<span className="text-xs text-muted-foreground hidden sm:block">
@@ -256,7 +254,7 @@ export default function Navbar() {
                       {/* Gradient background on hover */}
                       <div
                         className={`
-                          absolute inset-0 bg-gradient-to-r opacity-0 rounded-xl transition-opacity duration-300
+                          absolute inset-0 bg-linear-to-r opacity-0 rounded-xl transition-opacity duration-300
                           ${link.gradient}
                           ${isHovered ? "opacity-5" : "opacity-0"}
                         `}
@@ -264,7 +262,7 @@ export default function Navbar() {
 
                       {/* Active indicator */}
                       {isCurrent && (
-                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-gradient-to-r from-primary to-secondary rounded-full" />
+                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-linear-to-r from-primary to-secondary rounded-full" />
                       )}
 
                       <Icon className="w-4 h-4 relative z-10" />
@@ -297,10 +295,10 @@ export default function Navbar() {
                 <Link
                   href={"/" as Route}
                   className={`
-                    group relative overflow-hidden px-6 py-2 bg-gradient-to-r from-primary to-secondary text-primary-foreground rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-medium text-sm
+                    group relative overflow-hidden px-6 py-2 bg-linear-to-r from-primary to-secondary text-primary-foreground rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-medium text-sm
                   `}>
                   {/* Shimmer effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                  <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                   <span className="relative flex items-center gap-2">
                     Get Started
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
@@ -331,7 +329,7 @@ export default function Navbar() {
         </div>
 
         {/* Bottom gradient line */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-border to-transparent" />
       </header>
     </>
   );

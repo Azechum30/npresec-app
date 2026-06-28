@@ -1,18 +1,17 @@
-import Image from "next/image";
-
-import PencilsBackground from "@/../public/Pencils.jpg";
-import { PublicMainContainer } from "./_components/PublicMainContainer";
-
-import React from "react";
-import { CountUpComponent } from "@/components/customComponents/CountUpComponent";
-import { Hero } from "./_components/Hero";
-import { Welcome } from "./_components/Welcome";
+import type { Metadata } from "next";
 import { Features } from "./_components/Features";
+import { Hero } from "./_components/Hero";
 import { Statistics } from "./_components/Statistics";
-import { Metadata } from "next";
+import { Welcome } from "./_components/Welcome";
 
 export const metadata: Metadata = {
-  title: "Home",
+  title: "Landing Page",
+  description: "",
+  keywords: ["Home", "Presby SHTS", "Management information system"],
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function Home() {

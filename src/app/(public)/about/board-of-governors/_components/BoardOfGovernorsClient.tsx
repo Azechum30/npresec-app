@@ -1,45 +1,37 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Crown, Shield, Star } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { Crown, Shield, Star, Users } from "lucide-react";
+import { useRef, useState } from "react";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
-
-interface BoardHighlight {
-  icon: React.ComponentType<any>;
-  title: string;
-  description: string;
-  gradient: string;
-  bgColor: string;
-}
 
 const boardHighlights = [
   {
     icon: Crown,
     title: "Leadership Excellence",
     description: "Experienced leaders guiding our institution",
-    gradient: "from-yellow-500 to-orange-500",
-    bgColor: "bg-yellow-50 dark:bg-yellow-950/20",
+    gradient: "from-primary to-secondary",
+    bgColor: "bg-primary/10 dark:bg-primary/20",
   },
   {
     icon: Shield,
     title: "Strategic Oversight",
     description: "Ensuring educational quality and institutional growth",
-    gradient: "from-blue-500 to-cyan-500",
-    bgColor: "bg-blue-50 dark:bg-blue-950/20",
+    gradient: "from-secondary to-accent",
+    bgColor: "bg-secondary/10 dark:bg-secondary/20",
   },
   {
     icon: Star,
     title: "Community Impact",
     description: "Connecting school with broader community needs",
-    gradient: "from-purple-500 to-pink-500",
-    bgColor: "bg-purple-50 dark:bg-purple-950/20",
+    gradient: "from-primary to-accent",
+    bgColor: "bg-accent/20 dark:bg-accent/30",
   },
 ];
 
@@ -187,9 +179,9 @@ export function BoardOfGovernorsClient({
   return (
     <div ref={container} className="relative overflow-hidden">
       {/* Background decorations */}
-      <div className="floating-decoration floating-element parallax-bg absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full blur-3xl" />
-      <div className="floating-decoration floating-element parallax-bg absolute top-1/3 -left-32 w-64 h-64 bg-gradient-to-br from-accent/10 to-primary/10 rounded-full blur-3xl" />
-      <div className="floating-decoration floating-element parallax-bg absolute bottom-1/4 right-1/4 w-32 h-32 bg-gradient-to-br from-secondary/10 to-accent/10 rounded-full blur-2xl" />
+      <div className="floating-decoration floating-element parallax-bg absolute -top-20 -right-20 w-40 h-40 bg-linear-to-br from-primary/10 to-secondary/10 rounded-full blur-3xl" />
+      <div className="floating-decoration floating-element parallax-bg absolute top-1/3 -left-32 w-64 h-64 bg-linear-to-br from-accent/10 to-primary/10 rounded-full blur-3xl" />
+      <div className="floating-decoration floating-element parallax-bg absolute bottom-1/4 right-1/4 w-32 h-32 bg-linear-to-br from-secondary/10 to-accent/10 rounded-full blur-2xl" />
 
       <div className="flex flex-col gap-16">
         {/* Header Section */}
@@ -198,8 +190,7 @@ export function BoardOfGovernorsClient({
           <div className="board-badge flex justify-center mb-8">
             <Badge
               variant="secondary"
-              className="px-6 py-3 bg-gradient-to-r from-primary/10 to-secondary/10 backdrop-blur-md border-primary/20 text-primary hover:from-primary/20 hover:to-secondary/20 transition-all duration-300 text-lg"
-            >
+              className="px-6 py-3 bg-linear-to-r from-primary/10 to-secondary/10 backdrop-blur-md border-primary/20 text-primary hover:from-primary/20 hover:to-secondary/20 transition-all duration-300 text-lg">
               <Users className="w-5 h-5 mr-2" />
               Leadership & Governance
             </Badge>
@@ -208,14 +199,14 @@ export function BoardOfGovernorsClient({
           {/* Main Header */}
           <div className="board-header mb-8">
             <div className="inline-flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 bg-linear-to-br from-primary to-secondary rounded-2xl flex items-center justify-center shadow-lg">
                 <Crown className="w-8 h-8 text-primary-foreground" />
               </div>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
                 Board of Governors
               </h1>
             </div>
-            <div className="h-1 w-32 bg-gradient-to-r from-primary to-secondary rounded-full mx-auto" />
+            <div className="h-1 w-32 bg-linear-to-r from-primary to-secondary rounded-full mx-auto" />
           </div>
 
           {/* Description */}
@@ -227,7 +218,7 @@ export function BoardOfGovernorsClient({
               expertise, spiritual guidance, and community representation to the
               institution.
             </p>
-            <p className="text-base text-muted-foreground">
+            <p className="text-base text-foreground/70">
               Discover their individual contributions and expertise by exploring
               each member&apos;s detailed profile below.
             </p>
@@ -245,19 +236,18 @@ export function BoardOfGovernorsClient({
                 key={highlight.title}
                 className="board-highlight group cursor-default relative overflow-hidden bg-background/60 backdrop-blur-xl border-border/50 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105"
                 onMouseEnter={() => setHoveredHighlight(index)}
-                onMouseLeave={() => setHoveredHighlight(null)}
-              >
+                onMouseLeave={() => setHoveredHighlight(null)}>
                 {/* Gradient background overlay */}
                 <div
                   className={`
-                    absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-500
+                    absolute inset-0 bg-linear-to-br opacity-0 transition-opacity duration-500
                     ${highlight.gradient}
                     ${isHovered ? "opacity-5" : "opacity-0"}
                   `}
                 />
 
                 {/* Decorative corner */}
-                <div className="absolute -top-2 -right-2 w-20 h-20 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute -top-2 -right-2 w-20 h-20 bg-linear-to-br from-primary/10 to-secondary/10 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                 <CardContent className="relative p-6 text-center">
                   {/* Icon */}
@@ -266,11 +256,10 @@ export function BoardOfGovernorsClient({
                       w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all duration-300
                       ${
                         isHovered
-                          ? `bg-gradient-to-br ${highlight.gradient} text-white shadow-lg scale-110`
-                          : `${highlight.bgColor} text-muted-foreground`
+                          ? `bg-linear-to-br ${highlight.gradient} text-white shadow-lg scale-110`
+                          : `${highlight.bgColor} text-foreground/70`
                       }
-                    `}
-                  >
+                    `}>
                     <Icon className="w-8 h-8" />
                   </div>
 
@@ -278,7 +267,7 @@ export function BoardOfGovernorsClient({
                   <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors duration-300">
                     {highlight.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed group-hover:text-foreground/70 transition-colors duration-300">
+                  <p className="text-sm text-foreground/70 leading-relaxed group-hover:text-foreground transition-colors duration-300">
                     {highlight.description}
                   </p>
                 </CardContent>

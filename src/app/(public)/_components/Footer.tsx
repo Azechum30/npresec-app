@@ -25,6 +25,7 @@ import {
   Send,
   Sparkles,
   Star,
+  type LucideIcon,
 } from "lucide-react";
 import type { Route } from "next";
 import Image from "next/image";
@@ -43,7 +44,7 @@ interface FooterLink {
 
 interface SocialLink {
   platform: string;
-  icon: React.ComponentType<any>;
+  icon: LucideIcon;
   href: string;
   color: string;
   bgColor: string;
@@ -75,47 +76,12 @@ const quickLinks: FooterLink[] = [
 ];
 
 const socialLinks: SocialLink[] = [
-  // {
-  //   platform: "Facebook",
-  //   icon: Facebook,
-  //   href: "https://www.facebook.com/nakpanduripresec",
-  //   color: "text-blue-600",
-  //   bgColor: "bg-blue-50 dark:bg-blue-950/30",
-  // },
-  // {
-  //   platform: "Instagram",
-  //   icon: Instagram,
-  //   href: "https://www.instagram.com/npresec/",
-  //   color: "text-pink-600",
-  //   bgColor: "bg-pink-50 dark:bg-pink-950/30",
-  // },
-  // {
-  //   platform: "YouTube",
-  //   icon: Youtube,
-  //   href: "https://www.youtube.com/@nakpanduripresec",
-  //   color: "text-red-600",
-  //   bgColor: "bg-red-50 dark:bg-red-950/30",
-  // },
-  // {
-  //   platform: "Twitter",
-  //   icon: Twitter,
-  //   href: "https://twitter.com/NPresec40215",
-  //   color: "text-blue-400",
-  //   bgColor: "bg-blue-50 dark:bg-blue-950/30",
-  // },
-  // {
-  //   platform: "LinkedIn",
-  //   icon: Linkedin,
-  //   href: "https://www.linkedin.com/company/nakpanduri-presbyterian-senior-high-technical-school/",
-  //   color: "text-blue-700",
-  //   bgColor: "bg-blue-50 dark:bg-blue-950/30",
-  // },
   {
     platform: "Email",
     icon: Mail,
     href: "mailto:admissions@nakpanduripresec.org",
-    color: "text-green-600",
-    bgColor: "bg-green-50 dark:bg-green-950/30",
+    color: "text-primary",
+    bgColor: "bg-primary/10 dark:bg-primary/20",
   },
 ];
 
@@ -123,25 +89,17 @@ export const Footer = () => {
   const container = useRef<HTMLDivElement>(null);
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hoveredSocial, setHoveredSocial] = useState<number | null>(null);
-  const [isVisible, setIsVisible] = useState(true);
 
   useGSAP(
     () => {
       // Early return if container is not available
       if (!container.current) return;
 
-      // Set visibility flag
-      setIsVisible(true);
-
       // Minimal initial states - content stays visible
       gsap.set(".footer-badge", { rotation: -5 });
       gsap.set(".footer-logo", { rotation: -2 });
       gsap.set(".social-icon", { scale: 0.98 });
       gsap.set(".floating-elements", { opacity: 0.8 });
-
-      // Store all ScrollTrigger instances for cleanup
-      const scrollTriggers: ScrollTrigger[] = [];
 
       // Simplified animation - subtle enhancements only
       const mainTl = gsap.timeline({
@@ -206,8 +164,6 @@ export const Footer = () => {
       duration: 0.4,
       ease: "back.out(1.7)",
     });
-
-    setHoveredSocial(isEntering ? index : null);
   };
 
   // Newsletter submission
@@ -231,12 +187,12 @@ export const Footer = () => {
   return (
     <footer
       ref={container}
-      className="relative bg-linear-to-b from-background via-accent/30 to-background overflow-hidden">
+      className="relative bg-linear-to-b from-background to-background overflow-hidden">
       {/* Background Elements */}
       <div className="footer-background absolute inset-0">
         {/* Gradient Mesh Background */}
-        <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-orange-500/5 to-pink-500/10" />
-        <div className="absolute inset-0 bg-linear-to-tl from-blue-500/5 via-transparent to-purple-500/5" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-secondary/5 to-accent/10" />
+        <div className="absolute inset-0 bg-linear-to-tl from-secondary/5 via-transparent to-accent/5" />
 
         {/* Logo Watermark */}
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-5">
@@ -245,13 +201,14 @@ export const Footer = () => {
             alt=""
             width={400}
             height={400}
-            className="w-96 h-96 object-contain"
+            className="w-96 h-96 object-contain opacity-10"
+            loading="lazy"
           />
         </div>
 
         {/* Decorative Blurs */}
         <div className="absolute -top-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-orange-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
       </div>
 
       {/* Floating Decorative Elements */}
@@ -259,10 +216,10 @@ export const Footer = () => {
         <div className="floating-star-1 absolute top-20 left-[10%] w-6 h-6 text-primary/20">
           <Star className="w-full h-full" fill="currentColor" />
         </div>
-        <div className="floating-star-2 absolute top-40 right-[15%] w-4 h-4 text-orange-500/30">
+        <div className="floating-star-2 absolute top-40 right-[15%] w-4 h-4 text-primary/30">
           <Star className="w-full h-full" fill="currentColor" />
         </div>
-        <div className="absolute bottom-32 left-[20%] w-8 h-8 text-pink-500/20">
+        <div className="absolute bottom-32 left-[20%] w-8 h-8 text-accent/20">
           <Sparkles className="w-full h-full" />
         </div>
       </div>
@@ -271,7 +228,7 @@ export const Footer = () => {
         <PublicMainContainer className="py-16 md:py-24">
           {/* Header Section */}
           <div className="text-center mb-16">
-            <div className="footer-badge inline-flex items-center gap-3 px-6 py-3 bg-linear-to-r from-primary/15 to-orange-500/15 backdrop-blur-sm rounded-full border border-primary/30 mb-8 shadow-lg">
+            <div className="footer-badge inline-flex items-center gap-3 px-6 py-3 bg-linear-to-r from-primary/15 to-secondary/15 backdrop-blur-sm rounded-full border border-primary/30 mb-8 shadow-lg">
               <Globe className="w-5 h-5 text-primary" />
               <span className="text-sm font-bold text-primary tracking-wider">
                 CONNECT WITH US
@@ -289,10 +246,10 @@ export const Footer = () => {
                 />
               </div>
               <div className="text-center md:text-left">
-                <h2 className="text-2xl md:text-3xl font-bold bg-linear-to-r from-primary via-orange-500 to-pink-500 bg-clip-text text-transparent mb-2">
+                <h2 className="text-2xl md:text-3xl font-bold bg-linear-to-r from-primary via-primary to-muted-foreground bg-clip-text text-transparent mb-2">
                   Presbyterian SHTS Nakpanduri
                 </h2>
-                <p className="text-muted-foreground">
+                <p className="text-foreground/70">
                   Nurturing Excellence • Building Futures • Inspiring Leaders
                 </p>
               </div>
@@ -306,7 +263,7 @@ export const Footer = () => {
               <Card className="h-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-6">
-                    <div className="p-2 bg-linear-to-br from-primary to-orange-500 rounded-lg">
+                    <div className="p-2 bg-linear-to-br from-primary to-secondary rounded-lg">
                       <MapPin className="w-5 h-5 text-white" />
                     </div>
                     <h3 className="text-lg font-bold text-foreground">
@@ -319,7 +276,7 @@ export const Footer = () => {
                       <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                       <div>
                         <p className="font-medium text-foreground">Address</p>
-                        <p className="text-muted-foreground">
+                        <p className="text-foreground/70">
                           Post Office Box 22
                           <br />
                           Nakpanduri, North East Region
@@ -335,7 +292,7 @@ export const Footer = () => {
                         <p className="font-medium text-foreground">Phone</p>
                         <a
                           href="tel:+233540649355"
-                          className="text-muted-foreground hover:text-primary transition-colors">
+                          className="text-foreground/70 hover:text-primary transition-colors">
                           +233 (0) 540 649 355
                         </a>
                       </div>
@@ -347,7 +304,7 @@ export const Footer = () => {
                         <p className="font-medium text-foreground">Email</p>
                         <a
                           href="mailto:admissions@nakpanduripresec.org"
-                          className="text-muted-foreground hover:text-primary transition-colors break-all">
+                          className="text-foreground/70 hover:text-primary transition-colors break-all">
                           admissions@nakpanduripresec.org
                         </a>
                       </div>
@@ -359,7 +316,7 @@ export const Footer = () => {
                         <p className="font-medium text-foreground">
                           Office Hours
                         </p>
-                        <p className="text-muted-foreground">
+                        <p className="text-foreground/70">
                           Mon - Fri: 8:00 AM - 5:00 PM
                           <br />
                           Sat: 8:00 AM - 12:00 PM
@@ -376,17 +333,17 @@ export const Footer = () => {
               <Card className="h-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-bold mb-6 text-foreground flex items-center gap-2">
-                    <div className="p-2 bg-linear-to-br from-blue-500 to-purple-500 rounded-lg">
+                    <div className="p-2 bg-linear-to-br from-secondary to-accent rounded-lg">
                       <Heart className="w-5 h-5 text-white" />
                     </div>
                     About Us
                   </h3>
                   <div className="space-y-2">
-                    {aboutLinks.map((link, index) => (
+                    {aboutLinks.map((link) => (
                       <Link
                         key={link.href}
                         href={link.href as Route}
-                        className="footer-link-item block py-2 px-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-300 group">
+                        className="footer-link-item block py-2 px-3 rounded-lg text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all duration-300 text-sm group">
                         <span className="flex items-center justify-between">
                           {link.title}
                           <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -403,17 +360,17 @@ export const Footer = () => {
               <Card className="h-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-bold mb-6 text-foreground flex items-center gap-2">
-                    <div className="p-2 bg-linear-to-br from-green-500 to-emerald-500 rounded-lg">
+                    <div className="p-2 bg-linear-to-br from-secondary to-accent rounded-lg">
                       <Globe className="w-5 h-5 text-white" />
                     </div>
                     Admissions
                   </h3>
                   <div className="space-y-2">
-                    {admissionLinks.map((link, index) => (
+                    {admissionLinks.map((link) => (
                       <Link
                         key={link.href}
                         href={link.href as Route}
-                        className="footer-link-item block py-2 px-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-300 group">
+                        className="footer-link-item block py-2 px-3 rounded-lg text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all duration-300 group">
                         <span className="flex items-center justify-between">
                           {link.title}
                           <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -432,17 +389,17 @@ export const Footer = () => {
                 <Card className="bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg">
                   <CardContent className="p-6">
                     <h3 className="text-lg font-bold mb-6 text-foreground flex items-center gap-2">
-                      <div className="p-2 bg-linear-to-br from-orange-500 to-red-500 rounded-lg">
+                      <div className="p-2 bg-linear-to-br from-primary to-accent rounded-lg">
                         <Star className="w-5 h-5 text-white" />
                       </div>
                       Quick Links
                     </h3>
                     <div className="grid grid-cols-1 gap-2">
-                      {quickLinks.slice(0, 4).map((link, index) => (
+                      {quickLinks.slice(0, 4).map((link) => (
                         <Link
                           key={link.href}
                           href={link.href as Route}
-                          className="footer-link-item block py-2 px-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-300 text-sm group">
+                          className="footer-link-item block py-2 px-3 rounded-lg text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all duration-300 text-sm group">
                           <span className="flex items-center justify-between">
                             {link.title}
                             <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -454,12 +411,12 @@ export const Footer = () => {
                 </Card>
 
                 {/* Newsletter */}
-                <Card className="newsletter-section bg-linear-to-br from-primary/10 to-orange-500/10 backdrop-blur-sm border border-primary/20 shadow-lg">
+                <Card className="newsletter-section bg-linear-to-br from-primary/10 to-secondary/10 backdrop-blur-sm border border-primary/20 shadow-lg">
                   <CardContent className="p-6">
                     <h3 className="text-lg font-bold mb-3 text-foreground">
                       Stay Updated
                     </h3>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-sm text-foreground/70 mb-4">
                       Get the latest news and updates from NPRESEC.
                     </p>
                     <form
@@ -507,7 +464,7 @@ export const Footer = () => {
                 return (
                   <div key={social.platform} className="social-icon">
                     <Link
-                      href={social.href as any}
+                      href={social.href as Route}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`social-icon-${index} group relative p-4 rounded-2xl ${social.bgColor} border border-border/30 hover:border-current transition-all duration-300 block`}
@@ -532,7 +489,7 @@ export const Footer = () => {
           <PublicMainContainer className="py-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-foreground/70">
                   <span className="hidden md:inline">
                     Presbyterian Senior High Technical School •{" "}
                   </span>
@@ -544,9 +501,9 @@ export const Footer = () => {
               </div>
 
               <div className="flex items-center gap-4">
-                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                <div className="text-xs text-foreground/70 flex items-center gap-1">
                   Made with{" "}
-                  <Heart className="w-3 h-3 text-red-500" fill="currentColor" />{" "}
+                  <Heart className="w-3 h-3 text-accent" fill="currentColor" />{" "}
                   for Education
                 </div>
 

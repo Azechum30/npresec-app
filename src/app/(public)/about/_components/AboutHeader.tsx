@@ -1,28 +1,27 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
-import { useRef, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import Logo from "@/../public/logo.png";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import {
-  Home,
-  ChevronRight,
-  Sparkles,
-  Users,
-  BookOpen,
-  Award,
-  ArrowDown,
-  Building2,
-  Heart,
-} from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { TextPlugin } from "gsap/TextPlugin";
-import Logo from "@/../public/logo.png";
-import { Route } from "next";
+import {
+  ArrowDown,
+  Award,
+  BookOpen,
+  Building2,
+  ChevronRight,
+  Home,
+  Sparkles,
+  Users,
+} from "lucide-react";
+import type { Route } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { useRef, useState } from "react";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, TextPlugin, useGSAP);
@@ -189,22 +188,22 @@ export const AboutHeader = () => {
           src={Logo}
           alt="NPRESEC Background"
           fill
-          className="object-contain opacity-20"
-          priority
+          className="object-contain opacity-5"
+          loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-secondary/90" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/20 via-transparent to-background/10" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/50 via-primary/60 to-secondary/50" />
+        <div className="absolute inset-0 bg-linear-to-t from-background/20 via-transparent to-background/10" />
       </div>
 
       {/* Glassmorphism overlay */}
-      <div className="about-overlay absolute inset-0 z-10 backdrop-blur-sm bg-black/10" />
+      <div className="about-overlay absolute inset-0 z-10 backdrop-blur-sm bg-background/10" />
 
       {/* Floating decorations */}
       <div className="about-decoration floating-decoration absolute top-20 right-20 z-20">
-        <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-20 blur-sm" />
+        <div className="w-16 h-16 bg-linear-to-br from-primary/20 to-secondary/20 rounded-full opacity-20 blur-sm" />
       </div>
       <div className="about-decoration floating-decoration absolute bottom-32 left-16 z-20">
-        <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full opacity-30 blur-sm" />
+        <div className="w-12 h-12 bg-linear-to-br from-secondary/30 to-accent/30 rounded-full opacity-30 blur-sm" />
       </div>
       <div className="about-decoration floating-decoration absolute top-1/2 right-1/4 z-20">
         <Sparkles className="w-8 h-8 text-white/30" />
@@ -217,8 +216,7 @@ export const AboutHeader = () => {
           <div className="about-badge flex justify-center mb-6">
             <Badge
               variant="secondary"
-              className="px-4 py-2 bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30 transition-all duration-300"
-            >
+              className="px-4 py-2 bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30 transition-all duration-300">
               <Building2 className="w-4 h-4 mr-2" />
               Discover Our Story
             </Badge>
@@ -233,8 +231,7 @@ export const AboutHeader = () => {
                   variant: "ghost",
                   size: "sm",
                   className: "text-white/80 hover:text-white hover:bg-white/10",
-                })}
-              >
+                })}>
                 <Home className="w-4 h-4" />
               </Link>
               <ChevronRight className="w-4 h-4" />
@@ -247,9 +244,8 @@ export const AboutHeader = () => {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               {["About", "Our", "School"].map((word, index) => (
                 <span
-                  key={index}
-                  className="about-title-word inline-block mr-3 bg-gradient-to-r from-white to-white/90 bg-clip-text"
-                >
+                  key={index.toString()}
+                  className="about-title-word inline-block mr-3 bg-linear-to-r from-white to-white/90 bg-clip-text">
                   {word}
                 </span>
               ))}
@@ -266,7 +262,7 @@ export const AboutHeader = () => {
 
           {/* Stats */}
           <div className="flex flex-wrap justify-center gap-8 mb-12">
-            {stats.map((stat, index) => (
+            {stats.map((stat) => (
               <div key={stat.label} className="about-stat group cursor-default">
                 <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-center transition-all duration-300 group-hover:bg-white/20 group-hover:scale-105 group-hover:border-white/30">
                   <stat.icon className="w-8 h-8 text-white mx-auto mb-3 group-hover:scale-110 transition-transform duration-300" />

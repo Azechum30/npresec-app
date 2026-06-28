@@ -1,30 +1,29 @@
 "use client";
 
-import { useRef } from "react";
-import { PublicMainContainer } from "../_components/PublicMainContainer";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import {
-  Calendar,
-  Users,
-  Award,
-  BookOpen,
-  Building,
-  GraduationCap,
-  Heart,
-  Target,
-  Eye,
-  Sparkles,
-  ArrowRight,
-  CheckCircle,
-} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {
+  ArrowRight,
+  Award,
+  BookOpen,
+  Building,
+  Calendar,
+  CheckCircle,
+  Eye,
+  GraduationCap,
+  Heart,
+  Sparkles,
+  Target,
+  Users,
+} from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
-import { Route } from "next";
+import { useRef } from "react";
+import { PublicMainContainer } from "../_components/PublicMainContainer";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -36,7 +35,7 @@ const timelineEvents = [
     description:
       "Presbyterian Church of Ghana founded the Agricultural Rehabilitation Center for the Blind (ARB).",
     icon: Building,
-    color: "from-blue-500 to-cyan-500",
+    color: "from-primary to-secondary",
   },
   {
     year: 1991,
@@ -44,7 +43,7 @@ const timelineEvents = [
     description:
       "The Agricultural Rehabilitation Center for the Blind was closed after serving the community for a decade.",
     icon: Calendar,
-    color: "from-gray-500 to-slate-500",
+    color: "from-secondary to-accent",
   },
   {
     year: 1992,
@@ -52,7 +51,7 @@ const timelineEvents = [
     description:
       "The Church repurposed the facility to launch Nakpanduri Presbyterian Junior High School (JHS).",
     icon: BookOpen,
-    color: "from-green-500 to-emerald-500",
+    color: "from-secondary to-primary",
   },
   {
     year: 2010,
@@ -60,7 +59,7 @@ const timelineEvents = [
     description:
       "The site was restructured into a Vocational Training Institute to meet evolving educational needs.",
     icon: Award,
-    color: "from-purple-500 to-pink-500",
+    color: "from-primary to-accent",
   },
   {
     year: 2012,
@@ -68,7 +67,7 @@ const timelineEvents = [
     description:
       "Converted to SHTS with 97 students (57 boys, 40 girls) marking a new milestone in education.",
     icon: GraduationCap,
-    color: "from-orange-500 to-red-500",
+    color: "from-accent to-primary",
   },
   {
     year: 2015,
@@ -76,7 +75,7 @@ const timelineEvents = [
     description:
       "NPRESEC received official accreditation from the National Accreditation Board of Ghana.",
     icon: CheckCircle,
-    color: "from-teal-500 to-cyan-500",
+    color: "from-secondary to-primary",
   },
   {
     year: 2022,
@@ -84,7 +83,7 @@ const timelineEvents = [
     description:
       "Transition to Government-Assisted Senior High Technical School under Mr. Mohammed Michael Issah.",
     icon: Users,
-    color: "from-indigo-500 to-purple-500",
+    color: "from-primary to-secondary",
   },
 ];
 
@@ -93,26 +92,26 @@ const achievements = [
     title: "Academic Excellence",
     description: "Consistent performance in WASSCE with improving pass rates",
     icon: Award,
-    color: "text-yellow-500",
+    color: "text-primary",
   },
   {
     title: "Diverse Programs",
     description: "Six learning areas serving diverse student interests",
     icon: BookOpen,
-    color: "text-blue-500",
+    color: "text-secondary",
   },
   {
     title: "Community Impact",
     description: "Serving the Bunkprugu-Nakpanduri District and beyond",
     icon: Heart,
-    color: "text-red-500",
+    color: "text-accent",
   },
   {
     title: "Skilled Graduates",
     description:
       "Producing technically skilled and academically sound graduates",
     icon: GraduationCap,
-    color: "text-green-500",
+    color: "text-primary",
   },
 ];
 
@@ -299,7 +298,9 @@ export default function AboutPage() {
       });
 
       return () => {
-        ScrollTrigger.getAll().forEach((st) => st.kill());
+        ScrollTrigger.getAll().forEach((st) => {
+          st.kill();
+        });
       };
     },
     { scope: container },
@@ -308,31 +309,30 @@ export default function AboutPage() {
   return (
     <div
       ref={container}
-      className="min-h-screen bg-gradient-to-b from-background to-accent/20 overflow-hidden"
-    >
+      className="min-h-screen bg-linear-to-b from-background to-accent/20 overflow-hidden">
       {/* Background decorations */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 -left-40 w-80 h-80 bg-orange-500/5 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-pink-500/3 to-blue-500/3 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 -left-40 w-80 h-80 bg-secondary/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-linear-to-r from-primary/10 to-secondary/10 rounded-full blur-3xl" />
       </div>
 
       <PublicMainContainer className="relative z-10 py-16 md:py-24">
         {/* Hero Section */}
         <div className="about-hero text-center mb-20">
-          <div className="about-badge inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary/10 to-orange-500/10 rounded-full border border-primary/20 mb-8">
+          <div className="about-badge inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-primary/10 to-secondary/10 rounded-full border border-primary/20 mb-8">
             <Sparkles className="w-5 h-5 text-primary" />
             <span className="text-sm font-semibold text-primary">
               OUR STORY
             </span>
           </div>
 
-          <h1 className="about-title text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-orange-500 to-pink-500 bg-clip-text text-transparent">
+          <h1 className="about-title text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-linear-to-r from-primary via-primary/80 to-muted-foreground bg-clip-text text-transparent">
             A Legacy of Excellence
           </h1>
 
           <div className="about-subtitle max-w-4xl mx-auto">
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-8">
+            <p className="text-lg md:text-xl text-foreground/70 leading-relaxed mb-8">
               From humble beginnings to educational excellence, discover the
               remarkable journey of Presbyterian SHTS Nakpanduri—a story of
               transformation, resilience, and unwavering commitment to nurturing
@@ -346,15 +346,15 @@ export default function AboutPage() {
           <Card className="p-8 md:p-12 bg-background/80 backdrop-blur-sm border border-border/50 shadow-xl">
             <div className="max-w-4xl mx-auto">
               <div className="flex items-center gap-3 mb-8">
-                <div className="p-3 bg-gradient-to-br from-primary to-orange-500 rounded-xl">
+                <div className="p-3 bg-linear-to-br from-primary to-secondary rounded-xl">
                   <BookOpen className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">
+                <h2 className="text-3xl md:text-4xl font-bold bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
                   Brief History
                 </h2>
               </div>
 
-              <div className="prose prose-lg max-w-none text-muted-foreground space-y-6">
+              <div className="prose prose-lg max-w-none text-foreground/70 space-y-6">
                 <p className="text-lg leading-relaxed">
                   <strong className="text-foreground">
                     Nakpanduri Presbyterian Senior High Technical School
@@ -416,7 +416,7 @@ export default function AboutPage() {
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
               Our Journey Through Time
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
               From inception to excellence—witness the transformative milestones
               that shaped NPRESEC into the institution it is today.
             </p>
@@ -424,7 +424,7 @@ export default function AboutPage() {
 
           <div className="relative">
             {/* Timeline Line */}
-            <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary to-orange-500 transform md:-translate-x-1/2" />
+            <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-linear-to-b from-primary to-secondary transform md:-translate-x-1/2" />
 
             <div className="space-y-12">
               {timelineEvents.map((event, index) => {
@@ -436,35 +436,31 @@ export default function AboutPage() {
                     key={event.year}
                     className={`timeline-item relative flex items-center gap-8 ${
                       isEven ? "md:flex-row" : "md:flex-row-reverse"
-                    }`}
-                  >
+                    }`}>
                     {/* Timeline Dot */}
                     <div className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 z-10">
                       <div
-                        className={`w-12 h-12 bg-gradient-to-br ${event.color} rounded-full flex items-center justify-center shadow-lg border-4 border-background`}
-                      >
+                        className={`w-12 h-12 bg-linear-to-br ${event.color} rounded-full flex items-center justify-center shadow-lg border-4 border-background`}>
                         <Icon className="w-5 h-5 text-white" />
                       </div>
                     </div>
 
                     {/* Content Card */}
                     <div
-                      className={`flex-1 ml-20 md:ml-0 ${isEven ? "md:mr-8" : "md:ml-8"}`}
-                    >
+                      className={`flex-1 ml-20 md:ml-0 ${isEven ? "md:mr-8" : "md:ml-8"}`}>
                       <Card className="p-6 bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg hover:shadow-xl transition-shadow duration-300">
                         <CardContent className="p-0">
                           <div className="flex items-center gap-3 mb-3">
                             <Badge
                               variant="outline"
-                              className={`bg-gradient-to-r ${event.color} text-white border-0`}
-                            >
+                              className={`bg-linear-to-r ${event.color} text-white border-0`}>
                               {event.year}
                             </Badge>
                             <h3 className="text-xl font-bold text-foreground">
                               {event.title}
                             </h3>
                           </div>
-                          <p className="text-muted-foreground leading-relaxed">
+                          <p className="text-foreground/70 leading-relaxed">
                             {event.description}
                           </p>
                         </CardContent>
@@ -486,31 +482,29 @@ export default function AboutPage() {
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
               Our Achievements
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
               Celebrating the milestones that define our commitment to
               educational excellence and community development.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {achievements.map((achievement, index) => {
+            {achievements.map((achievement) => {
               const Icon = achievement.icon;
 
               return (
                 <Card
-                  key={index}
-                  className="achievement-card group p-6 bg-background/80 backdrop-blur-sm border border-border/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
-                >
+                  key={achievement.title}
+                  className="achievement-card group p-6 bg-background/80 backdrop-blur-sm border border-border/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
                   <CardContent className="p-0 text-center">
                     <div
-                      className={`inline-flex p-4 rounded-2xl bg-gradient-to-br from-background to-accent/30 mb-4 ${achievement.color}`}
-                    >
+                      className={`inline-flex p-4 rounded-2xl bg-linear-to-br from-background to-accent/30 mb-4 ${achievement.color}`}>
                       <Icon className="w-8 h-8" />
                     </div>
                     <h3 className="text-lg font-bold mb-2 text-foreground group-hover:text-primary transition-colors duration-300">
                       {achievement.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
+                    <p className="text-sm text-foreground/70 leading-relaxed">
                       {achievement.description}
                     </p>
                   </CardContent>
@@ -523,17 +517,17 @@ export default function AboutPage() {
         {/* Mission & Vision Section */}
         <div className="mission-vision mb-20">
           <div className="grid md:grid-cols-2 gap-8">
-            <Card className="p-8 bg-gradient-to-br from-primary/5 to-blue-500/5 border border-primary/20 shadow-lg">
+            <Card className="p-8 bg-linear-to-br from-primary/10 to-secondary/10 border border-primary/20 shadow-lg">
               <CardContent className="p-0">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 bg-gradient-to-br from-primary to-blue-500 rounded-xl">
+                  <div className="p-3 bg-linear-to-br from-primary to-secondary rounded-xl">
                     <Target className="w-6 h-6 text-white" />
                   </div>
                   <h3 className="text-2xl font-bold text-primary">
                     Our Mission
                   </h3>
                 </div>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-foreground/70 leading-relaxed">
                   To provide quality technical and academic education that
                   nurtures intellectual growth, character development, and
                   practical skills, empowering students to become innovative
@@ -543,17 +537,17 @@ export default function AboutPage() {
               </CardContent>
             </Card>
 
-            <Card className="p-8 bg-gradient-to-br from-orange-500/5 to-pink-500/5 border border-orange-500/20 shadow-lg">
+            <Card className="p-8 bg-linear-to-br from-secondary/10 to-accent/10 border border-primary/20 shadow-lg">
               <CardContent className="p-0">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 bg-gradient-to-br from-orange-500 to-pink-500 rounded-xl">
+                  <div className="p-3 bg-linear-to-br from-secondary to-accent rounded-xl">
                     <Eye className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-orange-500">
+                  <h3 className="text-2xl font-bold text-foreground">
                     Our Vision
                   </h3>
                 </div>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-foreground/70 leading-relaxed">
                   To be the premier center of excellence for technical and
                   academic education in the North East Region of Ghana,
                   recognized for producing skilled, innovative, and ethically
@@ -567,12 +561,12 @@ export default function AboutPage() {
 
         {/* CTA Section */}
         <div className="cta-section text-center">
-          <Card className="p-12 bg-gradient-to-br from-primary/10 via-orange-500/5 to-pink-500/10 border border-primary/20 shadow-xl">
+          <Card className="p-12 bg-linear-to-br from-primary/10 via-secondary/10 to-accent/10 border border-primary/20 shadow-xl">
             <CardContent className="p-0">
-              <h3 className="text-3xl md:text-4xl font-bold mb-6 bg-gradient-to-r from-primary to-orange-500 bg-clip-text text-transparent">
+              <h3 className="text-3xl md:text-4xl font-bold mb-6 bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
                 Ready to Join Our Legacy?
               </h3>
-              <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+              <p className="text-lg text-foreground/70 mb-8 max-w-2xl mx-auto">
                 Become part of our continuing story of excellence. Explore our
                 programs and discover how NPRESEC can shape your future.
               </p>

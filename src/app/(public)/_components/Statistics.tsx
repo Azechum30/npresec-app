@@ -1,23 +1,24 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { PublicMainContainer } from "./PublicMainContainer";
-import Image from "next/image";
 import PencilsBackground from "@/../public/Pencils.jpg";
 import { CountUpComponent } from "@/components/customComponents/CountUpComponent";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
-  Calendar,
-  Users,
-  BookOpen,
-  GraduationCap,
   Award,
-  TrendingUp,
+  BookOpen,
+  Calendar,
+  GraduationCap,
   Sparkles,
   Star,
+  TrendingUp,
+  Users,
 } from "lucide-react";
+import Image from "next/image";
+import { useRef, useState } from "react";
+import { PublicMainContainer } from "./PublicMainContainer";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -29,8 +30,8 @@ const statistics = [
     label: "School Inauguration",
     icon: Calendar,
     description: "Year of establishment",
-    color: "from-blue-500 to-cyan-500",
-    bgColor: "bg-blue-500/10",
+    color: "from-primary to-secondary",
+    bgColor: "bg-primary/10",
     suffix: "",
     animationDelay: 0,
   },
@@ -40,8 +41,8 @@ const statistics = [
     label: "Students Enrolled",
     icon: Users,
     description: "Active student body",
-    color: "from-green-500 to-emerald-500",
-    bgColor: "bg-green-500/10",
+    color: "from-primary to-secondary",
+    bgColor: "bg-primary/10",
     suffix: "+",
     animationDelay: 0.2,
   },
@@ -51,8 +52,8 @@ const statistics = [
     label: "Learning Areas",
     icon: BookOpen,
     description: "Diverse academic programs",
-    color: "from-purple-500 to-pink-500",
-    bgColor: "bg-purple-500/10",
+    color: "from-primary to-secondary",
+    bgColor: "bg-accent/10",
     suffix: "+",
     animationDelay: 0.4,
   },
@@ -62,8 +63,8 @@ const statistics = [
     label: "Teaching Staff",
     icon: GraduationCap,
     description: "Dedicated educators",
-    color: "from-orange-500 to-red-500",
-    bgColor: "bg-orange-500/10",
+    color: "from-primary to-secondary",
+    bgColor: "bg-primary/10",
     suffix: "+",
     animationDelay: 0.6,
   },
@@ -325,7 +326,9 @@ export const Statistics = () => {
       }
 
       return () => {
-        ScrollTrigger.getAll().forEach((st) => st.kill());
+        ScrollTrigger.getAll().forEach((st) => {
+          st.kill();
+        });
       };
     },
     { scope: container },
@@ -373,25 +376,24 @@ export const Statistics = () => {
   return (
     <div
       ref={container}
-      className="relative w-full py-16 md:py-24 overflow-hidden"
-    >
+      className="relative w-full py-16 md:py-24 overflow-hidden">
       {/* Background Image with Parallax */}
       <div ref={backgroundRef} className="absolute inset-0">
         <div className="stats-background absolute inset-0">
           <Image
             src={PencilsBackground}
             alt="Educational background with pencils"
-            className="w-full h-full object-cover object-center"
-            priority={false}
+            className="w-full h-full object-cover object-center opacity-10"
             quality={75}
+            loading="lazy"
           />
         </div>
 
         {/* Enhanced Gradient Overlay */}
-        <div className="stats-overlay absolute inset-0 bg-gradient-to-br from-background/85 via-primary/20 to-background/90 dark:from-background/90 dark:via-background/95 dark:to-background/95" />
+        <div className="stats-overlay absolute inset-0 bg-linear-to-br from-background/85 via-primary/20 to-secondary/90 dark:from-secondary/90 dark:via-card/95 dark:to-card/95" />
 
         {/* Mesh Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-primary/5 to-orange-500/5" />
+        <div className="absolute inset-0 bg-linear-to-br from-transparent via-primary/5 to-secondary/5" />
       </div>
 
       {/* Floating Decorative Elements */}
@@ -399,13 +401,13 @@ export const Statistics = () => {
         <div className="floating-star-1 absolute top-20 left-[10%] w-6 h-6 text-primary/30">
           <Star className="w-full h-full" fill="currentColor" />
         </div>
-        <div className="floating-star-2 absolute top-32 right-[15%] w-4 h-4 text-orange-500/40">
+        <div className="floating-star-2 absolute top-32 right-[15%] w-4 h-4 text-primary/40">
           <Star className="w-full h-full" fill="currentColor" />
         </div>
-        <div className="floating-sparkle absolute bottom-32 left-[20%] w-8 h-8 text-pink-500/30">
+        <div className="floating-sparkle absolute bottom-32 left-[20%] w-8 h-8 text-accent/30">
           <Sparkles className="w-full h-full" />
         </div>
-        <div className="floating-star-1 absolute bottom-20 right-[25%] w-5 h-5 text-blue-500/40">
+        <div className="floating-star-1 absolute bottom-20 right-[25%] w-5 h-5 text-secondary/40">
           <Star className="w-full h-full" fill="currentColor" />
         </div>
       </div>
@@ -415,18 +417,18 @@ export const Statistics = () => {
         <div className="stats-container">
           {/* Header Section */}
           <div className="text-center mb-16">
-            <div className="stats-badge inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-primary/15 to-orange-500/15 backdrop-blur-sm rounded-full border border-primary/30 mb-8 shadow-lg">
+            <div className="stats-badge inline-flex items-center gap-3 px-6 py-3 bg-linear-to-r from-primary/15 to-secondary/15 backdrop-blur-sm rounded-full border border-primary/30 mb-8 shadow-lg">
               <TrendingUp className="w-5 h-5 text-primary" />
               <span className="text-sm font-bold text-primary tracking-wider">
                 OUR ACHIEVEMENTS
               </span>
             </div>
 
-            <h2 className="stats-title text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-orange-500 to-pink-500 bg-clip-text text-transparent">
+            <h2 className="stats-title text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-linear-to-r from-primary  to-muted-foreground bg-clip-text text-transparent">
               Numbers That Inspire
             </h2>
 
-            <p className="stats-subtitle text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="stats-subtitle text-lg md:text-xl text-foreground/70 max-w-3xl mx-auto leading-relaxed">
               More than a decade of educational excellence, nurturing minds and
               shaping futures in the heart of Ghana&apos;s North East Region.
             </p>
@@ -434,47 +436,45 @@ export const Statistics = () => {
 
           {/* Statistics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            {statistics.map((stat, index) => {
+            {statistics.map((stat) => {
               const Icon = stat.icon;
               return (
+                // biome-ignore lint/a11y/noStaticElementInteractions: reason
                 <div
                   key={stat.id}
                   className={`stat-card stat-card-${stat.id} group relative cursor-pointer`}
                   onMouseEnter={() => handleCardHover(stat.id, true)}
-                  onMouseLeave={() => handleCardHover(stat.id, false)}
-                >
+                  onMouseLeave={() => handleCardHover(stat.id, false)}>
                   {/* Card Background */}
-                  <div className="relative p-8 bg-white/90 dark:bg-background/90 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl hover:shadow-2xl transition-shadow duration-500 overflow-hidden">
+                  <div className="relative p-8 bg-secondary/90 dark:bg-background/90 backdrop-blur-sm rounded-2xl border border-primary/20 shadow-xl hover:shadow-2xl transition-shadow duration-500 overflow-hidden">
                     {/* Animated Glow Effect */}
                     <div
-                      className={`stat-glow absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 rounded-2xl blur-xl`}
+                      className={`stat-glow absolute inset-0 bg-linear-to-br ${stat.color} opacity-0 rounded-2xl blur-xl`}
                     />
 
                     {/* Top Accent */}
                     <div
-                      className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.color} rounded-t-2xl`}
+                      className={`absolute top-0 left-0 right-0 h-1 bg-linear-to-r ${stat.color} rounded-t-2xl`}
                     />
 
                     {/* Content */}
                     <div className="relative z-10">
                       {/* Icon Container */}
                       <div
-                        className={`stat-icon-container inline-flex p-4 rounded-2xl ${stat.bgColor} mb-6 relative overflow-hidden`}
-                      >
+                        className={`stat-icon-container inline-flex p-4 rounded-2xl ${stat.bgColor} mb-6 relative overflow-hidden`}>
                         <div
-                          className={`stat-icon w-8 h-8 bg-gradient-to-br ${stat.color} rounded-lg flex items-center justify-center text-white shadow-lg`}
-                        >
+                          className={`stat-icon w-8 h-8 bg-linear-to-br ${stat.color} rounded-lg flex items-center justify-center text-foreground shadow-lg`}>
                           <Icon className="w-5 h-5" />
                         </div>
 
                         {/* Icon Background Effect */}
                         <div
-                          className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-10 rounded-2xl`}
+                          className={`absolute inset-0 bg-linear-to-br ${stat.color} opacity-10 rounded-2xl`}
                         />
                       </div>
 
                       {/* Number */}
-                      <div className="stat-number text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+                      <div className="stat-number text-4xl md:text-5xl font-bold mb-2 bg-linear-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
                         <CountUpComponent countTo={stat.value} />
                         <span className="text-2xl md:text-3xl ml-1 opacity-80">
                           {stat.suffix}
@@ -487,23 +487,23 @@ export const Statistics = () => {
                       </h3>
 
                       {/* Description */}
-                      <p className="stat-description text-sm text-muted-foreground">
+                      <p className="stat-description text-sm text-foreground/70">
                         {stat.description}
                       </p>
                     </div>
 
                     {/* Decorative Corner Element */}
                     <div
-                      className={`absolute top-4 right-4 w-3 h-3 bg-gradient-to-br ${stat.color} rounded-full opacity-30 group-hover:opacity-60 transition-opacity duration-300`}
+                      className={`absolute top-4 right-4 w-3 h-3 bg-linear-to-br ${stat.color} rounded-full opacity-30 group-hover:opacity-60 transition-opacity duration-300`}
                     />
 
                     {/* Bottom Shine Effect */}
-                    <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/30 to-transparent" />
                   </div>
 
                   {/* External Glow */}
                   <div
-                    className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-5 rounded-2xl blur-2xl transition-opacity duration-500 -z-10`}
+                    className={`absolute inset-0 bg-linear-to-br ${stat.color} opacity-0 group-hover:opacity-5 rounded-2xl blur-2xl transition-opacity duration-500 -z-10`}
                   />
                 </div>
               );
@@ -512,9 +512,9 @@ export const Statistics = () => {
 
           {/* Bottom CTA Section */}
           <div className="text-center mt-16">
-            <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-background/80 to-accent/60 backdrop-blur-sm rounded-full border border-border/50">
+            <div className="inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-background/80 to-accent/60 backdrop-blur-sm rounded-full border border-border/50">
               <Award className="w-5 h-5 text-primary" />
-              <span className="text-sm font-medium text-muted-foreground">
+              <span className="text-sm font-medium text-foreground/70">
                 Building Excellence Since 2012
               </span>
             </div>

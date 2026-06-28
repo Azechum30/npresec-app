@@ -1,4 +1,4 @@
-import { Row, Table } from "@tanstack/react-table";
+import type { Row, Table } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
 import { useTransition } from "react";
 import { Button } from "../ui/button";
@@ -18,7 +18,7 @@ export default function RowSelectionComponent<TData>({
   ...props
 }: RowSelectionCompoenentProps<TData>) {
   const { confirmDelete, ConfirmDeleteComponent } = useConfirmDelete();
-  const [isPending, startTransition] = useTransition();
+  const [isTransitionPending, startTransition] = useTransition();
 
   const handleBulkDelete = () => {
     startTransition(() => {
@@ -28,7 +28,7 @@ export default function RowSelectionComponent<TData>({
     });
   };
 
-  if (isPending) {
+  if (isTransitionPending) {
     return <LoadingState />;
   }
 

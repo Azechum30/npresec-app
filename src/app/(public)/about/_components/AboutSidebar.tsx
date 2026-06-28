@@ -1,26 +1,24 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Route } from "next";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-  BookOpen,
-  Eye,
-  Heart,
-  Users,
-  Music,
-  ChevronRight,
-  Sparkles,
-  ArrowRight,
-} from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {
+  BookOpen,
+  ChevronRight,
+  Eye,
+  Heart,
+  type LucideIcon,
+  Music,
+  Sparkles,
+  Users,
+} from "lucide-react";
+import type { Route } from "next";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useRef, useState } from "react";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -28,7 +26,7 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 interface SidebarLink {
   name: string;
   href: string;
-  icon: React.ComponentType<any>;
+  icon: LucideIcon;
   description: string;
   gradient: string;
 }
@@ -39,35 +37,35 @@ const SidebarLinks: SidebarLink[] = [
     href: "/about",
     icon: BookOpen,
     description: "Our journey and heritage",
-    gradient: "from-blue-500 to-cyan-500",
+    gradient: "from-primary to-secondary",
   },
   {
     name: "Our Vision & Mission",
     href: "/about/vision-mission",
     icon: Eye,
     description: "Our purpose and direction",
-    gradient: "from-purple-500 to-pink-500",
+    gradient: "from-secondary to-accent",
   },
   {
     name: "Core Values",
     href: "/about/core-values",
     icon: Heart,
     description: "What guides us daily",
-    gradient: "from-red-500 to-orange-500",
+    gradient: "from-accent to-primary",
   },
   {
     name: "Board of Governors",
     href: "/about/board-of-governors",
     icon: Users,
     description: "Leadership and governance",
-    gradient: "from-green-500 to-emerald-500",
+    gradient: "from-primary to-accent",
   },
   {
     name: "School Anthem",
     href: "/about/school-anthem",
     icon: Music,
     description: "Our song of unity",
-    gradient: "from-indigo-500 to-purple-500",
+    gradient: "from-secondary to-primary",
   },
 ];
 
@@ -173,8 +171,8 @@ export const AboutSidebar = () => {
     <div ref={container} className="sticky top-20 z-30">
       <Card className="sidebar-container relative overflow-hidden bg-background/80 backdrop-blur-xl border-border/50 shadow-2xl">
         {/* Background decorations */}
-        <div className="sidebar-decoration floating-sidebar-decoration absolute -top-4 -right-4 w-12 h-12 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full blur-sm" />
-        <div className="sidebar-decoration floating-sidebar-decoration absolute -bottom-2 -left-2 w-8 h-8 bg-gradient-to-br from-accent/30 to-primary/30 rounded-full blur-sm" />
+        <div className="sidebar-decoration floating-sidebar-decoration absolute -top-4 -right-4 w-12 h-12 bg-linear-to-br from-primary/20 to-secondary/20 rounded-full blur-sm" />
+        <div className="sidebar-decoration floating-sidebar-decoration absolute -bottom-2 -left-2 w-8 h-8 bg-linear-to-br from-accent/30 to-primary/30 rounded-full blur-sm" />
 
         {/* Sparkle decoration */}
         <div className="sidebar-decoration absolute top-4 right-4">
@@ -185,19 +183,19 @@ export const AboutSidebar = () => {
           {/* Header */}
           <div className="sidebar-header mb-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-linear-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
                 <BookOpen className="w-4 h-4 text-primary-foreground" />
               </div>
-              <h3 className="text-lg font-semibold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+              <h3 className="text-lg font-semibold bg-linear-to-r from-foreground to-foreground/80 bg-clip-text">
                 Explore
               </h3>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-foreground/70">
               Learn more about our school
             </p>
           </div>
 
-          <Separator className="mb-6 bg-gradient-to-r from-transparent via-border to-transparent" />
+          <Separator className="mb-6 bg-linear-to-r from-transparent via-border to-transparent" />
 
           {/* Navigation Links */}
           <div className="flex flex-col gap-2">
@@ -211,8 +209,7 @@ export const AboutSidebar = () => {
                   href={link.href as Route}
                   className="sidebar-link group relative block"
                   onMouseEnter={() => setHoveredLink(index)}
-                  onMouseLeave={() => setHoveredLink(null)}
-                >
+                  onMouseLeave={() => setHoveredLink(null)}>
                   <div
                     className={`
                       relative p-4 rounded-xl transition-all duration-300 overflow-hidden
@@ -221,12 +218,11 @@ export const AboutSidebar = () => {
                           ? "bg-primary/10 border-2 border-primary/20 shadow-lg"
                           : "bg-transparent border-2 border-transparent hover:bg-accent/50 hover:border-accent/30"
                       }
-                    `}
-                  >
+                    `}>
                     {/* Gradient background on hover */}
                     <div
                       className={`
-                        absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-300
+                        absolute inset-0 bg-linear-to-br opacity-0 transition-opacity duration-300
                         ${link.gradient}
                         ${hoveredLink === index ? "opacity-5" : "opacity-0"}
                       `}
@@ -234,21 +230,20 @@ export const AboutSidebar = () => {
 
                     {/* Active indicator */}
                     {isActive && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-secondary rounded-r-full" />
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-linear-to-b from-primary to-secondary rounded-r-full" />
                     )}
 
                     <div className="relative flex items-start gap-3">
                       {/* Icon */}
                       <div
                         className={`
-                          flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300
+                          shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300
                           ${
                             isActive
-                              ? `bg-gradient-to-br ${link.gradient} text-white shadow-md`
-                              : "bg-accent/80 text-muted-foreground group-hover:bg-accent group-hover:text-foreground"
+                              ? `bg-linear-to-br ${link.gradient} text-white shadow-md`
+                              : "bg-accent/80 text-accent-foreground group-hover:bg-accent group-hover:text-foreground"
                           }
-                        `}
-                      >
+                        `}>
                         <Icon className="w-4 h-4" />
                       </div>
 
@@ -263,8 +258,7 @@ export const AboutSidebar = () => {
                                   ? "text-primary font-semibold"
                                   : "text-foreground group-hover:text-primary"
                               }
-                            `}
-                          >
+                            `}>
                             {link.name}
                           </h4>
                           <ChevronRight
@@ -273,7 +267,7 @@ export const AboutSidebar = () => {
                               ${
                                 isActive
                                   ? "text-primary translate-x-1"
-                                  : "text-muted-foreground group-hover:text-primary group-hover:translate-x-1"
+                                  : "text-foreground/70 group-hover:text-primary group-hover:translate-x-1"
                               }
                             `}
                           />
@@ -284,10 +278,9 @@ export const AboutSidebar = () => {
                             ${
                               isActive
                                 ? "text-primary/70"
-                                : "text-muted-foreground group-hover:text-foreground/70"
+                                : "text-foreground/70 group-hover:text-foreground"
                             }
-                          `}
-                        >
+                          `}>
                           {link.description}
                         </p>
                       </div>
@@ -300,15 +293,15 @@ export const AboutSidebar = () => {
 
           {/* Footer */}
           <div className="sidebar-header mt-6 pt-4">
-            <Separator className="mb-4 bg-gradient-to-r from-transparent via-border to-transparent" />
-            <div className="bg-gradient-to-br from-accent/30 to-primary/10 rounded-xl p-4 border border-accent/20">
+            <Separator className="mb-4 bg-linear-to-r from-transparent via-border to-transparent" />
+            <div className="bg-linear-to-br from-accent/30 to-primary/10 rounded-xl p-4 border border-accent/20">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-6 h-6 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
+                <div className="w-6 h-6 bg-linear-to-br from-primary to-secondary rounded-full flex items-center justify-center">
                   <Sparkles className="w-3 h-3 text-primary-foreground" />
                 </div>
                 <span className="text-sm font-medium">Quick Tip</span>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="text-xs text-foreground/70 leading-relaxed">
                 Navigate through our sections to discover the complete story of
                 NPRESEC.
               </p>

@@ -1,7 +1,6 @@
 /** biome-ignore-all assist/source/organizeImports: reason */
 "use server";
 
-import type { Prisma } from "@/generated/prisma/client";
 import { computeGraduationDate } from "@/lib/compute-graduation-date";
 import { ActionError, CUSTOM_ERRORS } from "@/lib/constants";
 import { generatePassword } from "@/lib/generatePassword";
@@ -77,16 +76,7 @@ export const createStudent = async (values: StudentType) =>
 export const getStudents = cache(async (studentIDs?: string[]) =>
   nextSafeAction(
     async () => {
-      let query: Prisma.StudentWhereInput = {};
-
-      if (studentIDs) {
-        query = {
-          studentNumber: { in: studentIDs },
-        };
-      }
-
       const students = await getCachedStudentService(studentIDs);
-
       return { students: students ?? [] };
     },
     { permission: "view:students" },
@@ -98,10 +88,33 @@ export const bulkDeleteStudents = async (ids: string[]) =>
     async () => {
       const studentsToDelete = await prisma.student.findMany({
         where: { id: { in: ids } },
-        select: { classId: true, userId: true },
+        select: {
+          classId: true,
+          userId: true,
+          attendance: { select: { id: true } },
+          payments: { select: { id: true } },
+          grades: { select: { id: true } },
+        },
       });
 
       if (studentsToDelete.length === 0) return { count: 0 };
+      const existingPayments = studentsToDelete.flatMap((s) => s.payments);
+      const existingGrades = studentsToDelete.flatMap((s) => s.grades);
+      const existingAttendance = studentsToDelete.flatMap((s) => s.attendance);
+
+      if (existingAttendance.length > 0)
+        throw new ActionError(
+          "You cannot delete students with existing attendance records",
+        );
+      if (existingPayments.length > 0)
+        throw new ActionError(
+          "You cannot delete students with existing payment records",
+        );
+
+      if (existingGrades.length > 0)
+        throw new ActionError(
+          "You cannot delete students with existing grades records",
+        );
 
       const classDecrementMap: Record<string, number> = {};
       const userIds: string[] = [];
@@ -129,7 +142,7 @@ export const bulkDeleteStudents = async (ids: string[]) =>
         });
       });
 
-      revalidateTag(getQueryKey().student.all[0], "seconds");
+      revalidateTag(getQueryKey().student.all[1], "seconds");
       revalidateTag(getQueryKey().user.all[0], "seconds");
 
       return { count: result.count };

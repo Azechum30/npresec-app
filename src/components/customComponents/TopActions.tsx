@@ -1,10 +1,11 @@
+/** biome-ignore-all assist/source/organizeImports:reason */
 import { cn } from "@/lib/utils";
 import {
   createDataTransformer,
-  TransformerFn,
+  type TransformerFn,
 } from "@/utils/createDataTransformer";
-import { Row, Table } from "@tanstack/react-table";
-import { IContent } from "json-as-xlsx";
+import type { Row, Table } from "@tanstack/react-table";
+import type { IContent } from "json-as-xlsx";
 import ColumnVisibility from "./ColumnVisibility";
 import { ExportAsExcel } from "./ExportAsExcel";
 import FilterSearchInput from "./FilterSearchInput";
@@ -39,7 +40,7 @@ export default function TopActions<T>({
         "grid grid-col-1 sm:grid-cols-2 lg:grid-flow-col lg:grid-cols-[3fr_1fr_1fr_9.5rem] gap-y-3 sm:gap-x-3 mb-4 ",
         table.getSelectedRowModel().rows.length > 0 &&
           "lg:grid-cols-[3fr_1fr_1fr_1fr_9.5rem]",
-        !showImportButton && "lg:grid-cols-[3fr_1fr_9.5rem]"
+        !showImportButton && "lg:grid-cols-[3fr_1fr_9.5rem]",
       )}>
       <FilterSearchInput
         table={table}

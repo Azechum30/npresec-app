@@ -28,12 +28,10 @@ export const UserProfile = ({ user, onClose }: UserProfileProps) => {
     <DropdownMenu>
       <DropdownMenuTrigger
         asChild
-        className="flex items-center space-x-2 hover:cursor-pointer"
-      >
+        className="flex items-center space-x-2 hover:cursor-pointer">
         <Button
           variant="ghost"
-          className=" h-auto p-0 hover:bg-transparent hover:cursor-pointer"
-        >
+          className=" h-auto p-0 hover:bg-transparent hover:cursor-pointer">
           <Avatar className="hover:cursor-pointer">
             <AvatarImage src={user.image as string} className="" />
             <AvatarFallback>
@@ -46,15 +44,14 @@ export const UserProfile = ({ user, onClose }: UserProfileProps) => {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel className="flex flex-col space-y-1.5">
           <span className="font-semibold text-sm">{user.username}</span>
-          <span className="text-muted-foreground text-xs">{user.email}</span>
+          <span className="text-foreground/70 text-xs">{user.email}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link
             href="/"
             onClick={() => onClose?.("mobile-nav")}
-            className="hover:cursor-pointer text-muted-foreground hover:text-primary transition-colors"
-          >
+            className="hover:cursor-pointer text-foreground/70 hover:text-primary transition-colors">
             <Home size={16} aria-hidden={true} />
             <span>Home</span>
           </Link>
@@ -63,8 +60,7 @@ export const UserProfile = ({ user, onClose }: UserProfileProps) => {
           <Link
             href="/about"
             onClick={() => onClose?.("mobile-nav")}
-            className="hover:cursor-pointer text-muted-foreground hover:text-primary transition-colors"
-          >
+            className="hover:cursor-pointer text-foreground/70 hover:text-primary transition-colors">
             <Info size={16} aria-hidden={true} />
             <span>About</span>
           </Link>
@@ -73,8 +69,7 @@ export const UserProfile = ({ user, onClose }: UserProfileProps) => {
           <Link
             href={"/admissions" as Route}
             onClick={() => onClose?.("mobile-nav")}
-            className="hover:cursor-pointer text-muted-foreground hover:text-primary transition-colors"
-          >
+            className="hover:cursor-pointer text-foreground/70 hover:text-primary transition-colors">
             <UserPlus size={16} aria-hidden={true} />
             <span>Admissions</span>
           </Link>

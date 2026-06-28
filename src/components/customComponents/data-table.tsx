@@ -28,7 +28,8 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useRouter } from "next/navigation";
+import type { Route } from "next";
+import { usePathname, useRouter } from "next/navigation";
 import React, { type JSX, useMemo, useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 import { useAuth } from "./SessionProvider";
@@ -56,6 +57,7 @@ const DataTable = <TData,>({
 }: DataTableProps<TData>) => {
   const user = useAuth() as ExtendedSession["user"];
   const router = useRouter();
+  const pathname = usePathname();
 
   const userItemsPerPage = useMemo(() => {
     const validPageSizes = [10, 25, 50, 100];
@@ -87,7 +89,7 @@ const DataTable = <TData,>({
     }));
 
     await updateItemsPerPage(newPageSize);
-    router.refresh();
+    router.prefetch(pathname as Route);
   };
 
   const memoizedColums = useMemo(() => columns, [columns]);
