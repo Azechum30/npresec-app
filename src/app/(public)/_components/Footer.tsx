@@ -5,7 +5,6 @@ import Logo from "@/../public/logo.png";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -22,7 +21,6 @@ import {
   Mail,
   MapPin,
   Phone,
-  Send,
   Sparkles,
   Star,
   type LucideIcon,
@@ -235,14 +233,15 @@ export const Footer = () => {
               </span>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-8">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-8">
               <div className="footer-logo">
                 <Image
                   src={Logo}
                   alt="Presbyterian SHTS Nakpanduri Logo"
-                  width={80}
-                  height={80}
-                  className="w-20 h-20 object-contain"
+                  width={150}
+                  height={150}
+                  className="object-contain"
+                  loading="eager"
                 />
               </div>
               <div className="text-center md:text-left">
@@ -263,8 +262,8 @@ export const Footer = () => {
               <Card className="h-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-6">
-                    <div className="p-2 bg-linear-to-br from-primary to-secondary rounded-lg">
-                      <MapPin className="w-5 h-5 text-white" />
+                    <div className="p-2 bg-linear-to-br from-primary to-accent rounded-lg">
+                      <MapPin className="w-5 h-5" />
                     </div>
                     <h3 className="text-lg font-bold text-foreground">
                       Contact Info
@@ -333,8 +332,8 @@ export const Footer = () => {
               <Card className="h-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-bold mb-6 text-foreground flex items-center gap-2">
-                    <div className="p-2 bg-linear-to-br from-secondary to-accent rounded-lg">
-                      <Heart className="w-5 h-5 text-white" />
+                    <div className="p-2 bg-linear-to-br from-primary to-accent rounded-lg">
+                      <Heart className="w-5 h-5 " />
                     </div>
                     About Us
                   </h3>
@@ -360,8 +359,8 @@ export const Footer = () => {
               <Card className="h-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-bold mb-6 text-foreground flex items-center gap-2">
-                    <div className="p-2 bg-linear-to-br from-secondary to-accent rounded-lg">
-                      <Globe className="w-5 h-5 text-white" />
+                    <div className="p-2 bg-linear-to-br from-primary to-accent rounded-lg">
+                      <Globe className="w-5 h-5" />
                     </div>
                     Admissions
                   </h3>
@@ -384,70 +383,29 @@ export const Footer = () => {
 
             {/* Quick Links & Newsletter */}
             <div className="footer-section">
-              <div className="space-y-6">
-                {/* Quick Links */}
-                <Card className="bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg">
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-bold mb-6 text-foreground flex items-center gap-2">
-                      <div className="p-2 bg-linear-to-br from-primary to-accent rounded-lg">
-                        <Star className="w-5 h-5 text-white" />
-                      </div>
-                      Quick Links
-                    </h3>
-                    <div className="grid grid-cols-1 gap-2">
-                      {quickLinks.slice(0, 4).map((link) => (
-                        <Link
-                          key={link.href}
-                          href={link.href as Route}
-                          className="footer-link-item block py-2 px-3 rounded-lg text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all duration-300 text-sm group">
-                          <span className="flex items-center justify-between">
-                            {link.title}
-                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          </span>
-                        </Link>
-                      ))}
+              <Card className="bg-background/80 backdrop-blur-sm border border-border/50 shadow-lg h-full">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-bold mb-6 text-foreground flex items-center gap-2">
+                    <div className="p-2 bg-linear-to-br from-primary to-accent rounded-lg">
+                      <Star className="w-5 h-5 " />
                     </div>
-                  </CardContent>
-                </Card>
-
-                {/* Newsletter */}
-                <Card className="newsletter-section bg-linear-to-br from-primary/10 to-secondary/10 backdrop-blur-sm border border-primary/20 shadow-lg">
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-bold mb-3 text-foreground">
-                      Stay Updated
-                    </h3>
-                    <p className="text-sm text-foreground/70 mb-4">
-                      Get the latest news and updates from NPRESEC.
-                    </p>
-                    <form
-                      onSubmit={handleNewsletterSubmit}
-                      className="space-y-3">
-                      <Input
-                        type="email"
-                        placeholder="Enter your email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="bg-background/80 border-primary/30"
-                        required
-                      />
-                      <Button
-                        type="submit"
-                        size="sm"
-                        disabled={isSubmitting}
-                        className="w-full group">
-                        {isSubmitting ? (
-                          "Subscribing..."
-                        ) : (
-                          <>
-                            Subscribe
-                            <Send className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                          </>
-                        )}
-                      </Button>
-                    </form>
-                  </CardContent>
-                </Card>
-              </div>
+                    Quick Links
+                  </h3>
+                  <div className="grid grid-cols-1 gap-2">
+                    {quickLinks.slice(0, 4).map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href as Route}
+                        className="footer-link-item block py-2 px-3 rounded-lg text-foreground/70 hover:text-foreground hover:bg-accent/50 transition-all duration-300 text-sm group">
+                        <span className="flex items-center justify-between">
+                          {link.title}
+                          <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
 
@@ -485,7 +443,7 @@ export const Footer = () => {
         </PublicMainContainer>
 
         {/* Bottom Footer */}
-        <div className="footer-bottom bg-linear-to-r from-background/95 via-accent/20 to-background/95 backdrop-blur-sm border-t border-border/30">
+        <div className="footer-bottom bg-linear-to-r from-background/95 via-card/20 to-background/95 backdrop-blur-sm border-t border-border/30">
           <PublicMainContainer className="py-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">

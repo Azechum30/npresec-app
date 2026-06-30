@@ -1,7 +1,8 @@
-import Navbar from "@/components/customComponents/Navbar";
-import { ReactNode } from "react";
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { Footer } from "@/app/(public)/_components/Footer";
 import { MobileNavbar } from "@/components/customComponents/MobileNavbar";
+import Navbar from "@/components/customComponents/Navbar";
+import type { ReactNode } from "react";
 
 export default function PublicLayout({
   children,

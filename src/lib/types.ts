@@ -828,3 +828,7 @@ export const PaymentSelect = {
 export type TPayment = Prisma.PaymentGetPayload<{
   select: typeof PaymentSelect;
 }>;
+
+export type VerifyStudentsParams = {
+  token: string;
+};

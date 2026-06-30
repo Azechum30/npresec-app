@@ -21,12 +21,12 @@ import {
   UserPen,
   UserPlus,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { buttonVariants } from "../ui/button";
 import LinkWithStyles from "./LinkWithStyles";
 import { useAuth } from "./SessionProvider";
 import SidebarOpenButton from "./SidebarOpenButton";
 import UserButton from "./UserButton";
+import { AvatarComponent } from "./avatar-component";
 
 export const Links = {
   ADMIN: [
@@ -200,12 +200,7 @@ export default function Sidebar() {
               variant: "default",
             })} group bg-background hover:bg-background w-full px-4 py-2 text-left justify-start flex gap-x-3 rounded-none items-center h-14 sticky top-0 left-0 z-30 border-b border-card`,
           )}>
-          <div className="size-10 shrink-0 flex items-center justify-center border-2 dark:group-hover:border-gray-600  rounded-full p-1.5 ">
-            <Avatar className="w-full h-full">
-              <AvatarImage src="/logo.png" alt='School Logo' />
-              <AvatarFallback>NP</AvatarFallback>
-            </Avatar>
-          </div>
+          <AvatarComponent image="/logo.png" fallback="Nakpanduri Presby" />
           <h1 className="block text-base font-semibold text-accent-foreground">
             NPRESEC
           </h1>

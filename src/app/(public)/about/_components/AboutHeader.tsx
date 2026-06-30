@@ -28,7 +28,7 @@ gsap.registerPlugin(ScrollTrigger, TextPlugin, useGSAP);
 
 export const AboutHeader = () => {
   const container = useRef<HTMLDivElement>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [_, setIsLoaded] = useState(false);
 
   const stats = [
     { icon: Users, label: "Students", value: "500+" },
@@ -191,7 +191,7 @@ export const AboutHeader = () => {
           className="object-contain opacity-5"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-linear-to-br from-primary/50 via-primary/60 to-secondary/50" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/20 via-background/60 to-ring/20" />
         <div className="absolute inset-0 bg-linear-to-t from-background/20 via-transparent to-background/10" />
       </div>
 
@@ -213,10 +213,10 @@ export const AboutHeader = () => {
       <div className="relative z-30 flex flex-col justify-center min-h-[60vh] px-4 md:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto w-full">
           {/* Badge */}
-          <div className="about-badge flex justify-center mb-6">
+          <div className="about-badge flex justify-center my-6">
             <Badge
               variant="secondary"
-              className="px-4 py-2 bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30 transition-all duration-300">
+              className="px-4 py-2 backdrop-blur-md transition-all duration-300">
               <Building2 className="w-4 h-4 mr-2" />
               Discover Our Story
             </Badge>
@@ -224,35 +224,36 @@ export const AboutHeader = () => {
 
           {/* Breadcrumb */}
           <div className="about-breadcrumb flex items-center justify-center mb-8">
-            <nav className="flex items-center space-x-2 text-white/80">
+            <nav className="flex items-center space-x-2 text-primary/60">
               <Link
                 href={"/" as Route}
                 className={buttonVariants({
                   variant: "ghost",
                   size: "sm",
-                  className: "text-white/80 hover:text-white hover:bg-white/10",
+                  className:
+                    "text-primary/80 hover:text-primary hover:bg-primary/10",
                 })}>
                 <Home className="w-4 h-4" />
               </Link>
               <ChevronRight className="w-4 h-4" />
-              <span className="font-medium text-white">About</span>
+              <span className="font-medium text-primary">About</span>
             </nav>
           </div>
 
           {/* Title */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-conic-190 from-primary to-muted-foreground bg-clip-text text-transparent mb-6">
               {["About", "Our", "School"].map((word, index) => (
                 <span
                   key={index.toString()}
-                  className="about-title-word inline-block mr-3 bg-linear-to-r from-white to-white/90 bg-clip-text">
+                  className="about-title-word inline-block mr-3 bg-linear-to-r from-ring to-muted-foreground/90 bg-clip-text">
                   {word}
                 </span>
               ))}
             </h1>
 
             <div className="about-description max-w-2xl mx-auto">
-              <p className="text-lg md:text-xl text-white/90 leading-relaxed">
+              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
                 Discover the rich heritage and inspiring journey of Nakpanduri
                 Presbyterian Senior High Technical School, where academic
                 excellence meets character development.
@@ -264,14 +265,12 @@ export const AboutHeader = () => {
           <div className="flex flex-wrap justify-center gap-8 mb-12">
             {stats.map((stat) => (
               <div key={stat.label} className="about-stat group cursor-default">
-                <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-center transition-all duration-300 group-hover:bg-white/20 group-hover:scale-105 group-hover:border-white/30">
-                  <stat.icon className="w-8 h-8 text-white mx-auto mb-3 group-hover:scale-110 transition-transform duration-300" />
-                  <div className="text-2xl md:text-3xl font-bold text-white mb-1">
+                <div className="bg-card backdrop-blur-md border border-primary/20 rounded-2xl p-6 text-center transition-all duration-300 group-hover:bg-card/20 group-hover:scale-105 group-hover:border-primary/30">
+                  <stat.icon className="w-8 h-8 text-primary mx-auto mb-3 group-hover:scale-110 transition-transform duration-300" />
+                  <div className="text-2xl md:text-3xl font-bold mb-1">
                     {stat.value}
                   </div>
-                  <div className="text-sm text-white/80 font-medium">
-                    {stat.label}
-                  </div>
+                  <div className="text-sm  font-medium">{stat.label}</div>
                 </div>
               </div>
             ))}
@@ -280,8 +279,8 @@ export const AboutHeader = () => {
           {/* Scroll indicator */}
           <div className="about-scroll-indicator flex justify-center">
             <div className="group cursor-pointer">
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-full p-3 group-hover:bg-white/20 transition-all duration-300">
-                <ArrowDown className="w-5 h-5 text-white group-hover:translate-y-1 transition-transform duration-300" />
+              <div className="bg-card/90 backdrop-blur-md border border-primary/20 rounded-full p-3 group-hover:bg-card/20 transition-all duration-300">
+                <ArrowDown className="w-5 h-5 group-hover:translate-y-1 transition-transform duration-300" />
               </div>
             </div>
           </div>

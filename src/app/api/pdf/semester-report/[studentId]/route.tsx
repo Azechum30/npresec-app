@@ -4,6 +4,7 @@ import { StatementOfResultsTemplate } from "@/components/StatementOfResultsTempl
 import { ASSESSMENT_WEIGHTS } from "@/lib/constants";
 import { generateQrcode } from "@/lib/generate-verification-qrcode";
 import { getUserPermissions } from "@/lib/get-session";
+import { generateResultsVerificationToken } from "@/lib/jwt";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/server-only-actions/validate-env";
 import { getGradeInfo } from "@/lib/services/transcripts.service";
@@ -80,7 +81,7 @@ export const GET = async (
       course.breakdown.push({
         type: g.assessmentType,
         rawScore: `${g.score}/${g.maxScore}`,
-        contribution: contribution.toFixed(2) + "%",
+        contribution: `${contribution.toFixed(2)}%`,
       });
     });
 
@@ -124,12 +125,13 @@ export const GET = async (
       academicYear,
     );
 
-    const queryParams = new URLSearchParams({
-      semester: semester,
-      academicYear: academicYear.toString(),
-    });
+    const token = generateResultsVerificationToken(
+      studentId,
+      semester,
+      academicYear,
+    );
 
-    const verifyUrl = `${env.NEXT_PUBLIC_URL}/verify-results/${studentId}?${queryParams}`;
+    const verifyUrl = `${env.NEXT_PUBLIC_URL}/verify-results/${token}`;
 
     const buffer = await renderToBuffer(
       <StatementOfResultsTemplate
@@ -142,7 +144,7 @@ export const GET = async (
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="Statement-${studentId}.pdf"`,
+        "Content-Disposition": `attachment; filename="${summary.student.studentNumber}-Semester-Report.pdf"`,
       },
     });
   } catch (e) {

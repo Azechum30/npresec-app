@@ -10,10 +10,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { fuzzyFilter } from "@/lib/fuzzyFilter";
-import { StudentResponseType } from "@/lib/types";
-import { ColumnDef } from "@tanstack/react-table";
+import type { StudentResponseType } from "@/lib/types";
+import type { ColumnDef } from "@tanstack/react-table";
 import { FileBadge2, FileDown, Maximize2, MoreHorizontal } from "lucide-react";
-import { Route } from "next";
+import type { Route } from "next";
 import Link from "next/link";
 
 export type StudentGradeRow = {
@@ -92,7 +92,7 @@ export const useGetStudentsGradesColumns = () => {
                 <MoreHorizontal />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent className="w-fit">
               <DropdownMenuLabel>Report Action</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild className="cursor-pointer">

@@ -1,11 +1,80 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { env } from "@/lib/server-only-actions/validate-env";
 import { ArrowRight, Sparkles, Users } from "lucide-react";
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { BoardOfGovernorsClient } from "./_components/BoardOfGovernorsClient";
 import { BoardMembers } from "./_components/board-members";
 import { getBoardOfGovernors } from "./actions/server";
+
+export const metadata: Metadata = {
+  title: "Board of Governors",
+  description:
+    "Meet the distinguished Board of Governors of Presbyterian Senior High Technical School (NPRESEC) in Nakpanduri. Learn about their leadership, vision, and commitment to guiding the school towards academic excellence and holistic development.",
+
+  keywords: [
+    "Board of Governors",
+    "NPRESEC Board",
+    "Presbyterian SHTS Governance",
+    "School Leadership Ghana",
+    "NPRESEC Management",
+    "Senior High School Board",
+    "Nakpanduri Education Leaders",
+  ],
+
+  authors: [{ name: "Presbyterian Senior High Technical School (NPRESEC)" }],
+  creator: "NPRESEC",
+
+  openGraph: {
+    title: "Board of Governors - Presbyterian Senior High Technical School",
+    description:
+      "Meet the visionary leaders guiding NPRESEC towards excellence in education and student development.",
+    url: `${env.NEXT_PUBLIC_URL}/about/board-of-governors`,
+    siteName: "NPRESEC MIS",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Board of Governors - NPRESEC Nakpanduri",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Board of Governors - NPRESEC",
+    description:
+      "Meet the dedicated leaders steering Presbyterian Senior High Technical School towards greater heights.",
+    images: ["/opengraph-image"],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+
+  alternates: {
+    canonical: `${env.NEXT_PUBLIC_URL}/about/board-of-governors`,
+  },
+
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+};
 
 function ModernFallback() {
   return (

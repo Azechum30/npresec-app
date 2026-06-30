@@ -238,7 +238,7 @@ export const Welcome = () => {
   return (
     <section
       ref={container}
-      className="welcome-container relative bg-linear-to-b from-background via-secondary/30 to-background py-8 md:py-24 overflow-hidden">
+      className="welcome-container relative bg-linear-to-b p-4 from-background via-secondary/30 to-background py-8 md:py-24 overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
@@ -246,7 +246,7 @@ export const Welcome = () => {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-linear-to-r from-accent/3 to-secondary/3 rounded-full blur-3xl" />
       </div>
 
-      <PublicMainContainer className="relative z-10">
+      <PublicMainContainer className="relative z-10 border rounded-2xl">
         <div className="grid lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Welcome Message Section */}
           <div className="lg:col-span-5 welcome-content">

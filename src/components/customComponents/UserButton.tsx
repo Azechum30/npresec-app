@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import { updateThemeAction } from "@/app/(private)/profile/_actions/update-theme-action";
@@ -18,8 +19,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import {
@@ -33,13 +33,14 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { AvatarComponent } from "./avatar-component";
 import LogoutButton from "./LogoutButton";
 import { useAuth } from "./SessionProvider";
 
 export default function UserButton() {
   const user = useAuth();
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, startThemeUpdateTransition] = useTransition();
+  const [isMounted, setIsMouted] = useState(false);
 
   const requiredRole = "admin";
   const userRoleNames =
@@ -47,12 +48,12 @@ export default function UserButton() {
   const hasRole = userRoleNames.includes(requiredRole);
 
   const { setTheme, theme } = useTheme();
-  const { onOpen, id } = useGenericDialog();
+  const { onOpen } = useGenericDialog();
 
   const handleThemeChange = (newTheme: "system" | "light" | "dark") => {
     setTheme(newTheme);
 
-    startTransition(async () => {
+    startThemeUpdateTransition(async () => {
       await updateThemeAction(newTheme);
     });
   };
@@ -62,11 +63,13 @@ export default function UserButton() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="default"
-          className="bg-background hover:bg-accent w-full h-full flex justify-start text-left rounded-none py-2 items-center gap-x-3 border-0 hover:cursor-pointer">
-          <Avatar className="border p-1.5">
-            <AvatarImage src={user?.image!} />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
+          className="bg-background hover:bg-secondary w-full h-full flex justify-start text-left rounded-none py-2 items-center gap-x-3 border-0 hover:cursor-pointer">
+          {user && (
+            <AvatarComponent
+              fallback="User Name"
+              image={user?.image as string | undefined}
+            />
+          )}
           {!user ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (

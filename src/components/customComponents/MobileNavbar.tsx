@@ -1,26 +1,19 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
-import Logo from "@/../public/logo.png";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { ArrowRight, ChevronRight, LogIn, Sparkles, X } from "lucide-react";
-import { Route } from "next";
-import Image from "next/image";
+import { ChevronRight, LogInIcon, X } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
-import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "../ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import { Links } from "./Navbar";
 import { ThemeSwitcher } from "./ThemeSwitecher";
+import { AvatarComponent } from "./avatar-component";
 
 // Register GSAP plugins
 gsap.registerPlugin(useGSAP);
@@ -30,7 +23,7 @@ export const MobileNavbar = () => {
   const container = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const [hoveredLink, setHoveredLink] = useState<number | null>(null);
-  const isOpen = dialogs["mobile-nav"];
+  const isOpen = !!dialogs["mobile-nav"];
 
   const isCurrentPath = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -70,7 +63,7 @@ export const MobileNavbar = () => {
             duration: 0.5,
             ease: "back.out(1.7)",
           },
-          "-=0.3"
+          "-=0.3",
         )
         .to(
           ".mobile-nav-link",
@@ -82,7 +75,7 @@ export const MobileNavbar = () => {
             stagger: 0.1,
             ease: "back.out(1.2)",
           },
-          "-=0.2"
+          "-=0.2",
         )
         .to(
           ".mobile-nav-actions",
@@ -92,7 +85,7 @@ export const MobileNavbar = () => {
             duration: 0.6,
             ease: "power2.out",
           },
-          "-=0.3"
+          "-=0.3",
         )
         .to(
           ".mobile-nav-decoration",
@@ -104,7 +97,7 @@ export const MobileNavbar = () => {
             stagger: 0.2,
             ease: "elastic.out(1, 0.5)",
           },
-          "-=0.4"
+          "-=0.4",
         );
 
       // Floating animation for decorations
@@ -118,7 +111,7 @@ export const MobileNavbar = () => {
         stagger: 0.5,
       });
     },
-    { scope: container, dependencies: [isOpen] }
+    { scope: container, dependencies: [isOpen] },
   );
 
   const handleLinkClick = () => {
@@ -136,21 +129,22 @@ export const MobileNavbar = () => {
   return (
     <Sheet open={isOpen} onOpenChange={() => onClose("mobile-nav")}>
       <SheetContent
+        aria-describedby="mobile navigation for school public website"
         side="left"
         className="w-full sm:w-96 p-0 bg-background/95 backdrop-blur-2xl border-r border-border/50">
         <div
           ref={container}
           className="mobile-nav-content relative h-full overflow-x-hidden overflow-y-auto">
           {/* Background decorations */}
-          <div className="mobile-nav-decoration floating-mobile-decoration absolute top-20 right-8 w-16 h-16 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full blur-xl" />
-          <div className="mobile-nav-decoration floating-mobile-decoration absolute bottom-1/3 left-4 w-12 h-12 bg-gradient-to-br from-accent/15 to-primary/15 rounded-full blur-lg" />
-          <div className="mobile-nav-decoration floating-mobile-decoration absolute top-1/2 right-6 w-8 h-8 bg-gradient-to-br from-secondary/20 to-accent/20 rounded-full blur-md" />
+          <div className="mobile-nav-decoration floating-mobile-decoration absolute top-20 right-8 w-16 h-16 bg-linear-to-br from-primary/10 to-secondary/10 rounded-full blur-xl" />
+          <div className="mobile-nav-decoration floating-mobile-decoration absolute bottom-1/3 left-4 w-12 h-12 bg-linear-to-br from-accent/15 to-primary/15 rounded-full blur-lg" />
+          <div className="mobile-nav-decoration floating-mobile-decoration absolute top-1/2 right-6 w-8 h-8 bg-linear-to-br from-secondary/20 to-accent/20 rounded-full blur-md" />
 
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-background via-background/90 to-background/95 pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-br from-background via-background/90 to-background/95 pointer-events-none" />
 
           {/* Header */}
-          <SheetHeader className="mobile-nav-header relative p-6 pb-4 border-b border-border/30 bg-gradient-to-r from-primary/5 to-secondary/5">
+          <SheetHeader className="mobile-nav-header relative p-6 pb-4 border-b border-border/30 bg-linear-to-r from-primary/5 to-secondary/5">
             {/* Close button */}
             <Button
               variant="ghost"
@@ -162,33 +156,19 @@ export const MobileNavbar = () => {
 
             <div className="mobile-nav-brand flex items-center gap-3 mb-4">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl blur-md" />
-                <div className="relative flex items-center justify-center p-2 bg-background border border-border/50 rounded-xl shadow-sm">
-                  <Image
-                    src={Logo}
-                    alt="NPRESEC Logo"
-                    width={28}
-                    height={28}
-                    className="object-contain"
-                  />
-                </div>
+                <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-secondary/20 rounded-xl blur-md" />
+                <AvatarComponent
+                  image="/logo.png"
+                  fallback="Nakpanduri Presec"
+                  className="w-12 h-auto object-center"
+                />
               </div>
               <div>
-                <SheetTitle className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  PresbySHTS
+                <SheetTitle className="text-xl font-bold bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent">
+                  NPRESEC
                 </SheetTitle>
-                <SheetDescription className="text-xs text-muted-foreground">
-                  Excellence in Education
-                </SheetDescription>
               </div>
             </div>
-
-            <Badge
-              variant="secondary"
-              className="w-fit bg-primary/10 text-primary border-primary/20">
-              <Sparkles className="w-3 h-3 mr-1" />
-              Navigation Menu
-            </Badge>
           </SheetHeader>
 
           {/* Main Navigation */}
@@ -217,7 +197,7 @@ export const MobileNavbar = () => {
                       {/* Gradient background on hover */}
                       <div
                         className={`
-                          absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-300 rounded-2xl
+                          absolute inset-0 bg-linear-to-br opacity-0 transition-opacity duration-300 rounded-2xl
                           ${link.gradient}
                           ${isHovered ? "opacity-5" : "opacity-0"}
                         `}
@@ -225,17 +205,17 @@ export const MobileNavbar = () => {
 
                       {/* Active indicator */}
                       {isCurrent && (
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-secondary rounded-r-full" />
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-linear-to-b from-primary to-secondary rounded-r-full" />
                       )}
 
                       <div className="relative flex items-center gap-4">
                         {/* Icon */}
                         <div
                           className={`
-                            flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300
+                            shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300
                             ${
                               isCurrent
-                                ? `bg-gradient-to-br ${link.gradient} text-white shadow-md`
+                                ? `bg-linear-to-br ${link.gradient} shadow-md`
                                 : "bg-accent/80 text-muted-foreground group-hover:bg-accent group-hover:text-foreground"
                             }
                           `}>
@@ -287,7 +267,7 @@ export const MobileNavbar = () => {
             </div>
 
             {/* Actions Footer */}
-            <div className="mobile-nav-actions p-6 border-t border-border/30 bg-gradient-to-r from-background/50 to-accent/10 backdrop-blur-sm">
+            <div className="mobile-nav-actions p-6 border-t border-border/30 bg-linear-to-r from-background/50 to-accent/10 backdrop-blur-sm">
               <div className="space-y-4">
                 {/* Theme Switcher */}
                 <div className="flex items-center justify-between p-3 rounded-xl bg-background/60 border border-border/50">
@@ -300,28 +280,16 @@ export const MobileNavbar = () => {
                 {/* Action Buttons */}
                 <div className="space-y-3">
                   <Link
-                    href={"/" as Route}
-                    onClick={handleLinkClick}
-                    className="group relative block w-full">
-                    <Button className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 h-12 text-base font-semibold rounded-xl">
-                      {/* Shimmer effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 rounded-xl" />
-                      <span className="relative flex items-center justify-center gap-2">
-                        Get Started
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                      </span>
-                    </Button>
-                  </Link>
-
-                  <Link
                     href={"/sign-in" as Route}
                     onClick={handleLinkClick}
-                    className="block w-full">
-                    <Button
-                      variant="outline"
-                      className="w-full border-border/50 rounded-xl hover:border-primary/30 transition-all duration-300 hover:shadow-md h-12 text-base font-medium hover:bg-accent/50">
-                      <LogIn className="w-4 h-4 mr-2" />
-                      Login
+                    className="group relative block w-full">
+                    <Button className="w-full bg-linear-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 h-12 text-base font-semibold rounded-xl">
+                      {/* Shimmer effect */}
+                      <div className="absolute inset-0 bg-linear-to-r from-transparent via-ring/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 rounded-xl" />
+                      <span className="relative flex items-center justify-center gap-2">
+                        Sign In
+                        <LogInIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                      </span>
                     </Button>
                   </Link>
                 </div>

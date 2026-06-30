@@ -4,14 +4,7 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import {
-  ArrowRight,
-  GraduationCap,
-  Home,
-  LogIn,
-  Sparkles,
-  Users,
-} from "lucide-react";
+import { GraduationCap, Home, LogInIcon, Sparkles, Users } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -37,21 +30,21 @@ export const Links: NavigationLinksProps[] = [
     href: "/",
     icon: Home,
     description: "Welcome to NPRESEC",
-    gradient: "from-blue-500 to-cyan-500",
+    gradient: "from-primary/80 to-muted-foreground/80 dark:to-accent/80",
   },
   {
     title: "About",
     href: "/about",
     icon: Users,
     description: "Our story and values",
-    gradient: "from-green-500 to-emerald-500",
+    gradient: "from-primary/80 to-muted-foreground/80 dark:to-accent/80",
   },
   {
     title: "Admissions",
     href: "/admissions",
     icon: GraduationCap,
     description: "Join our community",
-    gradient: "from-purple-500 to-pink-500",
+    gradient: "from-primary/80 to-muted-foreground/80 dark:to-accent/80",
   },
 ];
 
@@ -215,17 +208,14 @@ export default function Navbar() {
               <AvatarComponent
                 image="/logo.png"
                 fallback="Nakpanduri Presec"
-                className="w-12 h-6.5 object-scale-down object-center"
+                className="w-12 object-center"
               />
               {/* </div> */}
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-lg bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent">
-                PresbySHTS
+                NPRESEC
               </span>
-              {/*<span className="text-xs text-muted-foreground hidden sm:block">
-                Excellence in Education
-              </span>*/}
             </div>
           </Link>
 
@@ -293,26 +283,16 @@ export default function Navbar() {
 
               <div className="flex items-center space-x-2">
                 <Link
-                  href={"/" as Route}
+                  prefetch="auto"
+                  href={"/sign-in" as Route}
                   className={`
-                    group relative overflow-hidden px-6 py-2 bg-linear-to-r from-primary to-secondary text-primary-foreground rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-medium text-sm
+                    group relative overflow-hidden px-6 py-2 bg-linear-to-r from-primary to-accent rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-medium text-sm
                   `}>
                   {/* Shimmer effect */}
                   <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                   <span className="relative flex items-center gap-2">
-                    Get Started
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-                  </span>
-                </Link>
-
-                <Link
-                  href={"/sign-in" as Route}
-                  className={`
-                    group relative px-6 py-2 border border-border/50 rounded-xl hover:border-primary/30 transition-all duration-300 hover:shadow-md font-medium text-sm hover:bg-accent/50
-                  `}>
-                  <span className="flex items-center gap-2">
-                    <LogIn className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
-                    Login
+                    Sign In
+                    <LogInIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                   </span>
                 </Link>
               </div>

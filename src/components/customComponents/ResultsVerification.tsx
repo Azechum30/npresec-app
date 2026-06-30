@@ -1,12 +1,14 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
+import type { verifyStudentResults } from "@/app/(public)/verify-results/[token]/_actions/action";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { CheckCircle2, ShieldCheck, XCircle } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useRef } from "react";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 
 gsap.registerPlugin(useGSAP);
 
@@ -14,15 +16,15 @@ export function ResultsVerification({
   isValid,
   grades,
   studentId,
-  verificationDate,
 }: {
   isValid: boolean;
-  grades: any;
+  grades: Awaited<ReturnType<typeof verifyStudentResults>>;
   studentId: string;
-  verificationDate: Date;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const pathname = usePathname().split("/")[1];
+
+  const [isMounted, setIsMouted] = useState(false);
 
   useGSAP(
     () => {
@@ -57,23 +59,29 @@ export function ResultsVerification({
     { scope: container },
   );
 
+  const memoizedDate = useMemo(() => new Date().toLocaleString(), []);
+
+  useEffect(() => {
+    startTransition(() => setIsMouted(true));
+  }, []);
+
   return (
     <div
       ref={container}
-      className="min-h-screen bg-background bg-gradient-to-tl from-primary/20 via-accent/15 to-accent/20 flex items-center justify-center p-4 overflow-hidden relative">
-      <Card className="verify-card bg-gradient-to-br from-accent/10 via-primary/5 to-primary/10 max-w-md w-full shadow-4xl relative overflow-hidden">
+      className="min-h-screen bg-background bg-linear-to-tl from-primary/20 via-card/15 to-card/20 flex items-center justify-center p-4 overflow-hidden relative">
+      <Card className="shadow-2xl verify-card max-w-md w-full shadow-4xl relative overflow-hidden">
         {/* Animated Scan Line */}
-        <div className="scan-line absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent z-20" />
+        <div className="scan-line absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-ring to-transparent z-20" />
 
         <CardHeader className="text-center pb-2">
           <div className="header-icon flex justify-center mb-4">
             {isValid ? (
-              <div className="p-3 bg-gradient-to-r from-primary/15 to-secondary/20 rounded-full">
+              <div className="p-3 bg-linear-to-r from-primary/15 to-secondary/20 rounded-full">
                 <ShieldCheck className="size-12 text-primary" />
               </div>
             ) : (
-              <div className="p-3 bg-red-50 rounded-full">
-                <XCircle className="size-12 text-red-600" />
+              <div className="p-3 bg-primary/5 rounded-full">
+                <XCircle className="size-12 text-destructive" />
               </div>
             )}
           </div>
@@ -93,7 +101,7 @@ export function ResultsVerification({
         <CardContent className="space-y-6 pt-4">
           {isValid ? (
             <>
-              <div className="info-row bg-gradient-to-br from-primary/15 via-primary/20 to-secondary/15 rounded-xl p-4 flex items-center gap-3">
+              <div className="info-row bg-linear-to-br from-primary/15 via-primary/20 to-muted-foreground/15 rounded-xl p-4 flex items-center gap-3">
                 <CheckCircle2 className="text-primary size-6 shrink-0" />
                 <div>
                   <p className="text-primary font-bold text-sm">
@@ -122,7 +130,7 @@ export function ResultsVerification({
                         )} - ${new Intl.DateTimeFormat("en-GH", {
                           month: "short",
                           year: "numeric",
-                        }).format(grades.student.graduationDate)}`,
+                        }).format(grades.student?.graduationDate as Date)}`,
                       }
                     : {
                         label: "Academic Period",
@@ -141,7 +149,7 @@ export function ResultsVerification({
                   },
                 ].map((item, i) => (
                   <div
-                    key={i}
+                    key={i.toString()}
                     className="info-row flex justify-between items-center py-2 border-b last:border-0">
                     <span className="text-muted-foreground text-xs font-medium uppercase tracking-tighter">
                       {item.label}
@@ -155,20 +163,20 @@ export function ResultsVerification({
               </div>
             </>
           ) : (
-            <div className="info-row bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-              <XCircle className="text-red-600 size-10 mx-auto mb-3" />
-              <p className="text-red-900 font-bold">Verification Failed</p>
-              <p className="text-red-700 text-xs mt-1">
+            <div className="info-row bg-destructive/5 border border-destructive/25 rounded-xl p-6 text-center">
+              <XCircle className="text-destructive/70 size-10 mx-auto mb-3" />
+              <p className="text-destructive font-bold">Verification Failed</p>
+              <p className="text-destructive/50 text-xs mt-1">
                 This record could not be found or is not yet published.
               </p>
             </div>
           )}
 
           <div className="info-row pt-4 flex flex-col items-center gap-2">
-            <p className="text-[10px] text-center text-muted-foreground max-w-[200px]">
+            <p className="text-[10px] text-center text-muted-foreground max-w-50">
               Secure digital verification timestamp:
               <span className="block font-mono text-muted-foreground">
-                {verificationDate?.toLocaleString()}
+                {isMounted ? memoizedDate : ""}
               </span>
             </p>
             <a

@@ -2,7 +2,7 @@
 import DataTable from "@/components/customComponents/data-table";
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import { Notification } from "@/components/customComponents/notification";
-import { getStudentGrades } from "../_actions/get-student-grades";
+import type { getStudentGrades } from "../_actions/get-student-grades";
 import { useGetStudentsGradesColumns } from "../_hooks/use-get-students-grades-columns";
 import { StudentGradesSummaryDetail } from "./StudentGradesSummaryDetail";
 

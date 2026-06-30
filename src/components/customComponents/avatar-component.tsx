@@ -17,10 +17,12 @@ export const AvatarComponent = ({
         alt={fallback}
         className={cn("object-top", className)}
       />
-      <AvatarFallback className="font-bold">
-        {fallback.split(" ")[0].charAt(0).toUpperCase() +
-          fallback.split(" ")[1].charAt(0).toUpperCase()}
-      </AvatarFallback>
+      {fallback && (
+        <AvatarFallback className="font-bold">
+          {fallback?.split(" ")[0].charAt(0).toUpperCase() +
+            fallback?.split(" ")[1].charAt(0).toUpperCase()}
+        </AvatarFallback>
+      )}
     </Avatar>
   );
 };

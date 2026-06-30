@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -179,7 +180,7 @@ export const AboutSidebar = () => {
           <Sparkles className="w-5 h-5 text-primary/30" />
         </div>
 
-        <CardContent className="p-6">
+        <CardContent className="p-6 lg:p-4">
           {/* Header */}
           <div className="sidebar-header mb-6">
             <div className="flex items-center gap-3 mb-2">
@@ -212,7 +213,7 @@ export const AboutSidebar = () => {
                   onMouseLeave={() => setHoveredLink(null)}>
                   <div
                     className={`
-                      relative p-4 rounded-xl transition-all duration-300 overflow-hidden
+                      relative p-4 lg:p-2 rounded-xl transition-all duration-300 overflow-hidden
                       ${
                         isActive
                           ? "bg-primary/10 border-2 border-primary/20 shadow-lg"

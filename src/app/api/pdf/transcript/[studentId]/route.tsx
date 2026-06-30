@@ -1,7 +1,9 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { FullTranscriptTemplate } from "@/components/customComponents/FullTranscriptTemplate";
 import { ASSESSMENT_WEIGHTS } from "@/lib/constants";
 import { generateTranscriptVerificationQrcode } from "@/lib/generate-transcript-verification-qrcode";
 import { getUserPermissions } from "@/lib/get-session";
+import { generateResultsVerificationToken } from "@/lib/jwt";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/server-only-actions/validate-env";
 import { getGradeInfo } from "@/lib/services/transcripts.service";
@@ -11,7 +13,11 @@ import { NextResponse } from "next/server";
 
 export const GET = async (
   req: Request,
-  { params }: { params: Promise<{ studentId: string }> },
+  {
+    params,
+  }: {
+    params: Promise<{ studentId: string }>;
+  },
 ) => {
   try {
     const { hasPermission } = await getUserPermissions("export:grades");
@@ -107,7 +113,13 @@ export const GET = async (
     };
 
     const qrcodeUrl = await generateTranscriptVerificationQrcode(studentId);
-    const verifyUrl = `${env.NEXT_PUBLIC_URL}/verify-student-transcript/${studentId}`;
+
+    const token = generateResultsVerificationToken(
+      studentId,
+      semesters[semesters.length - 1].semester,
+      semesters[semesters.length - 1].academicYear,
+    );
+    const verifyUrl = `${env.NEXT_PUBLIC_URL}/verify-student-transcript/${token}`;
 
     const buffer = await renderToBuffer(
       <FullTranscriptTemplate
@@ -120,7 +132,7 @@ export const GET = async (
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="Transcript-${studentId}.pdf"`,
+        "Content-Disposition": `attachment; filename="${student.studentNumber}-Transcript.pdf"`,
       },
     });
   } catch (e) {
