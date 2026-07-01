@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
@@ -5,14 +6,13 @@ import { Form } from "@/components/ui/form";
 import {
   Semester,
   StudentGradesFilterSchema,
-  StudentGradesFilterType,
+  type StudentGradesFilterType,
 } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Route } from "next";
+import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { getClassesAction } from "../../classes/actions/server-actions";
 
@@ -25,7 +25,7 @@ export const FilterStudentGradesForm = () => {
     mode: "onBlur",
     defaultValues: {
       academicYear: searchParams.get("academicYear")
-        ? parseInt(searchParams.get("academicYear") as string)
+        ? parseInt(searchParams.get("academicYear") as string, 10)
         : undefined,
       semester:
         (searchParams.get("semester") as (typeof Semester)[number]) ||
@@ -67,7 +67,7 @@ export const FilterStudentGradesForm = () => {
         academicYear: new Date().getFullYear(),
       });
     }
-  }, [pathname, form]);
+  }, [pathname, form, classId, semester, academicYear]);
 
   const debouncedNavigate = useDebouncedCallback((params) => {
     const allPresent = classId && academicYear && semester;
@@ -81,9 +81,6 @@ export const FilterStudentGradesForm = () => {
     const fetchClasses = () => {
       startTransition(async () => {
         const rs = await getClassesAction();
-        if (rs.error) {
-          toast.error(rs.error);
-        }
         setClasses(rs.data);
       });
     };
@@ -128,7 +125,7 @@ export const FilterStudentGradesForm = () => {
           <SelectWithLabel
             name="semester"
             fieldTitle="Semester"
-            data={Semester as any}
+            data={Semester.map((sem) => sem)}
             schema={StudentGradesFilterSchema}
             placeholder="--Select semester--"
           />

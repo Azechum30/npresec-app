@@ -1,6 +1,7 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
-import { getBoardOfGovernors } from "@/app/(public)/about/board-of-governors/actions/server";
+import type { getBoardOfGovernors } from "@/app/(public)/about/board-of-governors/actions/server";
 import DataTable from "@/components/customComponents/data-table";
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import { NoDataFound } from "@/components/customComponents/no-data-found";

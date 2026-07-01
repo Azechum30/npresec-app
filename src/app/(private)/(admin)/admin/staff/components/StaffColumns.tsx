@@ -2,12 +2,12 @@
 import type { StaffResponseType } from "@/lib/types";
 import type { ColumnDef } from "@tanstack/react-table";
 
+import { AvatarComponent } from "@/components/customComponents/avatar-component";
 import { GenericActions } from "@/components/customComponents/GenericActions";
 import { GenericRowExpansion } from "@/components/customComponents/GenericRowExpansion";
 import { RowSelections } from "@/components/customComponents/RowSelections";
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
 import { fuzzyFilter } from "@/lib/fuzzyFilter";
-import Image from "next/image";
 import { useDeleteStaffMutationFn } from "../actions/mutations";
 
 export const useGetStaffColumns = () => {
@@ -20,7 +20,7 @@ export const useGetStaffColumns = () => {
   };
   return [
     {
-      id: "visibility",
+      id: "selection",
       header: ({ table }) => <RowSelections isHeader table={table} />,
 
       cell: ({ row }) => <RowSelections isHeader={false} row={row} />,
@@ -31,31 +31,13 @@ export const useGetStaffColumns = () => {
     },
     {
       header: "Avatar",
-      cell: ({ row }) => {
-        const candidate = row.original.user?.image ?? "";
-        const isValid =
-          typeof candidate === "string" &&
-          (candidate.startsWith("http://") ||
-            candidate.startsWith("https://") ||
-            candidate.startsWith("/"));
-        const src = isValid ? candidate : "/no-avatar.jpg";
-        return (
-          <div className="rounded-full border border-accent flex items-center justify-center size-8">
-            <Image
-              src={src}
-              alt="Avatar"
-              width={30}
-              height={30}
-              className="rounded-full object-cover size-6 object-top"
-            />
-          </div>
-        );
-      },
+      cell: ({ row }) => (
+        <AvatarComponent
+          image={row.original.user?.image ?? undefined}
+          fallback={`${row.original.lastName} ${row.original.firstName}`}
+        />
+      ),
     },
-    // {
-    //   header: "EmployeeID",
-    //   accessorKey: "employeeId",
-    // },
     {
       header: "Lastname",
       accessorKey: "lastName",

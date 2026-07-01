@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
 import { connection } from "next/server";
@@ -32,5 +33,7 @@ export default function AdminBoardOfGovernorsPage() {
 const RenderBoardMembersDataTable = async () => {
   await connection();
   const { error, boardMembers } = await fetchBoardMembers();
-  return <RenderBoardMembersTable boardMembers={boardMembers} error={error} />;
+  return (
+    <RenderBoardMembersTable boardMembers={boardMembers ?? []} error={error} />
+  );
 };

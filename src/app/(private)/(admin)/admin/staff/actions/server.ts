@@ -5,6 +5,7 @@ import { arcjetEmailProtection } from "@/lib/arcjet";
 import { ActionError, CUSTOM_ERRORS } from "@/lib/constants";
 import { getUserPermissions } from "@/lib/get-session";
 import { getErrorMessage } from "@/lib/getErrorMessage";
+import { nextSafeAction } from "@/lib/next-safe-action";
 import { prisma } from "@/lib/prisma";
 import { resolveRole } from "@/lib/resolve-staff-role";
 import { env } from "@/lib/server-only-actions/validate-env";
@@ -22,68 +23,64 @@ import { getCachedStaff } from "../utils/get-cached-staff";
 import { getQueryKey } from "../utils/get-query-key";
 import { getSingleCachedStaff } from "../utils/get-single-cached-staff";
 
-export const createStaff = async (values: unknown) => {
-  try {
-    const { user: authUser, hasPermission } =
-      await getUserPermissions("create:staff");
+export const createStaff = async (values: unknown) =>
+  nextSafeAction(
+    async () => {
+      const { user: authUser } = await getUserPermissions("create:staff");
 
-    if (!authUser || !hasPermission)
-      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
+      if (!authUser)
+        throw new ActionError(CUSTOM_ERRORS.AUTHENTICATION.message);
 
-    const { data, error, success } = StaffSchema.safeParse(values);
+      const { data, error, success } = StaffSchema.safeParse(values);
 
-    if (!success) throw error;
+      if (!success) throw error;
 
-    const { error: emailCheckError } = await arcjetEmailProtection(
-      data.email,
-      authUser.id,
-    );
+      const { error: emailCheckError } = await arcjetEmailProtection(
+        data.email,
+        authUser.id,
+      );
 
-    if (emailCheckError) throw new ActionError(emailCheckError);
+      if (emailCheckError) throw new ActionError(emailCheckError);
 
-    const normalizedStaff = transformAndValidateStaffData(data);
+      const normalizedStaff = transformAndValidateStaffData(data);
 
-    if (normalizedStaff.departmentId) {
-      const department = await prisma.department.findUnique({
-        where: { id: normalizedStaff.departmentId },
-        select: { headId: true },
-      });
+      if (normalizedStaff.departmentId) {
+        const department = await prisma.department.findUnique({
+          where: { id: normalizedStaff.departmentId },
+          select: { headId: true },
+        });
 
-      if (department?.headId !== null && normalizedStaff.isDepartmentHead) {
-        throw new ActionError(
-          "The Selected Department already has a head assigned.",
-        );
+        if (department?.headId !== null && normalizedStaff.isDepartmentHead) {
+          throw new ActionError(
+            "The Selected Department already has a head assigned.",
+          );
+        }
       }
-    }
 
-    const roleName = resolveRole(normalizedStaff);
+      const roleName = resolveRole(normalizedStaff);
 
-    const { error: duplicates, staffRole } = await checkExistingRelatedRecords(
-      normalizedStaff,
-      roleName,
-    );
+      const { error: duplicates, staffRole } =
+        await checkExistingRelatedRecords(normalizedStaff, roleName);
 
-    if (duplicates) {
-      throw new ActionError(duplicates);
-    }
+      if (duplicates) {
+        throw new ActionError(duplicates);
+      }
 
-    if (!staffRole) throw new ActionError("No teaching role found!");
+      if (!staffRole) throw new ActionError("No teaching role found!");
 
-    await workflowClient.trigger({
-      url: `${env.UPSTASH_WORKFLOW_URL}/api/single/onboard-staff/singleStaffCreationWorkflow`,
-      body: {
-        rawData: data,
-        userId: authUser.id,
-        source: "staff",
-        roleId: staffRole.id,
-      },
-    });
-    return { success: true };
-  } catch (error) {
-    console.error("Could not create staff:", error);
-    throw getErrorMessage(error);
-  }
-};
+      await workflowClient.trigger({
+        url: `${env.UPSTASH_WORKFLOW_URL}/api/single/onboard-staff/singleStaffCreationWorkflow`,
+        body: {
+          rawData: data,
+          userId: authUser.id,
+          source: "staff",
+          roleId: staffRole.id,
+        },
+      });
+      return { success: true };
+    },
+    { permission: "create:staff" },
+  );
 
 export const getStaff = async () => {
   try {
