@@ -1,14 +1,12 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
+
 import { auth } from "@/lib/auth";
-import { UserRole } from "@/lib/types";
+import type { UserRole } from "@/lib/types";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import "server-only";
 
-/**
- * Cached session getter with request deduplication
- * This is the single source of truth for session validation
- */
 export const getSession = cache(async () => {
   try {
     const currentHeaders = await headers();

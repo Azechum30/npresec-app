@@ -10,10 +10,14 @@ import { BoardOfGovernorsClient } from "./_components/BoardOfGovernorsClient";
 import { BoardMembers } from "./_components/board-members";
 import { getBoardOfGovernors } from "./actions/server";
 
+const openGraphTitle = "Board of Governors | Nakpanduri Presby SHTS";
+const openGraphDescription =
+  "Meet the visionary leaders guiding NPRESEC towards excellence in education and student development.";
+
 export const metadata: Metadata = {
   title: "Board of Governors",
   description:
-    "Meet the distinguished Board of Governors of Presbyterian Senior High Technical School (NPRESEC) in Nakpanduri. Learn about their leadership, vision, and commitment to guiding the school towards academic excellence and holistic development.",
+    "Meet the distinguished Board of Governors of Presbyterian SHTS in Nakpanduri. Learn about their leadership, vision, and commitments.",
 
   keywords: [
     "Board of Governors",
@@ -27,16 +31,16 @@ export const metadata: Metadata = {
 
   authors: [{ name: "Presbyterian Senior High Technical School (NPRESEC)" }],
   creator: "NPRESEC",
+  metadataBase: new URL(env.NEXT_PUBLIC_URL),
 
   openGraph: {
-    title: "Board of Governors - Presbyterian Senior High Technical School",
-    description:
-      "Meet the visionary leaders guiding NPRESEC towards excellence in education and student development.",
+    title: openGraphTitle,
+    description: openGraphDescription,
     url: `${env.NEXT_PUBLIC_URL}/about/board-of-governors`,
     siteName: "NPRESEC MIS",
     images: [
       {
-        url: "/opengraph-image",
+        url: `/api/og?title=${openGraphTitle}&description=${openGraphDescription}`,
         width: 1200,
         height: 630,
         alt: "Board of Governors - NPRESEC Nakpanduri",
@@ -48,10 +52,11 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Board of Governors - NPRESEC",
-    description:
-      "Meet the dedicated leaders steering Presbyterian Senior High Technical School towards greater heights.",
-    images: ["/opengraph-image"],
+    title: openGraphTitle,
+    description: openGraphDescription,
+    images: [
+      `/api/og?title=${openGraphTitle}&description=${openGraphDescription}`,
+    ],
   },
 
   robots: {
@@ -103,40 +108,18 @@ function ModernFallback() {
   );
 }
 
-function ModernErrorComponent({ error }: { error: string }) {
-  return (
-    <Card className="bg-linear-to-br from-destructive/10 to-primary/10 backdrop-blur-xl border-destructive/30">
-      <CardContent className="p-8 text-center">
-        <div className="w-16 h-16 bg-linear-to-br from-primary to-accent rounded-full flex items-center justify-center mx-auto mb-4">
-          <Users className="w-8 h-8 text-white" />
-        </div>
-        <h3 className="text-lg font-semibold text-foreground mb-2">
-          Unable to Load Board Members
-        </h3>
-        <p className="text-foreground/70 mb-4">{error}</p>
-        <Button
-          variant="outline"
-          className="border-destructive/30 text-destructive hover:bg-destructive/10"
-          onClick={() => window.location.reload()}>
-          Try Again
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function BoardOfGovernorsPage() {
   return (
     <BoardOfGovernorsClient>
       <div className="board-members-section">
         <Card className="relative overflow-hidden bg-background/60 backdrop-blur-xl border-border/50 shadow-xl">
           {/* Header */}
-          <div className="bg-linear-to-r from-primary/5 to-secondary/5 border-b border-border/50 p-6 md:p-8">
+          <div className="bg-linear-to-r from-primary/5 to-card/5 border-b border-border/50 p-6 md:p-8">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-linear-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
                 <Users className="w-5 h-5 text-primary-foreground" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <h2 className="text-2xl md:text-3xl font-bold bg-linear-to-r from-primary to-muted-foreground dark:to-accent bg-clip-text text-transparent">
                 Meet Our Board Members
               </h2>
             </div>
@@ -156,7 +139,7 @@ export default function BoardOfGovernorsPage() {
       </div>
 
       {/* Call to Action */}
-      <Card className="relative overflow-hidden bg-linear-to-br from-primary/10 via-secondary/10 to-accent/10 backdrop-blur-xl border-border/50">
+      <Card className="relative overflow-hidden bg-linear-to-tr from-primary/10 via-card/10 to-card/10 backdrop-blur-xl border-border/50">
         <CardContent className="p-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Sparkles className="w-6 h-6 text-primary" />
@@ -166,7 +149,7 @@ export default function BoardOfGovernorsPage() {
             Our Board of Governors welcomes feedback and engagement from the
             school community. Reach out to learn more about our governance.
           </p>
-          <Button className="bg-linear-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300">
+          <Button className="bg-linear-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300">
             Contact Board
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
@@ -178,13 +161,9 @@ export default function BoardOfGovernorsPage() {
 
 const RenderBoardMembers = async () => {
   await connection();
-  const { boardMembers, error } = await getBoardOfGovernors();
+  const { boardMembers } = await getBoardOfGovernors();
 
-  if (error) {
-    return <ModernErrorComponent error={error} />;
-  }
-
-  if (!boardMembers || boardMembers.length === 0) {
+  if (boardMembers.length === 0) {
     return (
       <Card className="bg-linear-to-br from-accent/30 to-muted/30 backdrop-blur-xl border-border/50">
         <CardContent className="p-8 text-center">

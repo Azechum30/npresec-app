@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import { Badge } from "@/components/ui/badge";
@@ -179,7 +180,7 @@ export const BoardMembers = ({
               <div className="flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-primary" />
                 <span
-                  className="text-sm text-foreground text-right max-w-[120px] truncate"
+                  className="text-sm text-foreground text-right max-w-30 truncate"
                   title={affiliation}>
                   {affiliation}
                 </span>

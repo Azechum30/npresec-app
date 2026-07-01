@@ -12,11 +12,21 @@ import type { ExtendedSession } from "@/lib/auth-client";
 import { EVENTS } from "@/lib/constants";
 import { getAuthUser } from "@/lib/get-session";
 import { env } from "@/lib/server-only-actions/validate-env";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { type ReactNode, Suspense } from "react";
 import { getSystemSettings } from "../actions/get-system-settings";
 import { RegisterClientSideBackgroundNotifications } from "./(admin)/admin/users/_hooks/register-client-side-background-notifications";
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    noarchive: true,
+    nosnippet: true,
+  },
+};
 
 export default function PrivateRoutesLayout({
   children,
@@ -41,7 +51,6 @@ export default function PrivateRoutesLayout({
 
 const RenderSessionProvider = async ({ children }: { children: ReactNode }) => {
   await connection();
-
   const user = await getAuthUser();
   const { settings } = await getSystemSettings();
 

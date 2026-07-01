@@ -95,7 +95,7 @@ const requiredPhoneNumber = z
   .regex(/^[0-9]+$/, "Must be a valid number");
 const registerNumberType = z
   .string()
-  .regex(/^[0-9\/]*$/, "Can only accept numbers and a forward slash")
+  .regex(/^[0-9/]*$/, "Can only accept numbers and a forward slash")
   .transform((val) => (val === "" ? undefined : val))
   .nullish();
 const ghanaCardType = z
@@ -299,7 +299,7 @@ export const AcademicInfoSchema = z.object({
   currentLevel: z
     .string()
     .regex(
-      /^[a-zA-Z\_]+$/,
+      /^[a-zA-Z_]+$/,
       "current level only accepts alphabets and underscore",
     ),
   status: z.enum(status),
@@ -996,7 +996,7 @@ export const InitiatePaymentSchema = z.strictObject({
   studentId: z.string().min(12).max(14),
   amount: z
     .union([z.string(), z.coerce.number<number>()])
-    .refine((val) => !isNaN(Number(val)), "Invalid payment amount"),
+    .refine((val) => !Number.isNaN(Number(val)), "Invalid payment amount"),
   currency: z.enum(CURRENCY),
   phone: z.string().min(10).max(13),
   serviceTypeId: z.string().min(1),
@@ -1072,7 +1072,7 @@ export const FeeSchema = z.object({
   academicYear: z.string().min(1).max(9),
   price: z
     .union([z.string().min(4), z.coerce.number<number>()])
-    .refine((val) => !isNaN(Number(val)), "Invalid number"),
+    .refine((val) => !Number.isNaN(Number(val)), "Invalid number"),
   currency: z.enum(["GHS", "USD", "NGN"]),
   capacity: z.coerce.number<number>().min(100).max(1000),
   status: z.enum(FEE_PAYMENT_STATUS),

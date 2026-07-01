@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import { Badge } from "@/components/ui/badge";
@@ -183,14 +184,14 @@ export function BoardOfGovernorsClient({
       <div className="floating-decoration floating-element parallax-bg absolute top-1/3 -left-32 w-64 h-64 bg-linear-to-br from-accent/10 to-primary/10 rounded-full blur-3xl" />
       <div className="floating-decoration floating-element parallax-bg absolute bottom-1/4 right-1/4 w-32 h-32 bg-linear-to-br from-secondary/10 to-accent/10 rounded-full blur-2xl" />
 
-      <div className="flex flex-col gap-16">
+      <div className="flex flex-col gap-16 border rounded-xl p-4">
         {/* Header Section */}
         <div className="text-center">
           {/* Badge */}
           <div className="board-badge flex justify-center mb-8">
             <Badge
               variant="secondary"
-              className="px-6 py-3 bg-linear-to-r from-primary/10 to-secondary/10 backdrop-blur-md border-primary/20 text-primary hover:from-primary/20 hover:to-secondary/20 transition-all duration-300 text-lg">
+              className="px-6 py-3 bg-linear-to-r from-primary/10 to-muted-foreground/10 dark:to-accent/10 backdrop-blur-md border-primary/20 text-primary hover:from-primary/20 hover:to-secondary/20 transition-all duration-300 text-lg">
               <Users className="w-5 h-5 mr-2" />
               Leadership & Governance
             </Badge>
@@ -202,7 +203,7 @@ export function BoardOfGovernorsClient({
               <div className="w-16 h-16 bg-linear-to-br from-primary to-secondary rounded-2xl flex items-center justify-center shadow-lg">
                 <Crown className="w-8 h-8 text-primary-foreground" />
               </div>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-linear-to-r from-primary to-muted-foreground dark:to-accent bg-clip-text text-transparent">
                 Board of Governors
               </h1>
             </div>

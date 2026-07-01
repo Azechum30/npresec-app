@@ -1,6 +1,4 @@
 /** biome-ignore-all assist/source/organizeImports: reason */
-"use server";
-
 import { ActionError, CUSTOM_ERRORS } from "@/lib/constants";
 import { verifyResultsVerificationToken } from "@/lib/jwt";
 import { nextSafeAction } from "@/lib/next-safe-action";

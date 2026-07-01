@@ -10,15 +10,47 @@ import { classQueryOptions } from "../classes/actions/queries";
 import { coursesQueryOptions } from "../courses/actions/queries";
 import { departmentsQueryOptions } from "../departments/actions/queries";
 import { staffQueryOptions } from "./actions/queries";
-import CreateStaffDialog from "./components/CreateStaffDialog";
-import EditStaffDialog from "./components/EditStaffDialog";
+import { StaffDialogsProvider } from "./components/dialog-providers";
 import RenderStaffData from "./components/Render-staff-data";
-import StaffBulkUploadProvider from "./components/StaffBulkUploadProvider";
+
 export const metadata: Metadata = {
-  title: "Admin - Staff",
+  title: "Manage Staff",
+  description:
+    "Manage the personal profiles of all staff of the school and assign roles and responsibilities to each staff in real-time.",
+  keywords: ["Manage Staff", "Presbyterian SHTS", "North East SHS School"],
+  creator: "NPRESEC",
+  authors: [
+    {
+      name: "IT Directorate",
+      url: "nakpanduripresec.org",
+    },
+  ],
+  robots: {
+    index: false,
+    follow: false,
+    nosnippet: true,
+    noarchive: true,
+  },
 };
 
-export default async function StaffPage() {
+export default function StaffPage() {
+  return (
+    <>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-3 md:space-y-0">
+        <h1 className="text-base font-semibold line-clamp-1">Manage Staff</h1>
+        <OpenDialogs dialogKey="create-staff" title="Add Staff" />
+      </div>
+
+      <Suspense fallback={<FallbackComponent />}>
+        <LoadStaffData />
+      </Suspense>
+
+      <StaffDialogsProvider />
+    </>
+  );
+}
+
+const LoadStaffData = async () => {
   const queryClient = getQueryClient();
 
   await Promise.all([
@@ -27,20 +59,10 @@ export default async function StaffPage() {
     queryClient.ensureQueryData(departmentsQueryOptions),
     queryClient.ensureQueryData(coursesQueryOptions),
   ]);
+
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-3 md:space-y-0">
-        <h1 className="text-base font-semibold line-clamp-1">Manage Staff</h1>
-        <OpenDialogs dialogKey="create-staff" title="Add Staff" />
-      </div>
-
-      <Suspense fallback={<FallbackComponent />}>
-        <RenderStaffData />
-      </Suspense>
-
-      <StaffBulkUploadProvider />
-      <EditStaffDialog />
-      <CreateStaffDialog />
+      <RenderStaffData />
     </HydrationBoundary>
   );
-}
+};

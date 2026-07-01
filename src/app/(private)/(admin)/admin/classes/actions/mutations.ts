@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { classQueryOptions, getClassQueryOptions } from "./queries";
 import {
   bulkDeleteClasses,
+  bulkUploadClasses,
   createClassAction,
   deleteClass,
   updateClass,
@@ -44,4 +45,13 @@ export const useDeleteClassesMutationFn = () =>
       invalidates: classQueryOptions.queryKey,
       message: "class(s) deleted",
     },
+  });
+
+export const useBulkUploadClasses = () =>
+  useMutation({
+    mutationFn: bulkUploadClasses,
+    meta: {
+      invalidates: classQueryOptions.queryKey,
+      message: "classes added",
+    } satisfies MutationCacheType,
   });

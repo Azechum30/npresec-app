@@ -1,11 +1,10 @@
 "use server";
-import { getErrorMessage } from "@/lib/getErrorMessage";
+import { nextSafeAction } from "@/lib/next-safe-action";
 import { prisma } from "@/lib/prisma";
-import * as Sentry from "@sentry/nextjs";
 import "server-only";
 
-export const getSystemSettings = async () => {
-  try {
+export const getSystemSettings = async () =>
+  nextSafeAction(async () => {
     const settings = await prisma.setting.findFirst();
 
     return {
@@ -16,9 +15,4 @@ export const getSystemSettings = async () => {
         enableDataExports: false,
       },
     };
-  } catch (e) {
-    console.error(e);
-    Sentry.captureException(e);
-    return { error: getErrorMessage(e) };
-  }
-};
+  });

@@ -13,6 +13,14 @@ export const metadata: Metadata = {
   description:
     "Manage students data in real-time by CRUD operations on students data",
   keywords: ["students", "Manage", "Presby SHTS Nakpanduri"],
+  creator: "NPRESEC",
+  authors: [{ name: "IT Directorate", url: "https://nakpanduripresec.org" }],
+  robots: {
+    index: false,
+    follow: false,
+    noarchive: true,
+    nosnippet: true,
+  },
 };
 
 export default function StudentsPage() {

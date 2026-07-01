@@ -1,25 +1,38 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
+
 import AuthLayoutCompoent from "@/components/customComponents/auth-layout-component";
+import { DotMatrixLoader } from "@/components/customComponents/dot-matrix-loader";
 import SessionProvider from "@/components/customComponents/SessionProvider";
-import { ExtendedSession } from "@/lib/auth-client";
+import type { ExtendedSession } from "@/lib/auth-client";
 import { getAuthUser } from "@/lib/get-session";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import type { Metadata } from "next";
 import { connection } from "next/server";
-import React, { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 type AuthLayoutProps = {
-  children: React.ReactNode;
+  children: ReactNode;
+};
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    noarchive: true,
+    nosnippet: true,
+  },
 };
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <>
+    <Suspense fallback={<DotMatrixLoader />}>
       <RenderAuthLayoutComponent siblings={children} />
-    </>
+    </Suspense>
   );
 }
 

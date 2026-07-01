@@ -1,10 +1,10 @@
 /** biome-ignore-all assist/source/organizeImports: reason */
+import { DotMatrixLoader } from "@/components/customComponents/dot-matrix-loader";
 import {
   getBoardOfGovernors,
   getBoardOfGovernorsById,
 } from "../actions/server";
 
-import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { FormattedText } from "@/components/customComponents/FormattedText";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,7 +18,6 @@ import { env } from "@/lib/server-only-actions/validate-env";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
-import { connection } from "next/server";
 import { Suspense } from "react";
 
 type BoardOfGovernorsSlugPageProps = {
@@ -27,7 +26,6 @@ type BoardOfGovernorsSlugPageProps = {
 
 export const generateStaticParams = async () => {
   const { boardMembers } = await getBoardOfGovernors();
-  if (!boardMembers) return [];
   return boardMembers.map((member) => ({ slug: member.id }));
 };
 
@@ -49,9 +47,21 @@ export const generateMetadata = async ({
   const fullName = boardMember.name;
   const position = boardMember.role || "Board Member";
 
+  const ogTitle = `${fullName} | ${position}`;
+  const ogDescription =
+    boardMember.bio?.substring(0, 125) ||
+    `Distinguished ${position} at NPRESEC.`;
+  const ogImage = boardMember.picture ?? "";
+
+  const ogUrl = new URL(`${env.NEXT_PUBLIC_URL}/api/og`);
+
+  ogUrl.searchParams.set("title", ogTitle);
+  ogUrl.searchParams.set("description", ogDescription);
+  ogUrl.searchParams.set("picture", ogImage);
+
   return {
     title: fullName,
-    description: `${fullName} - ${position} at Presbyterian Senior High Technical School (NPRESEC). ${boardMember.bio?.substring(0, 160) || "Distinguished member of the Board of Governors."}`,
+    description: `${fullName} - ${position} at Presbyterian Senior High Technical School (NPRESEC).Distinguished member of the Board of Governors.`,
 
     keywords: [
       fullName,
@@ -63,15 +73,15 @@ export const generateMetadata = async ({
       "School Leadership Ghana",
     ],
 
+    metadataBase: new URL(env.NEXT_PUBLIC_URL),
+
     openGraph: {
-      title: `${fullName} - ${position}`,
-      description:
-        boardMember.bio?.substring(0, 200) ||
-        `Distinguished ${position} at NPRESEC.`,
+      title: ogTitle,
+      description: ogDescription,
       url: `${env.NEXT_PUBLIC_URL}/about/board-of-governors/${slug}`,
       images: [
         {
-          url: boardMember.picture || "/opengraph-image",
+          url: ogUrl.toString(),
           width: 1200,
           height: 630,
           alt: `${fullName} - ${position}`,
@@ -83,9 +93,9 @@ export const generateMetadata = async ({
 
     twitter: {
       card: "summary_large_image",
-      title: `${fullName} - ${position}`,
-      description: boardMember.bio?.substring(0, 160) || "",
-      images: [boardMember.picture || "/opengraph-image"],
+      title: ogTitle,
+      description: ogDescription,
+      images: [ogUrl.toString()],
     },
 
     alternates: {
@@ -95,6 +105,12 @@ export const generateMetadata = async ({
     robots: {
       index: true,
       follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
   };
 };
@@ -103,7 +119,7 @@ export default function BoardOfGovernorsSlugPage({
   params,
 }: BoardOfGovernorsSlugPageProps) {
   return (
-    <Suspense fallback={<FallbackComponent />}>
+    <Suspense fallback={<DotMatrixLoader />}>
       <RenderBoardMemberDetails params={params} />
     </Suspense>
   );
@@ -112,7 +128,6 @@ export default function BoardOfGovernorsSlugPage({
 const RenderBoardMemberDetails = async ({
   params,
 }: BoardOfGovernorsSlugPageProps) => {
-  await connection();
   const { slug } = await params;
 
   if (!slug) return redirect("/about/board-of-governors");
@@ -165,8 +180,8 @@ const RenderBoardMemberDetails = async ({
               }
               alt={boardMember.name}
               width={1200}
-              height={1200}
-              className="w-full h-112.5 object-cover object-top rounded-md"
+              height={630}
+              className="w-full h-157.5 object-cover object-top rounded-md"
             />
           </div>
           <FormattedText

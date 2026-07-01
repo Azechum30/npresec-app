@@ -11,9 +11,13 @@ export const metadata: Metadata = {
     "Registration",
     "Presby SHTS Nakpanduri",
   ],
+  creator: "NPRESEC",
+  authors: [{ name: "IT Directorate", url: "https://nakpanduripresec.org" }],
   robots: {
     index: false,
     follow: false,
+    noarchive: true,
+    nosnippet: true,
   },
 };
 

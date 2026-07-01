@@ -3,10 +3,14 @@ import { env } from "@/lib/server-only-actions/validate-env";
 import type { Metadata } from "next";
 import { AboutPageContent } from "./_components/about-content";
 
+const ogTitle = "About Us | Nakpanduri Presby SHTS";
+const ogDescription =
+  "Discover the story, mission, and values of NPRESEC - a leading senior high school in Nakpanduri, North East Region of Ghana.";
+
 export const metadata: Metadata = {
   title: "About Us",
   description:
-    "Learn about Presbyterian Senior High Technical School (NPRESEC) in Nakpanduri, Ghana. Discover our history, mission, vision, values, and commitment to providing quality education since our establishment.",
+    "Learn about Presbyterian SHTS in Nakpanduri, Ghana. Discover our history, mission, vision, values, and commitments.",
 
   keywords: [
     "About NPRESEC",
@@ -19,18 +23,19 @@ export const metadata: Metadata = {
     "Presbyterian Schools Ghana",
   ],
 
+  metadataBase: new URL(env.NEXT_PUBLIC_URL),
+
   authors: [{ name: "Presbyterian Senior High Technical School (NPRESEC)" }],
-  creator: "NPRESEC MIS",
+  creator: "NPRESEC",
 
   openGraph: {
-    title: "About Us - Presbyterian Senior High Technical School (NPRESEC)",
-    description:
-      "Discover the story, mission, and values of NPRESEC - a leading senior high school in Nakpanduri, North East Region of Ghana.",
+    title: ogTitle,
+    description: ogDescription,
     url: `${env.NEXT_PUBLIC_URL}/about`, // Update with your actual URL
-    siteName: "NPRESEC",
+    siteName: "NPRESEC MIS",
     images: [
       {
-        url: "/opengraph-image",
+        url: `/api/og?title=${ogTitle}&description=${ogDescription}`,
         width: 1200,
         height: 630,
         alt: "About NPRESEC - Presbyterian Senior High Technical School",
@@ -42,10 +47,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "About Us - NPRESEC",
-    description:
-      "Learn about our rich history, mission, and dedication to excellence at Presbyterian Senior High Technical School.",
-    images: ["/opengraph-image"],
+    title: ogTitle,
+    description: ogDescription,
+    images: [`/api/og?title=${ogTitle}&description=${ogDescription}`],
   },
 
   robots: {

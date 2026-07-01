@@ -26,8 +26,8 @@ type onUpload = Promise<{
   success?: boolean;
   workerId?: string;
 }>;
-type UploadProps<T> = {
-  handleUploadAction: (data: T) => onUpload;
+export type UploadProps<T> = {
+  handleUploadAction: (data: T) => onUpload | Promise<void>;
   filepath?: string;
 };
 
@@ -84,20 +84,21 @@ export default function UploadComponent<T>({
         response.errors.forEach((e) => {
           toast.error(e);
         });
-        // toast.error(response.errors.join("\n"));
-      } else if (response.error) {
+      } else if (response?.error) {
         console.log(response.error);
         toast.error(response?.error);
-      } else {
+      } else if (response?.count) {
         toast.success(
           `${response?.count} were succussfully queued for processing!`,
         );
 
-        setTimeout(() => {
-          setData(undefined);
-          setColumns([]);
-          onClose(dialogId);
-        }, 300);
+        setData(undefined);
+        setColumns([]);
+        onClose(dialogId);
+      } else {
+        setData(undefined);
+        setColumns([]);
+        onClose(dialogId);
       }
     });
   }

@@ -7,10 +7,14 @@ import { Hero } from "./_components/Hero";
 import { Statistics } from "./_components/Statistics";
 import { Welcome } from "./_components/Welcome";
 
+const ogTitle = "Welcome Page | Nakpanduri Presby SHTS";
+const ogDescription =
+  "Shaping future leaders through academic excellence, character formation, and holistic development in Nakpanduri, Ghana.";
+
 export const metadata: Metadata = {
-  title: "Home",
+  title: "Welcome Page",
   description:
-    "Discover Presbyterian Senior High Technical School (NPRESEC) - a premier government-assisted senior high school in Nakpanduri, North East Region of Ghana. Excellence in academics, character development, and practical skills.",
+    "Discover Presbyterian SHTS (NPRESEC) - a premier senior high school in Nakpanduri, North East Region of Ghana.",
 
   keywords: [
     "NPRESEC",
@@ -20,19 +24,19 @@ export const metadata: Metadata = {
     "Best SHS North East Region",
     "Academic Excellence Ghana",
   ],
+  metadataBase: new URL(env.NEXT_PUBLIC_URL),
 
   authors: [{ name: "Presbyterian Senior High Technical School" }],
   creator: "NPRESEC",
 
   openGraph: {
-    title: "Presbyterian Senior High Technical School (NPRESEC) | Nakpanduri",
-    description:
-      "Shaping future leaders through academic excellence, character formation, and holistic development in Nakpanduri, Ghana.",
+    title: ogTitle,
+    description: ogDescription,
     url: `${env.NEXT_PUBLIC_URL}`,
     siteName: "NPRESEC MIS",
     images: [
       {
-        url: "/opengraph-image",
+        url: `/api/og?title=${ogTitle}&description=${ogDescription}`,
         width: 1200,
         height: 630,
         alt: "NPRESEC - Presbyterian Senior High Technical School",
@@ -44,10 +48,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "NPRESEC | Presbyterian Senior High Technical School",
-    description:
-      "A leading senior high school in Nakpanduri dedicated to academic excellence and holistic student development.",
-    images: ["/opengraph-image"],
+    title: ogTitle,
+    description: ogDescription,
+    images: [`/api/og?title=${ogTitle}&description=${ogDescription}`],
   },
 
   robots: {

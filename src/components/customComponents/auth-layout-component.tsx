@@ -1,28 +1,29 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
-import Logo from "@/../public/logo.png";
 import { buttonVariants } from "@/components/ui/button";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowLeft, Shield, Sparkles, Star } from "lucide-react";
-import { Route } from "next";
-import Image from "next/image";
+import type { Route } from "next";
 import Link from "next/link";
-import React, { useRef, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
+import { ThemeSwitcher } from "./ThemeSwitecher";
+import { AvatarComponent } from "./avatar-component";
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 type AuthLayoutComponentProps = {
-  siblings: React.ReactNode;
+  siblings: ReactNode;
 };
 
 export default function AuthLayoutCompoent({
   siblings,
 }: AuthLayoutComponentProps) {
   const container = useRef<HTMLDivElement>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [_, setIsLoaded] = useState(false);
   const [hoveredElement, setHoveredElement] = useState<string | null>(null);
 
   useGSAP(
@@ -152,7 +153,7 @@ export default function AuthLayoutCompoent({
       {/* Animated background */}
       <div className="auth-background fixed inset-0 z-0">
         {/* Gradient background */}
-        <div className="absolute inset-0 bg-linear-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-blue-950/30 dark:to-purple-950/20" />
+        <div className="absolute inset-0 bg-linear-to-tr from-primary/10 to-card/80" />
 
         {/* Animated gradient orbs */}
         <div className="parallax-bg absolute top-1/4 left-1/4 w-96 h-96 bg-linear-to-br from-primary/20 to-secondary/20 rounded-full blur-3xl animate-pulse" />
@@ -210,6 +211,9 @@ export default function AuthLayoutCompoent({
             </div>
           </Link>
         </div>
+        <div className="w-fit absolute top-4 right-4 md:top-6 md:right-6">
+          <ThemeSwitcher className="rounded-lg shadow-xl bg-card" />
+        </div>
 
         {/* Content container */}
         <div className="flex w-full flex-col items-center justify-center min-h-svh px-4 py-16">
@@ -228,16 +232,10 @@ export default function AuthLayoutCompoent({
                   }`}
                 />
 
-                <div className="relative w-12 h-12 p-2 bg-linear-to-br from-background/80 to-accent/20 backdrop-blur-md border border-border/50 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
-                  <Image
-                    src={Logo}
-                    alt="NPRESEC Logo"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
+                <AvatarComponent />
 
                 <div className="flex flex-col">
-                  <span className="text-xl font-bold bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  <span className="text-xl font-bold bg-linear-to-r from-primary to-muted-foreground dark:to-accent  bg-clip-text text-transparent">
                     Presby SHTS
                   </span>
                   <span className="text-xs text-muted-foreground">
@@ -261,6 +259,7 @@ export default function AuthLayoutCompoent({
                 <p className="text-xs text-muted-foreground text-balance leading-relaxed">
                   By signing in, you agree to our{" "}
                   <button
+                    type="button"
                     className="font-medium text-primary hover:text-primary/80 transition-colors duration-300 underline decoration-primary/30 hover:decoration-primary/60"
                     onMouseEnter={() => setHoveredElement("terms")}
                     onMouseLeave={() => setHoveredElement(null)}>
@@ -268,6 +267,7 @@ export default function AuthLayoutCompoent({
                   </button>{" "}
                   and{" "}
                   <button
+                    type="button"
                     className="font-medium text-primary hover:text-primary/80 transition-colors duration-300 underline decoration-primary/30 hover:decoration-primary/60"
                     onMouseEnter={() => setHoveredElement("privacy")}
                     onMouseLeave={() => setHoveredElement(null)}>

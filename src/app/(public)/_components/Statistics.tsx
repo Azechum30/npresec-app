@@ -73,8 +73,8 @@ const statistics = [
 export const Statistics = () => {
   const container = useRef<HTMLDivElement | null>(null);
   const backgroundRef = useRef<HTMLDivElement | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const [hoveredStat, setHoveredStat] = useState<string | null>(null);
+  const [_, setIsVisible] = useState(false);
+  const [__, setHoveredStat] = useState<string | null>(null);
 
   useGSAP(
     () => {

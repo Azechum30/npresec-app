@@ -28,7 +28,7 @@ import {
 import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { PublicMainContainer } from "./PublicMainContainer";
 
 // Register GSAP plugins
@@ -85,8 +85,6 @@ const socialLinks: SocialLink[] = [
 
 export const Footer = () => {
   const container = useRef<HTMLDivElement>(null);
-  const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useGSAP(
     () => {
@@ -162,19 +160,6 @@ export const Footer = () => {
       duration: 0.4,
       ease: "back.out(1.7)",
     });
-  };
-
-  // Newsletter submission
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    setEmail("");
-    setIsSubmitting(false);
-    // Add success notification here
   };
 
   // Scroll to top

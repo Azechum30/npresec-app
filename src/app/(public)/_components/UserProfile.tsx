@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import LogoutButton from "@/components/customComponents/LogoutButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Home, Info, UserPlus } from "lucide-react";
-import { Route } from "next";
+import type { Route } from "next";
 import Link from "next/link";
 
 type UserProfileProps = {

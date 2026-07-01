@@ -3,10 +3,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export const AvatarComponent = ({
   image,
-  fallback,
+  fallback = "Nakpanduri Presec",
   className,
 }: {
-  fallback: string;
+  fallback?: string;
   image?: string;
   className?: string;
 }) => {

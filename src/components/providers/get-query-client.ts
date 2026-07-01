@@ -43,7 +43,8 @@ const makeQueryClient = () => {
     }),
     defaultOptions: {
       queries: {
-        staleTime: 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        staleTime: 60 * 1000 * 5,
         structuralSharing: false,
       },
     },

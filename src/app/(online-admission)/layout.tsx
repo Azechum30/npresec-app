@@ -1,8 +1,19 @@
-import { ReactNode } from "react";
+/** biome-ignore-all assist/source/organizeImports: reason */
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { RenderNotification } from "./_components/render-notifications";
 
 type OnlineAdmissionLayoutProps = {
   children: ReactNode;
+};
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    noarchive: true,
+    nosnippet: true,
+  },
 };
 
 export default function OnlineAdmissionLayout({

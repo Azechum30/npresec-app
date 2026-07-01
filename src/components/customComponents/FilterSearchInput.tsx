@@ -6,15 +6,15 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Input } from "../ui/input";
 
-type FilterSearchInputProps = {
-  table: Table<any>;
+type FilterSearchInputProps<T> = {
+  table: Table<T>;
   className?: string;
 };
 
-export default function FilterSearchInput({
+export default function FilterSearchInput<T>({
   table,
   className,
-}: FilterSearchInputProps) {
+}: FilterSearchInputProps<T>) {
   const [filter, setFilter] = useState<string>("");
   const pathname = usePathname().split("/").pop();
 
@@ -33,7 +33,7 @@ export default function FilterSearchInput({
     <div className={cn("relative w-full ", className)}>
       <Input
         placeholder={`Search ${pathname === "teachers" ? "Students" : pathname}`}
-        className="w-full pe-8"
+        className="w-full pe-8 border-primary"
         onChange={handleChange}
       />
       <SearchIcon className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground size-5 z-10" />
