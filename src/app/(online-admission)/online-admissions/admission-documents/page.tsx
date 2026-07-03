@@ -1,4 +1,5 @@
-import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
+/** biome-ignore-all assist/source/organizeImports: reason */
+import { DotMatrixLoader } from "@/components/customComponents/dot-matrix-loader";
 import {
   Card,
   CardContent,
@@ -7,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { HeartHandshake, TriangleAlert } from "lucide-react";
-import { Route } from "next";
+import type { Route } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
@@ -20,11 +21,9 @@ type Params = {
 
 export default function AdmissionDocumentsPage({ searchParams }: Params) {
   return (
-    <>
-      <Suspense fallback={<ShowLoadingState />}>
-        <RenderAdmissionDocumentsComponent searchParams={searchParams} />
-      </Suspense>
-    </>
+    <Suspense fallback={<DotMatrixLoader />}>
+      <RenderAdmissionDocumentsComponent searchParams={searchParams} />
+    </Suspense>
   );
 }
 

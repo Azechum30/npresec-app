@@ -1,4 +1,5 @@
-import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
+/** biome-ignore-all assist/source/organizeImports: reason */
+import { DotMatrixLoader } from "@/components/customComponents/dot-matrix-loader";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { RenderStudentEnrollementForm } from "./_components/render-student-enrollment-form";
@@ -10,7 +11,7 @@ type Params = {
 export default function StudentEnrollmentPage({ params }: Params) {
   return (
     <div className="w-full md:max-w-2xl">
-      <Suspense fallback={<ShowLoadingState />}>
+      <Suspense fallback={<DotMatrixLoader />}>
         <RenderStudentEnrollment params={params} />
       </Suspense>
     </div>

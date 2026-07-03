@@ -1,28 +1,13 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use server";
 import { ActionError, CUSTOM_ERRORS } from "@/lib/constants";
-import { getErrorMessage } from "@/lib/getErrorMessage";
+import { nextSafeAction } from "@/lib/next-safe-action";
 import { prisma } from "@/lib/prisma";
-import { VerifyStudentSchema, VerifyStudentType } from "@/lib/validation";
-import * as Sentry from "@sentry/nextjs";
+import { VerifyStudentSchema, type VerifyStudentType } from "@/lib/validation";
 import "server-only";
 
-export const getPlaceStudentByIndex = async (
-  value: VerifyStudentType,
-): Promise<{
-  placedStudent?: {
-    jhsIndexNumber: string;
-    id: string;
-    isAcceptancePaid: boolean;
-    isFormSubmitted: boolean;
-  };
-  student?: {
-    id: string;
-    studentNumber: string;
-    isPaymentAccepted: boolean | null;
-  };
-  error?: string;
-}> => {
-  try {
+export const getPlaceStudentByIndex = async (value: VerifyStudentType) =>
+  nextSafeAction(async () => {
     const { success, data, error } = VerifyStudentSchema.safeParse(value);
 
     if (!success) throw error;
@@ -40,7 +25,12 @@ export const getPlaceStudentByIndex = async (
         },
       });
 
-      if (!placedStudent) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
+      if (!placedStudent)
+        throw new ActionError(
+          "Student ID not found",
+          CUSTOM_ERRORS.NOTFOUND.status,
+          CUSTOM_ERRORS.NOTFOUND.code,
+        );
 
       return { placedStudent };
     }
@@ -50,14 +40,12 @@ export const getPlaceStudentByIndex = async (
       select: { id: true, studentNumber: true, isPaymentAccepted: true },
     });
 
-    if (!student) {
-      throw new ActionError("Student ID does not exist");
-    }
+    if (!student)
+      throw new ActionError(
+        "Student ID not found",
+        CUSTOM_ERRORS.NOTFOUND.status,
+        CUSTOM_ERRORS.NOTFOUND.code,
+      );
 
     return { student };
-  } catch (e) {
-    console.error(e);
-    Sentry.captureException(e);
-    return { error: getErrorMessage(e) };
-  }
-};
+  });

@@ -1,6 +1,8 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
+
 import { CardLikeErrorComponent } from "@/components/customComponents/card-like-error-component";
-import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
-import { CURRENCY } from "@/lib/validation";
+import { DotMatrixLoader } from "@/components/customComponents/dot-matrix-loader";
+import type { CURRENCY } from "@/lib/validation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { getFeeTypeAmount } from "./_actions/server-only-actions";
@@ -13,7 +15,7 @@ type SearchParams = {
 export default function InitiatePayment({ searchParams }: SearchParams) {
   return (
     <div className="w-full md:max-w-lg">
-      <Suspense fallback={<ShowLoadingState />}>
+      <Suspense fallback={<DotMatrixLoader />}>
         <RenderInitiatePayment searchParams={searchParams} />
       </Suspense>
     </div>
@@ -38,7 +40,7 @@ const RenderInitiatePayment = async ({ searchParams }: SearchParams) => {
     return (
       <InitiatePaymentForm
         studentId={studentId}
-        amount={String(amount.price) + ".00"}
+        amount={`${String(amount.price)}.00`}
         currency={amount.currency as CURRENCY}
         serviceTypeId={serviceTypeId}
         serviceName={serviceName}

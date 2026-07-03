@@ -30,5 +30,9 @@ export const getQueryKey = (id?: string) => {
       all: ["attendance-list"],
       single: ["attendance-record", id as string],
     },
+    service: {
+      all: ["services"],
+      single: ["service", id as string],
+    },
   };
 };

@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import { GenericSelectWithLabel } from "@/components/customComponents/generic-select-with-label";
@@ -11,11 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-import {
-  FEE_PAYMENT_STATUS,
-  VerifyStudentSchema,
-  VerifyStudentType,
-} from "@/lib/validation";
+import { VerifyStudentSchema, type VerifyStudentType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowLeft,
@@ -29,9 +26,13 @@ import { useEffect, useState, useTransition } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { getPlaceStudentByIndex } from "../_actions/get-placed-student-by-index";
-import { getServiceTypes } from "../_actions/get-service-types";
+import type { getServiceTypes } from "../_actions/get-service-types";
 
-export const VerifyStudentForm = () => {
+export const VerifyStudentForm = ({
+  data: { serviceTypes },
+}: {
+  data: Awaited<ReturnType<typeof getServiceTypes>>;
+}) => {
   const form = useForm<VerifyStudentType>({
     mode: "onChange",
     resolver: zodResolver(VerifyStudentSchema),
@@ -44,10 +45,6 @@ export const VerifyStudentForm = () => {
 
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const [serviceTypes, setServiceTypes] = useState<
-    | { id: string; name: string; deadline: Date; status: FEE_PAYMENT_STATUS }[]
-    | undefined
-  >();
 
   const selectedServiceType = useWatch({
     control: form.control,
@@ -61,23 +58,12 @@ export const VerifyStudentForm = () => {
 
   const [isServiceAvailable, setIsServiceAvailable] = useState(false);
   const [serviceTitle, setServiceTitle] = useState("");
-  // const [serviceName, setServiceName] = useState("");
-
-  // useEffect(() => {
-  //   if (!selectedServiceType || !serviceTypes) return;
-  //   const selected = serviceTypes.find((s) => s.id === selectedServiceType);
-  //   startTransition(() => {
-  //     if (selected) {
-  //       setServiceName(selected.name);
-  //     }
-  //   });
-  // }, [selectedServiceType, serviceTypes]);
 
   useEffect(() => {
     if (!serviceTypes || !selectedServiceType) return;
 
     const selected = serviceTypes.find(
-      (type) => type.id == selectedServiceType,
+      (type) => type.id === selectedServiceType,
     );
 
     if (!selected) return;
@@ -93,26 +79,6 @@ export const VerifyStudentForm = () => {
     });
   }, [selectedServiceType, serviceTypes]);
 
-  useEffect(() => {
-    startTransition(async () => {
-      const { error, serviceTypes } = await getServiceTypes();
-
-      if (error) {
-        toast.error(error);
-        return;
-      }
-
-      if (serviceTypes) {
-        setServiceTypes(
-          serviceTypes.map((s) => ({
-            ...s,
-            status: s.status as FEE_PAYMENT_STATUS,
-          })),
-        );
-      }
-    });
-  }, []);
-
   const currentServiceName =
     serviceTypes && selectedServiceType
       ? (serviceTypes.find((s) => s.id === selectedServiceType)?.name ?? "")
@@ -120,15 +86,12 @@ export const VerifyStudentForm = () => {
 
   const handleSubmit = (value: VerifyStudentType) => {
     startTransition(async () => {
-      const { error, placedStudent, student } = await getPlaceStudentByIndex({
+      const { placedStudent, student } = await getPlaceStudentByIndex({
         ...value,
         serviceName: currentServiceName,
       });
 
-      if (error) {
-        toast.error(error);
-        return;
-      } else if (placedStudent) {
+      if (placedStudent) {
         toast.success("Student verified");
 
         if (placedStudent.isAcceptancePaid && !placedStudent.isFormSubmitted) {

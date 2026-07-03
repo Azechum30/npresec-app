@@ -1,4 +1,6 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { CardLikeErrorComponent } from "@/components/customComponents/card-like-error-component";
+import { DotMatrixLoader } from "@/components/customComponents/dot-matrix-loader";
 import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -22,7 +24,7 @@ type SearchParams = {
 export default function VerifyPaymentPage({ searchParams }: SearchParams) {
   return (
     <div className="w-full md:max-w-lg">
-      <Suspense fallback={<ShowLoadingState />}>
+      <Suspense fallback={<DotMatrixLoader />}>
         <RenderVerifyPayment searchParams={searchParams} />
       </Suspense>
     </div>
