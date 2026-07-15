@@ -1,47 +1,43 @@
-import { getRoles } from "@/app/(private)/(admin)/admin/roles/actions/queries";
-import { CreateRoleDialog } from "@/app/(private)/(admin)/admin/roles/components/CreateRoleDialog";
+/**biome-ignore-all assist/source/organizeImports: reason */
 import { RenderRolesDataTable } from "@/app/(private)/(admin)/admin/roles/components/RenderRolesDataTable";
-import { UpdateRoleDialog } from "@/app/(private)/(admin)/admin/roles/components/UpdateRoleDialog";
-import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import { NoDataFound } from "@/components/customComponents/no-data-found";
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
-import { connection } from "next/server";
+import { PageHeader } from "@/components/customComponents/page-header";
+import { getQueryClient } from "@/components/providers/get-query-client";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { Suspense } from "react";
-
-// export const dynamic = "force-dynamic";
+import { permissionsQueryOptions } from "../permissions/actions/tanstack-queries";
+import { rolesQueryOptions } from "./actions/tanstack-queries";
+import { RolesDialogsProvider } from "./components/roles-dialogs-Providers";
 
 export default function RolesPage() {
   return (
     <>
-      <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
-        <h1 className="text-lg font-semibold tracking-wider line-clamp-1">
-          All Roles
-        </h1>
-        <OpenDialogs dialogKey={"createRole"} />
-      </div>
+      <PageHeader
+        pageTitle="Manage Roles"
+        showAddButton
+        buttonText="Add Role"
+        modalKey="create-role"
+        permission="create:roles"
+      />
 
       <Suspense fallback={<FallbackComponent />}>
         <RenderRolesTables />
       </Suspense>
 
-      <CreateRoleDialog />
-      <UpdateRoleDialog />
+      <RolesDialogsProvider />
     </>
   );
 }
 
 const RenderRolesTables = async () => {
-  await connection();
-  const { roles, error } = await getRoles();
-
-  if (error) {
-    return <ErrorComponent error={error} />;
-  }
-
-  if (!roles) {
-    return <NoDataFound />;
-  }
-
-  return <RenderRolesDataTable promise={{ roles }} />;
+  const queryClient = getQueryClient();
+  await Promise.all([
+    queryClient.ensureQueryData(rolesQueryOptions),
+    queryClient.ensureQueryData(permissionsQueryOptions),
+  ]);
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <RenderRolesDataTable />
+    </HydrationBoundary>
+  );
 };

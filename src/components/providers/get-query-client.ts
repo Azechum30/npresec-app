@@ -45,6 +45,7 @@ const makeQueryClient = () => {
       queries: {
         refetchOnWindowFocus: false,
         staleTime: 60 * 1000 * 5,
+        gcTime: 60 * 30 * 1000,
         structuralSharing: false,
       },
     },

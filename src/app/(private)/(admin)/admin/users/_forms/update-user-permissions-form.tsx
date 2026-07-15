@@ -1,23 +1,23 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import CheckboxWithArrayValues from "@/components/customComponents/CheckboxWithValues";
-import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import LoadingButton from "@/components/customComponents/LoadingButton";
 import { MultiSelectCombox } from "@/components/customComponents/mult-select-combox";
 import { Form } from "@/components/ui/form";
+import type { PermissionResponseType, RolesResponseType } from "@/lib/types";
 import {
   UserPermissionsFormSchema,
-  UserPermissionsFormType,
+  type UserPermissionsFormType,
 } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Save } from "lucide-react";
-import { startTransition, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { getUserRolesAction } from "../_actions/get-user-roles";
-import { useFetchAllPermissions } from "../_hooks/use-fetch-all-permissions";
+import { useMemo } from "react";
+import { useForm, useWatch } from "react-hook-form";
 
 type FormSubmitSchema = {
   onSubmit: (data: UserPermissionsFormType) => void;
+  roles: RolesResponseType[];
+  permissions: PermissionResponseType[];
   isPending?: boolean;
   id?: string;
   defaultValues?: UserPermissionsFormType;
@@ -25,6 +25,8 @@ type FormSubmitSchema = {
 
 export const UpdateUserPermissionsForm = ({
   onSubmit,
+  roles,
+  permissions,
   isPending,
   id,
   defaultValues,
@@ -41,24 +43,17 @@ export const UpdateUserPermissionsForm = ({
         },
   });
 
-  const [roles, setRoles] = useState<
-    { id: string; name: string }[] | undefined
-  >();
+  const selectedRoles = useWatch({
+    control: form.control,
+    name: "roleId",
+  });
 
-  const { success, fetchError, isFetching, permissions } =
-    useFetchAllPermissions();
-
-  useEffect(() => {
-    startTransition(async () => {
-      const res = await getUserRolesAction(id as string);
-
-      if (res.error) {
-        toast.error(res.error);
-        return;
-      }
-      setRoles(res.roles?.map((r) => ({ id: r.role?.id, name: r.role?.name })));
-    });
-  }, [id]);
+  const permissionsForSelectedRoles = useMemo(() => {
+    if (!selectedRoles || selectedRoles.length === 0) return [];
+    return permissions.filter((p) =>
+      p.roles.some((roleRelation) => selectedRoles.includes(roleRelation.id)),
+    );
+  }, [permissions, selectedRoles]);
 
   const handleSubmit = (data: UserPermissionsFormType) => {
     onSubmit(data);
@@ -78,57 +73,41 @@ export const UpdateUserPermissionsForm = ({
           />
         </div>
 
-        {roles && roles.length > 0 && permissions && permissions.length > 0 && (
-          <fieldset className="border rounded-md p-3">
-            <legend className="px-1.5 text-sm">User Assigned Roles</legend>
-            <CheckboxWithArrayValues
-              name="roleId"
-              fieldTitle="Roles"
-              schema={UserPermissionsFormSchema}
-              data={roles}
-              valueKey="id"
-              labelKey="name"
-              className="space-y-2"
-              disabled={!!id}
-            />
-          </fieldset>
-        )}
+        <fieldset className="border rounded-md p-3">
+          <legend className="px-1.5 text-sm">User Assigned Roles</legend>
+          <CheckboxWithArrayValues
+            name="roleId"
+            fieldTitle="Roles"
+            schema={UserPermissionsFormSchema}
+            data={roles}
+            valueKey="id"
+            labelKey="name"
+            className="space-y-2"
+          />
+        </fieldset>
 
-        {fetchError ? (
-          <ErrorComponent error={fetchError} />
-        ) : isFetching ? (
-          <span className="block animate-pulse bg-gradient-to-r from-primary/10 to-muted-foreground/10 rounded-md border p-1.5">
-            Loading Permissions...
-          </span>
-        ) : (
-          <>
-            <div className="w-full ">
-              {permissions && permissions.length > 0 && (
-                <MultiSelectCombox
-                  name="permissions"
-                  fieldTitle="Permissions"
-                  schema={UserPermissionsFormSchema}
-                  data={permissions}
-                  valueKey="id"
-                  selectedKey="name"
-                />
-              )}
-            </div>
-            <LoadingButton loading={isPending as boolean}>
-              {id ? (
-                <>
-                  <Save />
-                  {isPending ? "Saving Persissions..." : "Save Permissions"}
-                </>
-              ) : (
-                <>
-                  <Plus />
-                  {isPending ? "Creating Permissions" : "Create Permissions"}
-                </>
-              )}
-            </LoadingButton>
-          </>
-        )}
+        <MultiSelectCombox
+          name="permissions"
+          fieldTitle="Permissions"
+          schema={UserPermissionsFormSchema}
+          data={permissionsForSelectedRoles}
+          valueKey="id"
+          selectedKey="name"
+        />
+
+        <LoadingButton loading={isPending as boolean}>
+          {id ? (
+            <>
+              <Save />
+              {isPending ? "Saving Persissions..." : "Save Permissions"}
+            </>
+          ) : (
+            <>
+              <Plus />
+              {isPending ? "Creating Permissions" : "Create Permissions"}
+            </>
+          )}
+        </LoadingButton>
       </form>
     </Form>
   );

@@ -1,44 +1,12 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { GenericActions } from "@/components/customComponents/GenericActions";
 import { RowSelections } from "@/components/customComponents/RowSelections";
-import { HouseResponseType } from "@/lib/types";
-import { ColumnDef } from "@tanstack/react-table";
-import { useHandleHouseDelete } from "./handle-delete-house";
-import { toast } from "sonner";
-import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { client } from "@/lib/orpc";
+import type { client } from "@/lib/orpc";
+import type { ColumnDef } from "@tanstack/react-table";
+import { useDeleteHouseMutationFn } from "../mutations";
 
 export const useGetHouseColumns = () => {
-  const { handleHouseDelete, error, isPending, success } =
-    useHandleHouseDelete();
-
-  const errorRef = useRef(false);
-  const successRef = useRef(false);
-
-  const router = useRouter();
-
-  useEffect(() => {
-    const wasError = errorRef.current;
-
-    if (wasError && !isPending && error) {
-      toast.error(error);
-      return;
-    }
-
-    errorRef.current = isPending;
-  }, [error, isPending]);
-
-  useEffect(() => {
-    const wasSuccess = successRef.current;
-
-    if (wasSuccess && !isPending && success) {
-      toast.success("House deleted successfully.");
-      router.refresh();
-      return;
-    }
-
-    successRef.current = isPending;
-  }, [success, isPending, router]);
+  const { mutateAsync, isPending } = useDeleteHouseMutationFn();
 
   return [
     {
@@ -60,22 +28,27 @@ export const useGetHouseColumns = () => {
     },
     {
       header: "Gender",
-      accessorKey: "houseGender",
+      accessorFn: (row) =>
+        `${row.houseGender.charAt(0)}${row.houseGender.slice(1).toLowerCase()}`,
     },
     {
-      header: "ResidencyType",
-      accessorKey: "residencyType",
+      header: "Residency",
+      accessorFn: (row) =>
+        `${row.residencyType.charAt(0)}${row.residencyType.slice(1).toLowerCase()}`,
     },
     {
-      header: "MRCount",
+      id: "maleRooms",
+      header: "M-Rooms",
       accessorKey: "occupancy.maleOccupancy.roomCount",
     },
     {
-      header: "FRCount",
+      id: "femaleRooms",
+      header: "F-Rooms",
       accessorKey: "occupancy.femaleOccupancy.roomCount",
     },
     {
-      header: "HouseMaster",
+      id: "houseMaster",
+      header: "House Master",
       accessorFn: (row) =>
         row.houseMaster
           ? `${row.houseMaster.firstName} ${row.houseMaster.lastName}`
@@ -88,7 +61,9 @@ export const useGetHouseColumns = () => {
         <GenericActions
           secondaryKey="id"
           dialogId="edit-house"
-          onDelete={async () => handleHouseDelete(row.original.id)}
+          onDelete={async () => {
+            Promise.try(async () => await mutateAsync({ id: row.original.id }));
+          }}
           row={row}
           isPending={isPending}
         />

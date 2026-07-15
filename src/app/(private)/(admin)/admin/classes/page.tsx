@@ -1,7 +1,7 @@
 /** biome-ignore-all assist/source/organizeImports:reason */
 
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { PageHeader } from "@/components/customComponents/page-header";
 import { getQueryClient } from "@/components/providers/get-query-client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import type { Metadata } from "next";
@@ -35,10 +35,13 @@ export const metadata: Metadata = {
 export default function ClassesPage() {
   return (
     <>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-base font-semibold line-clamp-1">Manage Classes</h1>
-        <OpenDialogs dialogKey="create-class" title="Add Class" />
-      </div>
+      <PageHeader
+        pageTitle="Manage Classes"
+        showAddButton
+        buttonText="Add Class"
+        modalKey="create-class"
+        permission="create:classes"
+      />
 
       <Suspense fallback={<FallbackComponent />}>
         <LoadClassesData />

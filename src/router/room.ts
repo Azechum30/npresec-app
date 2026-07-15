@@ -1,13 +1,14 @@
-import { HouseGender, Prisma } from "@/generated/prisma/client";
+/** biome-ignore-all assist/source/organizeImports: reason */
+import { type HouseGender, Prisma } from "@/generated/prisma/client";
 import { commonErrors } from "@/lib/commonErrors";
 import { generateRoomCode } from "@/lib/generate-room-code";
 import { prisma } from "@/lib/prisma";
+import { pusher } from "@/lib/pusher";
+import { RoomSelect } from "@/lib/types";
 import { HouseSchema, RoomSchema } from "@/lib/validation";
 import { authMiddleware } from "@/middlewares/auth";
 import { requirePermissions } from "@/middlewares/permissions";
 import { CONSTANTS } from "@/utils/generateStudentIndex";
-import { getCachedRooms } from "@/utils/get-cahed-rooms";
-import { revalidateTag } from "next/cache";
 import { z } from "zod";
 
 const ROOM_GENDER_MISMATCH_MESSAGE =
@@ -15,7 +16,7 @@ const ROOM_GENDER_MISMATCH_MESSAGE =
 
 const ensureGenderCompatibility = (
   houseGender: HouseGender,
-  roomGender: "MALE" | "FEMALE" | "BOTH"
+  roomGender: "MALE" | "FEMALE" | "BOTH",
 ) => {
   if (houseGender === "BOTH") {
     return;
@@ -29,7 +30,12 @@ const ensureGenderCompatibility = (
 export const createRoom = authMiddleware
   .use(requirePermissions("create:rooms"))
   .input(RoomSchema)
-  .output(RoomSchema.extend({ id: z.string().cuid() }))
+  .output(
+    RoomSchema.extend({
+      id: z.string(),
+      house: z.object({ id: z.string(), name: z.string() }),
+    }),
+  )
   .errors({
     ...commonErrors,
     ROOM_COUNT_ERROR: {
@@ -41,7 +47,7 @@ export const createRoom = authMiddleware
       status: 400,
     },
   })
-  .handler(async ({ input, errors }) => {
+  .handler(async ({ input, errors, context }) => {
     try {
       const room = await prisma.$transaction(
         async (tx) => {
@@ -56,7 +62,7 @@ export const createRoom = authMiddleware
           try {
             ensureGenderCompatibility(
               house.houseGender,
-              input.rmGender as ["MALE", "FEMALE", "BOTH"][number]
+              input.rmGender as ["MALE", "FEMALE", "BOTH"][number],
             );
           } catch {
             throw errors.BAD_REQUEST({
@@ -112,11 +118,16 @@ export const createRoom = authMiddleware
 
           const sequenceNumber = lastHouseRoom?.code
             ? Number.isNaN(
-                parseInt(lastHouseRoom.code.slice(-CONSTANTS.SEQUENCE_LENGTH))
+                parseInt(
+                  lastHouseRoom.code.slice(-CONSTANTS.SEQUENCE_LENGTH),
+                  10,
+                ),
               )
               ? 1
-              : parseInt(lastHouseRoom.code.slice(-CONSTANTS.SEQUENCE_LENGTH)) +
-                1
+              : parseInt(
+                  lastHouseRoom.code.slice(-CONSTANTS.SEQUENCE_LENGTH),
+                  10,
+                ) + 1
             : 1;
 
           return tx.room.create({
@@ -124,16 +135,19 @@ export const createRoom = authMiddleware
               ...input,
               code: generateRoomCode(house.name, sequenceNumber),
             },
+            select: RoomSelect,
           });
         },
         {
           isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-        }
+        },
       );
 
-      revalidateTag("rooms-list", "seconds");
+      await pusher.trigger("cache-invalidation-settings", "new-room-created", {
+        triggeredBy: context.user.id,
+      });
       return room;
-    } catch (err: any) {
+    } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
         switch (err.code) {
           case "P2002":
@@ -152,44 +166,83 @@ export const createRoom = authMiddleware
 
 export const getRooms = authMiddleware
   .use(requirePermissions("view:rooms"))
-  .input(z.object({ houseId: z.string().cuid().optional() }).optional())
+  .input(z.object({ houseId: z.string().optional() }).optional())
   .output(
     z.array(
       RoomSchema.extend({
-        id: z.string().cuid(),
-        house: z.object({ id: z.string().cuid(), name: z.string() }),
+        id: z.string(),
+        house: z.object({ id: z.string(), name: z.string() }),
         code: z.string(),
-      })
-    )
+        students: z.array(
+          z.object({
+            id: z.string(),
+            firstName: z.string(),
+            lastName: z.string(),
+            middleName: z.string().nullable(),
+            gender: z.string(),
+            phone: z.string().nullish(),
+          }),
+        ),
+      }),
+    ),
   )
   .errors({
     ...commonErrors,
   })
-  .handler(async ({ input, errors }) => {
+  .handler(async ({ input, errors, context }) => {
     try {
-      const rooms = await getCachedRooms(input?.houseId);
+      const { user } = context;
+
+      const userRoles = new Set(
+        user.roles?.map((r) => r.role.name ?? "").filter(Boolean),
+      );
+
+      let whereQueryInput: Prisma.RoomWhereInput = {};
+
+      if (input?.houseId) whereQueryInput.houseId = input.houseId;
+
+      if (userRoles.has("houseMaster"))
+        whereQueryInput = {
+          ...whereQueryInput,
+          house: { houseMaster: { userId: user.id } },
+        };
+
+      const rooms = await prisma.room.findMany({
+        where: whereQueryInput,
+        select: RoomSelect,
+      });
 
       return rooms;
-    } catch (err: any) {
+    } catch (err) {
       if (err instanceof Prisma.PrismaClientValidationError) {
         console.error(err);
         throw errors.BAD_REQUEST();
       }
 
-      console.error("Ann error occurred", err);
+      console.error("An error occurred", err);
       throw err;
     }
   });
 
 export const getRoomById = authMiddleware
   .use(requirePermissions("view:rooms"))
-  .input(z.object({ id: z.string().cuid() }))
+  .input(z.object({ id: z.string() }))
   .output(
     RoomSchema.extend({
-      id: z.string().cuid(),
-      house: z.object({ id: z.string().cuid(), name: z.string() }),
+      id: z.string(),
+      house: z.object({ id: z.string(), name: z.string() }),
       code: z.string(),
-    })
+      students: z.array(
+        z.object({
+          id: z.string(),
+          firstName: z.string(),
+          lastName: z.string(),
+          middleName: z.string().nullable(),
+          gender: z.string(),
+          phone: z.string().nullish(),
+        }),
+      ),
+    }),
   )
   .errors({
     ...commonErrors,
@@ -197,16 +250,7 @@ export const getRoomById = authMiddleware
   .handler(async ({ input, errors }) => {
     const room = await prisma.room.findUnique({
       where: { id: input.id },
-      select: {
-        id: true,
-        code: true,
-        capacity: true,
-        rmGender: true,
-        houseId: true,
-        house: {
-          select: { id: true, name: true },
-        },
-      },
+      select: RoomSelect,
     });
 
     if (!room) {
@@ -218,10 +262,10 @@ export const getRoomById = authMiddleware
 
 export const deleteRoomById = authMiddleware
   .use(requirePermissions("delete:rooms"))
-  .input(z.object({ id: z.string().cuid() }))
+  .input(z.object({ id: z.string() }))
   .output(z.object({ success: z.boolean() }))
   .errors({ ...commonErrors })
-  .handler(async ({ input, errors }) => {
+  .handler(async ({ input, errors, context }) => {
     await prisma.$transaction(async (tsx) => {
       const room = await tsx.room.findUnique({
         where: { id: input.id },
@@ -235,15 +279,17 @@ export const deleteRoomById = authMiddleware
       return await tsx.room.delete({ where: { id: input.id } });
     });
 
-    revalidateTag("rooms-list", "seconds");
+    await pusher.trigger("cache-invalidation-settings", "room-deleted", {
+      triggeredBy: context.user.id,
+    });
 
     return { success: true };
   });
 
 export const updateRoomById = authMiddleware
   .use(requirePermissions("edit:rooms"))
-  .input(RoomSchema.extend({ id: z.string().cuid() }))
-  .output(RoomSchema.extend({ id: z.string().cuid(), code: z.string() }))
+  .input(RoomSchema.extend({ id: z.string() }))
+  .output(RoomSchema.extend({ id: z.string(), code: z.string() }))
   .errors({
     ...commonErrors,
     ROOM_COUNT_ERROR: {
@@ -255,7 +301,7 @@ export const updateRoomById = authMiddleware
       status: 400,
     },
   })
-  .handler(async ({ input, errors }) => {
+  .handler(async ({ input, errors, context }) => {
     const roomToUpdate = await prisma.$transaction(async (tsx) => {
       const [room, house] = await Promise.all([
         tsx.room.findUnique({
@@ -276,7 +322,7 @@ export const updateRoomById = authMiddleware
       try {
         ensureGenderCompatibility(
           house.houseGender,
-          input.rmGender as ["MALE", "FEMALE", "BOTH"][number]
+          input.rmGender as ["MALE", "FEMALE", "BOTH"][number],
         );
       } catch {
         throw errors.BAD_REQUEST({
@@ -331,17 +377,19 @@ export const updateRoomById = authMiddleware
       });
     });
 
-    revalidateTag("rooms-list", "seconds");
+    await pusher.trigger("cache-invalidation-settings", "room-updated", {
+      triggeredBy: context.user.id,
+    });
 
     return roomToUpdate;
   });
 
 export const deleteRoomsByIds = authMiddleware
   .use(requirePermissions("delete:rooms"))
-  .input(z.object({ ids: z.array(z.string().cuid()) }))
+  .input(z.object({ ids: z.array(z.string()) }))
   .output(z.object({ success: z.boolean(), count: z.number() }))
   .errors({ ...commonErrors })
-  .handler(async ({ input, errors }) => {
+  .handler(async ({ input, errors, context }) => {
     const deletedCount = await prisma.$transaction(async (tsx) => {
       const count = await tsx.room.count({
         where: { id: { in: input.ids } },
@@ -358,6 +406,8 @@ export const deleteRoomsByIds = authMiddleware
       });
     });
 
-    revalidateTag("rooms-list", "seconds");
+    await pusher.trigger("cache-invalidation-settings", "rooms-deleted", {
+      triggeredBy: context.user.id,
+    });
     return { success: true, count: deletedCount.count };
   });

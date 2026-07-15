@@ -1,7 +1,7 @@
 /** biome-ignore-all assist/source/organizeImports: reason */
 
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { PageHeader } from "@/components/customComponents/page-header";
 import { getQueryClient } from "@/components/providers/get-query-client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { Suspense } from "react";
@@ -21,10 +21,13 @@ export default async function DepartmentPage() {
   ]);
   return (
     <>
-      <div className="flex flex-col gap-y-2 sm:flex-row sm:justify-between sm:items-center sm:gap-y-0">
-        <h1 className="font-semibold line-clamp-1">All Departments</h1>
-        <OpenDialogs dialogKey="create-department" title="Add Department" />
-      </div>
+      <PageHeader
+        pageTitle="Manage Learning Areas"
+        showAddButton
+        buttonText="Add Department"
+        modalKey="create-department"
+        permission="create:departments"
+      />
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Suspense fallback={<FallbackComponent />}>
           <RenderDepartmentsDataTable />

@@ -1,27 +1,35 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use server";
-import { getUserPermissions } from "@/lib/get-session";
-import * as Sentry from "@sentry/nextjs";
+import { ActionError } from "@/lib/constants";
+import { nextSafeAction } from "@/lib/next-safe-action";
+import { prisma } from "@/lib/prisma";
+import { UserSelect } from "@/lib/types";
 import "server-only";
-import { getCachedUsers } from "../_utils/get-cached-users";
 
-export const getAllUsersAction = async () => {
-  try {
-    const { hasPermission } = await getUserPermissions("view:users");
-    if (!hasPermission) {
-      return { error: "Permission denied" };
-    }
+export const getAllUsersAction = async () =>
+  nextSafeAction(
+    async () => {
+      const users = await prisma.user.findMany({
+        select: UserSelect,
+        orderBy: [{ createdAt: "desc" }],
+      });
 
-    const users = await getCachedUsers();
+      return { users: users };
+    },
+    { permission: "view:users" },
+  );
 
-    return { users: users || [] };
-  } catch (e) {
-    console.error("Could not fetch users", e);
-    Sentry.captureException(e);
-    return {
-      error:
-        process.env.NODE_ENV === "development"
-          ? String(e)
-          : "Something went wrong while fetching users",
-    };
-  }
-};
+export const getUserById = async (id: string) =>
+  nextSafeAction(
+    async () => {
+      const user = await prisma.user.findUnique({
+        where: { id },
+        select: UserSelect,
+      });
+
+      if (!user) throw new ActionError("user not found");
+
+      return user;
+    },
+    { permission: "view:users" },
+  );

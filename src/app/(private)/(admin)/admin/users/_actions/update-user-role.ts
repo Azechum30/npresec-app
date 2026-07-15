@@ -1,55 +1,48 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use server";
-import { getUserPermissions } from "@/lib/get-session";
+import { nextSafeAction } from "@/lib/next-safe-action";
 import { prisma } from "@/lib/prisma";
+import { pusher } from "@/lib/pusher";
 import { UpdateUserRoleSchema } from "@/lib/validation";
-import * as Sentry from "@sentry/nextjs";
-import { revalidatePath } from "next/cache";
 import "server-only";
 
-export const updateUserRole = async (values: unknown) => {
-  try {
-    const { hasPermission } = await getUserPermissions("edit:users");
-    if (!hasPermission) {
-      console.error("Permission denied");
-      return { error: "Permission denied" };
-    }
+export const updateUserRole = async (values: unknown) =>
+  nextSafeAction(
+    async () => {
+      const { error, success, data } = UpdateUserRoleSchema.safeParse(values);
 
-    const { error, success, data } = UpdateUserRoleSchema.safeParse(values);
+      if (!success) throw error;
 
-    if (!success || error) {
-      const errorMessage = error?.issues.flatMap((e) => e.message).join(",");
-      console.error(errorMessage);
-      return { error: errorMessage };
-    }
+      const { userId, roleId, roleType } = data;
 
-    const { userId, roleId } = data;
+      if (Array.isArray(roleId) && roleType === "Organizational") {
+        await prisma.$transaction(async (tsx) => {
+          await tsx.userRole.deleteMany({
+            where: { userId },
+          });
 
-    const updateUserRoleTransaction = await prisma.$transaction(async (tsx) => {
-      await tsx.userRole.deleteMany({
-        where: { userId },
-      });
+          return await prisma.user.update({
+            where: { id: userId },
+            data: {
+              roles: {
+                create: roleId.map((id) => ({ roleId: id })),
+              },
+            },
+          });
+        });
+      } else {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { role: roleId as string },
+        });
+      }
 
-      return await prisma.user.update({
-        where: { id: userId },
-        data: {
-          roles: {
-            create: roleId.map((id) => ({ roleId: id })),
-          },
-        },
-      });
-    });
-
-    if (!updateUserRoleTransaction) {
-      console.error("Could not update user role");
-      return { error: "Could not update user role" };
-    }
-
-    revalidatePath("/admin/users");
-
-    return { success: true };
-  } catch (e) {
-    console.error("Could not update user role", e);
-    Sentry.captureException(e);
-    return { error: "Something went wrong while updating user role" };
-  }
-};
+      await pusher.trigger(
+        "cache-invalidation-settings",
+        "user-role-updated",
+        {},
+      );
+      return { success: true };
+    },
+    { permission: "edit:users" },
+  );

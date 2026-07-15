@@ -1,4 +1,6 @@
+import { usersQueryOptions } from "@/app/(private)/(admin)/admin/users/_actions/queries";
 import type { Column, Row, Table } from "@tanstack/react-table";
+import { orpc } from "./orpc-react-query-client";
 import type { DateFormatType } from "./validation";
 
 export const steps = [
@@ -258,3 +260,50 @@ export const EVENTS = [
   "placement-list-upload-failed",
   "placement-list-upload-success",
 ];
+
+type Key = readonly unknown[] | unknown[];
+
+type QueryKey = Key | Key[];
+
+export const eventsConfig: Record<string, Key | QueryKey> = {
+  "new-room-created": orpc.room.getRooms.key(),
+  "room-updated": orpc.room.getRooms.key(),
+  "room-deleted": orpc.room.getRooms.key(),
+  "rooms-deleted": orpc.room.getRooms.key(),
+  "user-role-updated": [usersQueryOptions.queryKey],
+  "user-role-permissions-updated": [usersQueryOptions.queryKey],
+};
+
+export const BAN_USER_DURATIONS = [
+  {
+    time: 60 * 60,
+    description: "1 hour",
+  },
+  {
+    time: 60 * 60 * 24,
+    description: "1 Day",
+  },
+  {
+    time: 60 * 60 * 24 * 7,
+    description: "1 Week",
+  },
+  {
+    time: 60 * 60 * 24 * 30,
+    description: "1 Month",
+  },
+  {
+    time: 60 * 60 * 24 * 365,
+    description: "1 Year",
+  },
+  {
+    time: -1,
+    description: "Permanent",
+  },
+] as const;
+
+export const BAN_REASONS = [
+  "Spamming",
+  "Violation of term of use",
+  "Malicious activities",
+  "Not longer an authorized user",
+] as const;

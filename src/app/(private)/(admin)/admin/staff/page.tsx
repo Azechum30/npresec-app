@@ -1,7 +1,7 @@
 /** biome-ignore-all assist/source/organizeImports: reason */
 
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { PageHeader } from "@/components/customComponents/page-header";
 import { getQueryClient } from "@/components/providers/get-query-client";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import type { Metadata } from "next";
@@ -36,10 +36,13 @@ export const metadata: Metadata = {
 export default function StaffPage() {
   return (
     <>
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-3 md:space-y-0">
-        <h1 className="text-base font-semibold line-clamp-1">Manage Staff</h1>
-        <OpenDialogs dialogKey="create-staff" title="Add Staff" />
-      </div>
+      <PageHeader
+        pageTitle="Manage Staff"
+        showAddButton
+        buttonText="Add Staff"
+        modalKey="create-staff"
+        permission="create:staff"
+      />
 
       <Suspense fallback={<FallbackComponent />}>
         <LoadStaffData />

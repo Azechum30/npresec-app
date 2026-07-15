@@ -6,28 +6,19 @@ import { PermissionSelect } from "@/lib/types";
 import * as Sentry from "@sentry/nextjs";
 import "server-only";
 
+import { nextSafeAction } from "@/lib/next-safe-action";
 import { getCachedPermissions } from "@/utils/get-cached-permissions";
 import { getError } from "@/utils/get-error";
 import { z } from "zod";
 
-export const getPermissions = async () => {
-  try {
-    const { hasPermission } = await getUserPermissions("view:permissions");
-    if (!hasPermission) {
-      return { error: "Permission denied!" };
-    }
-
-    const permissions = await getCachedPermissions();
-
-    return { permissions: permissions ?? [] };
-  } catch (e) {
-    Sentry.captureException(e);
-    console.error("Could not fetch permissions", e);
-    return {
-      error: getError(e),
-    };
-  }
-};
+export const getPermissions = async () =>
+  nextSafeAction(
+    async () => {
+      const permissions = await getCachedPermissions();
+      return { permissions };
+    },
+    { permission: "view:permissions" },
+  );
 
 export const getPermission = async (
   id: string | Prisma.PermissionWhereUniqueInput,

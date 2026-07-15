@@ -20,7 +20,9 @@ export default function ScoresPage({ searchParams }: Props) {
   return (
     <div>
       <div className="flex flex-col md:flex-row gap-4 md:gap-0 md:justify-between md:items-center">
-        <h1 className="text-base font-medium line-clamp-1">Scores</h1>
+        <h1 className="text-xl font-bold bg-linear-to-r from-primary to-muted-foreground dark:to-accent bg-clip-text text-transparent line-clamp-1">
+          Manage Scores
+        </h1>
         <ShowAddScoresButton />
       </div>
       <SearchQueryForm />

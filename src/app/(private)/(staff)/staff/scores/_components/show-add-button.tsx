@@ -10,7 +10,11 @@ export const ShowAddScoresButton = () => {
 
   if (enabled) {
     return (
-      <OpenDialogs title="Add New Scores" dialogKey="create-students-scores" />
+      <OpenDialogs
+        title="Add New Scores"
+        dialogKey="create-students-scores"
+        permission="create:grades"
+      />
     );
   }
   return null;

@@ -23,18 +23,20 @@ export default function AttendancePage() {
   return (
     <>
       <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-3 md:space-y-0">
-        <h1 className="font-semibold text-lg line-clamp-1">
+        <h1 className="font-bold text-xl bg-linear-to-r from-primary to-muted-foreground dark:to-accent bg-clip-text text-transparent line-clamp-1">
           Manage Attendance
         </h1>
         <div className="flex flex-col md:flex-row gap-2">
           <OpenDialogs
             dialogKey="create-attendance"
             title="Add Class Attendance"
+            permission="create:attendance"
           />
           <OpenDialogs
             dialogKey="create-single-attendance"
             title="Add Student Attendance"
             variant="secondary"
+            permission="create:attendance"
           />
         </div>
       </div>

@@ -1,8 +1,5 @@
 "use client";
 
-import { Command as CommandPrimitive } from "cmdk";
-import * as React from "react";
-
 import {
   Dialog,
   DialogContent,
@@ -12,7 +9,9 @@ import {
 } from "@/components/ui/dialog";
 import { InputGroup, InputGroupAddon } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
+import { Command as CommandPrimitive } from "cmdk";
 import { CheckIcon, SearchIcon } from "lucide-react";
+import * as React from "react";
 
 function Command({
   className,
@@ -92,7 +91,7 @@ function CommandList({
     <CommandPrimitive.List
       data-slot="command-list"
       className={cn(
-        "no-scrollbar max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto outline-none",
+        " max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto outline-none",
         className,
       )}
       {...props}

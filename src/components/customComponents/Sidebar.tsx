@@ -3,146 +3,13 @@
 import { useOpenSidebar } from "@/hooks/use-open-sidebar";
 import type { UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import {
-  Award,
-  Bed,
-  BookOpen,
-  BookTemplate,
-  ClipboardList,
-  GraduationCap,
-  Home,
-  LayoutDashboard,
-  List,
-  LucideBuilding2,
-  PoundSterling,
-  Shield,
-  TimerIcon,
-  TrendingUpIcon,
-  UserPen,
-  UserPlus,
-} from "lucide-react";
+import { Award, BedDouble, ClipboardList } from "lucide-react";
 import { buttonVariants } from "../ui/button";
 import LinkWithStyles from "./LinkWithStyles";
 import { useAuth } from "./SessionProvider";
 import SidebarOpenButton from "./SidebarOpenButton";
-import UserButton from "./UserButton";
 import { AvatarComponent } from "./avatar-component";
-
-export const Links = {
-  ADMIN: [
-    {
-      section: "User Managment",
-      Links: [
-        {
-          title: "Dashboard",
-          href: "/admin/dashboard",
-          icon: <LayoutDashboard />,
-        },
-        { title: "Students", href: "/admin/students", icon: <GraduationCap /> },
-        { title: "Staff", href: "/admin/staff", icon: <UserPen /> },
-      ],
-    },
-    {
-      section: "Academics",
-      Links: [
-        { title: "Classes", href: "/admin/classes", icon: <LucideBuilding2 /> },
-        { title: "Departments", href: "/admin/departments", icon: <Home /> },
-        { title: "Courses", href: "/admin/courses", icon: <BookOpen /> },
-      ],
-    },
-
-    {
-      section: "Admissions",
-      Links: [
-        { title: "CSSPS List", href: "/admin/admissions", icon: <List /> },
-        {
-          title: "Service Fees",
-          href: "/admin/service-fees",
-          icon: <PoundSterling />,
-        },
-        {
-          title: "Payments",
-          href: "/admin/payments",
-          icon: <TrendingUpIcon />,
-        },
-      ],
-    },
-
-    {
-      section: "Documents",
-      Links: [
-        {
-          title: "Templates",
-          href: "/admin/templates",
-          icon: <BookTemplate />,
-        },
-      ],
-    },
-    {
-      section: "Results",
-      Links: [
-        { title: "Grades", href: "/admin/grades", icon: <Award /> },
-        { title: "Timelines", href: "/admin/timelines", icon: <TimerIcon /> },
-      ],
-    },
-    {
-      section: "Public Facing",
-      Links: [
-        {
-          title: "Board of Governors",
-          href: "/admin/board-of-governors",
-          icon: <Shield />,
-        },
-      ],
-    },
-    {
-      section: "Accommodation",
-      Links: [
-        {
-          title: "Houses",
-          href: "/admin/houses",
-          icon: <Award />,
-        },
-        {
-          title: "Rooms",
-          href: "/admin/houses/rooms",
-          icon: <Bed />,
-        },
-      ],
-    },
-  ],
-  TEACHING_STAFF: [
-    {
-      section: "Academics",
-      Links: [
-        {
-          title: "Dashboard",
-          href: "/staff/dashboard",
-          icon: <LayoutDashboard />,
-        },
-        {
-          title: "Students",
-          href: "/staff/students",
-          icon: <UserPlus />,
-        },
-        { title: "Capture Scores", href: "/staff/scores", icon: <Award /> },
-      ],
-    },
-  ],
-  STUDENT: [
-    {
-      section: "My Dashboard",
-      Links: [
-        {
-          title: "My Classes",
-          href: "/my-classes",
-          icon: <LucideBuilding2 />,
-        },
-        { title: "My Courses", href: "/my-courses", icon: <BookOpen /> },
-      ],
-    },
-  ],
-};
+import { Links } from "./sidebar-links";
 
 export default function Sidebar() {
   const { open } = useOpenSidebar();
@@ -155,11 +22,21 @@ export default function Sidebar() {
 
   const hasAttendancePermission =
     roles.has("admin") || roles.has("classTeacher");
+  const hasHouseAllocationPermissions =
+    roles.has("admin") ||
+    roles.has("senior_house_master") ||
+    roles.has("houseMaster");
+
+  const hasRoomsPermissions =
+    roles.has("admin") ||
+    roles.has("senior_house_master") ||
+    roles.has("houseMaster");
 
   let links:
     | typeof Links.ADMIN
     | typeof Links.TEACHING_STAFF
-    | typeof Links.STUDENT = [];
+    | typeof Links.STUDENT
+    | typeof Links.HOUSEMASTER = [];
 
   const newLink = {
     title: "Attendance",
@@ -169,8 +46,16 @@ export default function Sidebar() {
 
   if (roles.has("admin")) {
     links = Links.ADMIN;
-  } else if (roles.has("teaching_staff") || roles.has("classTeacher")) {
+  } else if (
+    roles.has("teaching_staff") ||
+    roles.has("houseMaster") ||
+    roles.has("classTeacher") ||
+    roles.has("senior_house_master")
+  ) {
     links = Links.TEACHING_STAFF;
+    if (roles.has("houseMaster") || roles.has("senior_house_master")) {
+      links = Links.TEACHING_STAFF.concat(Links.HOUSEMASTER);
+    }
   } else if (roles.has("student")) {
     links = Links.STUDENT;
   }
@@ -184,6 +69,30 @@ export default function Sidebar() {
         ),
       };
     }
+
+    if (
+      section.section === "Accommodation" &&
+      hasHouseAllocationPermissions &&
+      hasRoomsPermissions
+    ) {
+      return {
+        ...section,
+        Links: [
+          ...section.Links,
+          {
+            title: "House Allocations",
+            href: "/house-allocations",
+            icon: <Award />,
+          },
+          {
+            title: "Rooms",
+            href: "/rooms",
+            icon: <BedDouble />,
+          },
+        ].sort((a, b) => a.title.localeCompare(b.title)),
+      };
+    }
+
     return section;
   });
 
@@ -229,9 +138,9 @@ export default function Sidebar() {
             </div>
           </div>
         ))}
-        <div className="sticky bottom-0 left-0 md:z-30 h-14 border-t w-full">
+        {/* <div className="sticky bottom-0 left-0 md:z-30 h-14 border-t w-full">
           <UserButton />
-        </div>
+        </div> */}
       </div>
     </div>
   );

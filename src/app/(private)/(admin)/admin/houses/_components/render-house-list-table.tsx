@@ -1,53 +1,25 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import DataTable from "@/components/customComponents/data-table";
-import { client } from "@/lib/orpc";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useGetHouseColumns } from "../_hooks/use-get-house-columns";
-import { createSafeClient, isDefinedError } from "@orpc/client";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useDeleteHousesMutationFn } from "../mutations";
+import { housesQueryOptions } from "../queries";
 
-type RenderHouseListTableProps = {
-  houses: Awaited<ReturnType<typeof client.house.getHouses>>;
-};
-export const RenderHouseListTable = ({ houses }: RenderHouseListTableProps) => {
+export const RenderHouseListTable = () => {
   const columns = useGetHouseColumns();
-  const router = useRouter();
+  const { data } = useSuspenseQuery(housesQueryOptions);
+  const { mutateAsync } = useDeleteHousesMutationFn();
 
-  const handleBulkHouseDelete = async (selectedIds: string[]) => {
-    const safeClient = createSafeClient(client);
-    const { error, data } = await safeClient.house.bulkDeleteHouses({
-      ids: selectedIds,
-    });
-
-    if (isDefinedError(error)) {
-      toast.error(
-        error.message || "Failed to delete selected houses. Please try again."
-      );
-      return;
-    } else if (error) {
-      toast.error(
-        error.message || "An unexpected error occurred. Please try again."
-      );
-      return;
-    } else {
-      toast.success(`Successfully deleted ${data.count} house(s).`);
-
-      setTimeout(() => {
-        router.refresh();
-      }, 100);
-    }
-  };
   return (
-    <>
-      <DataTable
-        data={houses}
-        columns={columns}
-        onDelete={async (rows) => {
-          const ids = rows.map((row) => row.original.id);
-          await handleBulkHouseDelete(ids);
-        }}
-      />
-    </>
+    <DataTable
+      data={data}
+      columns={columns}
+      onDelete={async (rows) => {
+        const ids = rows.map((row) => row.original.id);
+        await Promise.try(async () => await mutateAsync({ ids }));
+      }}
+    />
   );
 };

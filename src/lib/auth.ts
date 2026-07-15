@@ -1,8 +1,11 @@
+/** biome-ignore-all assist/source/organizeImports: reaso */
+
 import { sendEmail } from "@/utils/send-email";
-import { betterAuth, BetterAuthOptions } from "better-auth";
+import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { customSession, twoFactor } from "better-auth/plugins";
+import { admin, customSession, twoFactor } from "better-auth/plugins";
+import { ac, admin as adminRole, teaching_staff } from "./permissions";
 import { prisma } from "./prisma";
 
 const authOptions = {
@@ -30,11 +33,11 @@ const authOptions = {
     },
   },
   session: {
-    expiresIn: 60 * 60 * 8, // 8 hours
-    updateAge: 60 * 60, // 1 hour
+    expiresIn: 60 * 60 * 3,
+    updateAge: 60 * 30,
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 5, // 5 minutes,
+      maxAge: 60 * 5,
       strategy: "compact",
     },
     freshAge: 60 * 5,
@@ -46,7 +49,6 @@ const authOptions = {
     },
 
     additionalFields: {
-      // Core identity fields
       username: {
         type: "string",
         required: true,
@@ -125,7 +127,6 @@ const authOptions = {
         defaultValue: "realtime",
       },
 
-      // JSON fields
       socials: {
         type: "json",
         required: false,
@@ -142,7 +143,11 @@ export const auth = betterAuth({
   ...authOptions,
   appName: "npresec-app",
   plugins: [
-    twoFactor({}),
+    admin({
+      ac,
+      roles: { admin: adminRole, teaching_staff },
+    }),
+    twoFactor(),
     customSession(async ({ user, session }) => {
       const userWithRole = await prisma.user.findUnique({
         where: { id: session.userId },

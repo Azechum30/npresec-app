@@ -19,7 +19,7 @@ export default function CommandButton() {
       role="group"
       onClick={onOpen}
       className={cn(
-        "relative md:w-auto w-75 lg:w-75 py-2 flex items-center justify-between text-muted-foreground hover:text-inherit",
+        "relative md:w-auto w-57.5 lg:w-75 py-2 flex items-center justify-between text-muted-foreground hover:text-inherit",
         open && "w-57.5 md:w-auto lg:w-75",
       )}>
       Search

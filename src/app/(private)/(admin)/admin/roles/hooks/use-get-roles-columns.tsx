@@ -33,7 +33,7 @@ export const useGetRolesColumns = () => {
       header: "Permissions",
       cell: ({ row }) => {
         const permission_name = row.original.permissions.map(
-          (perm) => perm?.name
+          (perm) => perm?.name,
         );
         return (
           <div className="line-clamp-2">
@@ -48,7 +48,7 @@ export const useGetRolesColumns = () => {
       header: "Description",
       cell: ({ row }) => {
         const permission_description = row.original.permissions.map(
-          (perm) => perm?.description
+          (perm) => perm?.description,
         );
 
         return (
@@ -64,7 +64,7 @@ export const useGetRolesColumns = () => {
       header: "Actions",
       cell: ({ row }) => (
         <GenericActions
-          dialogId="updateRole"
+          dialogId="edit-role"
           secondaryKey="id"
           row={row}
           onDelete={handleRoleDelete}

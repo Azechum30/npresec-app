@@ -1,16 +1,17 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { prisma } from "@/lib/prisma";
 import { StaffSelect } from "@/lib/types";
 import { StaffSchema } from "@/lib/validation";
 import { authMiddleware } from "@/middlewares/auth";
 import { requirePermissions } from "@/middlewares/permissions";
-import {} from "@orpc/server";
+
 import { z } from "zod";
 
 export const getStaff = authMiddleware
   .use(requirePermissions("view:staff"))
   .output(
     z.array(
-      StaffSchema.extend({ id: z.string().cuid() }).omit({
+      StaffSchema.extend({ id: z.string() }).omit({
         imageFile: true,
         isDepartmentHead: true,
         imageURL: true,
@@ -18,8 +19,8 @@ export const getStaff = authMiddleware
         email: true,
         username: true,
         courses: true,
-      })
-    )
+      }),
+    ),
   )
   .handler(async ({ context }) => {
     const staff = await prisma.staff.findMany({ select: StaffSelect });

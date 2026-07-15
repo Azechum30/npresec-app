@@ -11,7 +11,7 @@ export const AvatarComponent = ({
   className?: string;
 }) => {
   return (
-    <Avatar size="lg" className="p-1 border-primary border-[1.5px]">
+    <Avatar size="lg" className="p-0.5">
       <AvatarImage
         src={image}
         alt={fallback}

@@ -1,9 +1,9 @@
-// components/SetSystemWideActions.tsx
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import {
-  SystemSettings,
+  type SystemSettings,
   useSystemWideActionsStore,
 } from "@/hooks/use-system-wide-actions-store";
 import { useState } from "react";
@@ -69,10 +69,7 @@ export const SetSystemWideActions: React.FC = () => {
         enableScoresEntry?: boolean;
         enableDataExports?: boolean;
       });
-
-      // The authoritative update will arrive via Pusher to overwrite store.
     } catch (err) {
-      // On error, attempt to refetch canonical settings and set store
       try {
         const { settings } = await getSystemSettings();
         if (settings) {
@@ -94,82 +91,80 @@ export const SetSystemWideActions: React.FC = () => {
   }
 
   return (
-    <>
-      <Dialog
-        open={!!dialogs["open-system-wide-actions-setting"]}
-        onOpenChange={() => onClose("open-system-wide-actions-setting")}>
-        {!!dialogs["open-system-wide-actions-setting"] && (
-          <DialogContent className="w-full md:max-w-lg">
-            <DialogHeader>
-              <DialogTitle className="mb-3 bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent text-xl">
-                System Settings
-              </DialogTitle>
-              <DialogDescription>
-                Enable or disable features across the system in realtime.
-                Changes are propagated across all clients.
-              </DialogDescription>
-            </DialogHeader>
+    <Dialog
+      open={!!dialogs["open-system-wide-actions-setting"]}
+      onOpenChange={() => onClose("open-system-wide-actions-setting")}>
+      {!!dialogs["open-system-wide-actions-setting"] && (
+        <DialogContent className="w-full md:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="mb-3 bg-linear-to-r from-primary to-muted-foreground bg-clip-text text-transparent text-xl">
+              System Settings
+            </DialogTitle>
+            <DialogDescription>
+              Enable or disable features across the system in realtime. Changes
+              are propagated across all clients.
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="flex flex-col space-y-4 border p-4 rounded-md">
-              <div className="flex justify-between items-center space-x-3">
-                <span className="text-muted-foreground font-light">
-                  Enable/Disable Editing
-                </span>
-                <Switch
-                  checked={local.enableEditing}
-                  onCheckedChange={(v) =>
-                    handleToggle("enableEditing", v, "editing")
-                  }
-                  disabled={busy.editing}
-                  className="hover:cursor-pointer"
-                />
-              </div>
-
-              <div className="flex justify-between items-center space-x-3">
-                <span className="text-muted-foreground font-light">
-                  Enable/Disable Deleting
-                </span>
-                <Switch
-                  checked={local.enableDeleting}
-                  onCheckedChange={(v) =>
-                    handleToggle("enableDeleting", v, "deleting")
-                  }
-                  disabled={busy.deleting}
-                  className="hover:cursor-pointer"
-                />
-              </div>
-
-              <div className="flex justify-between items-center space-x-3">
-                <span className="text-muted-foreground font-light">
-                  Enable/Disable Data Exports
-                </span>
-                <Switch
-                  checked={local.enableDataExports}
-                  onCheckedChange={(v) =>
-                    handleToggle("enableDataExports", v, "exports")
-                  }
-                  disabled={busy.exports}
-                  className="hover:cursor-pointer"
-                />
-              </div>
-
-              <div className="flex justify-between items-center space-x-3">
-                <span className="text-muted-foreground font-light">
-                  Enable/Disable Score Entry
-                </span>
-                <Switch
-                  checked={local.enableScoresEntry}
-                  onCheckedChange={(v) =>
-                    handleToggle("enableScoresEntry", v, "scores")
-                  }
-                  disabled={busy.scores}
-                  className="hover:cursor-pointer"
-                />
-              </div>
+          <div className="flex flex-col space-y-4 border p-4 rounded-md">
+            <div className="flex justify-between items-center space-x-3">
+              <span className="text-muted-foreground font-light">
+                Enable/Disable Editing
+              </span>
+              <Switch
+                checked={local.enableEditing}
+                onCheckedChange={(v) =>
+                  handleToggle("enableEditing", v, "editing")
+                }
+                disabled={busy.editing}
+                className="hover:cursor-pointer"
+              />
             </div>
-          </DialogContent>
-        )}
-      </Dialog>
-    </>
+
+            <div className="flex justify-between items-center space-x-3">
+              <span className="text-muted-foreground font-light">
+                Enable/Disable Deleting
+              </span>
+              <Switch
+                checked={local.enableDeleting}
+                onCheckedChange={(v) =>
+                  handleToggle("enableDeleting", v, "deleting")
+                }
+                disabled={busy.deleting}
+                className="hover:cursor-pointer"
+              />
+            </div>
+
+            <div className="flex justify-between items-center space-x-3">
+              <span className="text-muted-foreground font-light">
+                Enable/Disable Data Exports
+              </span>
+              <Switch
+                checked={local.enableDataExports}
+                onCheckedChange={(v) =>
+                  handleToggle("enableDataExports", v, "exports")
+                }
+                disabled={busy.exports}
+                className="hover:cursor-pointer"
+              />
+            </div>
+
+            <div className="flex justify-between items-center space-x-3">
+              <span className="text-muted-foreground font-light">
+                Enable/Disable Score Entry
+              </span>
+              <Switch
+                checked={local.enableScoresEntry}
+                onCheckedChange={(v) =>
+                  handleToggle("enableScoresEntry", v, "scores")
+                }
+                disabled={busy.scores}
+                className="hover:cursor-pointer"
+              />
+            </div>
+          </div>
+        </DialogContent>
+      )}
+    </Dialog>
   );
 };

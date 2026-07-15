@@ -560,7 +560,8 @@ export type UserPermissionsFormType = z.infer<typeof UserPermissionsFormSchema>;
 
 export const UpdateUserRoleSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
-  roleId: z.array(z.string()),
+  roleId: z.union([z.string(), z.array(z.string())]),
+  roleType: z.string(),
 });
 
 export type UserRoleUpdateType = z.infer<typeof UpdateUserRoleSchema>;
@@ -577,8 +578,7 @@ export const UserSchema = z
       .min(1),
     email: z
       .string({ error: "Email must be a string" })
-      .min(1, "Email is required")
-      .email(),
+      .min(1, "Email is required"),
     role: z.string().min(1, "Role is required"),
     password: z
       .string()
@@ -1080,3 +1080,22 @@ export const FeeSchema = z.object({
 });
 
 export type FeeType = z.infer<typeof FeeSchema>;
+
+export const studentHouseAllocationSchema = z.object({
+  studentNumber: z.string({ error: "Student Number is required" }).min(1),
+  houseId: z.string({ error: "House ID is required" }).min(1),
+  roomId: z.string({ error: "Room ID is required" }).optional(),
+  status: z.enum(["Day", "Boarding"]),
+});
+
+export type StudentHouseAllocationType = z.infer<
+  typeof studentHouseAllocationSchema
+>;
+
+export const BanUserSchema = z.object({
+  userId: z.string().min(1),
+  banReason: z.string().min(1),
+  duration: z.string().min(0),
+});
+
+export type BanUserType = z.infer<typeof BanUserSchema>;

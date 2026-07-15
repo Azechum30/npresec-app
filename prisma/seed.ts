@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { PrismaClient } from "@/generated/prisma/client";
 import { auth } from "@/lib/auth";
 import { env } from "@/lib/server-only-actions/validate-env";
@@ -52,6 +53,10 @@ const roles = [
   "hod",
   "accountant",
   "librarian",
+  "senior_house_master",
+  "assistant_head_academic",
+  "assistant_head_administration",
+  "supply_officer",
 ];
 
 const rolePermissions: Record<
@@ -83,6 +88,17 @@ const rolePermissions: Record<
       "notifications",
       "lessons",
       "assignments",
+      "profile",
+    ],
+    actions: ["view", "create", "edit"],
+  },
+  senior_house_master: {
+    resources: [
+      "houses",
+      "students",
+      "rooms",
+      "notifications",
+      "events",
       "profile",
     ],
     actions: ["view", "create", "edit"],
@@ -136,8 +152,15 @@ const rolePermissions: Record<
     actions: ["view", "create", "edit"],
   },
   houseMaster: {
-    resources: ["houses", "students", "attendance", "notifications", "events"],
-    actions: ["view", "create", "edit"],
+    resources: [
+      "houses",
+      "students",
+      "attendance",
+      "notifications",
+      "events",
+      "rooms",
+    ],
+    actions: ["view", "export"],
   },
   hod: {
     resources: [
@@ -154,7 +177,7 @@ const rolePermissions: Record<
     actions: ["view", "create", "edit"],
   },
   accountant: {
-    resources: ["students", "users", "notifications"],
+    resources: ["students", "notifications", "payments", "billing", "services"],
     actions: ["view", "create", "edit"],
   },
   librarian: {
@@ -274,12 +297,18 @@ async function main() {
       const adminRoleId = roleMap.get("admin");
       if (!adminRoleId) throw new Error("Admin role not found");
 
-      await prisma.userRole.create({
-        data: {
-          userId: user.id,
-          roleId: adminRoleId,
-        },
-      });
+      await Promise.all([
+        prisma.userRole.create({
+          data: {
+            userId: user.id,
+            roleId: adminRoleId,
+          },
+        }),
+        prisma.user.update({
+          where: { id: user.id },
+          data: { role: "admin" },
+        }),
+      ]);
       console.log("Admin user created and assigned admin role");
     }
   } else {

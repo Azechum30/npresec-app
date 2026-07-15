@@ -1,19 +1,20 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { filterBools } from "@/app/(private)/(admin)/admin/staff/utils/check-existing-related-records";
-import { validateAndTransformStudentsData } from "@/app/(private)/(admin)/admin/students/utils/validate-and-transform-students-data";
+import type { validateAndTransformStudentsData } from "@/app/(private)/(admin)/admin/students/utils/validate-and-transform-students-data";
 import { Prisma } from "@/generated/prisma/client";
 import { computeGraduationDate } from "@/lib/compute-graduation-date";
 import { generatePassword } from "@/lib/generatePassword";
 import { prisma } from "@/lib/prisma";
 import { createUserCredentials } from "@/utils/create-user-credentials";
 import {
-  Department,
+  type Department,
   generateStudentIndex,
-  gradelevels,
+  type gradelevels,
 } from "@/utils/generateStudentIndex";
 import { triggerRollback } from "@/utils/trigger-better-auth-user-delete";
 import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 import { revalidateTag } from "next/cache";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 const handler = async (req: NextRequest) => {
   const body = (await req.json()) as ReturnType<
@@ -21,7 +22,7 @@ const handler = async (req: NextRequest) => {
   >;
   const data = body?.data;
 
-  if (!data || !data.data) {
+  if (!data?.data) {
     console.error("[BULK_STUDENT_UPLOAD] Error: No data received.");
     return NextResponse.json(
       { error: "Students data was not received!" },
@@ -65,7 +66,6 @@ const handler = async (req: NextRequest) => {
     );
   }
 
-  // 2. Filter Existing Records (Uniqueness Check)
   const existingEmailSet = new Set(
     existingUsers.map((u) => u.email.toLowerCase()),
   );
@@ -136,7 +136,7 @@ const handler = async (req: NextRequest) => {
             });
 
             const seq = latest
-              ? (parseInt(latest.studentNumber.slice(-3)) || 0) + 1
+              ? (parseInt(latest.studentNumber.slice(-3), 10) || 0) + 1
               : 1;
             const studentID = generateStudentIndex({
               admissionYear,

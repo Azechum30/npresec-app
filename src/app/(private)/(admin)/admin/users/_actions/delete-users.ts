@@ -1,41 +1,40 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use server";
-import { getUserPermissions } from "@/lib/get-session";
+import { nextSafeAction } from "@/lib/next-safe-action";
 import { prisma } from "@/lib/prisma";
-import * as Sentry from "@sentry/nextjs";
-import { revalidateTag } from "next/cache";
 import "server-only";
 import { z } from "zod";
-export const deleteUsersAction = async (values: unknown) => {
-  try {
-    const { hasPermission } = await getUserPermissions("delete:users");
-    if (!hasPermission) return { error: "Permission denied" };
+export const deleteUsersAction = async (values: unknown) =>
+  nextSafeAction(
+    async () => {
+      const { error, success, data } = z
+        .object({
+          ids: z
+            .array(z.string().min(1))
+            .nonempty("At least 1 ID must be provided"),
+        })
+        .safeParse(values);
 
-    const { error, success, data } = z
-      .object({
-        ids: z
-          .array(z.string().min(1))
-          .nonempty("At least 1 ID must be provided"),
-      })
-      .safeParse(values);
+      if (!success || error) throw error;
 
-    if (!success || error) {
-      const errMessage = error.issues.flatMap((e) => e.message).join(",");
-      return { error: errMessage };
-    }
+      const { ids } = data;
 
-    const { ids } = data;
+      const UniqueIdsSet = new Set(ids.map((id) => id));
 
-    const usersToDelete = await prisma.user.deleteMany({
-      where: { id: { in: ids } },
-    });
+      const existing = await prisma.user.findMany({
+        where: { id: { in: ids } },
+        select: { id: true },
+      });
 
-    if (!usersToDelete.count) return { error: "Failed to delete users" };
+      const idsToDelete = existing
+        .filter((user) => UniqueIdsSet.has(user.id))
+        .map((user) => user.id);
 
-    revalidateTag("users-list", "seconds");
-    return { success: true, count: usersToDelete.count };
-  } catch (e) {
-    console.error("Failed to delete users", e);
-    Sentry.captureException(e);
-    return { error: "Something went wrong! please try again" };
-  }
-};
+      const usersToDelete = await prisma.user.deleteMany({
+        where: { id: { in: idsToDelete } },
+      });
+
+      return { success: true, count: usersToDelete.count };
+    },
+    { permission: "delete:users" },
+  );

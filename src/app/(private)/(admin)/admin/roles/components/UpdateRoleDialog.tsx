@@ -1,103 +1,73 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
+import { CreateRoleForm } from "@/app/(private)/(admin)/admin/roles/forms/CreateRoleForm";
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogDescription,
-  DialogTitle,
   DialogHeader,
-  DialogClose,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { useEffect, useState } from "react";
-import { getRole } from "../actions/queries";
-import { toast } from "sonner";
-import LoadingState from "@/components/customComponents/Loading";
-import { CreateRoleForm } from "@/app/(private)/(admin)/admin/roles/forms/CreateRoleForm";
-import { useHandleRoleUpdate } from "@/app/(private)/(admin)/admin/roles/hooks/use-handle-role-update";
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
-import { Loader } from "lucide-react";
+import type { RoleType } from "@/lib/validation";
+import { useQuery } from "@tanstack/react-query";
+import { useUpdateRoleMutationFn } from "../actions/tanstack-mutations";
+import { getRoleQueryOptions } from "../actions/tanstack-queries";
 
 export const UpdateRoleDialog = () => {
   const { id, dialogs, onClose } = useGenericDialog();
 
-  const [role, setRole] = useState<{ name: string; permissions: string[] }>();
-  const [error, setError] = useState<string>("");
-  useEffect(() => {
-    if (!dialogs["updateRole"] || !id) return;
+  const { mutateAsync, isPending } = useUpdateRoleMutationFn(id as string);
 
-    const fetchRole = async () => {
-      const result = await getRole(id as string);
-      if (result.error) {
-        setError(result.error);
-        setRole(undefined);
-        return;
-      }
-      if (result.role) {
-        setRole({
-          name: result.role.name.trim().includes("_")
-            ? result.role.name.trim().split("_").join(" ")
-            : result.role.name,
-          permissions: result.role.permissions?.length
-            ? result.role.permissions.map((perm) => perm.id)
-            : [],
-        });
-        setError("");
-      }
-    };
+  const isOpen = !!dialogs["edit-role"];
+  const validId = id ?? null;
+  const { data } = useQuery({
+    ...getRoleQueryOptions(validId as string),
+    enabled: isOpen && !!validId,
+  });
 
-    fetchRole();
-  }, [id, dialogs]);
-
-  const { isPending, handleRoleUpdate } = useHandleRoleUpdate();
-
-  if (error) {
-    return toast.error(error);
-  }
+  const handleRoleUpdate = async (values: RoleType) => {
+    await Promise.try(async () => {
+      await mutateAsync({ id: id as string, data: values });
+      onClose("edit-role");
+    });
+  };
 
   return (
-    <>
-      <Dialog
-        open={dialogs["updateRole"]}
-        onOpenChange={() => onClose("updateRole")}>
-        {dialogs["updateRole"] && !!id && (
-          <DialogContent>
-            {role ? (
-              <>
-                <DialogHeader>
-                  <DialogTitle>Edit Role</DialogTitle>
-                  <DialogDescription>
-                    Kindly edit role and save in realtime
-                  </DialogDescription>
-                </DialogHeader>
-                <CreateRoleForm
-                  onSubmit={async (values) =>
-                    await handleRoleUpdate({ id: id as string, data: values })
-                  }
-                  defaultValues={role}
-                  isPending={isPending}
-                  id={id}
-                />
-              </>
-            ) : (
-              <>
-                <DialogHeader className="sr-only">
-                  <DialogTitle>Loading Data</DialogTitle>
-                  <DialogDescription>
-                    Kindly wait while data loads...
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex gap-2 items-center">
-                  <Loader className="size-8 animate-spin" />
-                  Loading data...
-                </div>
-              </>
-            )}
-          </DialogContent>
+    <Dialog open={isOpen} onOpenChange={() => onClose("edit-role")}>
+      <DialogContent>
+        {isOpen && data && validId ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>Edit Role</DialogTitle>
+              <DialogDescription>
+                Kindly edit role and save in realtime
+              </DialogDescription>
+            </DialogHeader>
+            <CreateRoleForm
+              onSubmit={handleRoleUpdate}
+              defaultValues={{
+                name: data.name,
+                permissions: data.permissions.map((p) => p.id),
+              }}
+              isPending={isPending}
+              id={validId}
+            />
+          </>
+        ) : (
+          <>
+            <DialogHeader className="sr-only">
+              <DialogTitle>Loading Data</DialogTitle>
+              <DialogDescription>
+                Kindly wait while data loads...
+              </DialogDescription>
+            </DialogHeader>
+            <ShowLoadingState />
+          </>
         )}
-      </Dialog>
-    </>
+      </DialogContent>
+    </Dialog>
   );
 };

@@ -34,5 +34,17 @@ export const getQueryKey = (id?: string) => {
       all: ["services"],
       single: ["service", id as string],
     },
+    allocation: {
+      all: ["house-allocations"],
+      single: ["house-allocation", id as string],
+    },
+    permission: {
+      all: ["permissions"],
+      single: ["permission", id as string],
+    },
+    role: {
+      all: ["roles"],
+      single: ["role", id as string],
+    },
   };
 };

@@ -2,40 +2,41 @@
 "use client";
 
 import { useSystemWideActionsStore } from "@/hooks/use-system-wide-actions-store";
+import { userHasRole } from "@/lib/user-has-role";
 import type { Row, Table } from "@tanstack/react-table";
-import { type FC, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Checkbox } from "../ui/checkbox";
 import { useAuth } from "./SessionProvider";
 
-type RowSelectionsProps = {
-  table?: Table<any>;
+type RowSelectionsProps<T> = {
+  table?: Table<T>;
   isHeader: boolean;
-  row?: Row<any>;
+  row?: Row<T>;
 };
 
-export const RowSelections: FC<RowSelectionsProps> = ({
+export const RowSelections = <T,>({
   table,
   isHeader,
   row,
-}) => {
+}: RowSelectionsProps<T>) => {
   const enabled = useSystemWideActionsStore((s) => s.settings?.enableDeleting);
   const [isMounted, setIsMounted] = useState(false);
 
   const user = useAuth();
 
+  const { settings } = useSystemWideActionsStore();
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  if (!isMounted) {
+  if (!isMounted || !user) {
     return null;
   }
 
-  const userRoles =
-    user?.roles?.flatMap((r) => r.role?.name).filter((r) => r !== undefined) ??
-    [];
+  const userRoles = userHasRole(user);
 
-  if (userRoles.includes("admin")) {
+  if (userRoles.has("admin") || settings?.enableDeleting) {
     return (
       <Checkbox
         type="button"
@@ -52,18 +53,5 @@ export const RowSelections: FC<RowSelectionsProps> = ({
       />
     );
   }
-  return (
-    <Checkbox
-      type="button"
-      role="checkbox"
-      aria-label="role-selection-checkbox"
-      disabled={!enabled}
-      checked={isHeader ? table?.getIsAllRowsSelected() : row?.getIsSelected()}
-      onCheckedChange={
-        isHeader
-          ? () => table?.toggleAllRowsSelected()
-          : () => row?.toggleSelected()
-      }
-    />
-  );
+  return null;
 };

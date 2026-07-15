@@ -69,6 +69,10 @@ export const StaffSelect = {
       image: true,
     },
   },
+
+  houseMaster: {
+    select: { id: true, name: true },
+  },
 } satisfies Prisma.StaffSelect;
 
 export type StaffResponseType = Prisma.StaffGetPayload<{
@@ -158,26 +162,26 @@ export type CourseResponseType = Prisma.CourseGetPayload<{
   select: typeof CourseSelect;
 }>;
 
-export type UserType = Prisma.UserGetPayload<{
-  select: {
-    id: true;
-    name: true;
-    permissions: {
-      select: {
-        id: true;
-        name: true;
-      };
-    };
-    image: true;
-    role: {
-      select: {
-        id: true;
-        name: true;
-      };
-    };
-    roleId: true;
-  };
-}>;
+// export type UserType = Prisma.UserGetPayload<{
+//   select: typeof {
+//     id: true;
+//     name: true;
+//     permissions: {
+//       select: {
+//         id: true;
+//         name: true;
+//       };
+//     };
+//     image: true;
+//     role: {
+//       select: {
+//         id: true;
+//         name: true;
+//       };
+//     };
+//     roleId: true;
+//   };
+// }>;
 
 export const StudentSelect = {
   id: true,
@@ -307,6 +311,7 @@ export const PermissionSelect = {
   roles: {
     select: {
       name: true,
+      id: true,
     },
   },
 } satisfies Prisma.PermissionSelect;
@@ -399,10 +404,12 @@ export const UserSelect = {
   emailVerified: true,
   image: true,
   createdAt: true,
+  banned: true,
   sessions: {
     select: {
       id: true,
       expiresAt: true,
+      impersonatedBy: true,
     },
   },
   roles: {
@@ -478,6 +485,16 @@ export const RoomSelect = {
       name: true,
     },
   },
+  students: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      middleName: true,
+      gender: true,
+      phone: true,
+    },
+  },
 } satisfies Prisma.RoomSelect;
 
 export type RoomResponseType = Prisma.RoomGetPayload<{
@@ -533,7 +550,9 @@ export type UserRole =
   | "parent"
   | "staff"
   | "form_master"
-  | "classTeacher";
+  | "classTeacher"
+  | "senior_house_master"
+  | "houseMaster";
 
 export const priorityRoles = [
   "admin",

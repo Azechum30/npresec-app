@@ -1,7 +1,8 @@
-import type { RouterClient } from "@orpc/server";
-import { RPCLink } from "@orpc/client/fetch";
+/** biome-ignore-all assist/source/organizeImports: reason */
+import type { router } from "@/router/router";
 import { createORPCClient } from "@orpc/client";
-import { router } from "@/router/router";
+import { RPCLink } from "@orpc/client/fetch";
+import type { RouterClient } from "@orpc/server";
 
 declare global {
   var $client: RouterClient<typeof router> | undefined;
@@ -11,7 +12,7 @@ const link = new RPCLink({
   url: () => {
     if (typeof window === "undefined") {
       throw new Error(
-        "ORPC client link URL should not be called in the browser"
+        "ORPC client link URL should not be called in the browser",
       );
     }
 

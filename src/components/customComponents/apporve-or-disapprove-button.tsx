@@ -1,10 +1,10 @@
-import { approveOrDisapproveLogin } from "@/app/(private)/(admin)/admin/users/_actions/approve-or-disapprove-loggin";
-import { UserResponseType } from "@/lib/types";
-import { Row } from "@tanstack/react-table";
+/** biome-ignore-all assist/source/organizeImports: reason */
+"use client";
+
+import { useVerifyOrUnverifyEmailFn } from "@/app/(private)/(admin)/admin/users/_actions/mutations";
+import type { UserResponseType } from "@/lib/types";
+import type { Row } from "@tanstack/react-table";
 import { Loader, LockIcon, Unlock } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useActionState, useEffect } from "react";
-import { toast } from "sonner";
 import { Button } from "../ui/button";
 
 export const ApproveOrDisapproveButton = ({
@@ -12,35 +12,21 @@ export const ApproveOrDisapproveButton = ({
 }: {
   row: Row<UserResponseType>;
 }) => {
-  const [state, formAction, isPending] = useActionState(
-    approveOrDisapproveLogin,
-    {
-      success: false,
-      error: "",
-    },
+  const { mutateAsync, isPending } = useVerifyOrUnverifyEmailFn(
+    row.original.id,
   );
 
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!state) return;
-
-    if (state.error) {
-      toast.error(state.error);
-      return;
-    }
-
-    if (state.success) {
-      toast.success(
-        `${row.original.emailVerified ? "User banished successfully" : "User approved successfully"}`,
-      );
-
-      router.refresh();
-    }
-  }, [state, row, router]);
+  const handleverifyOrUnverifyUserEmail = () => {
+    Promise.try(async () => {
+      mutateAsync({
+        userId: row.original.id,
+        emailVerified: row.original.emailVerified,
+      });
+    });
+  };
 
   return (
-    <form action={formAction}>
+    <>
       <input
         value={row.original.id}
         type="text"
@@ -55,7 +41,8 @@ export const ApproveOrDisapproveButton = ({
         readOnly
       />
       <Button
-        type="submit"
+        onClick={handleverifyOrUnverifyUserEmail}
+        type="button"
         variant={row.original.emailVerified ? "outline" : "destructive"}
         size="sm"
         disabled={isPending}>
@@ -74,6 +61,6 @@ export const ApproveOrDisapproveButton = ({
               : "Approve"}
         </span>
       </Button>
-    </form>
+    </>
   );
 };

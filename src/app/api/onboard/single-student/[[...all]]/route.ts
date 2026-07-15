@@ -37,7 +37,7 @@ export const singleStudentEmailWorkflow = createWorkflow<
         channelName,
         "single-student-email-success",
         {
-          message: "Student email successfully sent",
+          message: "Email successfully sent",
           type: "success",
         },
       );

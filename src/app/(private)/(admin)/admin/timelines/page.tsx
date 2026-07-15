@@ -20,20 +20,22 @@ export default async function AssessmentTimelinesPage() {
   return (
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <h4 className="text-base font-medium line-clamp-1">
-          Assessment Timelines
+        <h4 className="text-xl font-bold bg-linear-to-r from-primary to-muted-foreground dark:to-accent bg-clip-text text-transparent line-clamp-1">
+          Manage Score Timelines
         </h4>
         <div className="flex flex-col md:flex-row gap-3 md:items-center">
           <OpenDialogs
             dialogKey="create-assessment-timeline"
             title="Add Timeline"
             size="lg"
+            permission="create:timelines"
           />
           <OpenDialogs
             dialogKey="bulk-set-assessment-timelines"
             title="Add Timelines"
             size="lg"
             variant="outline"
+            permission="create:timelines"
           />
         </div>
       </div>

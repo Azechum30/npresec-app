@@ -5,6 +5,7 @@ import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { PlusCircle } from "lucide-react";
 import type { FC } from "react";
 import { Button } from "../ui/button";
+import { useAuth } from "./SessionProvider";
 
 const variantType = [
   "default",
@@ -22,20 +23,33 @@ const OpenDialogs: FC<{
   title?: string;
   variant?: (typeof variantType)[number];
   size?: (typeof sizeVariants)[number];
-}> = ({ dialogKey, title, variant, size }) => {
+  permission: string;
+}> = ({ permission, dialogKey, title, variant, size }) => {
   const { onOpen } = useGenericDialog();
 
+  const user = useAuth();
+
+  const userHasPermission = new Set(
+    user?.roles
+      ?.flatMap((r) => r.role?.permissions?.map((p) => p.name).filter(Boolean))
+      .filter((p) => p !== undefined) ?? [],
+  );
+
   return (
-    <Button
-      aria-label={`${dialogKey}-button`}
-      type="button"
-      variant={variant ? variant : "default"}
-      size={size ? size : "lg"}
-      className="w-full md:w-auto hover:cursor-pointer"
-      onClick={() => onOpen(dialogKey, dialogKey)}>
-      <PlusCircle className="size-5 mr-1" />
-      <span>{title ? title : "Add"}</span>
-    </Button>
+    <>
+      {userHasPermission.has(permission) ? (
+        <Button
+          aria-label={`${dialogKey}-button`}
+          type="button"
+          variant={variant ? variant : "default"}
+          size={size ? size : "lg"}
+          className="w-full md:w-auto hover:cursor-pointer"
+          onClick={() => onOpen(dialogKey, dialogKey)}>
+          <PlusCircle className="size-5 mr-1" />
+          <span>{title ? title : "Add"}</span>
+        </Button>
+      ) : null}
+    </>
   );
 };
 

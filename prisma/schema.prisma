@@ -1,3 +1,4 @@
+
 generator client {
   provider        = "prisma-client"
   output          = "../src/generated/prisma"
@@ -40,7 +41,13 @@ model User {
   twoFactorEnabled         Boolean?    @default(false)
   twofactors               TwoFactor[]
 
-  @@index([email, username])
+  role       String?
+  banned     Boolean?  @default(false)
+  banReason  String?
+  banExpires DateTime?
+
+  @@index([email])
+  @@index([username])
   @@map("users")
 }
 
@@ -71,7 +78,8 @@ model UserRole {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
-  @@index([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
   @@map("user_roles")
 }
 
@@ -85,6 +93,8 @@ model Session {
   ipAddress String?
   userAgent String?
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  impersonatedBy String?
 
   @@index([userId])
   @@map("sessions")
@@ -116,7 +126,8 @@ model Department {
   staff       Staff[]   @relation("DepartmentStaff")
   courses     Course[]  @relation("CourseDepartments")
 
-  @@index([name, code])
+  @@index([name])
+  @@index([code])
   @@map("departments")
 }
 
@@ -151,6 +162,7 @@ model Staff {
   formMaster             Class?        @relation("FormMaster")
 
   @@index([employeeId, firstName, lastName, gender])
+  @@index([departmentId])
   @@map("staff")
 }
 
@@ -192,6 +204,8 @@ model Class {
   staff             Staff[]      @relation("ClassStaff")
 
   @@index([code, name])
+  @@index([staffId])
+  @@index([departmentId])
   @@map("classes")
 }
 
@@ -265,9 +279,12 @@ model Student {
   isPaymentAccepted Boolean?           @default(false)
   payments          Payment[]
 
-  @@index([departmentId, currentLevel])
-  @@index([firstName, lastName, studentNumber])
+  @@index([departmentId])
+  @@index([firstName, lastName, studentNumber, currentLevel])
   @@index([currentLevel, status])
+  @@index([classId])
+  @@index([roomId])
+  @@index([houseId])
   @@map("students")
 }
 
@@ -358,6 +375,8 @@ model Document {
 
   @@unique([url, hash])
   @@index([url])
+  @@index([admissionId])
+  @@index([studentId])
   @@map("documents")
 }
 
@@ -433,6 +452,7 @@ model Room {
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
+  @@index([houseId])
   @@map("rooms")
 }
 
@@ -630,6 +650,9 @@ model Payment {
   admission                        Admission?       @relation(fields: [admissionId], references: [id], onDelete: Restrict)
 
   @@index([orderId, reference, transactionId])
+  @@index([admissionId])
+  @@index([studentId])
+  @@index([feeId])
   @@map("payments")
 }
 

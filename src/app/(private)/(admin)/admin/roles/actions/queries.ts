@@ -1,67 +1,33 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 "use server";
-import { getUserPermissions } from "@/lib/get-session";
-import { getErrorMessage } from "@/lib/getErrorMessage";
+import { nextSafeAction } from "@/lib/next-safe-action";
 import { prisma } from "@/lib/prisma";
 import { RolesSelect } from "@/lib/types";
-import * as Sentry from "@sentry/nextjs";
 import "server-only";
 import { z } from "zod";
-import { getCachedRoles } from "./get-cached-roles";
 
-export const getRoles = async () => {
-  try {
-    const { hasPermission } = await getUserPermissions("view:roles");
-    if (!hasPermission) {
-      return { error: "Permission denied!" };
-    }
+export const getRoles = async () =>
+  nextSafeAction(
+    async () => {
+      return { roles: await prisma.role.findMany({ select: RolesSelect }) };
+    },
+    { permission: "view:roles" },
+  );
 
-    const roles = await getCachedRoles();
+export const getRole = async (id: string) =>
+  nextSafeAction(
+    async () => {
+      const result = z.string().safeParse(id);
+      if (!result.success) throw result.error;
 
-    return { roles: roles ?? [] };
-  } catch (e) {
-    Sentry.captureException(e);
-    console.error("Could not fetch roles", e);
-    return {
-      error:
-        process.env.NODE_ENV === "development"
-          ? getErrorMessage(e)
-          : "Something went wrong",
-    };
-  }
-};
+      const { data } = result;
 
-export const getRole = async (id: string) => {
-  try {
-    const { hasPermission } = await getUserPermissions("view:roles");
-    if (!hasPermission) return { error: "Permission denied" };
-
-    const result = z.string().safeParse(id);
-    if (!result.success) {
       return {
-        error: result.error.issues
-          .map((e) => `${e.path[0] as any}: ${e.message}`)
-          .join("\n"),
+        role: await prisma.role.findUniqueOrThrow({
+          where: { id: data },
+          select: RolesSelect,
+        }),
       };
-    }
-
-    const { data } = result;
-
-    const role = await prisma.role.findUnique({
-      where: { id: data },
-      select: RolesSelect,
-    });
-
-    if (!role) return { error: "No role found!" };
-
-    return { role };
-  } catch (e) {
-    Sentry.captureException(e);
-    console.error("Could not fetch role", e);
-    return {
-      error:
-        process.env.NODE_ENV === "development"
-          ? getErrorMessage(e)
-          : "Something went wrong",
-    };
-  }
-};
+    },
+    { permission: "view:roles" },
+  );

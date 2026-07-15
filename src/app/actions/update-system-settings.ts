@@ -36,7 +36,7 @@ export const updateSystemSettings = async (values: TSettings) => {
 
     const current = await prisma.setting.findFirst();
 
-    let updated;
+    let updated = null;
     if (!current) {
       updated = await prisma.setting.create({ data });
     } else {

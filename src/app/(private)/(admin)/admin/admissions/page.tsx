@@ -1,7 +1,7 @@
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { MetricCard } from "@/components/customComponents/metrics-component";
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { PageHeader } from "@/components/customComponents/page-header";
 import {
   FileCheck2,
   GraduationCap,
@@ -26,12 +26,13 @@ export const metadata: Metadata = {
 export default function AdmissionsPage() {
   return (
     <div className="">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-base font-semibold tracking-tight line-clamp-1">
-          Placement List
-        </h1>
-        <OpenDialogs dialogKey="new-admission" title="Add New Student" />
-      </div>
+      <PageHeader
+        pageTitle="Manage Placements"
+        showAddButton
+        buttonText="Add Student"
+        modalKey="new-admission"
+        permission="create:admissions"
+      />
 
       <Suspense fallback={<FallbackComponent />}>
         <RenderPlacedStudentsDataTable />

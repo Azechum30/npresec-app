@@ -13,7 +13,7 @@ import {
   CommandList,
 } from "../ui/command";
 import { useAuth } from "./SessionProvider";
-import { Links } from "./Sidebar";
+import { Links } from "./sidebar-links";
 
 export default function CommandPalette() {
   const { open, onClose } = useOpenCommandPalette();

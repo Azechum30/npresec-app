@@ -3,6 +3,8 @@
 
 import { updateThemeAction } from "@/app/(private)/profile/_actions/update-theme-action";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
+import { type ExtendedSession, useSession } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 import {
   Check,
   Key,
@@ -19,8 +21,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import { useState, useTransition } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { startTransition, useEffect, useState, useTransition } from "react";
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -33,14 +34,17 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { Skeleton } from "../ui/skeleton";
 import { AvatarComponent } from "./avatar-component";
 import LogoutButton from "./LogoutButton";
 import { useAuth } from "./SessionProvider";
+import { StopUserImpersonation } from "./stop-user-impersonation";
 
 export default function UserButton() {
   const user = useAuth();
+  const { data } = useSession();
   const [isPending, startThemeUpdateTransition] = useTransition();
-  const [isMounted, setIsMouted] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const requiredRole = "admin";
   const userRoleNames =
@@ -50,6 +54,8 @@ export default function UserButton() {
   const { setTheme, theme } = useTheme();
   const { onOpen } = useGenericDialog();
 
+  useEffect(() => startTransition(() => setIsMounted(true)));
+
   const handleThemeChange = (newTheme: "system" | "light" | "dark") => {
     setTheme(newTheme);
 
@@ -58,46 +64,61 @@ export default function UserButton() {
     });
   };
 
+  if (!isMounted) {
+    return (
+      <div className="flex space-x-1 items-center">
+        <Skeleton className="size-8 rounded-full bg-gray-200 animate-pulse" />
+        <Skeleton className="h-8 w-20 rounded-md bg-gray-200 animate-pulse" />
+      </div>
+    );
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="default"
-          className="bg-background hover:bg-secondary w-full h-full flex justify-start text-left rounded-none py-2 items-center gap-x-3 border-0 hover:cursor-pointer">
+          className={cn(
+            "bg-transparent hover:bg-secondary flex justify-start text-left py-6 items-center gap-x-1.5 border-0 hover:cursor-pointer",
+            !!data?.session.impersonatedBy && "border border-destructive",
+          )}>
           {user && (
             <AvatarComponent
-              fallback="User Name"
+              fallback={
+                user.name.includes(" ")
+                  ? user.name
+                  : `${user.name.charAt(0)} ${user.name.charAt(1)}`
+              }
               image={user?.image as string | undefined}
             />
           )}
           {!user ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
-            <span className=" flex flex-col">
+            <span className="hidden  md:flex flex-col">
               <span className="font-semibold text-accent-foreground">
                 {user.username}
-              </span>
-              <span className="inline-block text-xs text-muted-foreground">
-                {user.email}
               </span>
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="center">
+      <DropdownMenuContent align="center" className="w-fit">
         <Link
           href={`/profile`}
           className="w-full flex items-center space-x-2 flex-nowrap">
           <DropdownMenuItem className="w-full hover:cursor-pointer">
-            <Avatar>
-              <AvatarImage src={user?.image ? user.image : ""} />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
+            <AvatarComponent
+              image={user?.image ?? undefined}
+              fallback={
+                user?.name.includes(" ")
+                  ? user?.name
+                  : `${user?.name.charAt(0)} ${user?.name.charAt(1)}`
+              }
+            />
             <span className="flex flex-col">
               <span className="font-semibold">{user?.username}</span>
-              <span className="text-xs text-muted-foreground">
-                {user?.email}
-              </span>
+              <span className="text-xs text-muted-foreground">Profile</span>
             </span>
           </DropdownMenuItem>
         </Link>
@@ -202,6 +223,10 @@ export default function UserButton() {
               </DropdownMenuSubTrigger>
             </DropdownMenuSub>
           </>
+        )}
+        <DropdownMenuSeparator />
+        {data?.session.impersonatedBy && (
+          <StopUserImpersonation user={user as ExtendedSession["user"]} />
         )}
         <DropdownMenuSeparator />
         <LogoutButton />

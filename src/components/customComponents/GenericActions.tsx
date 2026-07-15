@@ -15,7 +15,15 @@ import {
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
 import { useSystemWideActionsStore } from "@/hooks/use-system-wide-actions-store";
 import type { Row } from "@tanstack/react-table";
-import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import {
+  Edit,
+  MoreHorizontal,
+  ShieldBan,
+  ShieldCheck,
+  Trash2,
+  VenetianMask,
+} from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "./SessionProvider";
@@ -24,8 +32,13 @@ import { useConfirmDelete } from "./useConfirmDelete";
 type GenericActionsProps<T extends { id: string }> = {
   row: Row<T>;
   dialogId?: string;
+  banModalKey?: string;
   isPending?: boolean;
+  isUnbanningPending?: boolean;
+  isImpersonationPending?: boolean;
   onDelete: (id: string, secondaryValue: string) => Promise<void>;
+  unban?: (id: string) => Promise<void>;
+  impersonate?: (id: string) => Promise<void>;
   secondaryKey: keyof T;
 };
 
@@ -33,7 +46,13 @@ export const GenericActions = <T extends { id: string }>({
   row,
   dialogId,
   secondaryKey,
+  banModalKey,
+  isUnbanningPending,
+  isImpersonationPending,
   onDelete,
+  unban,
+  impersonate,
+
   isPending,
 }: GenericActionsProps<T>) => {
   const pathname = usePathname().split("/").pop();
@@ -42,14 +61,14 @@ export const GenericActions = <T extends { id: string }>({
 
   const user = useAuth();
   const { settings } = useSystemWideActionsStore();
-  const userRoles =
-    user?.roles?.flatMap((r) => r.role?.name).filter((r) => r !== undefined) ??
-    [];
 
+  const userHasRole = new Set(
+    user?.roles?.map((r) => r.role?.name ?? "").filter(Boolean),
+  );
   const { original } = row;
   const handleKeyPress = () => {};
   if (
-    !userRoles.includes("admin") &&
+    !userHasRole.has("admin") &&
     (settings?.enableDeleting || settings?.enableEditing)
   ) {
     return (
@@ -75,7 +94,7 @@ export const GenericActions = <T extends { id: string }>({
                   {pathname === "students" ? (
                     <Link
                       prefetch="auto"
-                      href={`/admin/students/edit/${original.id}`}>
+                      href={`/admin/students/edit/${original.id}` as Route}>
                       <span className="flex items-center gap-1">
                         <Edit className="size-5 text-blue-500" />
                         Edit
@@ -120,7 +139,7 @@ export const GenericActions = <T extends { id: string }>({
         {isPending && <LoadingState />}
       </>
     );
-  } else if (userRoles.includes("admin")) {
+  } else if (userHasRole.has("admin")) {
     return (
       <>
         <DropdownMenu>
@@ -135,12 +154,15 @@ export const GenericActions = <T extends { id: string }>({
               <MoreHorizontal className="size-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent
+            className="w-fit"
+            align="start"
+            alignOffset={-70}>
             <DropdownMenuLabel className="text-xs">Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="hover:cursor-pointer">
               {pathname === "students" ? (
-                <Link href={`/admin/students/edit/${original.id}`}>
+                <Link href={`/admin/students/edit/${original.id}` as Route}>
                   <span className="flex items-center gap-1">
                     <Edit className="size-5 text-blue-500" />
                     Edit
@@ -170,10 +192,41 @@ export const GenericActions = <T extends { id: string }>({
               <Trash2 className="size-5 text-destructive" />
               Delete
             </DropdownMenuItem>
+            {pathname === "users" && (
+              <>
+                <DropdownMenuSeparator />
+                {"banned" in row.original && row.original?.banned ? (
+                  <DropdownMenuItem
+                    className="hover:cursor-pointer"
+                    onClick={async () => await unban?.(row.original.id)}>
+                    <ShieldCheck className="size-5 text-green-500" />
+                    Unban User
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem
+                    className="hover:cursor-pointer"
+                    onClick={() =>
+                      onOpen(banModalKey as string, row.original.id)
+                    }>
+                    <ShieldBan className="size-5 text-destructive" />
+                    Ban User
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="hover:cursor-pointer"
+                  onClick={async () => await impersonate?.(row.original.id)}>
+                  <VenetianMask className="size-5 text-destructive" />
+                  Impersonate User
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
         <ConfirmDeleteComponent />
-        {isPending && <LoadingState />}
+        {isPending ||
+          isUnbanningPending ||
+          (isImpersonationPending && <LoadingState />)}
       </>
     );
   }

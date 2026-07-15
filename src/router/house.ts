@@ -1,3 +1,5 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
+
 import { prisma } from "@/lib/prisma";
 import { HouseSelect } from "@/lib/types";
 import { HouseSchema } from "@/lib/validation";
@@ -6,14 +8,14 @@ import { requirePermissions } from "@/middlewares/permissions";
 import { revalidateTag } from "next/cache";
 import { z } from "zod";
 
+import { getQueryKey } from "@/app/(private)/(admin)/admin/staff/utils/get-query-key";
 import { Prisma } from "@/generated/prisma/client";
 import { commonErrors } from "@/lib/commonErrors";
-import { getCachedHouses } from "@/utils/get-cached-houses";
 
 export const createHouse = authMiddleware
   .use(requirePermissions("create:houses"))
   .input(HouseSchema)
-  .output(HouseSchema.extend({ id: z.string().cuid() }))
+  .output(HouseSchema.extend({ id: z.string() }))
   .errors({
     ...commonErrors,
   })
@@ -31,13 +33,14 @@ export const createHouse = authMiddleware
         },
       });
 
-      revalidateTag("houses-list", "seconds");
+      revalidateTag(getQueryKey().staff.all[0], "seconds");
+
       return {
         ...house,
         occupancy: HouseSchema.shape.occupancy.parse(house.occupancy),
         houseMasterId: house.houseMasterId as string,
       };
-    } catch (err: any) {
+    } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
         switch (err.code) {
           case "P2002":
@@ -60,23 +63,41 @@ export const getHouses = authMiddleware
   .output(
     z.array(
       HouseSchema.extend({
-        id: z.string().cuid(),
+        id: z.string(),
         houseMaster: z
           .object({
-            id: z.string().cuid(),
+            id: z.string(),
             firstName: z.string(),
             lastName: z.string(),
           })
           .nullable(),
-      })
-    )
+      }),
+    ),
   )
   .errors({
     ...commonErrors,
   })
-  .handler(async () => {
-    const houses = await getCachedHouses();
+  .handler(async ({ context }) => {
+    const { roles, id } = context.user;
 
+    const userRole = new Set(
+      roles?.map((r) => r.role.name ?? "").filter(Boolean),
+    );
+
+    let whereInputQuery: Prisma.HouseWhereInput = {};
+
+    if (userRole.has("houseMaster")) {
+      whereInputQuery = {
+        ...whereInputQuery,
+        houseMaster: { userId: id },
+      };
+    }
+
+    const houses = await prisma.house.findMany({
+      where: whereInputQuery,
+      select: HouseSelect,
+      orderBy: { name: "asc" },
+    });
     return houses.map((house) => ({
       ...house,
       occupancy: HouseSchema.shape.occupancy.parse(house.occupancy),
@@ -86,18 +107,18 @@ export const getHouses = authMiddleware
 
 export const getHouseById = authMiddleware
   .use(requirePermissions("view:houses"))
-  .input(z.object({ id: z.string().cuid() }))
+  .input(z.object({ id: z.string() }))
   .output(
     HouseSchema.extend({
-      id: z.string().cuid(),
+      id: z.string(),
       houseMaster: z
         .object({
-          id: z.string().cuid(),
+          id: z.string(),
           firstName: z.string(),
           lastName: z.string(),
         })
         .nullable(),
-    })
+    }),
   )
   .errors({
     ...commonErrors,
@@ -118,7 +139,7 @@ export const getHouseById = authMiddleware
         occupancy: HouseSchema.shape.occupancy.parse(house?.occupancy),
         houseMasterId: house?.houseMasterId as string,
       };
-    } catch (err: any) {
+    } catch (err) {
       if (err instanceof Prisma.PrismaClientValidationError) {
         throw errors.BAD_REQUEST();
       }
@@ -128,7 +149,7 @@ export const getHouseById = authMiddleware
 
 export const deleteHouse = authMiddleware
   .use(requirePermissions("delete:houses"))
-  .input(z.object({ id: z.string().cuid() }))
+  .input(z.object({ id: z.string() }))
   .output(z.object({ success: z.boolean() }))
   .errors({
     ...commonErrors,
@@ -152,7 +173,7 @@ export const deleteHouse = authMiddleware
       revalidateTag("houses-list", "seconds");
 
       return { success: true };
-    } catch (err: any) {
+    } catch (err) {
       if (err instanceof Prisma.PrismaClientValidationError) {
         throw errors.BAD_REQUEST();
       }
@@ -162,8 +183,8 @@ export const deleteHouse = authMiddleware
 
 export const updateHouse = authMiddleware
   .use(requirePermissions("edit:houses"))
-  .input(z.object({ id: z.string().cuid() }).and(HouseSchema))
-  .output(HouseSchema.extend({ id: z.string().cuid() }))
+  .input(z.object({ id: z.string() }).and(HouseSchema))
+  .output(HouseSchema.extend({ id: z.string() }))
   .errors({
     ...commonErrors,
   })
@@ -194,14 +215,17 @@ export const updateHouse = authMiddleware
         });
       });
 
-      revalidateTag("houses-list", "seconds");
-
+      revalidateTag(getQueryKey().staff.all[0], "seconds");
+      revalidateTag(
+        getQueryKey(input.houseMasterId as string).staff.single[0],
+        "seconds",
+      );
       return {
         ...updatedHouse,
         occupancy: HouseSchema.shape.occupancy.parse(updatedHouse.occupancy),
         houseMasterId: updatedHouse.houseMasterId as string,
       };
-    } catch (err: any) {
+    } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
         switch (err.code) {
           case "P2002":

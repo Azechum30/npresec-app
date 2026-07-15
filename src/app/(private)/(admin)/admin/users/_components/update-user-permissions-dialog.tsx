@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import {
@@ -8,93 +9,94 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { useEffect, useRef } from "react";
-import { toast } from "sonner";
+import type { UserPermissionsFormType } from "@/lib/validation";
+import { useQueries } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { permissionsQueryOptions } from "../../permissions/actions/tanstack-queries";
+import { rolesQueryOptions } from "../../roles/actions/tanstack-queries";
+import { useUpdateUserRolesPermissionsFn } from "../_actions/mutations";
+import { getUserQueryOptions } from "../_actions/queries";
 import { UpdateUserPermissionsForm } from "../_forms/update-user-permissions-form";
-import { useGetUser } from "../_hooks/use-get-user";
-import { useUpdateUserPermissions } from "../_hooks/use-update-user-permissions";
 
 export const UpdateUserPermissionsDialog = () => {
   const { id, dialogs, onClose } = useGenericDialog();
-  const { fetchError, isFetchingUser, user } = useGetUser();
-  const { handleUpdateUserPermissions, isPending, updateError, updateSuccess } =
-    useUpdateUserPermissions();
 
-  const prevUpdateSuccessRef = useRef(false);
-  const wasUpdateErrorRef = useRef(false);
-  useEffect(() => {
-    const wasUpdateSuccess = prevUpdateSuccessRef.current;
-    if (wasUpdateSuccess && !isPending && updateSuccess) {
-      toast.success("User permissions updated successfully");
-      setTimeout(() => {
-        onClose("update-user-permissions");
-      }, 100);
-    }
-    prevUpdateSuccessRef.current = isPending;
-  }, [updateSuccess, isPending, onClose]);
+  const { mutateAsync, isPending } = useUpdateUserRolesPermissionsFn(
+    id as string,
+  );
+  const isOpen = !!dialogs["update-user-permissions"];
+  const validId = id ?? null;
 
-  useEffect(() => {
-    const wasError = wasUpdateErrorRef.current;
+  const [userQueryData, rolesQueryData, permissionsQueryData] = useQueries({
+    queries: [
+      {
+        ...getUserQueryOptions(validId as string),
+        enabled: isOpen && !!validId,
+      },
+      { ...rolesQueryOptions, enabled: isOpen && !!validId },
+      { ...permissionsQueryOptions, enabled: isOpen && !!validId },
+    ],
+  });
 
-    if (wasError && !isPending && updateError) {
-      toast.error(updateError);
-    }
-    wasUpdateErrorRef.current = isPending;
-  }, [isPending, updateError]);
+  const roles = useMemo(() => {
+    if (!rolesQueryData.data || !userQueryData.data) return [];
 
-  const wasFetchErrorRef = useRef(false);
+    return rolesQueryData.data
+      .filter((r) => userQueryData.data.roles.some((ur) => ur.roleId === r.id))
+      .map((r) => ({ ...r, name: r.name.replaceAll(/_/g, " ") }));
+  }, [rolesQueryData.data, userQueryData.data]);
 
-  useEffect(() => {
-    const wasFetchError = wasFetchErrorRef.current;
-
-    if (wasFetchError && !isFetchingUser && fetchError) {
-      toast.error(fetchError);
-    }
-    wasFetchErrorRef.current = isFetchingUser;
-  }, [isFetchingUser, fetchError]);
-
-  const defaultValues = user
-    ? {
-        userId: user.id,
-        roleId: user.roles?.flatMap((r) => r.roleId),
-        permissions:
-          user.roles?.flatMap((rs) => rs.role.permissions.map((p) => p.id)) ??
-          [],
-      }
-    : undefined;
+  const handleUpdateUserPermissions = (values: UserPermissionsFormType) => {
+    Promise.try(async () => {
+      await mutateAsync(values);
+      onClose("update-user-permissions");
+    });
+  };
 
   return (
     <Dialog
-      open={dialogs["update-user-permissions"]}
+      open={isOpen}
       onOpenChange={() => onClose("update-user-permissions")}>
-      {defaultValues && dialogs["update-user-permissions"] && id ? (
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Update User Permissions</DialogTitle>
-            <DialogDescription>
-              Update the permissions for the selected user. Kindly be informed
-              that the permissions you assign to this user will be propagated
-              across all users with the same role as the selected user.
-            </DialogDescription>
-          </DialogHeader>
-          <UpdateUserPermissionsForm
-            onSubmit={(values) => handleUpdateUserPermissions(values)}
-            isPending={isPending}
-            id={id}
-            defaultValues={defaultValues}
-          />
-        </DialogContent>
-      ) : (
-        <DialogContent>
-          <DialogHeader className="sr-only">
-            <DialogTitle>Loading...</DialogTitle>
-            <DialogDescription>
-              Please wait while we load the user details.
-            </DialogDescription>
-          </DialogHeader>
-          <ShowLoadingState />
-        </DialogContent>
-      )}
+      <DialogContent>
+        {userQueryData.data &&
+        rolesQueryData.data &&
+        permissionsQueryData.data ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>Update User Permissions</DialogTitle>
+              <DialogDescription>
+                Update the permissions for the selected user. Kindly be informed
+                that the permissions you assign to this user will be propagated
+                across all users with the same role as the selected user.
+              </DialogDescription>
+            </DialogHeader>
+            <UpdateUserPermissionsForm
+              onSubmit={(values) => handleUpdateUserPermissions(values)}
+              isPending={isPending}
+              roles={roles}
+              permissions={permissionsQueryData.data}
+              defaultValues={{
+                userId: userQueryData.data.id,
+                roleId: userQueryData.data.roles.map((r) => r.roleId),
+                permissions: userQueryData.data.roles.flatMap((r) =>
+                  r.role.permissions.flatMap((p) => p.id),
+                ),
+              }}
+              id={id}
+            />
+          </>
+        ) : (
+          <>
+            <DialogHeader className="sr-only">
+              <DialogTitle>Loading...</DialogTitle>
+              <DialogDescription>
+                Please wait while we load the user details.
+              </DialogDescription>
+            </DialogHeader>
+            <ShowLoadingState />
+          </>
+        )}
+      </DialogContent>
     </Dialog>
   );
 };

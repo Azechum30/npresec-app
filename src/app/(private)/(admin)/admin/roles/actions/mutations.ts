@@ -1,6 +1,9 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 "use server";
+import { ActionError } from "@/lib/constants";
 import { getUserPermissions } from "@/lib/get-session";
 import { getErrorMessage } from "@/lib/getErrorMessage";
+import { nextSafeAction } from "@/lib/next-safe-action";
 import { prisma } from "@/lib/prisma";
 import { RoleSchema, UpdateRoleSchema } from "@/lib/validation";
 import * as Sentry from "@sentry/nextjs";
@@ -8,96 +11,59 @@ import { revalidateTag } from "next/cache";
 import "server-only";
 import { z } from "zod";
 
-export const createRole = async (values: unknown) => {
-  try {
-    const { hasPermission } = await getUserPermissions("create:roles");
-    if (!hasPermission) {
-      return { error: "Permission denied" };
-    }
+export const createRole = async (values: unknown) =>
+  nextSafeAction(
+    async () => {
+      const result = RoleSchema.safeParse(values);
 
-    const unvalidatedData = RoleSchema.safeParse(values);
+      if (!result.success) throw result.error;
+      const { name, permissions } = result.data;
 
-    if (!unvalidatedData.success) {
-      const zodError = unvalidatedData.error.issues.map(
-        (e) => `${e.path[0] as any}: ${e.message}`,
-      );
-      return { error: zodError.join("\n") };
-    }
-
-    const { name, permissions } = unvalidatedData.data;
-
-    const role = await prisma.role.create({
-      data: {
-        name,
-        permissions: {
-          connect: permissions.map((permId) => ({ id: permId })),
+      const role = await prisma.role.create({
+        data: {
+          name,
+          permissions: {
+            connect: permissions.map((permId) => ({ id: permId })),
+          },
         },
-      },
-    });
+      });
 
-    if (!role) {
-      return { error: "Could not create role" };
-    }
+      return { role };
+    },
+    { permission: "create:roles" },
+  );
 
-    revalidateTag("roles", "seconds");
+export const updateRole = async (values: unknown) =>
+  nextSafeAction(
+    async () => {
+      const result = UpdateRoleSchema.safeParse(values);
+      if (!result.success) throw result.error;
+      const { id, data } = result.data;
 
-    return { role };
-  } catch (e) {
-    Sentry.captureException(e);
-    console.error("Could not create role", e);
-    return {
-      error:
-        process.env.NODE_ENV === "development"
-          ? getErrorMessage(e)
-          : "Something went wrong!",
-    };
-  }
-};
-
-export const updateRole = async (values: unknown) => {
-  try {
-    const { hasPermission } = await getUserPermissions("edit:roles");
-    if (!hasPermission) {
-      return { error: "Permission denied" };
-    }
-
-    const result = UpdateRoleSchema.safeParse(values);
-    if (!result.success) {
-      const zodError = result.error.issues.map(
-        (e) => `${e.path[0] as any}: ${e.message}`,
-      );
-      return { error: zodError.join("\n") };
-    }
-
-    const { id, data } = result.data;
-
-    const updatedRole = await prisma.role.update({
-      where: { id },
-      data: {
-        ...data,
-        permissions: {
-          set: data.permissions.map((permId) => ({ id: permId })),
+      const existing = await prisma.role.findFirst({
+        where: {
+          id: { not: id },
+          name: data.name,
         },
-      },
-    });
+      });
 
-    if (!updatedRole) {
-      return { error: "Could not update Role" };
-    }
+      if (existing)
+        throw new ActionError("a user role already exists with this name");
 
-    revalidateTag("roles", "seconds");
-    return { role: updatedRole };
-  } catch (e) {
-    Sentry.captureException(e);
-    console.error("Could not update role", e);
-    return {
-      error:
-        process.env.NODE_ENV === "development"
-          ? getErrorMessage(e)
-          : "Something went wrong!",
-    };
-  }
-};
+      const updatedRole = await prisma.role.update({
+        where: { id },
+        data: {
+          ...data,
+          permissions: {
+            set: data.permissions.map((permId) => ({ id: permId })),
+          },
+        },
+      });
+
+      return { role: updatedRole };
+    },
+    { permission: "edit:roles" },
+  );
 
 export const deleteRole = async (value: string) => {
   try {

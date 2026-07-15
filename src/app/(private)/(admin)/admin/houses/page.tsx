@@ -1,46 +1,66 @@
-import { DataTableSkeleton } from "@/components/customComponents/DataTable-Skeleton";
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
-import { client } from "@/lib/orpc";
+/** biome-ignore-all assist/source/organizeImports: reason */
+import { FallbackComponent } from "@/components/customComponents/fallback-component";
+import { PageHeader } from "@/components/customComponents/page-header";
+import { getQueryClient } from "@/components/providers/get-query-client";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import type { Metadata } from "next";
 import { Suspense } from "react";
-import { EditHouseModal } from "./_components/edit-house-modal";
-import { RenderCreateHouseModal } from "./_components/render-create-house-modal";
+import { staffQueryOptions } from "../staff/actions/queries";
+import { HousesDialogProviders } from "./_components/houses-dialog-providers";
 import { RenderHouseListTable } from "./_components/render-house-list-table";
+import { housesQueryOptions } from "./queries";
+
+export const metadata: Metadata = {
+  title: "Manage Houses",
+  description:
+    "Discover a  way to create and manage students house affiliations. A simple way to track occupancy ratios and gain insight into students accommodation data in the school.",
+  keywords: [
+    "House Management",
+    "Occupancy ratio",
+    "Residency",
+    "Nakpanduri Presby SHTS",
+  ],
+  creator: "NPRESEC",
+  authors: [{ name: "IT Directorate" }],
+  robots: {
+    index: false,
+    follow: false,
+    noarchive: true,
+    nosnippet: true,
+  },
+};
 
 export default async function HousesPage() {
   return (
     <div className="">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
-        <h1 className="font-semibold text-base line-clamp-1">All Houses</h1>
-        <OpenDialogs dialogKey="create-house" />
-      </div>
+      <PageHeader
+        pageTitle="Manage Houses"
+        showAddButton
+        buttonText="Add House"
+        modalKey="create-house"
+        permission="create:houses"
+      />
 
-      <Suspense
-        fallback={
-          <DataTableSkeleton
-            columnCount={7}
-            cellWidths={[
-              "10rem",
-              "10rem",
-              "10rem",
-              "6rem",
-              "10rem",
-              "6rem",
-              "6rem",
-            ]}
-            shrinkZero
-          />
-        }>
-        <FetchHouseData />
+      <Suspense fallback={<FallbackComponent />}>
+        <LoadHousesData />
       </Suspense>
 
-      <RenderCreateHouseModal />
-
-      <EditHouseModal />
+      <HousesDialogProviders />
     </div>
   );
 }
 
-const FetchHouseData = async () => {
-  const houses = await client.house.getHouses();
-  return <RenderHouseListTable houses={houses} />;
+const LoadHousesData = async () => {
+  const queryClient = getQueryClient();
+
+  await Promise.all([
+    queryClient.ensureQueryData(housesQueryOptions),
+    queryClient.ensureQueryData(staffQueryOptions),
+  ]);
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <RenderHouseListTable />
+    </HydrationBoundary>
+  );
 };

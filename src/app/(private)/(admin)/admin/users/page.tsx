@@ -1,30 +1,46 @@
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
-import { Suspense } from "react";
-import { getAllUsersAction } from "./_actions/get-all-users-action";
-import { RenderUsersTable } from "./_components/render-users-table";
+/** biome-ignore-all assist/source/organizeImports: reason */
 
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import { connection } from "next/server";
-
-// export const dynamic = "force-dynamic";
+import { PageHeader } from "@/components/customComponents/page-header";
+import { getQueryClient } from "@/components/providers/get-query-client";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { Suspense } from "react";
+import { permissionsQueryOptions } from "../permissions/actions/tanstack-queries";
+import { rolesQueryOptions } from "../roles/actions/tanstack-queries";
+import { usersQueryOptions } from "./_actions/queries";
+import { RenderUsersTable } from "./_components/render-users-table";
+import { UsersDialogsProviders } from "./_components/users-dialogs-providers";
 
 export default function UsersPage() {
   return (
     <div>
-      <div className="flex flex-col gap-3 md:flex-row md:justify-between md:items-center">
-        <h1 className="text-base font-medium line-clamp-1">All Users</h1>
-        <OpenDialogs dialogKey="create-auth-user" title="Add a new User" />
-      </div>
+      <PageHeader
+        pageTitle="Manage Users"
+        showAddButton
+        buttonText="Add User"
+        modalKey="create-auth-user"
+        permission="create:users"
+      />
       <Suspense fallback={<FallbackComponent />}>
         <RenderUserTable />
       </Suspense>
+
+      <UsersDialogsProviders />
     </div>
   );
 }
 
 const RenderUserTable = async () => {
-  await connection();
-  const { error, users } = await getAllUsersAction();
+  const queryClient = getQueryClient();
+  await Promise.all([
+    queryClient.ensureQueryData(usersQueryOptions),
+    queryClient.ensureQueryData(permissionsQueryOptions),
+    queryClient.ensureQueryData(rolesQueryOptions),
+  ]);
 
-  return <RenderUsersTable error={error} users={users} />;
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <RenderUsersTable />
+    </HydrationBoundary>
+  );
 };

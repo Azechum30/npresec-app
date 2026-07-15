@@ -1,39 +1,27 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use server";
-import { getUserPermissions } from "@/lib/get-session";
+import { nextSafeAction } from "@/lib/next-safe-action";
 import { prisma } from "@/lib/prisma";
-import * as Sentry from "@sentry/nextjs";
-import { revalidateTag } from "next/cache";
 import "server-only";
 import { z } from "zod";
 
-export const deleteUserAction = async (id: unknown) => {
-  try {
-    const { hasPermission } = await getUserPermissions("delete:users");
-    if (!hasPermission) {
-      return { error: "Permission denied" };
-    }
+export const deleteUserAction = async (id: unknown) =>
+  nextSafeAction(
+    async () => {
+      const { error, success, data } = z
+        .object({ id: z.string().min(1) })
+        .safeParse(id);
 
-    const { error, success, data } = z
-      .object({ id: z.string().min(1) })
-      .safeParse(id);
+      if (!success) throw error;
 
-    if (!success || error) {
-      const errorMessage = error.issues.flatMap((e) => e.message).join(",");
-      return { error: errorMessage };
-    }
+      const user = await prisma.user.findUniqueOrThrow({
+        where: { id: data.id },
+        select: { id: true },
+      });
 
-    const userToDelete = await prisma.user.delete({
-      where: { id: data.id },
-    });
-
-    if (!userToDelete) return { error: "Failed to delete user" };
-
-    revalidateTag("users-list", "seconds");
-
-    return { success: true };
-  } catch (e) {
-    console.error("An error occurred while trying to delete user", e);
-    Sentry.captureException(e);
-    return { error: "Something went wrong! Please try again" };
-  }
-};
+      await prisma.user.delete({
+        where: { id: user.id },
+      });
+    },
+    { permission: "delete:users" },
+  );

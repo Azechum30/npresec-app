@@ -1,17 +1,20 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import InputWithLabel from "@/components/customComponents/InputWithLabel";
 import LoadingButton from "@/components/customComponents/LoadingButton";
 import SelectWithLabel from "@/components/customComponents/SelectWithLabel";
+import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
 import { Form } from "@/components/ui/form";
-import { client } from "@/lib/orpc";
-import { RoomSchema, RoomType } from "@/lib/validation";
+import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
+import { RoomSchema, type RoomType } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createSafeClient } from "@orpc/client";
+import { useQueries } from "@tanstack/react-query";
 import { Plus, Save } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { toast } from "sonner";
+import { housesQueryOptions } from "../../(admin)/admin/houses/queries";
+import { roomsQueryOptions } from "../_actions/queries";
 
 type CreateRoomFormProps = {
   onSubmitAction: (data: RoomType) => void;
@@ -20,15 +23,22 @@ type CreateRoomFormProps = {
   defaultValues?: RoomType;
 };
 
+type GenderAggregate = { roomCount: number; bedCount: number };
+type RoomAggregates = Record<"MALE" | "FEMALE", GenderAggregate>;
+
+const GENDER_OPTIONS = ["MALE", "FEMALE", "BOTH"];
+
 export const CreateRoomForm = ({
   onSubmitAction: onSubmit,
   id,
   isPending,
   defaultValues,
 }: CreateRoomFormProps) => {
-  const safeClient = useMemo(() => createSafeClient(client), []);
+  const { dialogs } = useGenericDialog();
+  const isOpen = !!dialogs["create-room"] || !!dialogs["edit-rooms"];
+
   const form = useForm<RoomType>({
-    mode: "onBlur",
+    mode: "onSubmit",
     resolver: zodResolver(RoomSchema),
     defaultValues: defaultValues ?? {
       houseId: "",
@@ -37,100 +47,34 @@ export const CreateRoomForm = ({
     },
   });
 
-  // Houses fetched once
-  const [houses, setHouses] = useState<Awaited<
-    ReturnType<typeof client.house.getHouses>
-  > | null>(null);
+  const [housesQueryData, roomsQueryData] = useQueries({
+    queries: [
+      { ...housesQueryOptions, enabled: isOpen },
+      { ...roomsQueryOptions(), enabled: isOpen },
+    ],
+  });
 
-  useEffect(() => {
-    const fetchHouses = async () => {
-      const { error, data } = await safeClient.house.getHouses();
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-      setHouses(data);
-    };
-    fetchHouses();
-  }, [safeClient]);
-
-  // Watch form fields
   const selectedHouse = useWatch({ control: form.control, name: "houseId" });
   const bedCapacity = useWatch({ control: form.control, name: "capacity" });
   const houseGender = useWatch({ control: form.control, name: "rmGender" });
 
-  type GenderAggregate = { roomCount: number; bedCount: number };
-  type RoomAggregates = Record<"MALE" | "FEMALE", GenderAggregate>;
-  type RoomRecord = RoomType & {
-    id: string;
-    house: { id: string; name: string };
-  };
-
-  // Derived: filteredHouse
   const filteredHouse = useMemo(
-    () => houses?.find((house) => house.id === selectedHouse) ?? null,
-    [houses, selectedHouse],
+    () =>
+      housesQueryData.data?.find((house) => house.id === selectedHouse) ?? null,
+    [housesQueryData.data, selectedHouse],
   );
 
-  const roomAggregates = useMemo<RoomAggregates | null>(() => {
-    if (!selectedHouse) return null;
+  const currentRoomId = id ?? null;
 
-    const roomClient = (
-      safeClient as typeof safeClient & {
-        room: {
-          getRooms: (input: { houseId?: string }) => Promise<{
-            data?: RoomRecord[];
-            error?: { message?: string };
-          }>;
-        };
-      }
-    ).room;
-
-    // We can’t call async inside useMemo, so instead fetch once in effect
-    // and store results in state. But we compute aggregates here.
-    return null; // placeholder, see below
-  }, [selectedHouse, safeClient]);
-
-  // Fetch rooms separately and store raw data
-  const [rooms, setRooms] = useState<RoomRecord[] | null>(null);
-  useEffect(() => {
-    const fetchRooms = async () => {
-      if (!selectedHouse) {
-        setRooms(null);
-        return;
-      }
-      const roomClient = (
-        safeClient as typeof safeClient & {
-          room: {
-            getRooms: (input: { houseId?: string }) => Promise<{
-              data?: RoomRecord[];
-              error?: { message?: string };
-            }>;
-          };
-        }
-      ).room;
-
-      const { error, data } = await roomClient.getRooms({
-        houseId: selectedHouse,
-      });
-      if (error) {
-        toast.error(error.message);
-        setRooms(null);
-        return;
-      }
-      setRooms(data ?? []);
-    };
-    fetchRooms();
-  }, [selectedHouse, safeClient]);
-
-  // Now compute aggregates from rooms
   const aggregates = useMemo<RoomAggregates | null>(() => {
-    if (!rooms) return null;
+    if (!roomsQueryData.data) return null;
     const base: RoomAggregates = {
       MALE: { roomCount: 0, bedCount: 0 },
       FEMALE: { roomCount: 0, bedCount: 0 },
     };
-    rooms.forEach((room) => {
+    roomsQueryData.data.forEach((room) => {
+      if (currentRoomId && room.id === currentRoomId) return;
+
       if (room.rmGender === "MALE" || room.rmGender === "BOTH") {
         base.MALE.roomCount += 1;
         base.MALE.bedCount += room.capacity;
@@ -141,9 +85,8 @@ export const CreateRoomForm = ({
       }
     });
     return base;
-  }, [rooms]);
+  }, [roomsQueryData.data, currentRoomId]);
 
-  // Validation effects (no setState, only form methods)
   useEffect(() => {
     if (!houseGender || !filteredHouse) {
       form.clearErrors("rmGender");
@@ -169,6 +112,20 @@ export const CreateRoomForm = ({
       form.clearErrors("capacity");
       return;
     }
+
+    const { isDirty, dirtyFields } = form.formState;
+    const numericBedCapacity = Number(bedCapacity) || 0;
+
+    if (defaultValues && !dirtyFields.capacity) {
+      form.clearErrors("capacity");
+      return;
+    }
+
+    if (!isDirty && numericBedCapacity === 0) {
+      form.clearErrors("capacity");
+      return;
+    }
+
     const plan =
       houseGender === "FEMALE"
         ? filteredHouse.occupancy.femaleOccupancy
@@ -194,35 +151,43 @@ export const CreateRoomForm = ({
       return;
     }
 
-    const nextBedTotals = (aggregatesForGender?.bedCount ?? 0) + bedCapacity;
+    const nextBedTotals =
+      (aggregatesForGender?.bedCount ?? 0) + numericBedCapacity;
+
     if (
       typeof plan.roomCapacity === "number" &&
       nextBedTotals > plan.roomCapacity
     ) {
       form.setError("capacity", {
         type: "validate",
-        message:
-          "Bed capacity currently exceeds the capacity specified for this gender",
+        message: `Bed capacity currently exceeds the maximum capacity (${plan.roomCapacity}) specified for this gender`,
       });
       return;
     }
 
     form.clearErrors("capacity");
-  }, [filteredHouse, houseGender, bedCapacity, aggregates, form]);
+  }, [
+    filteredHouse,
+    houseGender,
+    bedCapacity,
+    aggregates,
+    form,
+    defaultValues,
+  ]);
 
-  const handleSubmit = (data: RoomType) => {
-    onSubmit(data);
-  };
+  if (housesQueryData.isLoading || roomsQueryData.isLoading) {
+    return <ShowLoadingState />;
+  }
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 border p-4 rounded-md">
         <SelectWithLabel
           name="houseId"
           fieldTitle="House"
-          data={houses ?? []}
+          data={housesQueryData.data ?? []}
           selectedKey="name"
           valueKey="id"
           schema={RoomSchema}
@@ -232,7 +197,7 @@ export const CreateRoomForm = ({
         <SelectWithLabel
           name="rmGender"
           fieldTitle="Assigned Gender"
-          data={["MALE", "FEMALE", "BOTH"]}
+          data={GENDER_OPTIONS}
           schema={RoomSchema}
           placeholder="Select gender to which room is assigned"
         />
@@ -248,31 +213,16 @@ export const CreateRoomForm = ({
         <LoadingButton
           disabled={!form.formState.isValid || isPending}
           loading={isPending}>
-          {id ? (
-            <>
-              {isPending ? (
-                <>
-                  <Save /> Saving...
-                </>
-              ) : (
-                <>
-                  <Save /> Update Room
-                </>
-              )}
-            </>
-          ) : (
-            <>
-              {isPending ? (
-                <>
-                  <Plus /> Creating...
-                </>
-              ) : (
-                <>
-                  <Plus /> Create Room
-                </>
-              )}
-            </>
-          )}
+          <span className="flex items-center gap-2">
+            {id ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            {id
+              ? isPending
+                ? "Saving..."
+                : "Update Room"
+              : isPending
+                ? "Creating..."
+                : "Create Room"}
+          </span>
         </LoadingButton>
       </form>
     </Form>

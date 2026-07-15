@@ -9,6 +9,7 @@ import CommandButton from "./CommandButton";
 import CommandPalette from "./CommandPalette";
 import SidebarOpenButton from "./SidebarOpenButton";
 import { Timer } from "./Timer";
+import UserButton from "./UserButton";
 
 export default function MainContainer({ children }: { children: ReactNode }) {
   return (
@@ -23,6 +24,7 @@ export default function MainContainer({ children }: { children: ReactNode }) {
         </div>
         <CommandButton />
         <Timer />
+        <UserButton />
       </div>
       <CommandPalette />
 

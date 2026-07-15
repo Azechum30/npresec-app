@@ -1,43 +1,26 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { ApproveOrDisapproveButton } from "@/components/customComponents/apporve-or-disapprove-button";
+import { AvatarComponent } from "@/components/customComponents/avatar-component";
 import { GenericActions } from "@/components/customComponents/GenericActions";
 import { RowSelections } from "@/components/customComponents/RowSelections";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { UserResponseType } from "@/lib/types";
-import { ColumnDef } from "@tanstack/react-table";
-import { Edit } from "lucide-react";
-import Image from "next/image";
-import { useEffect, useRef } from "react";
-import { toast } from "sonner";
-import { useHandleUserDelete } from "./use-delete-user";
+import { fuzzyFilter } from "@/lib/fuzzyFilter";
+import type { UserResponseType } from "@/lib/types";
+import type { ColumnDef } from "@tanstack/react-table";
+import {
+  useDeleteUserMutationFn,
+  useImpersonateUserMutationFn,
+  useUnBanUserMutationFn,
+} from "../_actions/mutations";
 
 export const useGetUsersColumns = () => {
-  const { onOpen } = useGenericDialog();
-  const { handleUserDelete, isError, isDeletePending, isDeleteSuccess } =
-    useHandleUserDelete();
-
-  const wasDeleteErrorRef = useRef(false);
-  const wasDeleteSuccessRef = useRef(false);
-  useEffect(() => {
-    const wasDeleteError = wasDeleteErrorRef.current;
-
-    if (wasDeleteError && !isDeletePending && isError) {
-      toast.error(isError);
-      return;
-    }
-    wasDeleteErrorRef.current = isDeletePending;
-  }, [isError, isDeletePending]);
-
-  useEffect(() => {
-    const wasDeleteSuccess = wasDeleteSuccessRef.current;
-
-    if (wasDeleteSuccess && !isDeletePending && isDeleteSuccess) {
-      toast.success("User deleted successfully");
-      return;
-    }
-    wasDeleteSuccessRef.current = isDeletePending;
-  }, [isDeleteSuccess, isDeletePending]);
+  const { mutateAsync, isPending } = useDeleteUserMutationFn();
+  const { mutateAsync: unBanMutateAsync, isPending: isUnBanningPending } =
+    useUnBanUserMutationFn();
+  const {
+    mutateAsync: impersonatetMutateAsync,
+    isPending: isImpersonationPending,
+  } = useImpersonateUserMutationFn();
 
   return [
     {
@@ -53,25 +36,12 @@ export const useGetUsersColumns = () => {
     },
     {
       header: "Avatar",
-      cell: ({ row }) => {
-        const url = row.original.image;
-        const isValid =
-          url?.startsWith("http") ||
-          url?.startsWith("https") ||
-          url?.startsWith("/");
-        const src = isValid ? url : "/no-avatar.jpg";
-        return (
-          <div className="size-8 rounded-full border p-1 flex justify-center items-center">
-            <Image
-              src={src ?? "/no-avatar.jpg"}
-              alt="Avatar"
-              width={20}
-              height={20}
-              className="size-6 rounded-full object-cover object-top"
-            />
-          </div>
-        );
-      },
+      cell: ({ row }) => (
+        <AvatarComponent
+          image={row.original.image ?? undefined}
+          fallback={`${row.original.username[0]} ${row.original.username[1]}`}
+        />
+      ),
     },
     {
       header: "Email",
@@ -96,7 +66,7 @@ export const useGetUsersColumns = () => {
     },
 
     {
-      header: "Status",
+      header: "Email Status",
       cell: ({ row }) => {
         return (
           <Badge
@@ -106,25 +76,26 @@ export const useGetUsersColumns = () => {
         );
       },
     },
-    {
-      header: "Edit Permissions",
-      cell: ({ row }) => {
-        return (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onOpen("update-user-permissions", row.original.id)}>
-            <Edit />
-            Edit
-          </Button>
-        );
-      },
-    },
 
     {
       header: "Approve",
       cell: ({ row }) => <ApproveOrDisapproveButton row={row} />,
     },
+    {
+      id: "status",
+      header: "Status",
+      accessorFn: (row) => (row.banned ? "Banned" : "Active"),
+      cell: (info) => {
+        const status = info.getValue();
+        return status === "Banned" ? (
+          <Badge variant="destructive">Banned</Badge>
+        ) : (
+          <Badge>Active</Badge>
+        );
+      },
+      filterFn: fuzzyFilter,
+    },
+
     {
       header: "Actions",
       cell: ({ row }) => {
@@ -134,9 +105,23 @@ export const useGetUsersColumns = () => {
             secondaryKey="id"
             dialogId="update-user-role"
             row={row}
-            onDelete={async () => handleUserDelete({ id })}
+            onDelete={() => Promise.try(async () => await mutateAsync({ id }))}
             key={row.original.id}
-            isPending={isDeletePending}
+            isPending={isPending}
+            isUnbanningPending={isUnBanningPending}
+            isImpersonationPending={isImpersonationPending}
+            banModalKey="ban-user"
+            unban={async () =>
+              await Promise.try(async () => {
+                await unBanMutateAsync(row.original.id);
+              })
+            }
+            impersonate={async () =>
+              await Promise.try(async () => {
+                await impersonatetMutateAsync(row.original.id);
+                window.location.reload();
+              })
+            }
           />
         );
       },

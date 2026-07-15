@@ -15,7 +15,9 @@ export default function StudentsGradesPage({ searchParams }: SearchParams) {
   return (
     <div>
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
-        <h4 className="font-medium text-base line-clamp-1">Grades</h4>
+        <h4 className="font-bold text-xl bg-linear-to-r from-primary to-muted-foreground dark:to-accent bg-clip-text text-transparent line-clamp-1">
+          Manage Grades
+        </h4>
         <div className="flex flex-col md:flex-row gap-4">
           <PublishResultsButton />
           <PublishGradesForAllClassess />
@@ -37,7 +39,7 @@ const RenderStudentsGradesDataTable = async ({
 
   const queryParams = {
     classId: params?.classId as string,
-    academicYear: parseInt(params?.academicYear as string),
+    academicYear: parseInt(params?.academicYear as string, 10),
     semester: params?.semester as string,
   };
 

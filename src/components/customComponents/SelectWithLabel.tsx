@@ -48,8 +48,8 @@ export default function SelectWithLabel({
   placeholder = "Select item...",
   schema,
   data,
-  valueKey = "value" as any,
-  selectedKey = "label" as any,
+  valueKey = "value" as string,
+  selectedKey = "label" as string,
   disabled,
 }: SelectWithLabelProps) {
   const form = useFormContext();
@@ -76,10 +76,10 @@ export default function SelectWithLabel({
               isRequired && "flex items-center gap-1",
             )}>
             {fieldTitle}
-            {isRequired && <span className="text-red-500">*</span>}
+            {isRequired && <span className="text-destructive">*</span>}
           </FormLabel>
 
-          <Popover open={open} onOpenChange={setOpen}>
+          <Popover modal={true} open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <FormControl>
                 <Button
@@ -105,14 +105,14 @@ export default function SelectWithLabel({
               </FormControl>
             </PopoverTrigger>
             <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-              <Command className="min-w-fit">
+              <Command className="min-w-fit max-h-70">
                 <CommandInput
                   placeholder={`Search ${fieldTitle.toLowerCase()}...`}
                 />
                 <CommandList>
                   <CommandEmpty>No results found.</CommandEmpty>
                   <CommandGroup>
-                    {data.map((item, index) => {
+                    {data.map((item, _) => {
                       const isObj = typeof item === "object" && item !== null;
                       const value = isObj
                         ? String(item[valueKey])
@@ -121,7 +121,6 @@ export default function SelectWithLabel({
                         ? String(item[selectedKey])
                         : String(item);
 
-                      // Formatting for strings (removing underscores/dashes)
                       const displayLabel = !isObj
                         ? label.replace(/[_-]/g, " ")
                         : label;
@@ -130,7 +129,7 @@ export default function SelectWithLabel({
                         <CommandItem
                           className="hover:bg-muted-foreground/35 hover:cursor-pointer"
                           key={value}
-                          value={label} // Search matches against label
+                          value={label}
                           onSelect={() => {
                             field.onChange(
                               typeof item === "number" ? Number(value) : value,

@@ -1,66 +1,66 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use server";
-import { getUserPermissions } from "@/lib/get-session";
-import { prisma } from "@/lib/prisma";
-import { UserPermissionsFormSchema } from "@/lib/validation";
-import * as Sentry from "@sentry/nextjs";
-import { revalidateTag } from "next/cache";
 import "server-only";
 
-export const UpdateUserPermissions = async (values: unknown) => {
-  try {
-    const { hasPermission } = await getUserPermissions("edit:users");
-    if (!hasPermission) {
-      console.error("Permission denied");
-      return { error: "Permission denied" };
-    }
+import { ActionError } from "@/lib/constants";
+import { nextSafeAction } from "@/lib/next-safe-action";
+import { prisma } from "@/lib/prisma";
+import { pusher } from "@/lib/pusher";
+import { UserPermissionsFormSchema } from "@/lib/validation";
 
-    const { error, success, data } =
-      UserPermissionsFormSchema.safeParse(values);
+export const UpdateUserPermissions = async (values: unknown) =>
+  nextSafeAction(
+    async () => {
+      const result = UserPermissionsFormSchema.safeParse(values);
 
-    if (!success || error) {
-      const errorMessage = error.issues.flatMap((e) => e.message).join(",");
-      console.error(errorMessage);
-      return { error: errorMessage };
-    }
+      if (!result.success) {
+        throw new ActionError("Invalid data formatting submitted");
+      }
 
-    const { userId, roleId, permissions } = data;
+      const { userId, roleId, permissions } = result.data;
 
-    const userPermissionsUpdateTransaction = await prisma.$transaction(
-      async (tsx) => {
-        const user = await tsx.userRole.findFirst({
+      await prisma.$transaction(async (tsx) => {
+        const userRolesCount = await tsx.userRole.count({
           where: { userId, roleId: { in: roleId } },
         });
 
-        if (!user) {
-          throw new Error("User does not have the specified role");
+        if (userRolesCount === 0) {
+          throw new ActionError(
+            "User does not have the specified roles assigned",
+          );
         }
 
-        return await tsx.role.update({
-          where: { id: user.roleId },
-          data: {
-            permissions: {
-              set: permissions.map((p) => ({ id: p })),
-            },
-          },
-        });
-      },
-    );
+        if (userRolesCount > 2) {
+          throw new ActionError(
+            "User cannot update permissions for more than one role",
+          );
+        }
 
-    if (!userPermissionsUpdateTransaction) {
-      console.error("Could not update user permissions");
-      return { error: "Could not update user permissions" };
-    }
+        await Promise.all(
+          roleId.map((id) =>
+            tsx.role.update({
+              where: { id },
+              data: {
+                permissions: {
+                  set: permissions.map((p) => ({ id: p })),
+                },
+              },
+            }),
+          ),
+        );
+      });
 
-    revalidateTag("users-list", "seconds");
-    return { success: true };
-  } catch (e) {
-    console.error("Could not update user permissions", e);
-    Sentry.captureException(e);
-    return {
-      error:
-        process.env.NODE_ENV === "development"
-          ? String(e)
-          : "Something went wrong!",
-    };
-  }
-};
+      await pusher.trigger(
+        "cache-invalidation-settings",
+        "user-role-permissions-updated",
+        {
+          triggeredBy: userId,
+          roleId,
+          permissions,
+        },
+      );
+
+      return { success: true };
+    },
+    { permission: "edit:users" },
+  );

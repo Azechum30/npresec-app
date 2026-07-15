@@ -1,7 +1,8 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import {
-  SystemSettings,
+  type SystemSettings,
   useSystemWideActionsStore,
 } from "@/hooks/use-system-wide-actions-store";
 import { getPusherClient } from "@/lib/get-pusher-client";

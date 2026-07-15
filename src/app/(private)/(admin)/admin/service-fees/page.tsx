@@ -1,6 +1,6 @@
 import { CardLikeErrorComponent } from "@/components/customComponents/card-like-error-component";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { PageHeader } from "@/components/customComponents/page-header";
 import { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
@@ -18,12 +18,13 @@ export const metadata: Metadata = {
 export default function ServiceFees() {
   return (
     <>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h1 className="text-base font-semibold tracing-tight line-clamp-1">
-          Services
-        </h1>
-        <OpenDialogs dialogKey="create-service" title="Add Service" />
-      </div>
+      <PageHeader
+        pageTitle="Manage Services"
+        showAddButton
+        buttonText="Add Service"
+        modalKey="create-service"
+        permission="create:services"
+      />
 
       <Suspense fallback={<FallbackComponent />}>
         <RenderServicesDataTB />

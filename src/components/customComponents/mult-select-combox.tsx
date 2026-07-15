@@ -1,5 +1,4 @@
 /** biome-ignore-all assist/source/organizeImports: reason */
-
 import { isZodFieldRequired } from "@/lib/isZodFieldRequired";
 import { cn } from "@/lib/utils";
 import { useFormContext } from "react-hook-form";
@@ -68,7 +67,7 @@ export const MultiSelectCombox = ({
             {isRequired && <span className="text-destructive">*</span>}
           </FormLabel>
           <FormControl>
-            <Popover>
+            <Popover modal={true}>
               <PopoverTrigger asChild>
                 <FormControl>
                   <Button
@@ -84,11 +83,13 @@ export const MultiSelectCombox = ({
                   </Button>
                 </FormControl>
               </PopoverTrigger>
-              <PopoverContent className={cn("w-100 p-0", className)}>
-                <Command>
+
+              <PopoverContent
+                className={cn("w-100 p-0 max-h-87.5 flex flex-col", className)}>
+                <Command className="flex flex-col h-full min-h-0">
                   <CommandInput placeholder="Search..." />
-                  <CommandList className="overflow-y-auto max-h-75">
-                    <CommandEmpty>No course found.</CommandEmpty>
+                  <CommandList className="overflow-y-auto max-h-75 w-full">
+                    <CommandEmpty>No results found.</CommandEmpty>
                     <CommandGroup>
                       <CommandItem
                         onSelect={() => {

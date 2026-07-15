@@ -1,6 +1,6 @@
 /** biome-ignore-all assist/source/organizeImports: reason */
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { PageHeader } from "@/components/customComponents/page-header";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { fetchBoardMembers } from "./_actions/fetch-board-members";
@@ -13,12 +13,13 @@ import { RenderBoardMembersTable } from "./_components/render-board-table";
 export default function AdminBoardOfGovernorsPage() {
   return (
     <>
-      <div className="flex flex-col md:flex-row gap-4 md:justify-between md:items-center">
-        <h1 className="text-base font-medium line-clamp-1">
-          Board of Governors
-        </h1>
-        <OpenDialogs dialogKey="create-board-member" />
-      </div>
+      <PageHeader
+        pageTitle="Manage Board Members"
+        showAddButton
+        buttonText="Add Board Member"
+        modalKey="create-board-member"
+        permission="create:staff"
+      />
       <div>
         <CreateBoardMemberDialog />
         <Suspense fallback={<FallbackComponent />}>

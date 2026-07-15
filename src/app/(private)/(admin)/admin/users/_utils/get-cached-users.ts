@@ -10,5 +10,6 @@ export const getCachedUsers = async () => {
 
   return await prisma.user.findMany({
     select: UserSelect,
+    orderBy: [{ createdAt: "desc" }],
   });
 };

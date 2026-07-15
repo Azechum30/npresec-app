@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
@@ -34,17 +35,24 @@ export const createUserCredentials = async ({
     throw new Error("User creation failed");
   }
 
-  const createdUser = await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      roles: {
-        create: {
-          role: {
-            connect: { id: roleId },
+  const createdUser = await prisma.$transaction(async (tx) => {
+    const userRole = await tx.role.findUniqueOrThrow({
+      where: { id: roleId },
+      select: { id: true, name: true },
+    });
+    return await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        role: userRole.name,
+        roles: {
+          create: {
+            role: {
+              connect: { id: userRole.id },
+            },
           },
         },
       },
-    },
+    });
   });
 
   return { user: createdUser, token };

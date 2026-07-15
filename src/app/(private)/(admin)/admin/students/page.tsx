@@ -27,7 +27,7 @@ export default function StudentsPage() {
   return (
     <>
       <div className="flex flex-col md:flex-row gap-4 md:justify-between md:items-center">
-        <h3 className="text-base font-semibold line-clamp-1">
+        <h3 className="text-xl font-bold bg-linear-to-r from-primary to-muted-foreground dark:to-accent bg-clip-text text-transparent line-clamp-1">
           Manage Students
         </h3>
         <Link prefetch="auto" href="/admin/students/onboarding">

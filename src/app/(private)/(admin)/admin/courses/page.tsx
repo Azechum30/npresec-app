@@ -1,6 +1,6 @@
 /**biome-ignore-all assist/source/organizeImports: reason */
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
-import OpenDialogs from "@/components/customComponents/OpenDialogs";
+import { PageHeader } from "@/components/customComponents/page-header";
 import { getQueryClient } from "@/components/providers/get-query-client";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { Suspense } from "react";
@@ -25,10 +25,13 @@ export default async function CoursesPage() {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row md:justify-between gap-4">
-        <h1 className="text-base font-semibold line-clamp-1">Manage Courses</h1>
-        <OpenDialogs dialogKey="create-course" title="Add Course" />
-      </div>
+      <PageHeader
+        pageTitle="Manage Courses"
+        showAddButton
+        buttonText="Add Course"
+        modalKey="create-course"
+        permission="create:courses"
+      />
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Suspense fallback={<FallbackComponent />}>
           <RenderCoursesDataTable />

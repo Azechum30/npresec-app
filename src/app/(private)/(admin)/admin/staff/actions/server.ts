@@ -15,13 +15,9 @@ import { StaffSchema, type StaffType } from "@/lib/validation";
 import { transformAndValidateStaffData } from "@/utils/staff-data-transformer";
 import { triggerImageUpload } from "@/utils/trigger-image-upload";
 import * as Sentry from "@sentry/nextjs";
-import { revalidateTag } from "next/cache";
 import "server-only";
 import z from "zod";
 import { checkExistingRelatedRecords } from "../utils/check-existing-related-records";
-import { getCachedStaff } from "../utils/get-cached-staff";
-import { getQueryKey } from "../utils/get-query-key";
-import { getSingleCachedStaff } from "../utils/get-single-cached-staff";
 
 export const createStaff = async (values: unknown) =>
   nextSafeAction(
@@ -82,39 +78,31 @@ export const createStaff = async (values: unknown) =>
     { permission: "create:staff" },
   );
 
-export const getStaff = async () => {
-  try {
-    const { hasPermission } = await getUserPermissions("view:staff");
+export const getStaff = async () =>
+  nextSafeAction(
+    async () => {
+      const staffData = await prisma.staff.findMany({
+        select: StaffSelect,
+        orderBy: { lastName: "asc" },
+      });
 
-    if (!hasPermission)
-      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
+      return { staff: staffData };
+    },
+    { permission: "view:staff" },
+  );
 
-    const staffData = await getCachedStaff();
-
-    return { staff: staffData || [] };
-  } catch (error) {
-    console.error("Could not fetch staff:", error);
-    throw getErrorMessage(error);
-  }
-};
-
-export const getStaffMember = async (id: string) => {
-  try {
-    const { hasPermission } = await getUserPermissions("view:staff");
-    if (!hasPermission)
-      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
-
-    const staff = await getSingleCachedStaff(id);
-
-    if (!staff) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
-
-    return { staff };
-  } catch (error) {
-    console.error("An error occurred", error);
-    Sentry.captureException(error);
-    throw getErrorMessage(error);
-  }
-};
+export const getStaffMember = async (id: string) =>
+  nextSafeAction(
+    async () => {
+      const staff = await prisma.staff.findUnique({
+        where: { id },
+        select: StaffSelect,
+      });
+      if (!staff) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
+      return { staff };
+    },
+    { permission: "view:staff" },
+  );
 
 export const updateStaff = async (data: StaffType & { id: string }) => {
   try {
@@ -224,8 +212,6 @@ export const updateStaff = async (data: StaffType & { id: string }) => {
         "user" as const,
       ));
     }
-    revalidateTag(getQueryKey().staff.all[0], "seconds");
-    revalidateTag(getQueryKey(id).staff.single[1] as string, "seconds");
 
     return { data: updatedRecord };
   } catch (error) {
@@ -258,10 +244,6 @@ export const deleteStaffRequest = async (id: string) => {
     }
 
     if (!staffWithUserId) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
-
-    revalidateTag(getQueryKey().staff.all[0], "seconds");
-    revalidateTag("users-list", "seconds");
-
     return { success: true };
   } catch (error) {
     console.error(error);
@@ -296,9 +278,6 @@ export const bulkDeleteStaff = async (rows: string[]) => {
     const count = userIdsToDelete.length;
 
     if (!count) throw new ActionError("Resources not found");
-
-    revalidateTag(getQueryKey().staff.all[0], "seconds");
-    revalidateTag("users-list", "seconds");
 
     return { count };
   } catch (error) {
