@@ -1,13 +1,15 @@
-import { useHandleRoleDelete } from "@/app/(private)/(admin)/admin/roles/hooks/use-handle-role-delete";
+/**biome-ignore-all assist/source/organizeImports: reason */
 import { GenericActions } from "@/components/customComponents/GenericActions";
 import { RowSelections } from "@/components/customComponents/RowSelections";
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
-import { RolesResponseType } from "@/lib/types";
-import { ColumnDef } from "@tanstack/react-table";
+import type { RolesResponseType } from "@/lib/types";
+import type { ColumnDef } from "@tanstack/react-table";
+import { useDeleteRoleMutationFn } from "../actions/tanstack-mutations";
 
 export const useGetRolesColumns = () => {
-  const { isPending, handleRoleDelete } = useHandleRoleDelete();
   const { formatDate } = useUserPreferredDateFormat();
+  const { mutateAsync, isPending } = useDeleteRoleMutationFn();
+
   return [
     {
       id: "selection",
@@ -21,9 +23,7 @@ export const useGetRolesColumns = () => {
     {
       header: "Role",
       accessorFn: (row) =>
-        row.name.includes("_")
-          ? row.name.split("_").join(" ").toUpperCase()
-          : row.name.toUpperCase(),
+        `${row.name.replaceAll(/[-_]/g, " ").charAt(0).toUpperCase()}${row.name.replaceAll(/[-_]/g, " ").slice(1).toLowerCase()}`,
     },
     {
       header: "CreatedAt",
@@ -67,7 +67,11 @@ export const useGetRolesColumns = () => {
           dialogId="edit-role"
           secondaryKey="id"
           row={row}
-          onDelete={handleRoleDelete}
+          onDelete={async (id) => {
+            await Promise.try(async () => {
+              await mutateAsync(id);
+            });
+          }}
           isPending={isPending}
         />
       ),

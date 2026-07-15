@@ -4,7 +4,6 @@
 import { arcjetEmailProtection } from "@/lib/arcjet";
 import { ActionError, CUSTOM_ERRORS } from "@/lib/constants";
 import { getUserPermissions } from "@/lib/get-session";
-import { getErrorMessage } from "@/lib/getErrorMessage";
 import { nextSafeAction } from "@/lib/next-safe-action";
 import { prisma } from "@/lib/prisma";
 import { resolveRole } from "@/lib/resolve-staff-role";
@@ -14,7 +13,6 @@ import { StaffSelect } from "@/lib/types";
 import { StaffSchema, type StaffType } from "@/lib/validation";
 import { transformAndValidateStaffData } from "@/utils/staff-data-transformer";
 import { triggerImageUpload } from "@/utils/trigger-image-upload";
-import * as Sentry from "@sentry/nextjs";
 import "server-only";
 import z from "zod";
 import { checkExistingRelatedRecords } from "../utils/check-existing-related-records";
@@ -104,185 +102,168 @@ export const getStaffMember = async (id: string) =>
     { permission: "view:staff" },
   );
 
-export const updateStaff = async (data: StaffType & { id: string }) => {
-  try {
-    const { hasPermission } = await getUserPermissions("edit:staff");
-    if (!hasPermission)
-      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
+export const updateStaff = async (data: StaffType & { id: string }) =>
+  nextSafeAction(
+    async () => {
+      const parsed = StaffSchema.extend({ id: z.string() }).safeParse(data);
 
-    const unvalidData = StaffSchema.extend({ id: z.string() }).safeParse(data);
+      if (!parsed.success) throw parsed.error;
 
-    if (!unvalidData.success) throw unvalidData.error;
+      const { id, ...rest } = parsed.data;
 
-    const { id, ...rest } = unvalidData.data;
+      const normalizedStaff = transformAndValidateStaffData(rest);
 
-    const normalizedStaff = transformAndValidateStaffData(rest);
+      const existing = await prisma.staff.findFirst({
+        where: {
+          id: { not: id },
+          OR: [
+            { employeeId: normalizedStaff.employeeId },
+            { ghcardNumber: normalizedStaff.ghcardNumber },
+            { licencedNumber: normalizedStaff.licencedNumber },
+            { ssnitNumber: normalizedStaff.ssnitNumber },
+            { rgNumber: normalizedStaff.rgNumber },
+          ],
+        },
+      });
 
-    const existing = await prisma.staff.findFirst({
-      where: {
-        id: { not: id },
-        OR: [
-          { employeeId: normalizedStaff.employeeId },
-          { ghcardNumber: normalizedStaff.ghcardNumber },
-          { licencedNumber: normalizedStaff.licencedNumber },
-          { ssnitNumber: normalizedStaff.ssnitNumber },
-          { rgNumber: normalizedStaff.rgNumber },
-        ],
-      },
-    });
-
-    if (existing) {
-      if (existing.ghcardNumber === normalizedStaff.ghcardNumber) {
-        throw new ActionError(
-          "A staff already exists with this Ghana card number",
-        );
-      } else if (existing.employeeId === normalizedStaff.employeeId) {
-        throw new ActionError("A staff already exists with this staff ID");
-      } else if (existing.licencedNumber === normalizedStaff.licencedNumber) {
-        throw new ActionError(
-          "A staff already exists with this licence number",
-        );
-      } else if (existing.ssnitNumber === normalizedStaff.ssnitNumber) {
-        throw new ActionError("A staff already exists with this SSNIT number");
-      } else if (existing.rgNumber === normalizedStaff.rgNumber) {
-        throw new ActionError(
-          "A staff already exists with this registered number",
-        );
+      if (existing) {
+        if (existing.ghcardNumber === normalizedStaff.ghcardNumber) {
+          throw new ActionError(
+            "A staff already exists with this Ghana card number",
+          );
+        } else if (existing.employeeId === normalizedStaff.employeeId) {
+          throw new ActionError("A staff already exists with this staff ID");
+        } else if (existing.licencedNumber === normalizedStaff.licencedNumber) {
+          throw new ActionError(
+            "A staff already exists with this licence number",
+          );
+        } else if (existing.ssnitNumber === normalizedStaff.ssnitNumber) {
+          throw new ActionError(
+            "A staff already exists with this SSNIT number",
+          );
+        } else if (existing.rgNumber === normalizedStaff.rgNumber) {
+          throw new ActionError(
+            "A staff already exists with this registered number",
+          );
+        }
       }
-    }
 
-    const {
-      email,
-      username,
-      password,
-      isDepartmentHead,
-      imageURL,
-      imageFile,
-      ...others
-    } = normalizedStaff;
+      const {
+        email,
+        username,
+        password,
+        isDepartmentHead,
+        imageURL,
+        imageFile,
+        ...others
+      } = normalizedStaff;
 
-    const updatedRecord = await prisma.staff.update({
-      where: {
-        id,
-      },
-      data: {
-        ...others,
-        departmentId: undefined,
-        department: others.departmentId
-          ? {
-              connect: { id: others.departmentId },
-            }
-          : undefined,
-        departmentHead:
-          others.departmentId && isDepartmentHead
+      const updatedRecord = await prisma.staff.update({
+        where: {
+          id,
+        },
+        data: {
+          ...others,
+          departmentId: undefined,
+          department: others.departmentId
             ? {
                 connect: { id: others.departmentId },
               }
             : undefined,
-        courses: others.courses
-          ? {
-              set: others.courses.map((courseId) => ({
-                id: courseId,
-              })),
-            }
-          : undefined,
-        classes: others.classes
-          ? {
-              set: others.classes.map((classId) => ({
-                id: classId,
-              })),
-            }
-          : undefined,
-        user: {
-          update: {
-            email: email as string,
-            username: username as string,
-            image: imageFile ? "Upload Pending" : imageURL,
+          departmentHead:
+            others.departmentId && isDepartmentHead
+              ? {
+                  connect: { id: others.departmentId },
+                }
+              : undefined,
+          courses: others.courses
+            ? {
+                set: others.courses.map((courseId) => ({
+                  id: courseId,
+                })),
+              }
+            : undefined,
+          classes: others.classes
+            ? {
+                set: others.classes.map((classId) => ({
+                  id: classId,
+                })),
+              }
+            : undefined,
+          user: {
+            update: {
+              email: email as string,
+              username: username as string,
+              image: imageFile ? "Upload Pending" : imageURL,
+            },
           },
         },
-      },
-      select: StaffSelect,
-    });
-
-    if (imageFile) {
-      void (await triggerImageUpload(
-        imageFile as File,
-        updatedRecord.userId as string,
-        "staff",
-        "user" as const,
-      ));
-    }
-
-    return { data: updatedRecord };
-  } catch (error) {
-    console.error(error);
-    Sentry.captureException(error);
-    throw getErrorMessage(error);
-  }
-};
-
-export const deleteStaffRequest = async (id: string) => {
-  try {
-    const { hasPermission } = await getUserPermissions("delete:staff");
-    if (!hasPermission)
-      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
-
-    const staffWithUserId = await prisma.staff.findFirst({
-      where: {
-        id,
-        userId: { not: null },
-      },
-      select: { userId: true },
-    });
-
-    if (staffWithUserId !== null) {
-      await prisma.user.delete({
-        where: {
-          id: staffWithUserId.userId as string,
-        },
+        select: StaffSelect,
       });
-    }
 
-    if (!staffWithUserId) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
-    return { success: true };
-  } catch (error) {
-    console.error(error);
-    Sentry.captureException(error);
-    throw getErrorMessage(error);
-  }
-};
+      if (imageFile) {
+        void (await triggerImageUpload(
+          imageFile as File,
+          updatedRecord.userId as string,
+          "staff",
+          "user" as const,
+        ));
+      }
 
-export const bulkDeleteStaff = async (rows: string[]) => {
-  try {
-    const { hasPermission } = await getUserPermissions("delete:staff");
-    if (!hasPermission)
-      throw new ActionError(CUSTOM_ERRORS.AUTHORIZATION.message);
-    const staffWithUserIds = await prisma.staff.findMany({
-      where: {
-        id: { in: rows },
-        userId: { not: null },
-      },
-      select: { userId: true },
-    });
+      return { data: updatedRecord };
+    },
+    { permission: "edit:staff" },
+  );
 
-    const userIdsToDelete = staffWithUserIds.map((staff) => staff.userId);
-
-    if (userIdsToDelete.length > 0) {
-      await prisma.user.deleteMany({
-        where: {
-          id: { in: userIdsToDelete as string[] },
-        },
+export const deleteStaffRequest = async (id: string) =>
+  nextSafeAction(
+    async () => {
+      const staffWithUserId = await prisma.staff.findFirst({
+        where: { id, userId: { not: null } },
+        select: { userId: true },
       });
-    }
 
-    const count = userIdsToDelete.length;
+      if (staffWithUserId !== null) {
+        await prisma.user.delete({
+          where: {
+            id: staffWithUserId.userId as string,
+          },
+        });
+      }
 
-    if (!count) throw new ActionError("Resources not found");
+      if (!staffWithUserId)
+        throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
+      return { success: true };
+    },
+    { permission: "delete:staff" },
+  );
 
-    return { count };
-  } catch (error) {
-    console.error(error);
-    Sentry.captureException(error);
-    throw getErrorMessage(error);
-  }
-};
+export const bulkDeleteStaff = async (rows: string[]) =>
+  nextSafeAction(
+    async () => {
+      const staffWithUserIds = await prisma.staff.findMany({
+        where: {
+          id: { in: rows },
+          userId: { not: null },
+        },
+        select: { userId: true },
+      });
+
+      const userIdsToDelete = staffWithUserIds.map((staff) => staff.userId);
+
+      if (userIdsToDelete.length > 0) {
+        await prisma.user.deleteMany({
+          where: {
+            id: { in: userIdsToDelete as string[] },
+          },
+        });
+      }
+
+      const count = userIdsToDelete.length;
+
+      if (!count) throw new ActionError("Resources not found");
+
+      return { count };
+    },
+    { permission: "delete:staff" },
+  );

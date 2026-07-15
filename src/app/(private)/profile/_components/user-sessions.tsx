@@ -1,7 +1,8 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import { BaseDataTable } from "@/components/customComponents/BaseDataTable";
-import { auth } from "@/lib/auth";
+import type { auth } from "@/lib/auth";
 import { useMemo } from "react";
 import { useGetUserSessionsColumns } from "../_hooks/use-get-user-sessions-columns";
 

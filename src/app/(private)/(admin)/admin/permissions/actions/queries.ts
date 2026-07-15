@@ -1,56 +1,41 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 "use server";
-import { Prisma } from "@/generated/prisma/client";
-import { getUserPermissions } from "@/lib/get-session";
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { PermissionSelect } from "@/lib/types";
-import * as Sentry from "@sentry/nextjs";
 import "server-only";
 
+import { ActionError, CUSTOM_ERRORS } from "@/lib/constants";
 import { nextSafeAction } from "@/lib/next-safe-action";
-import { getCachedPermissions } from "@/utils/get-cached-permissions";
-import { getError } from "@/utils/get-error";
 import { z } from "zod";
 
 export const getPermissions = async () =>
   nextSafeAction(
     async () => {
-      const permissions = await getCachedPermissions();
-      return { permissions };
+      return {
+        permissions: await prisma.permission.findMany({
+          select: PermissionSelect,
+        }),
+      };
     },
     { permission: "view:permissions" },
   );
 
 export const getPermission = async (
   id: string | Prisma.PermissionWhereUniqueInput,
-) => {
-  try {
-    const { hasPermission } = await getUserPermissions("view:permissions");
-    if (!hasPermission) return { error: "Permission denied" };
-
+) =>
+  nextSafeAction(async () => {
     const { error, success, data } = z
       .string({ error: "A valid ID is required!" })
-      .cuid()
       .safeParse(id);
-    if (!success) {
-      const message = error.issues
-        .flatMap((e) => `${e.path[0] as any}: ${e.message}`)
-        .join(",");
-      return { error: message };
-    }
+    if (!success) throw error;
 
     const permission = await prisma.permission.findUnique({
       where: { id: data },
       select: PermissionSelect,
     });
 
-    if (!permission) return { error: "Permission not found!" };
+    if (!permission) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
 
-    return { permission };
-  } catch (err: any) {
-    (console.error("Could not fetch Permission:", err),
-      Sentry.captureException(err));
-    return {
-      error: getError(err),
-    };
-  }
-};
+    return permission;
+  });

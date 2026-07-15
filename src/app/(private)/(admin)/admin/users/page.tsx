@@ -4,12 +4,28 @@ import { FallbackComponent } from "@/components/customComponents/fallback-compon
 import { PageHeader } from "@/components/customComponents/page-header";
 import { getQueryClient } from "@/components/providers/get-query-client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { permissionsQueryOptions } from "../permissions/actions/tanstack-queries";
 import { rolesQueryOptions } from "../roles/actions/tanstack-queries";
 import { usersQueryOptions } from "./_actions/queries";
 import { RenderUsersTable } from "./_components/render-users-table";
 import { UsersDialogsProviders } from "./_components/users-dialogs-providers";
+
+export const metadata: Metadata = {
+  title: "Manage Users",
+  description:
+    "Manage all users on the school management information system in a seamless manner.",
+  keywords: ["Users", "Nakpanduri Presby SHTS"],
+  creator: "NPRESEC",
+  authors: [{ name: "IT Directorate" }],
+  robots: {
+    index: false,
+    follow: false,
+    noarchive: true,
+    nosnippet: true,
+  },
+};
 
 export default function UsersPage() {
   return (

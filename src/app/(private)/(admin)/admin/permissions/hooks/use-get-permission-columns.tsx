@@ -1,39 +1,14 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 import { GenericActions } from "@/components/customComponents/GenericActions";
 import { RowSelections } from "@/components/customComponents/RowSelections";
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
-import { PermissionResponseType } from "@/lib/types";
-import { ColumnDef } from "@tanstack/react-table";
-import { useHandleDeletePermission } from "./use-handle-delete-permission";
-import { useEffect, useRef } from "react";
-import { toast } from "sonner";
+import type { PermissionResponseType } from "@/lib/types";
+import type { ColumnDef } from "@tanstack/react-table";
+import { useDeletePermissionMutationFn } from "../actions/tanstack-mutation";
 
 export const useGetPermissionsColumns = () => {
   const { formatDate } = useUserPreferredDateFormat();
-  const { isDeletePending, isSucess, handleDeletePermission, deleteError } =
-    useHandleDeletePermission();
-
-  const wasPreviousDeleteError = useRef(false);
-  const wassPreviousDeleteSuccess = useRef(false);
-  useEffect(() => {
-    const wasError = wasPreviousDeleteError.current;
-
-    if (wasError && !isDeletePending && deleteError) {
-      toast.error(deleteError);
-    }
-
-    wasPreviousDeleteError.current = isDeletePending;
-  }, [deleteError, isDeletePending]);
-
-  useEffect(() => {
-    const wasSuccess = wassPreviousDeleteSuccess.current;
-
-    if (wasSuccess && !isDeletePending && isSucess) {
-      toast.success("Permission deleted successfull");
-    }
-
-    wassPreviousDeleteSuccess.current = isDeletePending;
-  }, [isSucess, isDeletePending]);
-
+  const { isPending, mutateAsync } = useDeletePermissionMutationFn();
   return [
     {
       id: "selection",
@@ -68,8 +43,12 @@ export const useGetPermissionsColumns = () => {
           row={row}
           secondaryKey="id"
           dialogId="edit-permission"
-          onDelete={async () => handleDeletePermission(row.original.id)}
-          isPending={isDeletePending}
+          onDelete={async (id) => {
+            await Promise.try(async () => {
+              await mutateAsync(id);
+            });
+          }}
+          isPending={isPending}
         />
       ),
     },

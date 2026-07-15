@@ -185,8 +185,39 @@ export const EXPORT_COLUMN_REGISTRY: ExportRegistryEntry[] = [
       { key: "Bed Capacity", label: "Bed Capacity" },
     ],
   },
+
+  {
+    exportKey: "roles",
+    label: "Roles",
+    columns: [
+      { key: "Role Name", label: "Role Name" },
+      { key: "Created Date", label: "CreatedAt" },
+      { key: "Permissions", label: "Permissions" },
+    ],
+  },
+  {
+    exportKey: "users",
+    label: "Users",
+    columns: [
+      { key: "Username", label: "Username" },
+      { key: "Email", label: "Email" },
+      { key: "Roles", label: "Roles" },
+      { key: "Email Verification Status", label: "Email Verification Status" },
+    ],
+  },
+  {
+    exportKey: "permissions",
+    label: "Permissions",
+    columns: [
+      { key: "Permission Name", label: "Permission Name" },
+      { key: "Description", label: "Description" },
+      { key: "Created Date", label: "Created Date" },
+    ],
+  },
 ];
 
-export function getRegistryEntry(exportKey: string): ExportRegistryEntry | undefined {
+export function getRegistryEntry(
+  exportKey: string,
+): ExportRegistryEntry | undefined {
   return EXPORT_COLUMN_REGISTRY.find((e) => e.exportKey === exportKey);
 }

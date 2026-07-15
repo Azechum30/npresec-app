@@ -1,3 +1,4 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 "use client";
 
 import { ShowLoadingState } from "@/components/customComponents/show-loading-state";
@@ -9,66 +10,40 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { PermissionResponseType } from "@/lib/types";
-import { PermissionType } from "@/lib/validation";
-import { useEffect, useState, useTransition } from "react";
-import { toast } from "sonner";
-import { UpdatePermission } from "../actions/mutations";
-import { getPermission } from "../actions/queries";
+import type { PermissionType } from "@/lib/validation";
+import { useQuery } from "@tanstack/react-query";
+import { useUpdatePermissionMutationFn } from "../actions/tanstack-mutation";
+import { getPermissionsQueryOptions } from "../actions/tanstack-queries";
 import { CreatePermissionForm } from "../forms/create-permission-form";
 
 export const EditPermissionModal = () => {
   const { dialogs, id, onClose } = useGenericDialog();
-  const [defaultValues, setDefaultValues] = useState<
-    Pick<PermissionResponseType, "id" | "name"> | undefined
-  >();
+  const { isPending, mutateAsync } = useUpdatePermissionMutationFn(
+    id as string,
+  );
 
-  const [isPending, startTransition] = useTransition();
-  const [isUpdatingPermission, startUpdatingPermission] = useTransition();
+  const isOpen = !!dialogs["edit-permission"];
+  const validId = id ?? null;
+  const { data } = useQuery({
+    ...getPermissionsQueryOptions(validId as string),
+    enabled: isOpen && !!validId,
+  });
 
-  useEffect(() => {
-    if (!id || !dialogs["edit-permission"]) return;
-
-    startTransition(async () => {
-      const { error, permission } = await getPermission(id);
-      if (error) {
-        toast.error(error || "Something went wrong!");
-        return;
-      } else {
-        setDefaultValues(permission);
-      }
-    });
-  }, [id, dialogs]);
-
-  const handleUpdate = (permission: PermissionType) => {
-    startUpdatingPermission(async () => {
-      const { error, success } = await UpdatePermission({
-        ...permission,
-        id: id as string,
+  const handleUpdate = async (permission: PermissionType) => {
+    await Promise.try(async () => {
+      await mutateAsync({
+        id: validId as string,
+        permissions: permission.permissions,
       });
-      if (error) {
-        toast.error(error || "Something went wrong!");
-        return;
-      } else if (success) {
-        toast.success("Permission updated sucessfully");
-        setTimeout(() => {
-          onClose("edit-permission");
-          setDefaultValues(undefined);
-        }, 500);
-      }
+      onClose("edit-permission");
     });
   };
 
   return (
-    <>
-      <Dialog
-        open={dialogs["edit-permission"] && !!id}
-        onOpenChange={(open) => {
-          if (!open) setDefaultValues(undefined);
-          onClose("edit-permission");
-        }}>
-        {dialogs["edit-permission"] && !!id && defaultValues ? (
-          <DialogContent>
+    <Dialog open={isOpen} onOpenChange={() => onClose("edit-permission")}>
+      <DialogContent>
+        {isOpen && data && validId ? (
+          <>
             <DialogHeader>
               <DialogTitle>Update Permission</DialogTitle>
               <DialogDescription>
@@ -79,21 +54,25 @@ export const EditPermissionModal = () => {
 
             <CreatePermissionForm
               onSubmit={handleUpdate}
-              defaultValues={{ permissions: [defaultValues] }}
-              id={id}
-              isPending={isUpdatingPermission}
+              defaultValues={{
+                permissions: [
+                  { name: data.name, description: data.description ?? "" },
+                ],
+              }}
+              id={validId}
+              isPending={isPending}
             />
-          </DialogContent>
+          </>
         ) : (
-          <DialogContent>
+          <>
             <DialogHeader className="sr-only">
               <DialogTitle>Loading Data</DialogTitle>
               <DialogDescription>Data is loading</DialogDescription>
             </DialogHeader>
             <ShowLoadingState />
-          </DialogContent>
+          </>
         )}
-      </Dialog>
-    </>
+      </DialogContent>
+    </Dialog>
   );
 };

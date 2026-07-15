@@ -12,7 +12,7 @@ import {
 import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
-const PermissionsErrorPage = ({
+const RolesErrorPage = ({
   error,
   reset,
 }: {
@@ -45,4 +45,4 @@ const PermissionsErrorPage = ({
   );
 };
 
-export default PermissionsErrorPage;
+export default RolesErrorPage;

@@ -7,8 +7,7 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { permissionsQueryOptions } from "./actions/tanstack-queries";
-import { CreatePermissionModal } from "./components/CreatePermissionModal";
-import { EditPermissionModal } from "./components/edit-permission-modal";
+import { PermissionsDialogsProvider } from "./components/permissions-dialogs-provider";
 import { RenderPermissionsTable } from "./components/render-permissions-table";
 
 export const metadata: Metadata = {
@@ -38,8 +37,7 @@ export default function PermissionsPage() {
       <Suspense fallback={<FallbackComponent />}>
         <RenderPermissionsDataTable />
       </Suspense>
-      <CreatePermissionModal />
-      <EditPermissionModal />
+      <PermissionsDialogsProvider />
     </>
   );
 }

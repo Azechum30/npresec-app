@@ -1,13 +1,9 @@
 /**biome-ignore-all assist/source/organizeImports: reason */
 "use server";
 import { ActionError } from "@/lib/constants";
-import { getUserPermissions } from "@/lib/get-session";
-import { getErrorMessage } from "@/lib/getErrorMessage";
 import { nextSafeAction } from "@/lib/next-safe-action";
 import { prisma } from "@/lib/prisma";
 import { RoleSchema, UpdateRoleSchema } from "@/lib/validation";
-import * as Sentry from "@sentry/nextjs";
-import { revalidateTag } from "next/cache";
 import "server-only";
 import { z } from "zod";
 
@@ -65,73 +61,55 @@ export const updateRole = async (values: unknown) =>
     { permission: "edit:roles" },
   );
 
-export const deleteRole = async (value: string) => {
-  try {
-    const { hasPermission } = await getUserPermissions("delete:roles");
-    if (!hasPermission) {
-      return { error: "Permission denied!" };
-    }
+export const deleteRole = async (value: string) =>
+  nextSafeAction(
+    async () => {
+      const result = z.string().safeParse(value);
+      if (!result.success) throw result.error;
 
-    const result = z.string().safeParse(value);
-    if (!result.success) {
-      return { error: "A valid ID is required" };
-    }
+      const existing = await prisma.role.findUnique({
+        where: { id: result.data },
+        select: { id: true },
+      });
 
-    const id = result.data;
+      if (existing === null)
+        throw new ActionError("No record matched the provided Id");
 
-    const role = await prisma.role.delete({ where: { id } });
+      await prisma.role.delete({ where: { id: existing.id } });
+    },
+    { permission: "delete:roles" },
+  );
 
-    if (!role) {
-      return { error: "Could not delete role" };
-    }
+export const bulkDeleteRoles = async (values: unknown) =>
+  nextSafeAction(
+    async () => {
+      const result = z.array(z.string()).safeParse(values);
 
-    revalidateTag("roles", "seconds");
+      if (!result.success) throw result.error;
+      const ids = result.data;
 
-    return { role };
-  } catch (e) {
-    Sentry.captureException(e);
-    console.error("Could not delete role", e);
-    return {
-      error:
-        process.env.NODE_ENV === "development"
-          ? getErrorMessage(e)
-          : "Something went wrong!",
-    };
-  }
-};
+      const transactResult = await prisma.$transaction(async (tx) => {
+        const RoleIdSet = new Set(ids.map((id) => id));
 
-export const bulkDeleteRoles = async (values: unknown) => {
-  try {
-    const { hasPermission } = await getUserPermissions("delete:roles");
-    if (!hasPermission) {
-      return { error: "Permission denied!" };
-    }
+        const existing = await tx.role.findMany({
+          where: { id: { in: ids } },
+          select: { id: true },
+        });
 
-    const result = z.array(z.string()).safeParse(values);
+        const filteredRoleIdsToDelete = existing
+          .filter((role) => RoleIdSet.has(role.id))
+          .map((role) => role.id);
 
-    if (!result.success) {
-      return { error: "Expected an array string IDs" };
-    }
+        if (filteredRoleIdsToDelete.length === 0)
+          throw new ActionError("No record match the provided Ids");
+        const payload = await tx.role.deleteMany({
+          where: { id: { in: filteredRoleIdsToDelete } },
+        });
 
-    const ids = result.data;
+        return payload;
+      });
 
-    const payload = await prisma.role.deleteMany({
-      where: { id: { in: ids } },
-    });
-
-    if (!payload.count) {
-      return { error: "Could not delete roles!" };
-    }
-    revalidateTag("roles", "seconds");
-    return { count: payload.count };
-  } catch (e) {
-    Sentry.captureException(e);
-    console.error("Could not delete roles", e);
-    return {
-      error:
-        process.env.NODE_ENV === "development"
-          ? getErrorMessage(e)
-          : "Something went wrong!",
-    };
-  }
-};
+      return { count: transactResult.count };
+    },
+    { permission: "delete:roles" },
+  );

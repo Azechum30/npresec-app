@@ -2,7 +2,12 @@
 
 import type { MutationCacheType } from "@/components/providers/tanstack-query-provider";
 import { useMutation } from "@tanstack/react-query";
-import { createRole, updateRole } from "./mutations";
+import {
+  bulkDeleteRoles,
+  createRole,
+  deleteRole,
+  updateRole,
+} from "./mutations";
 import { getRoleQueryOptions, rolesQueryOptions } from "./tanstack-queries";
 
 export const useCreateRoleMutationFn = () =>
@@ -19,5 +24,21 @@ export const useUpdateRoleMutationFn = (roleId: string) =>
     meta: {
       invalidates: [rolesQueryOptions.queryKey, getRoleQueryOptions(roleId)],
       message: "role update",
+    } satisfies MutationCacheType,
+  });
+export const useDeleteRoleMutationFn = () =>
+  useMutation({
+    mutationFn: deleteRole,
+    meta: {
+      invalidates: rolesQueryOptions.queryKey,
+      message: "role deleted",
+    } satisfies MutationCacheType,
+  });
+export const useDeleteRolesMutationFn = () =>
+  useMutation({
+    mutationFn: bulkDeleteRoles,
+    meta: {
+      invalidates: rolesQueryOptions.queryKey,
+      message: "role(s) deleted",
     } satisfies MutationCacheType,
   });

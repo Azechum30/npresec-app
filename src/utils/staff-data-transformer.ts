@@ -45,10 +45,10 @@ export const transformAndValidateStaffData = (data: StaffType) => {
   const transformedData = {
     ...data,
     employeeId: data.employeeId.trim(),
-    rgNumber: data.rgNumber?.trim() || "",
-    ghcardNumber: data.ghcardNumber?.trim() || "",
-    licencedNumber: data.licencedNumber?.trim() || "",
-    ssnitNumber: data.ssnitNumber?.trim() || "",
+    rgNumber: data.rgNumber?.trim() || null,
+    ghcardNumber: data.ghcardNumber?.trim() || null,
+    licencedNumber: data.licencedNumber?.trim() || null,
+    ssnitNumber: data.ssnitNumber?.trim() || null,
     gender: data.gender.toLowerCase(),
     dateOfFirstAppointment: data.dateOfFirstAppointment
       ? new Date(data.dateOfFirstAppointment)

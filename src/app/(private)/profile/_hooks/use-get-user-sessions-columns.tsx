@@ -1,14 +1,20 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
-import { auth } from "@/lib/auth";
+import type { auth } from "@/lib/auth";
 import { formatDate } from "@/lib/format-date";
-import { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 
 export const useGetUserSessionsColumns = () => {
   const { preferredDateFormat } = useUserPreferredDateFormat();
   return [
     {
       header: "IP Address",
-      accessorKey: "ipAddress",
+      accessorFn: (row) =>
+        row?.ipAddress === "0000:0000:0000:0000:0000:0000:0000:0000"
+          ? "Localhost"
+          : row?.ipAddress === "127.0.0.1"
+            ? "Localhost"
+            : row?.ipAddress,
     },
     {
       header: "CreatedAt",
