@@ -8,7 +8,6 @@ import {
   type StudentHouseAllocationType,
 } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import type { FC } from "react";
 import { useForm } from "react-hook-form";
 
@@ -32,7 +31,7 @@ export const StudentHouseAllocationForm: FC<
     },
   });
 
-  const {} = useSuspenseQuery();
+  // const {} = useSuspenseQuery();
 
   async function handleSubmit(data: StudentHouseAllocationType) {
     await onSubmitAction(data);

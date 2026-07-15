@@ -1,3 +1,4 @@
+/**biome-ignore-all assist/source/organizeImports: reason */
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
 import {
   Card,
@@ -33,7 +34,11 @@ export const RenderSecuritySettings = () => {
             placeholder="ApR12**********************************************************************1$ph"
             disabled
           />
-          <OpenDialogs dialogKey="change-password" title="Change Password" />
+          <OpenDialogs
+            permission="view:profile"
+            dialogKey="change-password"
+            title="Change Password"
+          />
         </div>
         <fieldset className="border rounded-lg p-4">
           <legend className="text-base font-bold p-2">Your Accounts</legend>

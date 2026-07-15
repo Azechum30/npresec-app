@@ -31,8 +31,10 @@ export function getRoleDashboardPath(role: UserRole): string {
     staff: "/teachers",
     student: "/students",
     parent: "/parents",
-    classTeacher: '/staff/dashborad',
-    form_master: '/staff/dashboard'
+    classTeacher: "/staff/dashborad",
+    form_master: "/staff/dashboard",
+    senior_house_master: "/staff/dashboard",
+    houseMaster: "/staff/dashboard",
   };
 
   return dashboardMap[role] || "/profile";
