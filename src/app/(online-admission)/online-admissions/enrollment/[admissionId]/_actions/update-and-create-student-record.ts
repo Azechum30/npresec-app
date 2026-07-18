@@ -1,14 +1,15 @@
+/** biome-ignore-all assist/source/organizeImports: reason */
 "use server";
 import { computeGraduationDate } from "@/lib/compute-graduation-date";
-import { ActionError, Levels } from "@/lib/constants";
+import { ActionError, type Levels } from "@/lib/constants";
 import { getErrorMessage } from "@/lib/getErrorMessage";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/server-only-actions/validate-env";
 import { workflowClient } from "@/lib/server-only-actions/workflow";
-import { singleStudentType } from "@/lib/types";
+import type { singleStudentType } from "@/lib/types";
 import {
   StudentEnrollmentSchema,
-  StudentEnrollmentType,
+  type StudentEnrollmentType,
 } from "@/lib/validation";
 import * as Sentry from "@sentry/nextjs";
 import { updateTag } from "next/cache";
@@ -78,7 +79,11 @@ export const updateAndCreateStudentRecord = async (
           roleId: role.id,
         },
         jhsIndexNumber: updated.jhsIndexNumber,
-      } satisfies singleStudentType & { jhsIndexNumber: string };
+        residentialStatus: updated.residentialStatus,
+      } satisfies singleStudentType & {
+        jhsIndexNumber: string;
+        residentialStatus: "Day" | "Boarding";
+      };
 
       const existingEmail = await prisma.user.findFirst({
         where: { email: body.data.email },

@@ -69,6 +69,7 @@ export const getHouses = authMiddleware
             id: z.string(),
             firstName: z.string(),
             lastName: z.string(),
+            userId: z.string().nullable(),
           })
           .nullable(),
       }),

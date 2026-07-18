@@ -1,4 +1,13 @@
 import {
+  createAllocation,
+  deleteAllocation,
+  deleteAllocations,
+  getAllocation,
+  getAllocations,
+  studentsWithAllocations,
+  updateAllocation,
+} from "./allocation";
+import {
   bulkdeleteHouses,
   createHouse,
   deleteHouse,
@@ -37,6 +46,17 @@ export const router = {
     deleteRoomById: deleteRoomById,
     deleteRoomsByIds: deleteRoomsByIds,
   },
+
+  allocation: {
+    createAllocation,
+    getAllocations,
+    getAllocation,
+    deleteAllocation,
+    deleteAllocations,
+    updateAllocation,
+    studentsWithAllocations,
+  },
+
   user: {
     updatePassword: updatePassword,
   },

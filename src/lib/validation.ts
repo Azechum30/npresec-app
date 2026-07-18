@@ -1099,3 +1099,28 @@ export const BanUserSchema = z.object({
 });
 
 export type BanUserType = z.infer<typeof BanUserSchema>;
+
+export const allocationsSchema = z.object({
+  id: z.string(),
+  status: z.enum(["Day", "Boarding"]),
+  student: z.object({
+    id: z.string(),
+    firstName: z.string(),
+    lastName: z.string(),
+    middleName: z.string().nullable(),
+    gender: z.string(),
+    studentNumber: z.string(),
+    currentLevel: z.enum(["Year_One", "Year_Two", "Year_Three"]),
+    roomId: z.string().nullable(),
+    user: z
+      .object({
+        id: z.string(),
+        image: z.string().nullable(),
+      })
+      .nullable(),
+  }),
+  house: z.object({
+    id: z.string(),
+    name: z.string(),
+  }),
+});

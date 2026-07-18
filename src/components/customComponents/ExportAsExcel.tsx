@@ -45,7 +45,7 @@ const ExportAsExcelInternal = <T extends IContent>({
 
     const settings = {
       fileName: filename || "export",
-      extraLength: 3,
+      extraLength: 5,
       writeOptions: {},
     };
 

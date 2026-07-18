@@ -1,4 +1,3 @@
-
 generator client {
   provider        = "prisma-client"
   output          = "../src/generated/prisma"
@@ -278,6 +277,7 @@ model Student {
   promotions        StudentPromotion[]
   isPaymentAccepted Boolean?           @default(false)
   payments          Payment[]
+  allocations       Allocation[]
 
   @@index([departmentId])
   @@index([firstName, lastName, studentNumber, currentLevel])
@@ -428,15 +428,16 @@ model Transcript {
 }
 
 model House {
-  id            String      @id @default(cuid())
-  name          String      @unique
-  residencyType HouseType   @default(DAY)
-  houseGender   HouseGender @default(BOTH)
+  id            String       @id @default(cuid())
+  name          String       @unique
+  residencyType HouseType    @default(DAY)
+  houseGender   HouseGender  @default(BOTH)
   occupancy     Json
   students      Student[]
   rooms         Room[]
-  houseMasterId String?     @unique
-  houseMaster   Staff?      @relation("HouseMaster", fields: [houseMasterId], references: [id], onDelete: SetNull)
+  houseMasterId String?      @unique
+  houseMaster   Staff?       @relation("HouseMaster", fields: [houseMasterId], references: [id], onDelete: SetNull)
+  allocations   Allocation[]
 
   @@map("houses")
 }
@@ -709,4 +710,18 @@ model ExportColumnConfig {
   updatedAt DateTime @updatedAt
 
   @@map("export_column_configs")
+}
+
+model Allocation {
+  id        String             @id @default(cuid())
+  houseId   String
+  studentId String
+  status    RESIDENTIAL_STATUS @default(Day)
+  house     House              @relation(fields: [houseId], references: [id], onDelete: Cascade)
+  student   Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([houseId, studentId])
+  @@index([studentId])
+  @@index([houseId])
+  @@map("house_allocations")
 }

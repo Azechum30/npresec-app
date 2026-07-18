@@ -272,6 +272,10 @@ export const eventsConfig: Record<string, Key | QueryKey> = {
   "rooms-deleted": orpc.room.getRooms.key(),
   "user-role-updated": [usersQueryOptions.queryKey],
   "user-role-permissions-updated": [usersQueryOptions.queryKey],
+  "allocation-created": orpc.allocation.getAllocations.key(),
+  "allocation-deleted": orpc.allocation.getAllocations.key(),
+  "allocations-deleted": orpc.allocation.getAllocations.key(),
+  "allocation-updated": orpc.allocation.getAllocations.key(),
 };
 
 export const BAN_USER_DURATIONS = [

@@ -1,3 +1,4 @@
+"use server";
 import * as Sentry from "@sentry/nextjs";
 import { ActionError, CUSTOM_ERRORS } from "./constants";
 import { getUserPermissions } from "./get-session";

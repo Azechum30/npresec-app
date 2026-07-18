@@ -4,7 +4,6 @@ import { ActionError } from "@/lib/constants";
 import { nextSafeAction } from "@/lib/next-safe-action";
 import { prisma } from "@/lib/prisma";
 import { UserSelect } from "@/lib/types";
-import "server-only";
 
 export const getAllUsersAction = async () =>
   nextSafeAction(

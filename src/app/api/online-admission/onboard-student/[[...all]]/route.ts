@@ -1,13 +1,14 @@
-import { Levels } from "@/lib/constants";
+/** biome-ignore-all assist/source/organizeImports: reason */
+import type { Levels } from "@/lib/constants";
 import { generatePassword } from "@/lib/generatePassword";
 import { prisma } from "@/lib/prisma";
 import { triggerServerNotification } from "@/lib/pusher";
 import { env } from "@/lib/server-only-actions/validate-env";
-import { singleStudentType } from "@/lib/types";
+import type { singleStudentType } from "@/lib/types";
 import { createUserCredentials } from "@/utils/create-user-credentials";
 import {
   CONSTANTS,
-  Department,
+  type Department,
   generateStudentIndex,
 } from "@/utils/generateStudentIndex";
 import { createWorkflow, serveMany } from "@upstash/workflow/dist/nextjs";
@@ -15,10 +16,13 @@ import { revalidateTag } from "next/cache";
 import { singleStudentEmailWorkflow } from "../../../onboard/single-student/[[...all]]/route";
 
 const onlineAdmissionStudentOnboardingWorkflow = createWorkflow<
-  singleStudentType & { jhsIndexNumber: string },
+  singleStudentType & {
+    jhsIndexNumber: string;
+    residentialStatus: "Day" | "Boarding";
+  },
   unknown
 >(async (ctx) => {
-  const { data, jhsIndexNumber } = ctx.requestPayload;
+  const { data, jhsIndexNumber, residentialStatus } = ctx.requestPayload;
 
   const channelName = `userId-${data.userId}`;
   const password = generatePassword();
@@ -44,13 +48,16 @@ const onlineAdmissionStudentOnboardingWorkflow = createWorkflow<
     async () => {
       const result = await prisma.$transaction(
         async (tsx) => {
+          // 1. Calculate the house distribution using allocations instead of the direct student link
           const distribution = await tsx.house.findMany({
             select: {
               id: true,
               name: true,
               _count: {
                 select: {
-                  students: { where: { gender: data.gender } },
+                  allocations: {
+                    where: { student: { gender: data.gender } },
+                  },
                 },
               },
             },
@@ -58,11 +65,11 @@ const onlineAdmissionStudentOnboardingWorkflow = createWorkflow<
           });
 
           const minCount = Math.min(
-            ...distribution.map((h) => h._count.students),
+            ...distribution.map((h) => h._count.allocations),
           );
 
           const targetHostel = distribution.find(
-            (h) => h._count.students === minCount,
+            (h) => h._count.allocations === minCount,
           );
 
           const rooms = await tsx.room.findMany({
@@ -103,6 +110,7 @@ const onlineAdmissionStudentOnboardingWorkflow = createWorkflow<
           const sequence = latestStudent
             ? (parseInt(
                 latestStudent.studentNumber.slice(-CONSTANTS.SEQUENCE_LENGTH),
+                10,
               ) || 0) + 1
             : 1;
 
@@ -124,10 +132,10 @@ const onlineAdmissionStudentOnboardingWorkflow = createWorkflow<
               jhsIndexNumber: jhsIndexNumber,
               currentLevel: rest.currentLevel as (typeof Levels)[number],
 
-              house: targetHostel
-                ? { connect: { id: targetHostel.id } }
-                : undefined,
-              room: targetRoom ? { connect: { id: targetRoom.id } } : undefined,
+              room:
+                residentialStatus === "Boarding" && targetRoom
+                  ? { connect: { id: targetRoom.id } }
+                  : undefined,
 
               currentClass: { connect: { id: classId as string } },
               department: { connect: { id: departmentId as string } },
@@ -136,6 +144,16 @@ const onlineAdmissionStudentOnboardingWorkflow = createWorkflow<
                 : undefined,
             },
           });
+
+          if (student && targetHostel) {
+            await tsx.allocation.create({
+              data: {
+                houseId: targetHostel.id,
+                studentId: student.id,
+                status: residentialStatus || "Day",
+              },
+            });
+          }
 
           if (student && classId) {
             await tsx.class.update({

@@ -214,6 +214,18 @@ export const EXPORT_COLUMN_REGISTRY: ExportRegistryEntry[] = [
       { key: "Created Date", label: "Created Date" },
     ],
   },
+  {
+    exportKey: "allocations",
+    label: "Allocations",
+    columns: [
+      { key: "Student Number", label: "Student Number" },
+      { key: "Full Name", label: "Full Name" },
+      { key: "Gender", label: "Gender" },
+      { key: "Current Level", label: "Current Level" },
+      { key: "Assigned House", label: "Assigned House" },
+      { key: "Residential Status", label: "Residential Status" },
+    ],
+  },
 ];
 
 export function getRegistryEntry(

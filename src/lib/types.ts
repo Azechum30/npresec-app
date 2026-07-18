@@ -465,6 +465,7 @@ export const HouseSelect = {
       id: true,
       firstName: true,
       lastName: true,
+      userId: true,
     },
   },
 } satisfies Prisma.HouseSelect;
@@ -851,3 +852,36 @@ export type TPayment = Prisma.PaymentGetPayload<{
 export type VerifyStudentsParams = {
   token: string;
 };
+
+export const AllocationsSelect = {
+  id: true,
+  status: true,
+  house: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  student: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      middleName: true,
+      gender: true,
+      currentLevel: true,
+      studentNumber: true,
+      user: {
+        select: {
+          id: true,
+          image: true,
+        },
+      },
+      roomId: true,
+    },
+  },
+} satisfies Prisma.AllocationSelect;
+
+export type TAllocations = Prisma.AllocationGetPayload<{
+  select: typeof AllocationsSelect;
+}>;
