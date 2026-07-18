@@ -19,7 +19,7 @@ export const RowSelections = <T,>({
   isHeader,
   row,
 }: RowSelectionsProps<T>) => {
-  const enabled = useSystemWideActionsStore((s) => s.settings?.enableDeleting);
+  const _ = useSystemWideActionsStore((s) => s.settings?.enableDeleting);
   const [isMounted, setIsMounted] = useState(false);
 
   const user = useAuth();
@@ -42,6 +42,7 @@ export const RowSelections = <T,>({
         type="button"
         role="checkbox"
         aria-label="role-selection-checkbox"
+        className="hover:cursor-pointer border-primary"
         checked={
           isHeader ? table?.getIsAllRowsSelected() : row?.getIsSelected()
         }

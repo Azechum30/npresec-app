@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/customComponents/page-header";
 import { getQueryClient } from "@/components/providers/get-query-client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { staffQueryOptions } from "../staff/actions/queries";
 import { HousesDialogProviders } from "./_components/houses-dialog-providers";
@@ -51,6 +52,7 @@ export default async function HousesPage() {
 }
 
 const LoadHousesData = async () => {
+  await connection();
   const queryClient = getQueryClient();
 
   await Promise.all([

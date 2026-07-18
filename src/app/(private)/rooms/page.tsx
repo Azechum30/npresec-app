@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/customComponents/page-header";
 import { getQueryClient } from "@/components/providers/get-query-client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { housesQueryOptions } from "../(admin)/admin/houses/queries";
 import { roomsQueryOptions } from "./_actions/queries";
@@ -51,6 +52,7 @@ export default function RoomsPage() {
 }
 
 const RenderRooms = async () => {
+  await connection();
   const queryClient = getQueryClient();
   await Promise.all([
     queryClient.ensureQueryData(housesQueryOptions),

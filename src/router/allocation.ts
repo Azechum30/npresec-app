@@ -1,5 +1,5 @@
 /**biome-ignore-all assist/source/organizeImports: reason */
-import { Prisma } from "@/generated/prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 import { commonErrors } from "@/lib/commonErrors";
 import { hasRole } from "@/lib/get-session";
 import { nextSafeAction } from "@/lib/next-safe-action";
@@ -21,36 +21,42 @@ export const createAllocation = authMiddleware
   .errors({ ...commonErrors })
   .handler(async ({ input, context }) =>
     nextSafeAction(async () => {
-      const allocation = await prisma.$transaction(async (tx) => {
-        const result = await tx.allocation.create({
-          data: {
-            houseId: input.houseId,
-            studentId: input.studentNumber,
-            status: input.status,
-          },
-        });
-
-        if (input.roomId) {
-          await tx.room.update({
-            where: { id: input.roomId },
+      try {
+        const allocation = await prisma.$transaction(async (tx) => {
+          const result = await tx.allocation.create({
             data: {
-              students: { connect: { id: input.studentNumber } },
+              houseId: input.houseId,
+              studentId: input.studentNumber,
+              status: input.status,
             },
           });
-        }
 
-        return result;
-      });
+          if (input.roomId) {
+            await tx.room.update({
+              where: { id: input.roomId },
+              data: {
+                students: { connect: { id: input.studentNumber } },
+              },
+            });
+          }
 
-      const { studentId, ...rest } = allocation;
+          return result;
+        });
 
-      await pusher.trigger(
-        "cache-invalidation-settings",
-        "allocation-created",
-        { triggeredBy: context.user.id },
-      );
+        const { studentId, ...rest } = allocation;
 
-      return { ...rest, studentNumber: studentId };
+        await pusher.trigger(
+          "cache-invalidation-settings",
+          "allocation-created",
+          {
+            triggeredBy: context.user.id,
+          },
+        );
+
+        return { ...rest, studentNumber: studentId };
+      } catch (error) {
+        throw error;
+      }
     }),
   );
 

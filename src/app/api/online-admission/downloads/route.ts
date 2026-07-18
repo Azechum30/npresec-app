@@ -2,10 +2,11 @@ import { EnrollmentTemplate } from "@/app/(online-admission)/online-admissions/a
 import { pubArcjectRateLimit, pubBotProtection } from "@/lib/arcjet";
 import { prisma } from "@/lib/prisma";
 import { renderToBuffer } from "@react-pdf/renderer";
-import { NextRequest, NextResponse } from "next/server";
+import { connection, NextRequest, NextResponse } from "next/server";
 import React from "react";
 
 export const GET = async (req: NextRequest) => {
+  await connection();
   try {
     const { searchParams } = new URL(req.url);
 

@@ -8,6 +8,7 @@ import { RoleService } from "@/lib/services/role-check-service";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { classQueryOptions } from "../(admin)/admin/classes/actions/queries";
 import { attendanceQueryOptions } from "./actions/queries";
@@ -50,6 +51,7 @@ export default function AttendancePage() {
 }
 
 const RenderAttendanceWithData = async () => {
+  await connection();
   const { serverSideHasRole } = new RoleService(["admin", "classTeacher"]);
 
   const hasAttendanceRolePermissions = await serverSideHasRole();

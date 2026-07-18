@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/customComponents/page-header";
 import { getQueryClient } from "@/components/providers/get-query-client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { permissionsQueryOptions } from "../permissions/actions/tanstack-queries";
 import { rolesQueryOptions } from "../roles/actions/tanstack-queries";
@@ -47,6 +48,7 @@ export default function UsersPage() {
 }
 
 const RenderUserTable = async () => {
+  await connection();
   const queryClient = getQueryClient();
   await Promise.all([
     queryClient.ensureQueryData(usersQueryOptions),

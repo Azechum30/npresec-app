@@ -37,6 +37,7 @@ const resources = [
   "services",
   "payments",
   "templates",
+  "allocations",
 ];
 const actions = ["create", "view", "edit", "delete", "export"];
 
@@ -100,6 +101,7 @@ const rolePermissions: Record<
       "notifications",
       "events",
       "profile",
+      "allocations",
     ],
     actions: ["view", "create", "edit"],
   },
@@ -155,7 +157,7 @@ const rolePermissions: Record<
     resources: [
       "houses",
       "students",
-      "attendance",
+      "allocations",
       "notifications",
       "events",
       "rooms",

@@ -3,6 +3,7 @@ import { FallbackComponent } from "@/components/customComponents/fallback-compon
 import { PageHeader } from "@/components/customComponents/page-header";
 import { getQueryClient } from "@/components/providers/get-query-client";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { classQueryOptions } from "../classes/actions/queries";
 import { departmentsQueryOptions } from "../departments/actions/queries";
@@ -14,6 +15,7 @@ import EditCourseDialog from "./components/edit-course-dialog";
 import RenderCoursesDataTable from "./components/render-courses-dataTable";
 
 export default async function CoursesPage() {
+  await connection();
   const queryClient = getQueryClient();
 
   await Promise.all([

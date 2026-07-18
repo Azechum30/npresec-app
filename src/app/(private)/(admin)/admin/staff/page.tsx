@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/customComponents/page-header";
 import { getQueryClient } from "@/components/providers/get-query-client";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { classQueryOptions } from "../classes/actions/queries";
 import { coursesQueryOptions } from "../courses/actions/queries";
@@ -54,6 +55,7 @@ export default function StaffPage() {
 }
 
 const LoadStaffData = async () => {
+  await connection();
   const queryClient = getQueryClient();
 
   await Promise.all([

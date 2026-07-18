@@ -4,6 +4,7 @@ import { FallbackComponent } from "@/components/customComponents/fallback-compon
 import { PageHeader } from "@/components/customComponents/page-header";
 import { getQueryClient } from "@/components/providers/get-query-client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { staffQueryOptions } from "../staff/actions/queries";
 import { departmentsQueryOptions } from "./actions/queries";
@@ -13,6 +14,7 @@ import EditDepartment from "./components/EditDepartment";
 import RenderDepartmentsDataTable from "./components/render-departments-datateble";
 
 export default async function DepartmentPage() {
+  await connection();
   const queryClient = getQueryClient();
 
   await Promise.all([

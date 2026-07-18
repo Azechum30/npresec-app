@@ -13,10 +13,7 @@ import { RenderAssessmentTimelinesTable } from "./_components/render-assessment-
 import { RenderBulkSetAssessmentTimelinesModal } from "./_components/render-bulk-set-assessment-timelines-modal";
 import { RenderCreateAssessmentTimelineModal } from "./_components/render-create-assessment-timeline-form-modal";
 
-export default async function AssessmentTimelinesPage() {
-  const queryClient = getQueryClient();
-
-  await queryClient.ensureQueryData(coursesQueryOptions);
+export default function AssessmentTimelinesPage() {
   return (
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -40,12 +37,7 @@ export default async function AssessmentTimelinesPage() {
         </div>
       </div>
       <Suspense fallback={<FallbackComponent />}>
-        <HydrationBoundary state={dehydrate(queryClient)}>
-          <RenderCreateAssessmentTimelineModal />
-          <EditAssessmentTimelineModal />
-          <RenderBulkSetAssessmentTimelinesModal />
-          <RenderAssessmentTimelinesDataTable />
-        </HydrationBoundary>
+        <RenderAssessmentTimelinesDataTable />
       </Suspense>
     </div>
   );
@@ -54,6 +46,17 @@ export default async function AssessmentTimelinesPage() {
 const RenderAssessmentTimelinesDataTable = async () => {
   await connection();
   const { error, timelines } = await getAllAssessmentTimelines();
+  const queryClient = getQueryClient();
 
-  return <RenderAssessmentTimelinesTable error={error} data={timelines} />;
+  await queryClient.ensureQueryData(coursesQueryOptions);
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <RenderCreateAssessmentTimelineModal />
+      <EditAssessmentTimelineModal />
+      <RenderBulkSetAssessmentTimelinesModal />
+      <RenderAssessmentTimelinesDataTable />
+      <RenderAssessmentTimelinesTable error={error} data={timelines} />
+    </HydrationBoundary>
+  );
 };

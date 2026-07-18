@@ -1,9 +1,11 @@
 /** biome-ignore-all assist/source/organizeImports: reason */
 import { ImageResponse } from "next/og";
+import { connection } from "next/server";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 export async function GET(req: Request) {
+  await connection();
   try {
     const fontPath = path.join(
       process.cwd(),
