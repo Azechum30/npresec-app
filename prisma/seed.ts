@@ -38,6 +38,7 @@ const resources = [
   "payments",
   "templates",
   "allocations",
+  "exeats",
 ];
 const actions = ["create", "view", "edit", "delete", "export"];
 
@@ -102,6 +103,7 @@ const rolePermissions: Record<
       "events",
       "profile",
       "allocations",
+      "exeats",
     ],
     actions: ["view", "create", "edit"],
   },
@@ -161,6 +163,7 @@ const rolePermissions: Record<
       "notifications",
       "events",
       "rooms",
+      "exeats",
     ],
     actions: ["view", "export"],
   },

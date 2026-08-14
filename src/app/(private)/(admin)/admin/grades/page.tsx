@@ -6,6 +6,8 @@ import { PublishResultsButton } from "./_components/publish-result-button";
 import { RenderStudentsGradesTable } from "./_components/render-students-grades-table";
 import { ScoreDetailView } from "./_components/score-detail-view";
 import { FilterStudentGradesForm } from "./_forms/filter-student-grades-form";
+import {connection} from "next/server"
+import { getQueryClient } from "@/components/providers/get-query-client";
 
 type SearchParams = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -35,6 +37,8 @@ export default function StudentsGradesPage({ searchParams }: SearchParams) {
 const RenderStudentsGradesDataTable = async ({
   searchParams,
 }: SearchParams) => {
+  
+  await connection()
   const params = await searchParams;
 
   const queryParams = {
@@ -42,6 +46,11 @@ const RenderStudentsGradesDataTable = async ({
     academicYear: parseInt(params?.academicYear as string, 10),
     semester: params?.semester as string,
   };
+
+  const queryClient = getQueryClient()
+
+
+  
 
   const allParamsPresent =
     queryParams.classId && queryParams.academicYear && queryParams.semester;

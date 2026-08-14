@@ -8,6 +8,17 @@ import {
   updateAllocation,
 } from "./allocation";
 import {
+  approveExeatRequest,
+  confirmExeatDepartureOrReturnRequest,
+  createExeatRequest,
+  deleteExeatRequest,
+  deleteExeatsRequest,
+  getExeatRequest,
+  getExeatsRequest,
+  getStudentsToAssignExeatRequest,
+  updateExeatRequest,
+} from "./exeats";
+import {
   bulkdeleteHouses,
   createHouse,
   deleteHouse,
@@ -55,6 +66,18 @@ export const router = {
     deleteAllocations,
     updateAllocation,
     studentsWithAllocations,
+  },
+
+  exeat: {
+    getStudentsToAssignExeatRequest,
+    getExeatsRequest,
+    createExeatRequest,
+    getExeatRequest,
+    updateExeatRequest,
+    deleteExeatRequest,
+    deleteExeatsRequest,
+    approveExeatRequest,
+    confirmExeatDepartureOrReturnRequest,
   },
 
   user: {

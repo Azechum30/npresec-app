@@ -159,6 +159,9 @@ model Staff {
   courses                Course[]      @relation("CourseStaff")
   grades                 Grade[]
   formMaster             Class?        @relation("FormMaster")
+  approvedExeats         Exeat[]       @relation("ExeatApprover")
+  checkoutExeats         Exeat[]       @relation("ExeatCheckOutSecurity")
+  checkInExeats          Exeat[]       @relation("ExeatCheckInSecurity")
 
   @@index([employeeId, firstName, lastName, gender])
   @@index([departmentId])
@@ -201,6 +204,7 @@ model Class {
   students          Student[]
   courses           Course[]     @relation("ClassCourses")
   staff             Staff[]      @relation("ClassStaff")
+  exeats            Exeat[]
 
   @@index([code, name])
   @@index([staffId])
@@ -278,6 +282,7 @@ model Student {
   isPaymentAccepted Boolean?           @default(false)
   payments          Payment[]
   allocations       Allocation[]
+  exeats            Exeat[]
 
   @@index([departmentId])
   @@index([firstName, lastName, studentNumber, currentLevel])
@@ -438,6 +443,7 @@ model House {
   houseMasterId String?      @unique
   houseMaster   Staff?       @relation("HouseMaster", fields: [houseMasterId], references: [id], onDelete: SetNull)
   allocations   Allocation[]
+  exeats        Exeat[]
 
   @@map("houses")
 }
@@ -724,4 +730,56 @@ model Allocation {
   @@index([studentId])
   @@index([houseId])
   @@map("house_allocations")
+}
+
+enum ExeatType {
+  HEALTH
+  PERSONAL
+  TOWN_WING
+  VACATION
+}
+
+enum ExeatStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ACTIVE
+  RETURNED
+  OVERDUE
+}
+
+model Exeat {
+  id                 String      @id @default(cuid())
+  exeatNumber        String      @unique
+  studentId          String
+  student            Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  houseId            String
+  house              House       @relation(fields: [houseId], references: [id])
+  classId            String
+  currentClass       Class       @relation(fields: [classId], references: [id])
+  level              String
+  type               ExeatType
+  reason             String      @db.Text
+  destination        String
+  guardianName       String
+  guardianContact    String
+  departureDate      DateTime
+  expectedReturnDate DateTime
+  actualReturnDate   DateTime?
+  status             ExeatStatus @default(PENDING)
+  rejectionReason    String?     @db.Text
+  approvedById       String?
+  approvedBy         Staff?      @relation("ExeatApprover", fields: [approvedById], references: [id])
+  checkOutById       String?
+  checkOutBy         Staff?      @relation("ExeatCheckOutSecurity", fields: [checkOutById], references: [id])
+  checkInById        String?
+  checkInBy          Staff?      @relation("ExeatCheckInSecurity", fields: [checkInById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([status])
+  @@index([exeatNumber])
+  @@map("exeats")
 }

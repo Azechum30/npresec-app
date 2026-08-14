@@ -23,4 +23,8 @@ export const commonErrors = {
     message: "Invalid reference to related entity",
     status: 400,
   },
+  VALIDATION_ERROR: {
+    message: "Validation error occurred",
+    status: 422,
+  },
 };

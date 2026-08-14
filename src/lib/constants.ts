@@ -259,6 +259,7 @@ export const EVENTS = [
   "students-grades-upload-success",
   "placement-list-upload-failed",
   "placement-list-upload-success",
+  "sms-sent-success",
 ];
 
 type Key = readonly unknown[] | unknown[];
@@ -276,6 +277,11 @@ export const eventsConfig: Record<string, Key | QueryKey> = {
   "allocation-deleted": orpc.allocation.getAllocations.key(),
   "allocations-deleted": orpc.allocation.getAllocations.key(),
   "allocation-updated": orpc.allocation.getAllocations.key(),
+  "create-exeat": orpc.exeat.getExeatsRequest.key(),
+  "update-exeat": orpc.exeat.getExeatsRequest.key(),
+  "delete-exeat": orpc.exeat.getExeatsRequest.key(),
+  "delete-exeats": orpc.exeat.getExeatsRequest.key(),
+  "exeat-approved": orpc.exeat.getExeatsRequest.key(),
 };
 
 export const BAN_USER_DURATIONS = [

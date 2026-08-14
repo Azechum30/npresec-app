@@ -1,7 +1,10 @@
+/** biome-ignore-all assist/source/organizeImports:reason */
+
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle, Home, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
@@ -11,9 +14,10 @@ interface ErrorProps {
   reset: () => void;
 }
 
-export default function Error({ error, reset }: ErrorProps) {
+export default function GlobalErrorPage({ error, reset }: ErrorProps) {
   useEffect(() => {
     console.error("Global error caught:", error.message);
+    Sentry.captureException(error);
   }, [error]);
 
   const isDevelopment = process.env.NODE_ENV === "development";

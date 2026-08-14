@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Levels } from "./constants";
 
 const optionalField = <T extends z.ZodTypeAny>(schema: T) =>
   schema.optional().describe("isOptional:true");
@@ -1124,3 +1125,190 @@ export const allocationsSchema = z.object({
     name: z.string(),
   }),
 });
+
+export const ExeatType = [
+  "VACATION",
+  "PERSONAL",
+  "TOWN_WING",
+  "HEALTH",
+] as const;
+export const ExeatStatus = [
+  "PENDING",
+  "APPROVED",
+  "REJECTED",
+  "ACTIVE",
+  "RETURNED",
+  "OVERDUE",
+] as const;
+
+export const exeatFormSchema = z
+  .object({
+    studentId: z.cuid({ error: "Invalid student selection" }),
+    houseId: z.cuid({ error: "Invalid house selection" }),
+    classId: z.cuid({ error: "Invalid class selection" }),
+    level: z.string().min(1, "Student level is required"),
+    guardianName: z.string().min(1, "Student gurdian name is required"),
+    guardianContact: z.string().min(1, "Student gurdian contact is required"),
+    type: z.enum(ExeatType),
+    reason: z
+      .string()
+      .min(10, "Please provide a detailed reason (minimum 10 characters)")
+      .max(1000, "Reason cannot exceed 1000 characters"),
+    destination: z
+      .string()
+      .min(3, "Destination town or address is required")
+      .max(255, "Destination cannot exceed 255 characters"),
+    departureDate: z.union([
+      z.coerce.date<Date>({
+        error: "Please select a departure date and time",
+      }),
+      z.string().min(1),
+    ]),
+    expectedReturnDate: z.union([
+      z.coerce.date<Date>({
+        error: "Please select an expected return date and time",
+      }),
+      z.string().min(1),
+    ]),
+  })
+  .refine((data) => data.expectedReturnDate > data.departureDate, {
+    path: ["expectedReturnDate"],
+    message: "Expected return date must be after the departure date",
+  })
+  .refine(
+    (data) => data.departureDate >= new Date(new Date().setHours(0, 0, 0, 0)),
+    {
+      path: ["departureDate"],
+      message: "Departure date cannot be in the past",
+    },
+  );
+
+export const exeatServerSchema = exeatFormSchema.extend({
+  id: z.cuid(),
+  exeatNumber: z.string().min(1, "Exeat system number is required"),
+  status: z.enum(ExeatStatus),
+  approvedById: z.cuid().nullable(),
+  actualReturnDate: z.coerce.date().nullable(),
+  rejectionReason: z.string().nullable(),
+
+  checkOutById: z.cuid().nullable(),
+  checkInById: z.cuid().nullable(),
+
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+
+export type ExeatFormValues = z.infer<typeof exeatFormSchema>;
+export type ExeatServerValues = z.infer<typeof exeatServerSchema>;
+
+export const studentsForExeatSchema = z.array(
+  z.object({
+    id: z.cuid(),
+    lastName: z.string(),
+    firstName: z.string(),
+    middleName: z.string().nullable(),
+    gender: z.string(),
+    currentLevel: z.enum(Levels),
+    currentClass: z
+      .object({
+        id: z.cuid(),
+        name: z.string(),
+      })
+      .nullable(),
+    house: z
+      .object({
+        id: z.cuid(),
+        name: z.string(),
+      })
+      .nullable(),
+  }),
+);
+
+const exeatIssuerSchema = z
+  .object({
+    lastName: z.string(),
+    firstName: z.string(),
+    middleName: z.string().nullable(),
+    user: z
+      .object({
+        roles: z.array(
+          z.object({
+            role: z.object({
+              name: z.string(),
+              permissions: z
+                .array(
+                  z.object({
+                    name: z.string(),
+                  }),
+                )
+                .nullable(),
+            }),
+          }),
+        ),
+      })
+      .nullable(),
+  })
+  .nullable();
+
+export const exeatsServerResponseSchema = z.object({
+  id: z.cuid(),
+  exeatNumber: z.string().min(1, "Exeat system number is required"),
+  status: z.enum(ExeatStatus),
+  approvedById: z.cuid().nullable(),
+  actualReturnDate: z.coerce.date().nullable(),
+  rejectionReason: z.string().nullable(),
+  checkOutById: z.cuid().nullable(),
+  checkInById: z.cuid().nullable(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  studentId: z.cuid({ error: "Invalid student selection" }),
+  houseId: z.cuid({ error: "Invalid house selection" }),
+  classId: z.cuid({ error: "Invalid class selection" }),
+  level: z.string().min(1, "Student level is required"),
+  guardianName: z.string().min(1, "Student gurdian name is required"),
+  guardianContact: z.string().min(1, "Student gurdian contact is required"),
+  type: z.enum(ExeatType),
+  reason: z
+    .string()
+    .min(10, "Please provide a detailed reason (minimum 10 characters)")
+    .max(1000, "Reason cannot exceed 1000 characters"),
+  destination: z
+    .string()
+    .min(3, "Destination town or address is required")
+    .max(255, "Destination cannot exceed 255 characters"),
+  departureDate: z.union([
+    z.coerce.date<Date>({
+      error: "Please select a departure date and time",
+    }),
+    z.string().min(1),
+  ]),
+  expectedReturnDate: z.union([
+    z.coerce.date<Date>({
+      error: "Please select an expected return date and time",
+    }),
+    z.string().min(1),
+  ]),
+  student: z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+    gender: z.string(),
+    middleName: z.string().nullable(),
+    user: z
+      .object({
+        image: z.string().nullable(),
+      })
+      .nullable(),
+  }),
+  house: z.object({ id: z.cuid(), name: z.string() }),
+  currentClass: z.object({
+    id: z.cuid(),
+    name: z.string(),
+  }),
+  approvedBy: exeatIssuerSchema,
+  checkOutBy: exeatIssuerSchema,
+  checkInBy: exeatIssuerSchema,
+});
+
+export type exeatServerResponseType = z.infer<
+  typeof exeatsServerResponseSchema
+>;

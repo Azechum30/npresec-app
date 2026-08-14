@@ -885,3 +885,158 @@ export const AllocationsSelect = {
 export type TAllocations = Prisma.AllocationGetPayload<{
   select: typeof AllocationsSelect;
 }>;
+
+export const StudentsForExeatSelect = {
+  id: true,
+  lastName: true,
+  firstName: true,
+  middleName: true,
+  gender: true,
+  currentLevel: true,
+  currentClass: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  house: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+} satisfies Prisma.StudentSelect;
+
+export const ExeatsSelect = {
+  id: true,
+  exeatNumber: true,
+  currentClass: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  level: true,
+  guardianName: true,
+  guardianContact: true,
+  departureDate: true,
+  expectedReturnDate: true,
+  destination: true,
+  classId: true,
+  studentId: true,
+  reason: true,
+  type: true,
+  status: true,
+  rejectionReason: true,
+  student: {
+    select: {
+      firstName: true,
+      lastName: true,
+      middleName: true,
+      gender: true,
+      user: {
+        select: {
+          image: true,
+        },
+      },
+    },
+  },
+  houseId: true,
+  house: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  actualReturnDate: true,
+  approvedById: true,
+  checkOutById: true,
+  checkInById: true,
+  approvedBy: {
+    select: {
+      lastName: true,
+      firstName: true,
+      middleName: true,
+      user: {
+        select: {
+          roles: {
+            select: {
+              role: {
+                select: {
+                  name: true,
+                  permissions: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  checkOutBy: {
+    select: {
+      lastName: true,
+      firstName: true,
+      middleName: true,
+      user: {
+        select: {
+          roles: {
+            select: {
+              role: {
+                select: {
+                  name: true,
+                  permissions: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  checkInBy: {
+    select: {
+      lastName: true,
+      firstName: true,
+      middleName: true,
+      user: {
+        select: {
+          roles: {
+            select: {
+              role: {
+                select: {
+                  name: true,
+                  permissions: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  createdAt: true,
+  updatedAt: true,
+} satisfies Prisma.ExeatSelect;
+
+export type TExeatsResponse = Prisma.ExeatGetPayload<{
+  select: typeof ExeatsSelect;
+}>;
+
+export type SMSWorkflowDataType = {
+  to: string;
+  message: string;
+  userId: string;
+};

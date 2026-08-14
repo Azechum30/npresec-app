@@ -1,15 +1,15 @@
+/** biome-ignore-all assist/source/organizeImports:reason */
+
 "use client";
-import { transformString } from "@/utils/transform-string";
+import { toProperCase } from "@/lib/to-proper-case";
 import { usePathname } from "next/navigation";
 
 export default function CurrentLocation() {
-  const pathname = usePathname().split("/").pop();
+  const pathname = usePathname().split("/").pop() ?? "";
   const isStudentDetailPage = usePathname().split("/")[3];
+  const isExeatConfirmationPage = usePathname().split("/")[2];
 
-  const transformedPath =
-    pathname?.includes("-") || pathname?.includes("_")
-      ? transformString(pathname)
-      : pathname?.charAt(0).toUpperCase()! + pathname?.slice(1);
+  const transformedPath = toProperCase(pathname);
 
   return (
     <span>
@@ -17,7 +17,9 @@ export default function CurrentLocation() {
         ? "Edit Student"
         : pathname === "teachers"
           ? "Students"
-          : transformedPath}
+          : isExeatConfirmationPage
+            ? "Confirm Exeat"
+            : transformedPath}
     </span>
   );
 }

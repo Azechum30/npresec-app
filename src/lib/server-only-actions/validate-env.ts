@@ -26,6 +26,9 @@ const envSchema = z.object({
   NEXT_PUBLIC_PAYSTACK_KEY: z.string(),
   PAYSTACK_INITIATE_TRANSACTION_URL: z.url(),
   PAYSTACK_VERIFY_TRANSACTION_URL: z.url(),
+  ARKESEL_API_KEY: z.string(),
+  ARKESEL_SENDER_ID: z.string(),
+  ARKESEL_URL: z.string(),
 });
 
 const parsed = envSchema.safeParse(process.env);

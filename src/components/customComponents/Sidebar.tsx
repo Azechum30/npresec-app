@@ -3,7 +3,7 @@
 import { useOpenSidebar } from "@/hooks/use-open-sidebar";
 import type { UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Award, BedDouble, ClipboardList } from "lucide-react";
+import { Award, BedDouble, CalendarDays, ClipboardList } from "lucide-react";
 import { buttonVariants } from "../ui/button";
 import LinkWithStyles from "./LinkWithStyles";
 import { useAuth } from "./SessionProvider";
@@ -31,6 +31,11 @@ export default function Sidebar() {
     roles.has("admin") ||
     roles.has("senior_house_master") ||
     roles.has("houseMaster");
+
+  const hasExeatPermissions =
+    roles.has("admin") ||
+    roles.has("houseMaster") ||
+    roles.has("senior_house_master");
 
   let links:
     | typeof Links.ADMIN
@@ -73,7 +78,8 @@ export default function Sidebar() {
     if (
       section.section === "Accommodation" &&
       hasHouseAllocationPermissions &&
-      hasRoomsPermissions
+      hasRoomsPermissions &&
+      hasExeatPermissions
     ) {
       return {
         ...section,
@@ -88,6 +94,11 @@ export default function Sidebar() {
             title: "Rooms",
             href: "/rooms",
             icon: <BedDouble />,
+          },
+          {
+            title: "Exeats",
+            href: "/exeats",
+            icon: <CalendarDays />,
           },
         ].sort((a, b) => a.title.localeCompare(b.title)),
       };
