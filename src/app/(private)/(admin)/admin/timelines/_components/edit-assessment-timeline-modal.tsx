@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports:reason */
 "use client";
 
 import {
@@ -8,64 +9,39 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { AssessmentTimeline, Semester } from "@/lib/validation";
+import type { AssessmentTimeline } from "@/lib/validation";
+import { useQuery } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
-import { startTransition, useEffect, useState, useTransition } from "react";
-import { toast } from "sonner";
-import { editAssessmentTimelineAction } from "../_actions/edit-assessment-timeline-action";
-import { getAssessmentTimelineById } from "../_actions/get-assesment-timeline-by-id";
+import { useUpdateAssessmentTimelineMutationFn } from "../_actions/mutations";
+import { getTimelimeQueryOptions } from "../_actions/queries";
 import { CreateAssessmentTimelineForm } from "../_forms/create-assessment-timeline-form";
 
 export const EditAssessmentTimelineModal = () => {
   const { id, dialogs, onClose } = useGenericDialog();
-  const [defaultValues, setDefaultValues] = useState<
-    AssessmentTimeline | undefined
-  >();
+  const { mutateAsync, isPending } = useUpdateAssessmentTimelineMutationFn(
+    id as string,
+  );
 
-  const [isPending, startUpdateTransition] = useTransition();
+  const isOpen = !!dialogs["edit-assessment-timeline"];
+  const validId = id ?? null;
 
-  useEffect(() => {
-    if (!id || !dialogs["edit-assessment-timeline"]) return;
-    startTransition(async () => {
-      const res = await getAssessmentTimelineById(id as string);
+  const { data } = useQuery({
+    ...getTimelimeQueryOptions(validId as string),
+    enabled: isOpen && !!validId,
+  });
 
-      if (res.error) {
-        toast.error(res.error);
-        return;
-      }
-
-      if (res.timeline) {
-        setDefaultValues({
-          ...res.timeline,
-          semester: res.timeline.semester as (typeof Semester)[number],
-        });
-      }
-    });
-  }, [id, dialogs]);
-
-  const handleAssessmentTimelineUpdate = (data: AssessmentTimeline) => {
-    startUpdateTransition(async () => {
-      const res = await editAssessmentTimelineAction(id as string, data);
-
-      if (res.error) {
-        toast.error(res.error);
-        return;
-      }
-
-      if (res.success) {
-        toast.success("Timeline updated successfully");
-        setTimeout(() => onClose("edit-assessment-timeline"), 300);
-      }
+  const handleAssessmentTimelineUpdate = async (data: AssessmentTimeline) => {
+    await Promise.try(async () => {
+      await mutateAsync({ id: validId as string, values: data });
+      onClose("edit-assessment-timeline");
     });
   };
 
-  console.log("Default values: ", defaultValues);
-
   return (
     <Dialog
-      open={dialogs["edit-assessment-timeline"]}
+      open={isOpen}
       onOpenChange={() => onClose("edit-assessment-timeline")}>
-      {id && dialogs["edit-assessment-timeline"] && defaultValues ? (
+      {id && isOpen && data ? (
         <DialogContent className="max-h-full">
           <DialogHeader>
             <DialogTitle>Update Assessment Timeline</DialogTitle>
@@ -75,7 +51,10 @@ export const EditAssessmentTimelineModal = () => {
           </DialogHeader>
           <CreateAssessmentTimelineForm
             onSubmitAction={handleAssessmentTimelineUpdate}
-            defaultValues={defaultValues}
+            defaultValues={{
+              ...data,
+              semester: data.semester as "First" | "Second",
+            }}
             isPending={isPending}
             id={id}
           />

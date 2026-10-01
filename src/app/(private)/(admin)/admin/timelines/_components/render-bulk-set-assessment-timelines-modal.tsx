@@ -8,38 +8,29 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { BulkAssessmentTimelinesType } from "@/lib/validation";
-import { useTransition } from "react";
-import { toast } from "sonner";
-import { bulkAssessmentTimelinesAction } from "../_actions/bulk-create-assessment-timelines";
+import type { BulkAssessmentTimelinesType } from "@/lib/validation";
+import { useBulkCreateAssessmentTimelinesMutationFn } from "../_actions/mutations";
 import { SetAssessmentTimelinesForm } from "../_forms/bulk-set-assessment-timelines-form";
 
 export const RenderBulkSetAssessmentTimelinesModal = () => {
   const { dialogs, onClose } = useGenericDialog();
+  const { mutateAsync, isPending } =
+    useBulkCreateAssessmentTimelinesMutationFn();
 
-  const [isPending, startTranstion] = useTransition();
-
-  const handleFormSubmission = (data: BulkAssessmentTimelinesType) => {
-    startTranstion(async () => {
-      const res = await bulkAssessmentTimelinesAction(data);
-
-      if (res?.error) {
-        toast.error(res.error);
-        return;
-      }
-
-      if (res.count) {
-        toast.success(`${res.count} record(s) added successfully`);
-        setTimeout(() => onClose("bulk-set-assessment-timelines"), 300);
-      }
+  const handleFormSubmission = async (data: BulkAssessmentTimelinesType) => {
+    await Promise.try(async () => {
+      await mutateAsync(data);
+      onClose("bulk-set-assessment-timelines");
     });
   };
 
+  const isOpen = !!dialogs["bulk-set-assessment-timelines"];
+
   return (
     <Dialog
-      open={dialogs["bulk-set-assessment-timelines"]}
+      open={isOpen}
       onOpenChange={() => onClose("bulk-set-assessment-timelines")}>
-      {dialogs["bulk-set-assessment-timelines"] && (
+      {isOpen && (
         <DialogContent className="max-h-full">
           <DialogHeader>
             <DialogTitle>Bulk Set Assessment Timelines</DialogTitle>

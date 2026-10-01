@@ -1,6 +1,14 @@
 import type { Course, Grade, Prisma } from "@/generated/prisma/client";
 import type { StaffType } from "./validation";
 
+declare const brandSymbol: unique symbol;
+
+export type Brand<Base, BrandName extends string> = Base & {
+  readonly [brandSymbol]: BrandName;
+};
+
+export type TimelineId = Brand<string, "timelineId">;
+
 export const DepartmentInclude = {
   head: {
     select: {

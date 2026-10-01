@@ -19,11 +19,13 @@ export const createStudentExeatService = async (
       });
 
       const nextSequence = String(countForCurrentYear + 1).padStart(5, "0");
-      const generateExeatNumber = `EXE-${currentYear}-${nextSequence}`;
+      const generatedExeatNumber = `EXE-${currentYear}-${nextSequence}`;
+
+      console.log("Exeat number", generatedExeatNumber);
 
       return await tsx.exeat.create({
         data: {
-          exeatNumber: generateExeatNumber,
+          exeatNumber: generatedExeatNumber,
           studentId: payload.studentId,
           level: payload.level,
           type: payload.type,

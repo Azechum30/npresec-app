@@ -1,43 +1,20 @@
 "use server";
 
-import { getUserPermissions } from "@/lib/get-session";
-import { getErrorMessage } from "@/lib/getErrorMessage";
-import { prisma } from "@/lib/prisma";
+import { ActionError } from "@/lib/constants";
+import { nextSafeAction } from "@/lib/next-safe-action";
+import type { TimelineId } from "@/lib/types";
 import { isArrayOfString } from "@/utils/is-array-of-strings";
-import * as Sentry from "@sentry/nextjs";
-import { revalidateTag } from "next/cache";
+import { AssessmentTimelineService } from "../service";
 
-export const deleteTimelinesByIds = async (
-  ids: string[],
-): Promise<{ error?: string; success?: boolean; count?: number }> => {
-  try {
-    const { hasPermission } = await getUserPermissions("delete:timelines");
+export const deleteTimelinesByIds = async (ids: string[]) =>
+  nextSafeAction(
+    async () => {
+      if (!ids || ids.length === 0 || !isArrayOfString(ids))
+        throw new ActionError("Invalid IDs");
 
-    if (!hasPermission)
-      return {
-        error: "You do not have sufficient permissions to perform this task",
-      };
-
-    if (!ids || ids.length === 0 || !isArrayOfString(ids))
-      return { error: "Invalid IDs provided" };
-
-    const { count } = await prisma.assessmentTimeline.deleteMany({
-      where: { id: { in: ids } },
-    });
-
-    if (!count) return { error: "Failed to delete timelines" };
-
-    revalidateTag("assessment-timelines", "seconds");
-
-    return { success: true, count };
-  } catch (e) {
-    console.error("Failed to delete timeline", e);
-    Sentry.captureException(e);
-    return {
-      error:
-        process.env.NODE_ENV === "development"
-          ? getErrorMessage(e)
-          : "Something went wrong!",
-    };
-  }
-};
+      return await new AssessmentTimelineService().deleteAssessmentTimelines(
+        ids as TimelineId[],
+      );
+    },
+    { permission: "delete:timelines" },
+  );

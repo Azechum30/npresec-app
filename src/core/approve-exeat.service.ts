@@ -19,7 +19,8 @@ export const approveExeatService = async (
 
   if (!existingExeat)
     throw new ActionError("No record matched the provided exeat number");
-  if (!staff) throw new ActionError("No staff matched the provided ID.");
+  if (!staff)
+    throw new ActionError("Only the senior housemaster can approve exeats.");
 
   await prisma.exeat.update({
     where: { id: existingExeat.id },

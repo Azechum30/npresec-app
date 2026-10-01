@@ -9,12 +9,13 @@ import {
   type StudentGradesFilterType,
 } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { startTransition, useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useDebouncedCallback } from "use-debounce";
-import { getClassesAction } from "../../classes/actions/server-actions";
+import { classQueryOptions } from "../../classes/actions/queries";
 
 const START_YEAR = new Date().getFullYear() - 5;
 
@@ -37,10 +38,6 @@ export const FilterStudentGradesForm = () => {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [classes, setClasses] = useState<
-    { id: string; name: string }[] | undefined
-  >();
-
   const classId = useWatch({
     control: form.control,
     name: "classId",
@@ -56,18 +53,29 @@ export const FilterStudentGradesForm = () => {
     name: "semester",
   });
 
+  const { data } = useQuery({
+    ...classQueryOptions,
+  });
+
+  const classes = useMemo(() => {
+    if (!data) return [];
+
+    return data.map((cls) => ({ id: cls.id, name: cls.name }));
+  }, [data]);
+
   useEffect(() => {
-    if (
-      pathname !==
-      `/admin/grades?classId=${classId}&academicYear=${academicYear}&semester=${semester}`
-    ) {
+    // Only reset the form when the user navigates away from the grades page.
+    // `usePathname()` does not include query params, so comparing against a
+    // full path-with-query will always be different and cause an unwanted
+    // reset when selecting values. Check the pathname only.
+    if (!pathname?.startsWith("/admin/grades")) {
       form.reset({
         classId: "",
         semester: "" as (typeof Semester)[number],
         academicYear: new Date().getFullYear(),
       });
     }
-  }, [pathname, form, classId, semester, academicYear]);
+  }, [pathname, form]);
 
   const debouncedNavigate = useDebouncedCallback((params) => {
     const allPresent = classId && academicYear && semester;
@@ -76,17 +84,6 @@ export const FilterStudentGradesForm = () => {
       router.push(`${pathname}?${params.toString()}` as Route);
     }
   }, 300);
-
-  useEffect(() => {
-    const fetchClasses = () => {
-      startTransition(async () => {
-        const rs = await getClassesAction();
-        setClasses(rs.data);
-      });
-    };
-
-    fetchClasses();
-  }, []);
 
   useEffect(() => {
     const allParamsPresent = classId && academicYear && semester;
@@ -116,7 +113,7 @@ export const FilterStudentGradesForm = () => {
           <SelectWithLabel
             name="classId"
             fieldTitle="Class"
-            data={classes ?? []}
+            data={classes}
             schema={StudentGradesFilterSchema}
             valueKey="id"
             selectedKey="name"

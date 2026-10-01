@@ -116,9 +116,11 @@ export const deleteExeatsRequest = authMiddleware
 export const approveExeatRequest = authMiddleware
   .use(requirePermissions("edit:exeats"))
   .input(z.string())
-  .handler(async ({ context, input }) => {
-    return await approveExeatService(input, context.user.id);
-  });
+  .handler(async ({ context, input }) =>
+    nextSafeAction(async () => {
+      return await approveExeatService(input, context.user.id);
+    }),
+  );
 
 export const confirmExeatDepartureOrReturnRequest = authMiddleware
   .use(requirePermissions("create:exeats"))

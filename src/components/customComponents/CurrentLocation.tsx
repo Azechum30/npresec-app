@@ -17,7 +17,7 @@ export default function CurrentLocation() {
         ? "Edit Student"
         : pathname === "teachers"
           ? "Students"
-          : isExeatConfirmationPage
+          : isExeatConfirmationPage === "check-out-or-check-in"
             ? "Confirm Exeat"
             : transformedPath}
     </span>

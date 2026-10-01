@@ -8,38 +8,29 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { AssessmentTimeline } from "@/lib/validation";
-import { useTransition } from "react";
-import { toast } from "sonner";
-import { createAssessmentTimeline } from "../_actions/create-timeline-action";
+import type { AssessmentTimeline } from "@/lib/validation";
+import { useCreateAssessmentTimelineMutationFn } from "../_actions/mutations";
 import { CreateAssessmentTimelineForm } from "../_forms/create-assessment-timeline-form";
 
 export const RenderCreateAssessmentTimelineModal = () => {
   const { dialogs, onClose } = useGenericDialog();
-  const [isPending, startTransition] = useTransition();
 
-  const handleAssessmentTimelineCreation = (data: AssessmentTimeline) => {
-    startTransition(async () => {
-      const result = await createAssessmentTimeline(data);
+  const { isPending, mutateAsync } = useCreateAssessmentTimelineMutationFn();
 
-      if (result.error) {
-        toast.error(result.error);
-        return;
-      }
-
-      if (result.success) {
-        toast.success("Assessment timeline created successfully!");
-
-        setTimeout(() => onClose("create-assessment-timeline"), 300);
-      }
+  const handleAssessmentTimelineCreation = async (data: AssessmentTimeline) => {
+    await Promise.try(async () => {
+      await mutateAsync(data);
+      onClose("create-assessment-timeline");
     });
   };
 
+  const isOpen = !!dialogs["create-assessment-timeline"];
+
   return (
     <Dialog
-      open={dialogs["create-assessment-timeline"]}
+      open={isOpen}
       onOpenChange={() => onClose("create-assessment-timeline")}>
-      {dialogs["create-assessment-timeline"] && (
+      {isOpen && (
         <DialogContent className="max-h-full">
           <DialogHeader>
             <DialogTitle>Create an Assessment Timeline</DialogTitle>

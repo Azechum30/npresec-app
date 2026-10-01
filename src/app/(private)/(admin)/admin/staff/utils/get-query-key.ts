@@ -46,5 +46,9 @@ export const getQueryKey = (id?: string) => {
       all: ["roles"],
       single: ["role", id as string],
     },
+    timeline: {
+      all: ["timelines"],
+      single: ["timeline", id],
+    },
   };
 };

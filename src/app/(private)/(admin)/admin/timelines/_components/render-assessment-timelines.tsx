@@ -1,64 +1,32 @@
+/**biome-ignore-all assist/source/organizeImports:reason */
 "use client";
 
 import DataTable from "@/components/customComponents/data-table";
-import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
-import { NoDataFound } from "@/components/customComponents/no-data-found";
-import { AssessmentTimelinesResponseType } from "@/lib/types";
-import { FC, useEffect, useRef } from "react";
-import { toast } from "sonner";
-import { useDeleteTimelinesByIds } from "../_hooks/use-delete-timelines-by-ids";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useDeleteAssessmentTimelinesMutationFn } from "../_actions/mutations";
+import { timelinesQueryOptions } from "../_actions/queries";
 import { useGetAssessmentTimelinesColumns } from "../_hooks/use-get-assessment-timelines-columns";
 
-type Props = {
-  data?: AssessmentTimelinesResponseType[];
-  error?: string;
-};
-
-export const RenderAssessmentTimelinesTable: FC<Props> = ({ data, error }) => {
+export const RenderAssessmentTimelinesTable = () => {
   const columns = useGetAssessmentTimelinesColumns();
-  const {
-    handleDeleteTimelinesByIds,
-    error: deleteError,
-    isPending,
-    success,
-    count,
-  } = useDeleteTimelinesByIds();
 
-  const errorRef = useRef<boolean | null>(null);
-  const successRef = useRef<boolean | null>(null);
+  const { data } = useSuspenseQuery(timelinesQueryOptions);
+  const { mutateAsync } = useDeleteAssessmentTimelinesMutationFn();
 
-  useEffect(() => {
-    const wasError = errorRef.current;
-    if (wasError && !isPending && deleteError) {
-      toast.error(deleteError);
-    }
-    errorRef.current = isPending;
-  }, [deleteError, isPending]);
-
-  useEffect(() => {
-    const wasSuccess = successRef.current;
-    if (wasSuccess && !isPending && success && count) {
-      toast.success(`${count} timeline(s) was/were deleted`);
-    }
-    successRef.current = isPending;
-  }, [success, isPending, count]);
+  const handleTimelinesDeletion = async (ids: string[]) => {
+    await Promise.try(async () => {
+      await mutateAsync(ids);
+    });
+  };
 
   return (
-    <>
-      {error && <ErrorComponent error={error} />}
-
-      {data && data.length > 0 ? (
-        <DataTable
-          columns={columns}
-          data={data}
-          onDelete={async (rows) => {
-            const ids = rows.map((row) => row.original.id);
-            handleDeleteTimelinesByIds(ids);
-          }}
-        />
-      ) : (
-        <NoDataFound />
-      )}
-    </>
+    <DataTable
+      columns={columns}
+      data={data ?? []}
+      onDelete={async (rows) => {
+        const ids = rows.map((row) => row.original.id);
+        await handleTimelinesDeletion(ids);
+      }}
+    />
   );
 };

@@ -1,4 +1,5 @@
 "use server";
+import { ORPCError } from "@orpc/client";
 import * as Sentry from "@sentry/nextjs";
 import { ActionError, CUSTOM_ERRORS } from "./constants";
 import { getUserPermissions } from "./get-session";
@@ -24,6 +25,11 @@ export const nextSafeAction = async <T>(
     return await fn();
   } catch (error) {
     Sentry.captureException(error);
+
+    if (error instanceof Error) {
+      throw new ORPCError("BAD_REQUEST", { message: error.message });
+    }
+
     throw getErrorMessage(error);
   }
 };

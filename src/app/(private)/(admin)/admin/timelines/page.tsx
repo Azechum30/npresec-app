@@ -4,14 +4,34 @@ import { FallbackComponent } from "@/components/customComponents/fallback-compon
 import OpenDialogs from "@/components/customComponents/OpenDialogs";
 import { getQueryClient } from "@/components/providers/get-query-client";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { coursesQueryOptions } from "../courses/actions/queries";
-import { getAllAssessmentTimelines } from "./_actions/get-all-assessment-timelines";
+import { timelinesQueryOptions } from "./_actions/queries";
 import { EditAssessmentTimelineModal } from "./_components/edit-assessment-timeline-modal";
 import { RenderAssessmentTimelinesTable } from "./_components/render-assessment-timelines";
 import { RenderBulkSetAssessmentTimelinesModal } from "./_components/render-bulk-set-assessment-timelines-modal";
 import { RenderCreateAssessmentTimelineModal } from "./_components/render-create-assessment-timeline-form-modal";
+
+export const metadata: Metadata = {
+  title: "Timelines",
+  description: "Schedule timelines for guard the entry of students scores",
+  authors: [{ name: "NPRESEC" }],
+  robots: {
+    index: false,
+    follow: false,
+    noarchive: true,
+    nosnippet: true,
+
+    googleBot: {
+      follow: false,
+      index: false,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
+};
 
 export default function AssessmentTimelinesPage() {
   return (
@@ -45,18 +65,19 @@ export default function AssessmentTimelinesPage() {
 
 const RenderAssessmentTimelinesDataTable = async () => {
   await connection();
-  const { error, timelines } = await getAllAssessmentTimelines();
-  const queryClient = getQueryClient();
 
-  await queryClient.ensureQueryData(coursesQueryOptions);
+  const queryClient = getQueryClient();
+  await Promise.all([
+    queryClient.ensureQueryData(coursesQueryOptions),
+    queryClient.ensureQueryData(timelinesQueryOptions),
+  ]);
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <RenderCreateAssessmentTimelineModal />
       <EditAssessmentTimelineModal />
       <RenderBulkSetAssessmentTimelinesModal />
-      <RenderAssessmentTimelinesDataTable />
-      <RenderAssessmentTimelinesTable error={error} data={timelines} />
+      <RenderAssessmentTimelinesTable />
     </HydrationBoundary>
   );
 };

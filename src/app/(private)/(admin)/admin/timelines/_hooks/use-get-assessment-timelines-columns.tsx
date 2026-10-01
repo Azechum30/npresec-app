@@ -1,47 +1,18 @@
+/** biome-ignore-all assist/source/organizeImports:reason */
 import { GenericActions } from "@/components/customComponents/GenericActions";
 import { RowSelections } from "@/components/customComponents/RowSelections";
-import { AssessmentTimelinesResponseType } from "@/lib/types";
-import { ColumnDef } from "@tanstack/react-table";
-import { useEffect, useRef } from "react";
-import { toast } from "sonner";
-import { useDeleteTimelineById } from "./use-delete-timeline-by-id";
+import type { AssessmentTimelinesResponseType } from "@/lib/types";
+import type { ColumnDef } from "@tanstack/react-table";
+import { useDeleteAssessmentTimelineMutationFn } from "../_actions/mutations";
 
 export const useGetAssessmentTimelinesColumns = () => {
-  const { handleDeleteTimelineById, isPending, error, success } =
-    useDeleteTimelineById();
+  const { isPending, mutateAsync } = useDeleteAssessmentTimelineMutationFn();
 
-  const errorRef = useRef<boolean | null>(null);
-  const successRef = useRef<boolean | null>(null);
-
-  useEffect(() => {
-    const wasError = errorRef.current;
-
-    if (wasError && !isPending && error) {
-      toast.error(error);
-    }
-
-    errorRef.current = isPending;
-  }, [error, isPending]);
-
-  useEffect(() => {
-    const wasError = errorRef.current;
-
-    if (wasError && !isPending && error) {
-      toast.error(error);
-    }
-
-    errorRef.current = isPending;
-  }, [error, isPending]);
-
-  useEffect(() => {
-    const wasSuccess = successRef.current;
-
-    if (wasSuccess && !isPending && success) {
-      toast.success("Timeline deleted successfully");
-    }
-
-    successRef.current = isPending;
-  }, [success, isPending]);
+  const handleTimelineDelete = async (id: string) => {
+    await Promise.try(async () => {
+      await mutateAsync(id);
+    });
+  };
 
   return [
     {
@@ -101,7 +72,7 @@ export const useGetAssessmentTimelinesColumns = () => {
           row={row}
           secondaryKey="id"
           dialogId="edit-assessment-timeline"
-          onDelete={async () => handleDeleteTimelineById(row.original.id)}
+          onDelete={async () => handleTimelineDelete(row.original.id)}
           isPending={isPending}
         />
       ),
