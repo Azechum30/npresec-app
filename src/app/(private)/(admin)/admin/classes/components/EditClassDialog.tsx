@@ -54,6 +54,7 @@ export default function EditClassDialog() {
               maxCapacity: data.maxCapacity as number,
               staff: data.staff.map((staff) => staff.id),
               classTeacherId: data.classTeacherId ?? undefined,
+              nextClassId: data.nextClassId ?? undefined,
             }}
             onSubmitAction={handleSubmit}
             isPending={isPending}

@@ -196,6 +196,9 @@ model Class {
   maxCapacity       Int?
   currentEnrollment Int          @default(0)
   classTeacherId    String?      @unique
+  nextClassId       String?      @unique
+  nextClass         Class?       @relation("ClassPromotionPath", fields: [nextClassId], references: [id])
+  previousClass     Class?       @relation("ClassPromotionPath")
   attendance        Attendance[]
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
@@ -464,17 +467,17 @@ model Room {
 }
 
 model StudentPromotion {
-  id            String   @id @default(cuid())
-  studentId     String
-  fromLevel     Level
-  toLevel       Level?
-  academicYear  Int
-  promotedAt    DateTime @default(now())
-  promotedBy    String?
-  criteria      Json?
-  forcePromoted Boolean  @default(false)
-  notes         String?
-  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  studentId    String
+  fromLevel    Level
+  toLevel      Level?
+  fromClassId  String?
+  toClassId    String?
+  academicYear Int
+  promotedAt   DateTime @default(now())
+  promotedBy   String?
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId, academicYear])
   @@index([academicYear, fromLevel])

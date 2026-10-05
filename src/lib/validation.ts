@@ -184,6 +184,7 @@ export const ClassesSchema = z.object({
   departmentId: z.string().nullish(),
   staff: z.array(z.string()).optional(),
   classTeacherId: z.string().optional(),
+  nextClassId: z.string().optional(),
 });
 
 export type ClassesType = z.infer<typeof ClassesSchema>;
@@ -196,9 +197,9 @@ export type UpdateClassType = z.infer<typeof UpdateClassSchema>;
 
 export const BulkClassesSchema = z.object({
   data: z.array(
-    ClassesSchema.omit({ createdAt: true }).extend({
-      department: z.string(),
-      staffId: z.string(),
+    ClassesSchema.omit({ createdAt: true, level: true }).extend({
+      department: z.string().min(1, "department is required"),
+      level: z.string().min(1, "class level is required"),
       createdAt: z.union([z.string(), z.date()]),
     }),
   ),

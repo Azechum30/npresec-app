@@ -132,7 +132,10 @@ export const bulkDeleteStudents = async (ids: string[]) =>
           classDecrementMap,
         )) {
           await tx.class.update({
-            where: { id: classId },
+            where: {
+              id: classId,
+              currentEnrollment: { gte: studentsToDelete.length },
+            },
             data: { currentEnrollment: { decrement: decrementCount } },
           });
         }
@@ -166,7 +169,10 @@ export const deleteStudent = async (id: string) =>
 
       await prisma.$transaction(async (tsx) => {
         await tsx.class.update({
-          where: { id: existingStudent.classId as string },
+          where: {
+            id: existingStudent.classId as string,
+            currentEnrollment: { gt: 0 },
+          },
           data: { currentEnrollment: { decrement: 1 } },
         });
 
@@ -261,7 +267,7 @@ export const updateStudent = async (values: EditStudentType) =>
               newClass.currentEnrollment >= newClass.maxCapacity
             ) {
               throw new Error(
-                `Class "${newClass.name}" is at maximum capacity.`,
+                `Class "${newClass.name}" is fully occupied. You can add students by extending its vacancy`,
               );
             }
 
@@ -275,7 +281,7 @@ export const updateStudent = async (values: EditStudentType) =>
           // Decrement old class
           if (current.classId) {
             await tx.class.update({
-              where: { id: current.classId },
+              where: { id: current.classId, currentEnrollment: { gt: 0 } },
               data: { currentEnrollment: { decrement: 1 } },
             });
           }

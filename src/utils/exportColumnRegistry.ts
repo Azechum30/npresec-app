@@ -68,7 +68,11 @@ export const EXPORT_COLUMN_REGISTRY: ExportRegistryEntry[] = [
     columns: [
       { key: "Class Code", label: "Class Code" },
       { key: "Class Name", label: "Class Name" },
-      { key: "Laerning Area", label: "Learning Area" },
+      { key: "Programme", label: "Programme" },
+      { key: "Course Count", label: "Course Count" },
+      { key: "Quota", label: "Quota" },
+      { key: "Allocated", label: "Allocated" },
+      { key: "Vacancy", label: "Vacancy" },
       { key: "Level", label: "Level" },
       { key: "CreateAt", label: "Created At" },
       { key: "Courses", label: "Courses" },

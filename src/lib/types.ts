@@ -95,6 +95,19 @@ export const ClassesSelect = {
   maxCapacity: true,
   currentEnrollment: true,
   classTeacherId: true,
+  nextClassId: true,
+  _count: {
+    select: {
+      courses: true,
+      exeats: true,
+    },
+  },
+  nextClass: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
   classTeacher: {
     select: {
       firstName: true,

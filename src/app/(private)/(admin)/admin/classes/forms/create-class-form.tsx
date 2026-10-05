@@ -24,7 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueries } from "@tanstack/react-query";
 import { PlusCircle, Save } from "lucide-react";
 import { type FC, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { departmentsQueryOptions } from "../../departments/actions/queries";
 import { staffQueryOptions } from "../../staff/actions/queries";
 
@@ -55,7 +55,14 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
           name: "",
           level: "" as (typeof grades)[number],
           staff: [] as string[],
+          nextClassId: "",
+          classTeacherId: "",
         },
+  });
+
+  const department = useWatch({
+    control: form.control,
+    name: "departmentId",
   });
 
   const [departmentsQueryData, staffQueryData] = useQueries({
@@ -73,13 +80,21 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
       }));
   }, [staffQueryData.data]);
 
-  const departments = useMemo(() => {
-    if (!departmentsQueryData.data) return [];
-    return departmentsQueryData.data.map((dp) => ({
+  const { departments, classes } = useMemo(() => {
+    if (!departmentsQueryData.data) return { departments: [], classes: [] };
+    const departments = departmentsQueryData.data.map((dp) => ({
       id: dp.id,
       name: dp.name,
     }));
-  }, [departmentsQueryData.data]);
+
+    const classes = departmentsQueryData.data
+      .filter((dp) => dp.id === department)
+      .flatMap((dp) =>
+        dp.classes.map((cls) => ({ id: cls.id, name: cls.name })),
+      );
+
+    return { departments, classes };
+  }, [departmentsQueryData.data, department]);
 
   return (
     <Form {...form}>
@@ -89,7 +104,6 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
         <InputWithLabel
           name="name"
           fieldTitle="Class Name"
-          disabled={!!id}
           schema={ClassesSchema}
           placeholder="Enter class name"
         />
@@ -184,6 +198,16 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
             />
           </>
         )}
+
+        <SelectWithLabel
+          name="nextClassId"
+          fieldTitle="Next Class"
+          data={classes}
+          selectedKey="name"
+          valueKey="id"
+          schema={ClassesSchema}
+          placeholder="Select next class"
+        />
         <div className="flex flex-col gap-y-3">
           <LoadingButton loading={isPending}>
             {isPending ? (

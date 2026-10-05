@@ -20,7 +20,6 @@ import {
   MoreHorizontal,
   ShieldBan,
   ShieldCheck,
-  Star,
   Trash2,
   VenetianMask,
 } from "lucide-react";
@@ -68,8 +67,6 @@ export const GenericActions = <T extends { id: string }>({
   );
   const { original } = row;
 
-  const hasExeatsReviewPermissions =
-    userHasRole.has("senior_house_master") || userHasRole.has("admin");
   const handleKeyPress = () => {};
   if (
     !userHasRole.has("admin") &&
@@ -134,16 +131,6 @@ export const GenericActions = <T extends { id: string }>({
                   }}>
                   <Trash2 className="size-5 text-destructive" />
                   Delete
-                </DropdownMenuItem>
-              </>
-            )}
-
-            {hasExeatsReviewPermissions && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="hover:cursor-pointer">
-                  <Star className="size-5 fill-primary text-primary" />
-                  Review & Approve
                 </DropdownMenuItem>
               </>
             )}
@@ -232,15 +219,6 @@ export const GenericActions = <T extends { id: string }>({
                   onClick={async () => await impersonate?.(row.original.id)}>
                   <VenetianMask className="size-5 text-destructive" />
                   Impersonate User
-                </DropdownMenuItem>
-              </>
-            )}
-            {hasExeatsReviewPermissions && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="hover:cursor-pointer">
-                  <Star className="size-5 text-primary fill-primary" />
-                  Review & Approve
                 </DropdownMenuItem>
               </>
             )}

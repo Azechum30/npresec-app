@@ -8,7 +8,6 @@ import { getClass, getClassesAction } from "./server-actions";
 export const classQueryOptions = queryOptions({
   queryKey: getQueryKey().class.all,
   queryFn: getClassesAction,
-  select: (data) => data?.data,
   placeholderData: keepPreviousData,
 });
 
@@ -16,9 +15,9 @@ export const getClassQueryOptions = (classId: string) => {
   const queryClient = getQueryClient();
   return queryOptions({
     queryKey: getQueryKey(classId).class.single,
-    queryFn: () => getClass(classId).then((data) => data.data),
+    queryFn: () => getClass(classId),
     initialData: queryClient
       .getQueryData(classQueryOptions.queryKey)
-      ?.data?.find((cls) => cls.id === classId),
+      ?.find((cls) => cls.id === classId),
   });
 };

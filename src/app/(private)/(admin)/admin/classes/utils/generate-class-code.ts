@@ -3,7 +3,7 @@ import { CONSTANTS } from "@/utils/generateStudentIndex";
 export const generateUniqueClassCode = (
   admissionYear: number,
   stream: string,
-  sequence: number
+  sequence: number,
 ): string => {
   const sequenceNumber = sequence
     .toString()
@@ -11,6 +11,6 @@ export const generateUniqueClassCode = (
 
   const last2Digits = admissionYear.toString().slice(-2);
 
-  const code = `C${stream.charAt(0).toUpperCase()}${last2Digits}${sequenceNumber}`;
+  const code = `C${stream.slice(0, 2).toUpperCase()}${last2Digits}${sequenceNumber}`;
   return code;
 };

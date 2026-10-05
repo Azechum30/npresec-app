@@ -3,14 +3,13 @@
 import { GenericActions } from "@/components/customComponents/GenericActions";
 import { RowSelections } from "@/components/customComponents/RowSelections";
 import { Button } from "@/components/ui/button";
-import { useUserPreferredDateFormat } from "@/hooks/use-user-preferred-date-format";
+import { fuzzyFilter } from "@/lib/fuzzyFilter";
 import type { ClassesResponseType } from "@/lib/types";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Minus, Plus } from "lucide-react";
 import { useDeleteClassMutationFn } from "../actions/mutations";
 
 export const useGetClassesColumns = () => {
-  const { formatDate } = useUserPreferredDateFormat();
   const { mutateAsync, isPending } = useDeleteClassMutationFn();
 
   const handleDelete = async (id: string) => {
@@ -26,34 +25,61 @@ export const useGetClassesColumns = () => {
       enableSorting: false,
     },
     {
-      header: "ClassCode",
-      accessorKey: "code",
-    },
-    {
-      header: "Class Title",
+      header: "Name",
       accessorKey: "name",
     },
     {
-      header: "Department",
+      header: "Programme",
       accessorKey: "departmentId",
       cell: ({ row }) => {
         return row.original.department ? row.original.department?.name : "";
       },
     },
     {
-      header: "YearLevel",
-      accessorKey: "level",
-      cell: ({ row }) => {
-        return row.original.level.split("_").join(" ");
-      },
+      id: "subjects",
+      header: () => <div className="text-center">Subjects</div>,
+      accessorKey: "_count.courses",
+      cell: ({ row }) => (
+        <div className="text-center">{row.original._count.courses}</div>
+      ),
+      filterFn: fuzzyFilter,
     },
     {
-      header: "CreatedAt",
-      accessorKey: "createdAt",
-      cell: ({ row }) => {
-        return formatDate(row.original.createdAt);
-      },
+      id: "quota",
+      header: () => <div className="text-center">Quota</div>,
+      accessorKey: "maxCapacity",
+      cell: ({ row }) => (
+        <div className="text-center">{row.original.maxCapacity}</div>
+      ),
+      filterFn: fuzzyFilter,
     },
+    {
+      id: "allocated",
+      header: () => <div className="text-center">Allocated</div>,
+      accessorKey: "currentEnrollment",
+      cell: ({ row }) => (
+        <div className="text-center">{row.original.currentEnrollment}</div>
+      ),
+      filterFn: fuzzyFilter,
+    },
+    {
+      id: "remaining",
+      header: () => <div className="text-center">Remaining</div>,
+      cell: ({ row }) => (
+        <div className="text-center text-primary">
+          {row.original.maxCapacity
+            ? row.original.maxCapacity - row.original.currentEnrollment
+            : 0}
+        </div>
+      ),
+      filterFn: fuzzyFilter,
+    },
+
+    {
+      header: "Next Class",
+      accessorFn: (row) => row.nextClass?.name ?? "Not Set",
+    },
+
     {
       header: "Actions",
       cell: ({ row }) => {
