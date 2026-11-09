@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/customComponents/page-header";
 import { getQueryClient } from "@/components/providers/get-query-client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { RenderTemplatesTable } from "./_components/render-templates-table";
 import { TemplateDialogs } from "./_components/template-dialogs";
@@ -50,6 +51,7 @@ export default function TemplatesPage() {
 }
 
 const TemplatesClient = async () => {
+  await connection();
   const queryClient = getQueryClient();
   await queryClient.ensureQueryData(templatesQueries);
 
