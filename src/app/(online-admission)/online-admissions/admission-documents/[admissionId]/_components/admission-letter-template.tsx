@@ -358,7 +358,7 @@ export const AdmissionLetterTemplate = (
           <View style={[styles.letterheadGridText, { textAlign: "left" }]}>
             <Text>Email: admin@nakpanduripresec.org</Text>
             <Text>Website:nakpanduripresec.org</Text>
-            <Text>GPS: MP-3095-4528</Text>
+            <Text>GPS: MP-3396-0858</Text>
           </View>
           <View style={{ width: "50%" }}>
             <View style={styles.logoContainer}>
