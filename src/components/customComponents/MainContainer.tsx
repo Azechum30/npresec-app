@@ -34,7 +34,7 @@ export default function MainContainer({ children }: { children: ReactNode }) {
       </div>
       <div
         className={cn(
-          "w-full sticky top-0 bottom-0 left-0 z-30 h-14 px-4 md:px-10 border-t bg-inherit backdrop-blur-md flex items-center",
+          "w-full sticky bottom-0 left-0 z-30 h-14 px-4 md:px-10 border-t bg-inherit backdrop-blur-md flex items-center",
         )}>
         <AuthFooter />
       </div>

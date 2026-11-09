@@ -372,7 +372,7 @@ model Document {
   id          String    @id @default(cuid())
   name        String
   type        String
-  url         String
+  url         String?
   admissionId String
   hash        String?
   admision    Admission @relation(fields: [admissionId], references: [id], onDelete: Cascade)
@@ -693,12 +693,15 @@ model Fee {
 }
 
 model Template {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  content   String   @db.Text
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+  type            String   @unique
+  documentHeading String
+  intro           String   @db.Text
+  instructions    String?
+  conclusion      String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model Setting {

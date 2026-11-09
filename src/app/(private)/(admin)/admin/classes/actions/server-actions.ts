@@ -73,16 +73,9 @@ export const bulkDeleteClasses = async (ids: BulkDeleteClassesType) =>
     { permission: "delete:classes" },
   );
 
-export const updateClassEnrollment = async (
-  classId: string,
-  enrollmentCount: number,
-) =>
+export const updateClassEnrollment = async (classId: string) =>
   nextSafeAction(
-    async () =>
-      await new ClassesService().updateClassEnrollment(
-        classId,
-        enrollmentCount,
-      ),
+    async () => await new ClassesService().updateClassEnrollment(classId),
     { permission: "edit:classes" },
   );
 

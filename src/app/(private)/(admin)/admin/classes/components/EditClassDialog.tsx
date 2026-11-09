@@ -55,6 +55,7 @@ export default function EditClassDialog() {
               staff: data.staff.map((staff) => staff.id),
               classTeacherId: data.classTeacherId ?? undefined,
               nextClassId: data.nextClassId ?? undefined,
+              courseIds: data.courses.map((course) => course.id),
             }}
             onSubmitAction={handleSubmit}
             isPending={isPending}

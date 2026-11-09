@@ -57,9 +57,9 @@ const RenderClassesDataTable: React.FC = () => {
   }, [classQueryData.data]);
 
   const filteredData = useMemo(() => {
-    if (!level && !department) return [];
+    if (!classQueryData.data) return [];
     return (
-      classQueryData.data?.filter((cls) => {
+      classQueryData.data.filter((cls) => {
         const matchesLevel = !level || cls.level === level;
         const matchesDept = !department || cls.departmentId === department;
 
@@ -128,7 +128,7 @@ const RenderClassesDataTable: React.FC = () => {
           </Card>
           <DataTable
             columns={columns}
-            data={filteredData.length > 0 ? filteredData : classQueryData.data}
+            data={filteredData}
             showImportButton={true}
             transformer={classDataTransformer}
             filename="Classes-list"

@@ -224,6 +224,13 @@ export class ClassesService implements IClassStream {
         nextClassId: transformedData.nextClassId,
         classTeacherId: transformedData.classTeacherId,
         departmentId: transformedData.departmentId,
+        courses: transformedData.courseIds
+          ? {
+              connect: transformedData.courseIds.map((courseId) => ({
+                id: courseId,
+              })),
+            }
+          : undefined,
         staff: transformedData.staff
           ? {
               connect: transformedData.staff.map((staffId) => ({
@@ -268,14 +275,23 @@ export class ClassesService implements IClassStream {
 
       throw new ActionError(errorMessages[conflictFields]);
     }
+    const { departmentId, courseIds, ...rest } = transformedData;
 
     return await prisma.class.update({
       where: { id: classId },
       data: {
-        ...transformedData,
-        createdAt: transformedData.createdAt as Date,
-        staff: transformedData.staff
-          ? { set: transformedData.staff.map((staffId) => ({ id: staffId })) }
+        ...rest,
+        departmentId,
+        createdAt: rest.createdAt as Date,
+        staff: rest.staff
+          ? { set: rest.staff.map((staffId) => ({ id: staffId })) }
+          : undefined,
+        courses: courseIds
+          ? {
+              set: courseIds.map((courseId) => ({
+                id: courseId,
+              })),
+            }
           : undefined,
       },
       select: ClassesSelect,
@@ -307,13 +323,13 @@ export class ClassesService implements IClassStream {
       where: { id: { in: filteredClassIds } },
     });
   }
-  async updateClassEnrollment(classId: string, enrollmentCount: number) {
+  async updateClassEnrollment(classId: string) {
     const { stream } = await this.verifyExistingStream(classId);
     if (!stream) throw new ActionError(CUSTOM_ERRORS.NOTFOUND.message);
-    return await prisma.class.update({
+    await prisma.class.update({
       where: { id: stream.id },
       data: {
-        currentEnrollment: { set: enrollmentCount },
+        currentEnrollment: { set: stream._count.students },
       },
       select: ClassesSelect,
     });

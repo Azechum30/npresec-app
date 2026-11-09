@@ -185,6 +185,7 @@ export const ClassesSchema = z.object({
   staff: z.array(z.string()).optional(),
   classTeacherId: z.string().optional(),
   nextClassId: z.string().optional(),
+  courseIds: z.array(z.string()).optional(),
 });
 
 export type ClassesType = z.infer<typeof ClassesSchema>;
@@ -1056,9 +1057,26 @@ export type ParentOrGuardianType = z.infer<typeof ParentOrGuardianSchema>;
 export type ProgramSelectionType = z.infer<typeof ProgramSelectionSchema>;
 
 export const TemplateSchema = z.object({
-  name: z.string().max(100),
-  content: z.string(),
+  type: z
+    .string()
+    .min(1, "document is type is required")
+    .max(100, "document type cannot exceed 100 characters."),
+  intro: z.string().min(1, "letter intro id required"),
+  documentHeading: z
+    .string()
+    .min(1, "document heading is required!")
+    .max(100, "Document heading cannot exceed 100 characters"),
+  instructions: z.string().optional(),
+  conclusion: z.string().optional(),
   isActive: z.boolean().nullable(),
+});
+
+export const templateOutputSchema = TemplateSchema.extend({
+  id: z.cuid2().min(1, "Id is required"),
+  createdAt: z.coerce.date<Date>(),
+  isActive: z.boolean(),
+  instructions: z.string().nullable(),
+  conclusion: z.string().nullable(),
 });
 
 export type TemplateType = z.infer<typeof TemplateSchema>;
@@ -1313,3 +1331,12 @@ export const exeatsServerResponseSchema = z.object({
 export type exeatServerResponseType = z.infer<
   typeof exeatsServerResponseSchema
 >;
+
+export const promoteStudentsSchema = z.object({
+  targetLevel: z.enum(Levels).catch("Year_One"),
+  programmeId: z.cuid().min(1, "Programme Id is required"),
+  academicYear: z.string().min(1, "academic year is required"),
+  retainedStudents: z.array(z.string()).optional(),
+});
+
+export type PromoteStudentsType = z.infer<typeof promoteStudentsSchema>;

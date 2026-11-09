@@ -5,7 +5,9 @@ export const toProperCase = (val: string | number): string => {
       .replaceAll(/[-_]+/g, " ")
       .trim()
       .split(/\s+/)
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .map(
+        (word) => word?.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+      )
       .join(" ")
   );
 };

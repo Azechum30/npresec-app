@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { HeartHandshake, TriangleAlert } from "lucide-react";
-import type { Route } from "next";
+import type { Metadata, Route } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
@@ -17,6 +17,25 @@ import { DownloadButton } from "./[admissionId]/_components/downnload-buttons";
 
 type Params = {
   searchParams: Promise<{ [key: string]: string }>;
+};
+
+export const metadata: Metadata = {
+  title: "Download Admission Documents",
+  description: "A single place to download all your admission documents.",
+  authors: [{ name: "NPRESEC MIS" }],
+  applicationName: "NPRESEC MIS",
+  robots: {
+    follow: false,
+    index: false,
+    noarchive: true,
+    nosnippet: true,
+    googleBot: {
+      follow: false,
+      index: false,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
 };
 
 export default function AdmissionDocumentsPage({ searchParams }: Params) {

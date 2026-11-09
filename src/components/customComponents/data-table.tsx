@@ -28,6 +28,7 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
+import { X } from "lucide-react";
 import type { Route } from "next";
 import { usePathname, useRouter } from "next/navigation";
 import React, { type JSX, useMemo, useState } from "react";
@@ -176,7 +177,14 @@ const DataTable = <TData,>({
             ) : (
               <TableRow>
                 <TableCell colSpan={table.getAllColumns().length}>
-                  No rows found
+                  <div className="flex flex-col w-full items-center justify-center py-6 space-y-3">
+                    <div className="size-10 flex justify-center items-center p-1.5 rounded-full border bg-muted">
+                      <X className="size-6 text-muted-foreground" />
+                    </div>
+                    <div className="text-base text-muted-foreground">
+                      No records found
+                    </div>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

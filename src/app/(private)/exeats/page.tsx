@@ -3,6 +3,7 @@ import { FallbackComponent } from "@/components/customComponents/fallback-compon
 import { PageHeader } from "@/components/customComponents/page-header";
 import { getQueryClient } from "@/components/providers/get-query-client";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import {
@@ -11,6 +12,25 @@ import {
 } from "./_actions/queries";
 import { ExeatDialogsProvider } from "./_components/exeat-dialogs-provider";
 import { RenderStudentExeatsTable } from "./_components/render-student-exeats-table";
+
+export const metadata: Metadata = {
+  title: "Manage Exeat Request",
+  description: "A single place to manage students exeats.",
+  applicationName: "NPRESEC MIS",
+  authors: [{ name: "NPRESEC MIS" }],
+  robots: {
+    follow: false,
+    index: false,
+    noarchive: true,
+    nosnippet: true,
+    googleBot: {
+      follow: false,
+      index: false,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
+};
 
 export default function ExeatsPage() {
   return (

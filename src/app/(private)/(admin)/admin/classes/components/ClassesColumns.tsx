@@ -7,10 +7,15 @@ import { fuzzyFilter } from "@/lib/fuzzyFilter";
 import type { ClassesResponseType } from "@/lib/types";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Minus, Plus } from "lucide-react";
-import { useDeleteClassMutationFn } from "../actions/mutations";
+import {
+  useDeleteClassMutationFn,
+  useUpdateClassEnrollmentMutationFn,
+} from "../actions/mutations";
 
 export const useGetClassesColumns = () => {
   const { mutateAsync, isPending } = useDeleteClassMutationFn();
+  const { mutateAsync: mutateEnrollmentAsync, isPending: mutatePending } =
+    useUpdateClassEnrollmentMutationFn();
 
   const handleDelete = async (id: string) => {
     Promise.try(async () => await mutateAsync({ id }));
@@ -89,7 +94,10 @@ export const useGetClassesColumns = () => {
             onDelete={handleDelete}
             secondaryKey="id"
             dialogId="edit-class"
-            isPending={isPending}
+            isPending={isPending || mutatePending}
+            resetEnrollment={async () =>
+              Promise.try(async () => mutateEnrollmentAsync(row.original.id))
+            }
           />
         );
       },

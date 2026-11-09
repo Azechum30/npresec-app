@@ -18,6 +18,7 @@ import type { Row } from "@tanstack/react-table";
 import {
   Edit,
   MoreHorizontal,
+  RefreshCw,
   ShieldBan,
   ShieldCheck,
   Trash2,
@@ -39,6 +40,7 @@ type GenericActionsProps<T extends { id: string }> = {
   onDelete: (id: string, secondaryValue: string) => Promise<void>;
   unban?: (id: string) => Promise<void>;
   impersonate?: (id: string) => Promise<void>;
+  resetEnrollment?: () => Promise<void>;
   secondaryKey: keyof T;
 };
 
@@ -52,7 +54,7 @@ export const GenericActions = <T extends { id: string }>({
   onDelete,
   unban,
   impersonate,
-
+  resetEnrollment,
   isPending,
 }: GenericActionsProps<T>) => {
   const pathname = usePathname().split("/").pop();
@@ -181,7 +183,19 @@ export const GenericActions = <T extends { id: string }>({
                 </span>
               )}
             </DropdownMenuItem>
+
             <DropdownMenuSeparator />
+            {pathname === "classes" && resetEnrollment && (
+              <>
+                <DropdownMenuItem
+                  onClick={resetEnrollment}
+                  className="hover:cursor-pointer">
+                  <RefreshCw className="size-5 text-primary" />
+                  Reset
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuItem
               className="hover:cursor-pointer"
               onClick={async () => {

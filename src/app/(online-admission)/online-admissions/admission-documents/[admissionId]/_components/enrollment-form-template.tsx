@@ -1,35 +1,33 @@
-import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
-import { ReactNode } from "react";
+import { Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import type { ReactNode } from "react";
 
 type EnrollmentTemplateProps = {
-  data: {
-    id: string;
-    createdAt: Date;
-    lastName: string;
-    otherNames: string;
-    birthDate: Date;
-    jhsIndexNumber: string;
-    gender: string;
-    programme: string;
-    residentialStatus: string;
-    hometown: string | null;
-    jhsAttended: string;
-    schoolLocation: string | null;
-    district: string | null;
-    schoolRegion: string | null;
-    enrollmentCode: string | null;
-    guardianName: string | null;
-    guardianRelation: string | null;
-    guardianPhoneNumber: string | null;
-    primaryAddress: string | null;
-    aggregateScore: number | null;
-    phone?: string;
-    email?: string;
-    guadianEmail?: string;
-    isAcceptancePaid: boolean;
-    isFormSubmitted: boolean;
-    updatedAt: Date;
-  };
+  id: string;
+  createdAt: Date;
+  lastName: string;
+  otherNames: string;
+  birthDate: Date;
+  jhsIndexNumber: string;
+  gender: string;
+  programme: string;
+  residentialStatus: string;
+  hometown: string | null;
+  jhsAttended: string;
+  schoolLocation: string | null;
+  district: string | null;
+  schoolRegion: string | null;
+  enrollmentCode: string | null;
+  guardianName: string | null;
+  guardianRelation: string | null;
+  guardianPhoneNumber: string | null;
+  primaryAddress: string | null;
+  aggregateScore: number | null;
+  phone?: string;
+  email?: string;
+  guadianEmail?: string;
+  isAcceptancePaid: boolean;
+  isFormSubmitted: boolean;
+  updatedAt: Date;
 };
 
 const styles = StyleSheet.create({
@@ -112,184 +110,176 @@ const styles = StyleSheet.create({
   },
 });
 
-export const EnrollmentTemplate = ({ data }: EnrollmentTemplateProps) => {
+export const EnrollmentTemplate = (props: EnrollmentTemplateProps) => {
   return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.accentBar} />
+    <Page size="A4" style={styles.page}>
+      <View style={styles.accentBar} />
 
-        <View style={styles.pageHeader}>
-          <Text style={styles.pageTitle}>Enrollment Summary</Text>
-          <Text style={styles.pageDescription}>
-            NOTE: Kindly present a copy to the school
-          </Text>
-        </View>
-        <View style={{ flexDirection: "column", gap: 10 }}>
-          <MyFieldSet title="Student's Bio Data">
-            <View style={styles.fieldsetGroup}>
-              <View style={styles.fieldGroupContainer}>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Surname:</Text>
-                  <Text style={styles.fieldInput}>{data.lastName}</Text>
-                </View>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Other Names:</Text>
-                  <Text style={styles.fieldInput}>{data.otherNames}</Text>
-                </View>
+      <View style={styles.pageHeader}>
+        <Text style={styles.pageTitle}>Enrollment Summary</Text>
+        <Text style={styles.pageDescription}>
+          NOTE: Kindly present a copy to the school
+        </Text>
+      </View>
+      <View style={{ flexDirection: "column", gap: 10 }}>
+        <MyFieldSet title="Student's Bio Data">
+          <View style={styles.fieldsetGroup}>
+            <View style={styles.fieldGroupContainer}>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Surname:</Text>
+                <Text style={styles.fieldInput}>{props.lastName}</Text>
               </View>
-              <View style={styles.fieldGroupContainer}>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Date of Birth:</Text>
-                  <Text style={styles.fieldInput}>
-                    {new Intl.DateTimeFormat("en-GH", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    }).format(data.birthDate)}
-                  </Text>
-                </View>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Gender:</Text>
-                  <Text style={styles.fieldInput}>
-                    {data.gender.charAt(0).toUpperCase() + data.gender.slice(1)}
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.fieldGroupContainer}>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Hometown:</Text>
-                  <Text style={styles.fieldInput}>
-                    {data.hometown ?? "N/A"}
-                  </Text>
-                </View>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Primary Address:</Text>
-                  <Text style={styles.fieldInput}>{data.primaryAddress}</Text>
-                </View>
-              </View>
-              <View style={styles.fieldGroupContainer}>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Contact:</Text>
-                  <Text style={styles.fieldInput}>{data.phone ?? "N/A"}</Text>
-                </View>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Email:</Text>
-                  <Text style={styles.fieldInput}>{data.email ?? "N/A"}</Text>
-                </View>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Other Names:</Text>
+                <Text style={styles.fieldInput}>{props.otherNames}</Text>
               </View>
             </View>
-          </MyFieldSet>
-          <MyFieldSet title="Academic History">
-            <View style={styles.fieldsetGroup}>
-              <View style={styles.fieldGroupContainer}>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Enrollment Code:</Text>
-                  <Text style={styles.fieldInput}>
-                    {data.enrollmentCode ?? "N/A"}
-                  </Text>
-                </View>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>JHS Index Number:</Text>
-                  <Text style={styles.fieldInput}>{data.jhsIndexNumber}</Text>
-                </View>
+            <View style={styles.fieldGroupContainer}>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Date of Birth:</Text>
+                <Text style={styles.fieldInput}>
+                  {new Intl.DateTimeFormat("en-GH", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  }).format(props.birthDate)}
+                </Text>
               </View>
-              <View style={styles.fieldGroupContainer}>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>JHS Attended:</Text>
-                  <Text style={styles.fieldInput}>{data.jhsAttended}</Text>
-                </View>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Location:</Text>
-                  <Text style={styles.fieldInput}>
-                    {data.schoolLocation ?? "N/A"}
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.fieldGroupContainer}>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>District:</Text>
-                  <Text style={styles.fieldInput}>
-                    {data.district ?? "N/A"}
-                  </Text>
-                </View>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Region:</Text>
-                  <Text style={styles.fieldInput}>
-                    {data.schoolRegion ?? "N/A"}
-                  </Text>
-                </View>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Gender:</Text>
+                <Text style={styles.fieldInput}>
+                  {props.gender.charAt(0).toUpperCase() + props.gender.slice(1)}
+                </Text>
               </View>
             </View>
-          </MyFieldSet>
-          <MyFieldSet title="Parent/Guardian Data">
-            <View style={styles.fieldsetGroup}>
-              <View style={styles.fieldGroupContainer}>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Fullname:</Text>
-                  <Text style={styles.fieldInput}>
-                    {data.guardianName ?? "N/A"}
-                  </Text>
-                </View>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Guardian Contact:</Text>
-                  <Text style={styles.fieldInput}>
-                    {data.guardianPhoneNumber}
-                  </Text>
-                </View>
+            <View style={styles.fieldGroupContainer}>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Hometown:</Text>
+                <Text style={styles.fieldInput}>{props.hometown ?? "N/A"}</Text>
               </View>
-              <View style={styles.fieldGroupContainer}>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Guardian Email:</Text>
-                  <Text style={styles.fieldInput}>
-                    {data.guadianEmail ?? "N/A"}
-                  </Text>
-                </View>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Relation with Student:</Text>
-                  <Text style={styles.fieldInput}>
-                    {data.guardianRelation ?? "N/A"}
-                  </Text>
-                </View>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Primary Address:</Text>
+                <Text style={styles.fieldInput}>{props.primaryAddress}</Text>
               </View>
             </View>
-          </MyFieldSet>
-          <MyFieldSet title="Programme/Residential Status">
-            <View style={styles.fieldsetGroup}>
-              <View style={styles.fieldGroupContainer}>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Programme:</Text>
-                  <Text style={styles.fieldInput}>
-                    {data.programme ?? "N/A"}
-                  </Text>
-                </View>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Residential Status:</Text>
-                  <Text style={styles.fieldInput}>
-                    {data.residentialStatus}
-                  </Text>
-                </View>
+            <View style={styles.fieldGroupContainer}>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Contact:</Text>
+                <Text style={styles.fieldInput}>{props.phone ?? "N/A"}</Text>
               </View>
-              <View style={styles.fieldGroupContainer}>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Aggregate Score:</Text>
-                  <Text style={styles.fieldInput}>{data.aggregateScore}</Text>
-                </View>
-                <View style={styles.fieldsetSubGroup}>
-                  <Text style={styles.fieldLabel}>Enrollment Date:</Text>
-                  <Text style={styles.fieldInput}>
-                    {new Intl.DateTimeFormat("en-GH", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    }).format(data.createdAt)}
-                  </Text>
-                </View>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Email:</Text>
+                <Text style={styles.fieldInput}>{props.email ?? "N/A"}</Text>
               </View>
             </View>
-          </MyFieldSet>
-        </View>
-      </Page>
-    </Document>
+          </View>
+        </MyFieldSet>
+        <MyFieldSet title="Academic History">
+          <View style={styles.fieldsetGroup}>
+            <View style={styles.fieldGroupContainer}>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Enrollment Code:</Text>
+                <Text style={styles.fieldInput}>
+                  {props.enrollmentCode ?? "N/A"}
+                </Text>
+              </View>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>JHS Index Number:</Text>
+                <Text style={styles.fieldInput}>{props.jhsIndexNumber}</Text>
+              </View>
+            </View>
+            <View style={styles.fieldGroupContainer}>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>JHS Attended:</Text>
+                <Text style={styles.fieldInput}>{props.jhsAttended}</Text>
+              </View>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Location:</Text>
+                <Text style={styles.fieldInput}>
+                  {props.schoolLocation ?? "N/A"}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.fieldGroupContainer}>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>District:</Text>
+                <Text style={styles.fieldInput}>{props.district ?? "N/A"}</Text>
+              </View>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Region:</Text>
+                <Text style={styles.fieldInput}>
+                  {props.schoolRegion ?? "N/A"}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </MyFieldSet>
+        <MyFieldSet title="Parent/Guardian Data">
+          <View style={styles.fieldsetGroup}>
+            <View style={styles.fieldGroupContainer}>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Fullname:</Text>
+                <Text style={styles.fieldInput}>
+                  {props.guardianName ?? "N/A"}
+                </Text>
+              </View>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Guardian Contact:</Text>
+                <Text style={styles.fieldInput}>
+                  {props.guardianPhoneNumber}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.fieldGroupContainer}>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Guardian Email:</Text>
+                <Text style={styles.fieldInput}>
+                  {props.guadianEmail ?? "N/A"}
+                </Text>
+              </View>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Relation with Student:</Text>
+                <Text style={styles.fieldInput}>
+                  {props.guardianRelation ?? "N/A"}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </MyFieldSet>
+        <MyFieldSet title="Programme/Residential Status">
+          <View style={styles.fieldsetGroup}>
+            <View style={styles.fieldGroupContainer}>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Programme:</Text>
+                <Text style={styles.fieldInput}>
+                  {props.programme ?? "N/A"}
+                </Text>
+              </View>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Residential Status:</Text>
+                <Text style={styles.fieldInput}>{props.residentialStatus}</Text>
+              </View>
+            </View>
+            <View style={styles.fieldGroupContainer}>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Aggregate Score:</Text>
+                <Text style={styles.fieldInput}>{props.aggregateScore}</Text>
+              </View>
+              <View style={styles.fieldsetSubGroup}>
+                <Text style={styles.fieldLabel}>Enrollment Date:</Text>
+                <Text style={styles.fieldInput}>
+                  {new Intl.DateTimeFormat("en-GH", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  }).format(props.createdAt)}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </MyFieldSet>
+      </View>
+    </Page>
   );
 };
 

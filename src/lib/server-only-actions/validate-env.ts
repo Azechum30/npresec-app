@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports:reaso */
 import { CloudinaryImageUploadSchema } from "@/utils/cloudinary-image-upload-schema";
 import { EmailConfigSchema } from "@/utils/email-config";
 import { z } from "zod";
@@ -29,6 +30,10 @@ const envSchema = z.object({
   ARKESEL_API_KEY: z.string(),
   ARKESEL_SENDER_ID: z.string(),
   ARKESEL_URL: z.string(),
+  R2_ACCOUNT_ID: z.string(),
+  R2_ACCESS_KEY_ID: z.string(),
+  R2_SECRET_ACCESS_KEY: z.string(),
+  R2_BUCKET_NAME: z.string(),
 });
 
 const parsed = envSchema.safeParse(process.env);

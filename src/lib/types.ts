@@ -100,6 +100,7 @@ export const ClassesSelect = {
     select: {
       courses: true,
       exeats: true,
+      students: true,
     },
   },
   nextClass: {
@@ -1061,3 +1062,18 @@ export type SMSWorkflowDataType = {
   message: string;
   userId: string;
 };
+
+export const templateSelect = {
+  id: true,
+  type: true,
+  documentHeading: true,
+  isActive: true,
+  createdAt: true,
+  intro: true,
+  instructions: true,
+  conclusion: true,
+} satisfies Prisma.TemplateSelect;
+
+export type TemplateServerResponseType = Prisma.TemplateGetPayload<{
+  select: typeof templateSelect;
+}>;

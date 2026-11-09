@@ -1,3 +1,4 @@
+/**biome-ignore-all assist/source/organizeImports:reason */
 "use client";
 import { Separator } from "@/components/ui/separator";
 import { Toggle } from "@/components/ui/toggle";
@@ -131,7 +132,7 @@ const Toolbar = ({ editor }: { editor: Editor | null }) => {
   );
 
   return (
-    <div className="sticky top-0 z-10 flex w-full flex-wrap items-center gap-1 border-b bg-background/95 p-1.5 backdrop-blur">
+    <div className="sticky top-0 z-10 flex w-full flex-wrap items-center gap-0.5 border-b bg-background/95 p-1.5 backdrop-blur">
       {/* Typography Groups */}
       <div className="flex items-center gap-0.5 px-1">
         <ToggleButton
@@ -181,10 +182,10 @@ const Toolbar = ({ editor }: { editor: Editor | null }) => {
           onValueChange={(val) =>
             editor.chain().focus().setFontFamily(val).run()
           }>
-          <SelectTrigger className="h-8 w-32.5 border-none bg-transparent hover:bg-muted focus:ring-0">
+          <SelectTrigger className="h-8 w-30.5">
             <SelectValue placeholder="Font" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent align="center" position="popper">
             {FONTS_FAMILIES.map((font) => (
               <SelectItem key={font} value={font} style={{ fontFamily: font }}>
                 {font}
@@ -198,10 +199,10 @@ const Toolbar = ({ editor }: { editor: Editor | null }) => {
           onValueChange={(val) =>
             editor.chain().focus().setFontSize(val).run()
           }>
-          <SelectTrigger className="h-8 w-17.5 border-none bg-transparent hover:bg-muted focus:ring-0">
+          <SelectTrigger className="h-8">
             <SelectValue placeholder="Size" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent align="center" position="popper">
             {FONT_SIZES.map((size) => (
               <SelectItem key={size} value={`${size}px`}>
                 {size}

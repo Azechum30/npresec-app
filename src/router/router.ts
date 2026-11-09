@@ -35,6 +35,14 @@ import {
   updateRoomById,
 } from "./room";
 import { getStaff } from "./staff";
+import {
+  createDocumentTemplate,
+  deleteTemplate,
+  deleteTemplates,
+  getTemplateById,
+  listTemplates,
+  updateTemplate,
+} from "./template";
 import { updatePassword } from "./user";
 
 export const router = {
@@ -78,6 +86,15 @@ export const router = {
     deleteExeatsRequest,
     approveExeatRequest,
     confirmExeatDepartureOrReturnRequest,
+  },
+
+  template: {
+    createDocumentTemplate,
+    listTemplates,
+    getTemplateById,
+    updateTemplate,
+    deleteTemplate,
+    deleteTemplates,
   },
 
   user: {

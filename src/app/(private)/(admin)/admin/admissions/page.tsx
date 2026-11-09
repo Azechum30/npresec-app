@@ -1,3 +1,5 @@
+/** biome-ignore-all assist/source/organizeImports:reason */
+
 import { ErrorComponent } from "@/components/customComponents/ErrorComponent";
 import { FallbackComponent } from "@/components/customComponents/fallback-component";
 import { MetricCard } from "@/components/customComponents/metrics-component";
@@ -8,7 +10,7 @@ import {
   TimerIcon,
   UserStarIcon,
 } from "lucide-react";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { getPlacedStudents } from "./_actions/server-only-actions";

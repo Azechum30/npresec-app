@@ -25,6 +25,7 @@ import { useQueries } from "@tanstack/react-query";
 import { PlusCircle, Save } from "lucide-react";
 import { type FC, useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import { coursesQueryOptions } from "../../courses/actions/queries";
 import { departmentsQueryOptions } from "../../departments/actions/queries";
 import { staffQueryOptions } from "../../staff/actions/queries";
 
@@ -57,6 +58,7 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
           staff: [] as string[],
           nextClassId: "",
           classTeacherId: "",
+          courseIds: [],
         },
   });
 
@@ -64,9 +66,13 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
     control: form.control,
     name: "departmentId",
   });
+  const level = useWatch({
+    control: form.control,
+    name: "level",
+  });
 
-  const [departmentsQueryData, staffQueryData] = useQueries({
-    queries: [departmentsQueryOptions, staffQueryOptions],
+  const [departmentsQueryData, staffQueryData, courseQueryData] = useQueries({
+    queries: [departmentsQueryOptions, staffQueryOptions, coursesQueryOptions],
   });
 
   const staff = useMemo(() => {
@@ -91,10 +97,17 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
       .filter((dp) => dp.id === department)
       .flatMap((dp) =>
         dp.classes.map((cls) => ({ id: cls.id, name: cls.name })),
-      );
+      )
+      .filter((cls) => cls.id !== id);
 
     return { departments, classes };
-  }, [departmentsQueryData.data, department]);
+  }, [departmentsQueryData.data, department, id]);
+
+  const courses = useMemo(() => {
+    return !courseQueryData.data
+      ? []
+      : courseQueryData.data.map((cs) => ({ id: cs.id, title: cs.title }));
+  }, [courseQueryData.data]);
 
   return (
     <Form {...form}>
@@ -199,15 +212,29 @@ const CreateClassForm: FC<CreateClassFormProps> = ({
           </>
         )}
 
-        <SelectWithLabel
-          name="nextClassId"
-          fieldTitle="Next Class"
-          data={classes}
-          selectedKey="name"
-          valueKey="id"
-          schema={ClassesSchema}
-          placeholder="Select next class"
-        />
+        {courses.length > 0 && (
+          <MultiSelectCombox
+            name="courseIds"
+            fieldTitle="Courses Offered"
+            data={courses}
+            selectedKey="title"
+            valueKey="id"
+            placeholder="Select courses"
+          />
+        )}
+
+        {level !== "Year_Three" && (
+          <SelectWithLabel
+            name="nextClassId"
+            fieldTitle="Next Class"
+            data={classes}
+            selectedKey="name"
+            valueKey="id"
+            schema={ClassesSchema}
+            placeholder="Select next class"
+          />
+        )}
+
         <div className="flex flex-col gap-y-3">
           <LoadingButton loading={isPending}>
             {isPending ? (

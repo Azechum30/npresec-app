@@ -1,3 +1,5 @@
+/**biome-ignore-all assist/source/organizeImports:reason */
+
 "use client";
 
 import {
@@ -8,42 +10,41 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGenericDialog } from "@/hooks/use-open-create-teacher-dialog";
-import { TemplateType } from "@/lib/validation";
-import { useTransition } from "react";
+import type { TemplateType } from "@/lib/validation";
 import { CreateTemplateForm } from "../_forms/create-template-form";
+import { useCreateDocumentTemplateMutationFn } from "../mutations";
 
 export const RenderTemplateFormModal = () => {
   const { dialogs, onClose } = useGenericDialog();
 
-  const [isPending, startTransition] = useTransition();
+  const { mutateAsync, isPending } = useCreateDocumentTemplateMutationFn();
 
-  const handlSubmission = (data: TemplateType) => {
-    startTransition(() => {
-      console.log(data);
+  const handlSubmission = async (data: TemplateType) => {
+    await Promise.try(async () => {
+      await mutateAsync(data);
+      onClose("create-a-document-template");
     });
   };
 
+  const isOpen = !!dialogs["create-a-document-template"];
+
   return (
     <Dialog
-      open={!!dialogs["create-a-document-template"]}
+      open={isOpen}
       onOpenChange={() => onClose("create-a-document-template")}>
-      {dialogs["create-a-document-template"] && (
-        <DialogContent className="w-full md:max-w-2xl">
-          <DialogHeader className="border-b">
-            <DialogTitle>Add New Document Template</DialogTitle>
-            <DialogDescription>
-              Use the form below to create a document template. Dynamic values
-              should be enclosed with double curly braces.
-            </DialogDescription>
-          </DialogHeader>
-          <>
-            <CreateTemplateForm
-              onSubmitAction={handlSubmission}
-              isPending={isPending}
-            />
-          </>
-        </DialogContent>
-      )}
+      <DialogContent className="w-full md:max-w-2xl">
+        <DialogHeader className="border-b">
+          <DialogTitle>Add New Document Template</DialogTitle>
+          <DialogDescription>
+            Use the form below to create a document template. Dynamic values
+            should be enclosed with double curly braces.
+          </DialogDescription>
+        </DialogHeader>
+        <CreateTemplateForm
+          onSubmitAction={handlSubmission}
+          isPending={isPending}
+        />
+      </DialogContent>
     </Dialog>
   );
 };

@@ -133,10 +133,7 @@ export default function DashboardContent({
 
   const classChartData = data.classDistribution
     .map((cls) => ({
-      name:
-        cls.name.split(" ")[0].charAt(0).toUpperCase() +
-        cls.name.split(" ")[1].charAt(0).toUpperCase() +
-        cls.name.split("-")[1].toUpperCase(),
+      name: cls.name.split(" ")[1],
       students: cls.studentCount,
     }))
     .filter((cls) => cls.students > 0);

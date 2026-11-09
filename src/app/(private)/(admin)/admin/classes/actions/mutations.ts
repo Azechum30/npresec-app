@@ -9,6 +9,7 @@ import {
   createClassAction,
   deleteClass,
   updateClass,
+  updateClassEnrollment,
 } from "./server-actions";
 
 export const useCreateClassMutationFn = () =>
@@ -29,6 +30,14 @@ export const useUpdateClassMutationFn = (classId: string) =>
         getClassQueryOptions(classId).queryKey,
       ],
       message: "class updated",
+    },
+  });
+export const useUpdateClassEnrollmentMutationFn = () =>
+  useMutation({
+    mutationFn: updateClassEnrollment,
+    meta: {
+      invalidates: classQueryOptions.queryKey,
+      message: "enrollment reset successful",
     },
   });
 

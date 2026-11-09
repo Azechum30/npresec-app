@@ -1,18 +1,19 @@
 import {
   Award,
   BookOpen,
-  BookTemplate,
-  GraduationCap,
+  BookPlus,
   Home,
   LayoutDashboard,
   List,
   LucideBuilding2,
+  LucideGraduationCap,
   PoundSterling,
   Shield,
   TimerIcon,
   TrendingUpIcon,
   UserPen,
   UserPlus,
+  UsersIcon,
 } from "lucide-react";
 
 export const Links = {
@@ -25,7 +26,7 @@ export const Links = {
           href: "/admin/dashboard",
           icon: <LayoutDashboard />,
         },
-        { title: "Students", href: "/admin/students", icon: <GraduationCap /> },
+        { title: "Students", href: "/admin/students", icon: <UsersIcon /> },
         { title: "Staff", href: "/admin/staff", icon: <UserPen /> },
       ],
     },
@@ -35,6 +36,11 @@ export const Links = {
         { title: "Classes", href: "/admin/classes", icon: <LucideBuilding2 /> },
         { title: "Departments", href: "/admin/departments", icon: <Home /> },
         { title: "Courses", href: "/admin/courses", icon: <BookOpen /> },
+        {
+          title: "Promote Students",
+          href: "/admin/promotion",
+          icon: <LucideGraduationCap />,
+        },
       ],
     },
 
@@ -61,7 +67,7 @@ export const Links = {
         {
           title: "Templates",
           href: "/admin/templates",
-          icon: <BookTemplate />,
+          icon: <BookPlus />,
         },
       ],
     },

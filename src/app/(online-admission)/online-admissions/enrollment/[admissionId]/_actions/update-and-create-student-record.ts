@@ -95,7 +95,7 @@ export const updateAndCreateStudentRecord = async (
         );
 
       await workflowClient.trigger({
-        url: `${env.UPSTASH_WORKFLOW_URL}/api/online-admission/onboard-student/onlineAdmissionStudentOnboardingWorkflow`,
+        url: `${env.UPSTASH_WORKFLOW_URL}/api/online-admissions/onboard-student/onlineAdmissionStudentOnboardingWorkflow`,
         body: body,
       });
     }

@@ -12,10 +12,6 @@ export interface IClassStream {
 
   deleteClass: (classId: string) => Promise<void>;
   deleteClasses: (classIds: string[]) => Promise<{ count: number }>;
-  updateClassEnrollment: (
-    classId: string,
-    enrollmentCount: number,
-  ) => Promise<ClassesResponseType>;
-
+  updateClassEnrollment: (classId: string) => Promise<void>;
   bulkCreateClasses: (data: BulkClassesType) => Promise<{ count: number }>;
 }

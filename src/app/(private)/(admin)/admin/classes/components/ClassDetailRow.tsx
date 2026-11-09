@@ -1,5 +1,7 @@
-import { ClassesResponseType } from "@/lib/types";
-import { Row } from "@tanstack/react-table";
+/**biome-ignore-all assist/source/organizeImports:reason */
+
+import type { ClassesResponseType } from "@/lib/types";
+import type { Row } from "@tanstack/react-table";
 
 type ClassDetailRowProps = {
   row: Row<ClassesResponseType>;
@@ -42,6 +44,16 @@ export default function ClassDetailRow({ row }: ClassDetailRowProps) {
                 <li key={staff.id}>
                   {`${staff.lastName} ${staff.firstName} ${staff.middleName}`}
                 </li>
+              ))
+            : null}
+        </ul>
+      </div>
+      <div className="p-4 border rounded w-full hover:cursor-pointer hover:scale-105 transition-all delay-300">
+        <h3 className="text-base font-semibold">Subjects</h3>
+        <ul className="mt-2 text-xs px-5 list-disc">
+          {original.courses.length > 0
+            ? original.courses.map((course) => (
+                <li key={course.id}>{course.title}</li>
               ))
             : null}
         </ul>
